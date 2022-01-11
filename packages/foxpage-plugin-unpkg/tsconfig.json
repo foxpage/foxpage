@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "lib",
+    "declaration": true,
+    "lib": ["DOM", "ESNext"]
+  },
+  "include": ["package.json", "src/*"],
+  "exclude": []
+}

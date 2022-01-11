@@ -1,0 +1,36 @@
+{
+  "list": [
+    {
+      "password": "96e79218965eb72c92a549dd5a330112",
+      "nickName": "",
+      "email": "yhdeng@trip.com",
+      "registerType": 1.0,
+      "deleted": false,
+      "id": "user-dvbfW1qsl8qkz39",
+      "account": "fox-user",
+      "createTime": "2021-07-23T13:13:12.392+08:00",
+      "updateTime": "2021-07-23T13:13:12.395+08:00"
+    },
+    {
+      "password": "96e79218965eb72c92a549dd5a330112",
+      "nickName": "",
+      "email": "test1@demo.com",
+      "registerType": 1,
+      "deleted": false,
+      "id": "user_IiLUiSx5jinAEb9",
+      "account": "11112",
+      "createTime": "2021-10-08T16:47:21.838+08:00",
+      "updateTime": "2021-10-08T16:47:21.843+08:00"
+    }
+  ],
+  "userBaseObject": {
+    "user_IiLUiSx5jinAEb9": {
+      "id": "user_IiLUiSx5jinAEb9",
+      "account": "fox-user"
+    },
+    "user-dvbfW1qsl8qkz39": {
+      "id": "user-dvbfW1qsl8qkz39",
+      "account": "11112"
+    }
+  }
+}

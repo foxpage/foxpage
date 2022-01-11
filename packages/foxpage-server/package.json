@@ -1,0 +1,83 @@
+{
+  "name": "foxpage-server",
+  "version": "0.1.0",
+  "description": "Foxpage server apis",
+  "main": "app.ts",
+  "prepublishOnly": "npm run build",
+  "scripts": {
+    "start": "npm run build:prod && cross-env NODE_ENV=development node dist/index.js",
+    "dev": "cross-env NODE_ENV=debug \"ts-node\" index.ts",
+    "build:prod": "cross-env NODE_ENV=production tsc --project tsconfig.prod.json",
+    "build": "cross-env NODE_ENV=development tsc --project tsconfig.dev.json",
+    "tsoa": "tsoa swagger",
+    "install-server": "node dist/install.js",
+    "test": "jest --coverage"
+  },
+  "keywords": [
+    "foxpage",
+    "server",
+    "api",
+    "typescript"
+  ],
+  "author": "yhdeng",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.36.0",
+    "@foxpage/foxpage-plugin": "^0.1.2",
+    "@foxpage/foxpage-plugin-ares": "^0.0.1",
+    "@foxpage/foxpage-plugin-aws-s3": "^0.0.7",
+    "@foxpage/foxpage-plugin-unpkg": "^0.0.1",
+    "@foxpage/foxpage-server-types": "^0.1.1",
+    "@foxpage/foxpage-shared": "^0.2.3",
+    "@foxpage/foxpage-types": "^0.2.11",
+    "@types/jsonwebtoken": "^8.5.1",
+    "@types/koa": "^2.11.0",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/koa-router": "^7.4.4",
+    "@types/koa-static": "^4.0.1",
+    "@types/koa2-cors": "^2.0.1",
+    "@types/mongoose": "^5.11.97",
+    "@types/node": "^16.4.13",
+    "@types/shortid": "0.0.29",
+    "aedes": "^0.46.1",
+    "axios": "^0.22.0",
+    "class-transformer": "0.4.0",
+    "class-validator": "^0.13.1",
+    "class-validator-jsonschema": "^3.0.1",
+    "jsonwebtoken": "^8.5.1",
+    "kcors": "^2.2.2",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^8.0.8",
+    "koa-static": "^5.0.0",
+    "koa2-swagger-ui": "^5.1.0",
+    "lodash": "^4.17.21",
+    "mongoose": "5.12.14",
+    "p-limit": "^3.1.0",
+    "path": "^0.12.7",
+    "reflect-metadata": "^0.1.13",
+    "routing-controllers": "0.8.1",
+    "routing-controllers-openapi": "3.0.0",
+    "shortid": "^2.2.16",
+    "swagger-jsdoc": "^6.1.0",
+    "websocket-stream": "^5.5.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "@types/lodash": "^4.14.176",
+    "@types/supertest": "^2.0.11",
+    "cross-env": "^7.0.3",
+    "jest": "^27.4.3",
+    "nyc": "^15.0.0",
+    "supertest": "^6.1.6",
+    "ts-jest": "^27.1.0",
+    "ts-node": "^8.8.1",
+    "tsoa-custom-decorators": "^1.1.10-custom-decorators",
+    "typescript": "4.4.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}

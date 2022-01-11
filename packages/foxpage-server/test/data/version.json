@@ -1,0 +1,137 @@
+{
+  "id": "cver_htMLwz4MW7viarg",
+  "idVersionNumber": [
+    { "_id": "cont_cuREMD9zcUZEcVU", "versionNumber": 10 },
+    { "_id": "cver_QLAXF7DpTSE8v4f", "versionNumber": 2 }
+  ],
+  "list": [
+    {
+      "version": "0.0.1",
+      "versionNumber": 1,
+      "status": "release",
+      "deleted": false,
+      "id": "cver_htMLwz4MW7viarg",
+      "contentId": "cont_cuREMD9zcUZEcVU",
+      "content": {
+        "id": "cont_cuREMD9zcUZEcVU",
+        "schemas": [
+          {
+            "id": "stru_7itc5Nntu5mbvvL",
+            "label": "@fox-design/react-html",
+            "name": "@fox-design/react-html",
+            "children": [
+              {
+                "id": "stru_zNrQpNlobXUP8lk",
+                "label": "@fox-design/react-body",
+                "name": "@fox-design/react-body",
+                "children": [
+                  {
+                    "children": [],
+                    "id": "stru_k3bztcmd5mwVXHV",
+                    "label": "@fox-design/react-slot",
+                    "name": "@fox-design/react-slot",
+                    "props": {},
+                    "directive": {
+                      "tpl": "{{$this.children}}"
+                    }
+                  }
+                ],
+                "type": "react.component",
+                "props": {}
+              }
+            ],
+            "type": "react.component",
+            "props": {}
+          }
+        ],
+        "relation": {}
+      },
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-30T16:06:40.632+08:00",
+      "updateTime": "2021-12-30T16:06:47.809+08:00"
+    },
+    {
+      "version": "0.0.1",
+      "versionNumber": 1,
+      "status": "base",
+      "deleted": true,
+      "id": "cver_QLAXF7DpTSE8v4f",
+      "contentId": "cont_yQzKrEjFlU81El7",
+      "content": {
+        "id": "cont_yQzKrEjFlU81El7",
+        "schemas": [
+          {
+            "id": "stru_CAwrTPplQj5RI2W",
+            "name": "",
+            "type": "",
+            "props": {
+              "width": "100%",
+              "height": "100%"
+            },
+            "children": [
+              {
+                "id": "stru_asdSxsu8EzBrvyV",
+                "label": "@fox-design/react-container",
+                "name": "@fox-design/react-container",
+                "type": "react.component",
+                "children": [
+                  {
+                    "children": [],
+                    "id": "stru_fQSx6BwHf6fU3qA",
+                    "label": "@fox-design/react-text",
+                    "name": "@fox-design/react-text",
+                    "props": {
+                      "text": "2323232"
+                    },
+                    "wrapper": "stru_asdSxsu8EzBrvyV"
+                  }
+                ],
+                "props": {}
+              }
+            ],
+            "directive": {
+              "tpl": "{{__templates:cont_cuREMD9zcUZEcVU:schemas}}"
+            }
+          }
+        ],
+        "relation": {
+          "__templates:cont_cuREMD9zcUZEcVU:schemas": {
+            "id": "cont_cuREMD9zcUZEcVU",
+            "type": "template"
+          }
+        }
+      },
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-30T16:06:40.623+08:00",
+      "updateTime": "2021-12-30T16:06:47.809+08:00"
+    }
+  ],
+  "componentList": [
+    {
+      "version": "0.0.1",
+      "versionNumber": 1,
+      "status": "release",
+      "deleted": false,
+      "id": "cver_1loyOnyn33rgb4u",
+      "contentId": "cont_5PgtCgvNtU6oNDe",
+      "content": {
+        "id": "cont_5PgtCgvNtU6oNDe",
+        "resource": {
+          "entry": {
+            "browser": "cont_4a2qXHKHBo2pUG5",
+            "css": "cont_dzSNhCv6qD09yVj",
+            "debug": "cont_Bj2IT6xlzxxg5w9",
+            "node": "cont_PhfDgdJcDKNV8zB"
+          },
+          "editor-entry": [],
+          "dependencies": []
+        },
+        "meta": "{}",
+        "schema": "{\"type\":\"object\",\"properties\":{\"configProps\":{\"$ref\":\"#/definitions/ConfigProps\"}},\"defaultProperties\":[],\"required\":[\"configProps\"],\"definitions\":{\"ConfigProps\":{\"description\":\"组件 API props\\ndoc: https://github.com/YousefED/typescript-json-schema/blob/master/api.md\\n组件入参类型interface名称约定为ComponentProps！！！\",\"type\":\"object\",\"properties\":{\"title\":{\"description\":\"Title of component. Support rich html, like '<h2> Title of component </h2>'.\",\"type\":\"string\"},\"needAirport\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"needAirline\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"departCityCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"arrivalCityCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"tripType\":{\"description\":\"request param of getFlights\",\"enum\":[\"OW\",\"RT\"],\"type\":\"string\"},\"sortType\":{\"$ref\":\"#/definitions/FlightSortType\",\"description\":\"request param of getFlights\"},\"displayNum\":{\"description\":\"Number of display flight card\",\"minimum\":1,\"default\":30,\"type\":\"number\"},\"departAirportCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"arrivalAirportCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"budgetAirline\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"airlineCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"flightTime\":{\"enum\":[\"TODAY\"],\"type\":\"string\"},\"flightType\":{\"enum\":[\"DIRECT\"],\"type\":\"string\"}},\"defaultProperties\":[],\"required\":[\"needAirline\",\"needAirport\",\"sortType\",\"title\",\"tripType\"]},\"FlightSortType\":{\"enum\":[\"DEPART_DATE\",\"FRESH\",\"ORDER\",\"PRICE\",\"SEARCH\"],\"type\":\"string\"}},\"$schema\":\"http://json-schema.org/draft-07/schema#\"}"
+      },
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-30T14:29:17.452+08:00",
+      "updateTime": "2021-12-30T16:05:22.711+08:00"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "strict": false,
+    "sourceMap": false,
+    "declaration": false,
+    "resolveJsonModule": true,
+    "jsx": "react",
+    // editor
+    "charset": "utf-8",
+    "newLine": "lf",
+    // syntax
+    "alwaysStrict": false,
+    "noImplicitAny": true,
+    "noImplicitUseStrict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext",
+      "ES2019"
+    ],
+    "target": "ES2017",
+    "moduleResolution": "node",
+    "baseUrl": "."
+  }
+}

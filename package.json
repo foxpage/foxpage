@@ -1,0 +1,120 @@
+{
+  "version": "0.1.0",
+  "name": "foxpage",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "boot": "yarn && lerna bootstrap",
+    "start-server:dev": "cd packages/foxpage-server && cross-env NODE_ENV=debug \"ts-node\" index.ts",
+    "start-server:prod": "npm run build-server:prod && cd packages/foxpage-server && cross-env NODE_ENV=development node dist/index.js",
+    "build-server:prod": "cd packages/foxpage-server && cross-env NODE_ENV=production npm run build:prod",
+    "init-server:prod": "cd packages/foxpage-server && cross-env NODE_ENV=production node dist/install.js",
+    "test-server": "cd packages/foxpage-server && cross-env NODE_ENV=test npm run test",
+    "start-admin:dev": "cd packages/foxpage-admin && npm start",
+    "build-admin:prod": "cd packages/foxpage-admin && npm install && npm run build",
+    "start-admin:prod": "cd packages/foxpage-admin && node server/app-express.js",
+    "commit": "git-cz",
+    "lint": "eslint --cache --cache-location=.cache/eslint --ext .ts,.tsx --report-unused-disable-directives packages/",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "author": "yhdeng",
+  "contributors": [
+    {
+      "name": "sqjing",
+      "email": "jing1132334418@gmail.com",
+      "url": "https://github.com/sqjing"
+    },
+    {
+      "name": "yhdeng",
+      "email": "yhdeng86@sina.cn",
+      "url": "https://github.com/yhdeng"
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/foxpage/foxpage",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:foxpage/foxpage.git"
+  },
+  "description": "Foxpage front-end low code framework portal, server and apis",
+  "keywords": [
+    "foxpage",
+    "low code",
+    "server",
+    "portal",
+    "typescript"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "npm run lint:fix",
+      "git add"
+    ],
+    "*.ts": [
+      "npm run lint:fix",
+      "git add"
+    ],
+    "*.tsx": [
+      "npm run lint:fix",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "lerna": "^4.0.0",
+    "lodash": "^4.17.21",
+    "typescript": "^4.3.2"
+  },
+  "eslintIgnore": [
+    "node_modules",
+    "examples",
+    "dist",
+    "lib",
+    "es",
+    "config",
+    "babel.config.js",
+    "jest.config.js",
+    "commitlint.config.js",
+    "*.js"
+  ],
+  "engines": {
+    "node": ">= 14.15.1 <= 16.x.x",
+    "npm": ">= 6.14.x",
+    "yarn": ">= 1.22.10"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
+    "@types/node": "^15.12.2",
+    "@typescript-eslint/eslint-plugin": "^2.12.0",
+    "@typescript-eslint/parser": "^2.15.0",
+    "commitizen": "^4.2.4",
+    "commitlint": "^12.1.4",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-typescript": "^0.14.0",
+    "git-cz": "^4.7.6",
+    "husky": "^6.0.0",
+    "import": "0.0.6",
+    "lerna": "^4.0.0",
+    "lint-staged": "^11.0.0",
+    "prettier": "^1.19.1",
+    "standard-version": "^9.3.0",
+    "ts-node": "^8.8.1"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "id": "appl_yqfu8BI1BRe15fs",
+  "name": "new-demo-app",
+  "list": [
+    {
+      "intro": "",
+      "slug": "demo-2",
+      "locales": ["en-US", "zh-HK", "ja-JP", "ko-KA"],
+      "deleted": false,
+      "id": "appl_yqfu8BI1BRe15fs",
+      "organizationId": "orga_j9l4qJI9hAXWTer",
+      "name": "new-demo-app",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "resources": [
+        {
+          "name": "UNPKG",
+          "id": "rsos_123456789",
+          "type": 1,
+          "detail": {
+            "host": "https://www.unpkg.com/",
+            "downloadHost": "https://www.unpkg.com/"
+          }
+        },
+        {
+          "id": "rsos_abcfedf",
+          "name": "ARES",
+          "type": 2,
+          "detail": {
+            "host": "http://app.ares.fx.ccc.com/",
+            "downloadHost": "http://app.ares.fx.cc.com/"
+          }
+        }
+      ],
+      "createTime": "2021-09-18T10:03:19.759+08:00",
+      "updateTime": "2021-12-04T13:47:53.114+08:00",
+      "host": ["http://www.demo.com/"]
+    },
+    {
+      "intro": "",
+      "deleted": false,
+      "organizationId": "orga_j9l4qJI9hAXWTer",
+      "name": "flutter-app",
+      "id": "appl_2RjQIXBuNd3STg5",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "locales": ["en-US", "zh-HK", "ja-JP", "ko-KA"],
+      "resources": [
+        {
+          "id": "rsos_111111",
+          "name": "UNPKG",
+          "type": 1,
+          "detail": {
+            "host": "https://www.unpkg.com/",
+            "downloadHost": "https://www.unpkg.com/"
+          }
+        },
+        {
+          "id": "rsos_22222",
+          "name": "ARES",
+          "type": 2,
+          "detail": {
+            "host": "http://app.ares.fx.cc.com/",
+            "downloadHost": "http://app.ares.fx.cc.com/"
+          }
+        }
+      ],
+      "slug": "flutter",
+      "createTime": "2021-08-27T15:05:22.660+08:00",
+      "updateTime": "2021-08-27T15:05:22.669+08:00"
+    }
+  ],
+  "appWithOrgList": [
+    {
+      "id": "appl_yqfu8BI1BRe15fs",
+      "name": "new-demo-app",
+      "organization": {
+        "id": "orga_j9l4qJI9hAXWTer",
+        "name": "demo organization"
+      }
+    }
+  ]
+}

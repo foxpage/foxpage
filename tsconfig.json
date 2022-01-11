@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    // editor
+    "charset": "utf-8",
+    "newLine": "LF",
+
+    // syntax
+    "strict": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "lib": ["dom", "esnext"],
+
+    // compile
+    "skipLibCheck": true,
+    "target": "ES2017",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "removeComments": false,
+    "declaration": true
+  },
+  "exclude": ["node_modules", "lib", "dist", "es", "__mocks__/**/*", ".cache", "__*", "commitlint.config.js"]
+}

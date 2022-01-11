@@ -1,0 +1,299 @@
+{
+  "id": "cont_cuREMD9zcUZEcVU",
+  "fileContentList": {
+    "file_dYjtcxziYi1vewE": {
+      "tags": [
+        {
+          "locale": "en-US"
+        }
+      ],
+      "liveVersionNumber": 0,
+      "deleted": false,
+      "id": "cont_Iw5VfV3avqaRhHC",
+      "title": "test-page-content2222",
+      "fileId": "file_dYjtcxziYi1vewE",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-14T18:52:50.556+08:00",
+      "updateTime": "2021-12-14T18:52:50.557+08:00"
+    },
+    "file_VFxUmmLsW2qfyfI": {
+      "tags": [
+        {
+          "locale": "en-US"
+        }
+      ],
+      "liveVersionNumber": 0,
+      "deleted": false,
+      "id": "cont_oF0Kkr6Cdffwpt1",
+      "title": "test-page-content",
+      "fileId": "file_VFxUmmLsW2qfyfI",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-14T18:07:39.315+08:00",
+      "updateTime": "2021-12-14T18:07:39.320+08:00"
+    },
+    "file_DpfW2HaLNVu8nAO": {
+      "tags": [],
+      "liveVersionNumber": 0,
+      "deleted": false,
+      "id": "cont_JQXLDd2b2KgkxQH",
+      "title": "editor.js",
+      "fileId": "file_DpfW2HaLNVu8nAO",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-14T18:07:39.315+08:00",
+      "updateTime": "2021-12-14T18:07:39.320+08:00"
+    }
+  },
+  "list": [
+    {
+      "tags": [
+        {
+          "locale": "ko-KR"
+        }
+      ],
+      "liveVersionNumber": 0,
+      "deleted": false,
+      "id": "cont_oF0Kkr6Cdffwpt1",
+      "title": "232323232",
+      "fileId": "file_VFxUmmLsW2qfyfI",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-29T18:38:24.372+08:00",
+      "updateTime": "2021-12-29T18:38:24.372+08:00"
+    },
+    {
+      "tags": [],
+      "liveVersionNumber": 0,
+      "deleted": false,
+      "id": "cont_Iw5VfV3avqaRhHC",
+      "title": "@ccc/cloud-flight-seo-weather-container_editor",
+      "fileId": "file_dYjtcxziYi1vewE",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-29T17:40:09.614+08:00",
+      "updateTime": "2021-12-29T17:40:09.614+08:00"
+    }
+  ],
+  "idLiveVersionNumber": [
+    { "id": "cont_cuREMD9zcUZEcVU", "liveVersionNumber": 3 },
+    { "id": "cont_yQzKrEjFlU81El7", "liveVersionNumber": 2 }
+  ],
+  "nameVersionComponent": [
+    {
+      "version": "",
+      "name": "@fox-design/react-slot",
+      "package": {
+        "resource": {
+          "entry": { "browser": {}, "node": {}, "debug": {}, "css": {} },
+          "editor-entry": [{ "id": "cont_YPwBg8ptFsQKv3q" }],
+          "dependencies": []
+        },
+        "meta": "{\"a\":231}1",
+        "schema": { "a": 231 },
+        "useStyleEditor": false,
+        "enableChildren": true,
+        "changelog": "",
+        "id": "cont_X3oHESmT7lQebHz",
+        "name": "@fox-design/react-slot",
+        "version": "0.1.4",
+        "type": "component"
+      }
+    },
+    {
+      "version": "",
+      "name": "@fox-design/react-slot-html"
+    }
+  ],
+  "idVersions": [{ "id": "", "version": "" }],
+  "remoteResourceList": [
+    {
+      "name": "@ccc/cloud-flight-seo-common-footer",
+      "version": "0.2.7",
+      "resourceName": "common-footer",
+      "meta": {
+        "sharkI18n": "100009239",
+        "sharkL10n": true
+      },
+      "schema": {
+        "description": "组件 API props\ndoc: https://github.com/YousefED/\r\ntypescript-json-schema/blob/master/api.md\n组件入参类型interface名称约定为ComponentProps！！！",
+        "type": "object",
+        "defaultProperties": [],
+        "definitions": {
+          "Record<string,any>": {
+            "type": "object",
+            "defaultProperties": []
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "latestVersion": "",
+      "files": {
+        "schema.json": "/modules/fpc/flight-seo-component/schema.38b41807a737bb669bd98a349386c953.json",
+        "assets": {
+          "iconfont.ttf": "/modules/fpc/flight-seo-component/iconfont.0a2ea870a537fea1e799bf956e29bbdb.ttf",
+          "iconfont.woff": "/modules/fpc/flight-seo-component/iconfont.cbe0c7ed4a8718e35fa71be174ad3cbd.woff",
+          "iconfont.woff2": "/modules/fpc/flight-seo-component/iconfont.b6c7080d1809c51889d94863101b04e3.woff2"
+        },
+        "umd": {
+          "editor.js": "/modules/fpc/flight-seo-component/editor.775d2dca855ef0d7823cb5135417c1dd.js",
+          "production.min.js": "/modules/fpc/flight-seo-component/production.min.854d70e0c45d1f280e13c6fc3c727fa4.js",
+          "development.js": "/modules/fpc/flight-seo-component/development.830dfa09e0e6bca6d493fea03fa83264.js",
+          "style.css": "/modules/fpc/flight-seo-component/style.57925f32897319c1e76deca4ea5f009a.css"
+        },
+        "cjs": {
+          "production.js": "/modules/fpc/flight-seo-component/production.7a35759180d2936f6634e166962e557c.js"
+        }
+      },
+      "isNew": true
+    },
+    {
+      "name": "@ccc/cloud-flight-seo-footer",
+      "version": "0.2.9",
+      "resourceName": "common-footer",
+      "meta": {
+        "sharkI18n": "100009239",
+        "sharkL10n": true
+      },
+      "id": "file_ziudMiPllJFtYI1",
+      "schema": {
+        "description": "组件 API props\ndoc: https://github.com/YousefED/\r\ntypescript-json-schema/blob/master/api.md\n组件入参类型interface名称约定为ComponentProps！！！",
+        "type": "object",
+        "defaultProperties": [],
+        "definitions": {
+          "Record<string,any>": {
+            "type": "object",
+            "defaultProperties": []
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "latestVersion": "",
+      "files": {
+        "schema.json": "/modules/fpc/flight-seo-component/schema.38b41807a737bb669bd98a349386c953.json",
+        "assets": {
+          "iconfont.ttf": "/modules/fpc/flight-seo-component/iconfont.0a2ea870a537fea1e799bf956e29bbdb.ttf",
+          "iconfont.woff": "/modules/fpc/flight-seo-component/iconfont.cbe0c7ed4a8718e35fa71be174ad3cbd.woff",
+          "iconfont.woff2": "/modules/fpc/flight-seo-component/iconfont.b6c7080d1809c51889d94863101b04e3.woff2"
+        },
+        "umd": {
+          "editor.js": "/modules/fpc/flight-seo-component/editor.775d2dca855ef0d7823cb5135417c1dd.js",
+          "production.min.js": "/modules/fpc/flight-seo-component/production.min.854d70e0c45d1f280e13c6fc3c727fa4.js",
+          "development.js": "/modules/fpc/flight-seo-component/development.830dfa09e0e6bca6d493fea03fa83264.js",
+          "style.css": "/modules/fpc/flight-seo-component/style.57925f32897319c1e76deca4ea5f009a.css"
+        },
+        "cjs": {
+          "production.js": "/modules/fpc/flight-seo-component/production.7a35759180d2936f6634e166962e557c.js"
+        }
+      },
+      "isNew": true
+    },
+    {
+      "name": "@ccc/cloud-flight-seo-header",
+      "version": "0.2.11",
+      "resourceName": "seo-header",
+      "meta": {
+        "sharkI18n": "100009239",
+        "sharkL10n": true
+      },
+      "id": "file_ziudMiPllJFtYI2",
+      "schema": {
+        "description": "组件 API props\ndoc: https://github.com/YousefED/\r\ntypescript-json-schema/blob/master/api.md\n组件入参类型interface名称约定为ComponentProps！！！",
+        "type": "object",
+        "defaultProperties": [],
+        "definitions": {
+          "Record<string,any>": {
+            "type": "object",
+            "defaultProperties": []
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "latestVersion": "",
+      "files": {},
+      "isNew": true
+    }
+  ],
+  "newComponentList": [
+    {
+      "resource": {
+        "groupId": "fold_49YM5BqsOrUuoxf",
+        "groupName": "seo-res",
+        "name": "@ccc/cloud-flight-seo-common-footer",
+        "version": "0.2.7",
+        "resourceName": "common-footer",
+        "meta": {
+          "sharkI18n": "100009239",
+          "sharkL10n": true
+        },
+        "schema": {
+          "description": "组件 API props\ndoc: https://github.com/YousefED/typescript-json-schema/blob/master/api.md\n组件入参类型interface名称约定为ComponentProps！！！",
+          "type": "object",
+          "defaultProperties": [],
+          "definitions": {
+            "Record<string,any>": {
+              "type": "object",
+              "defaultProperties": []
+            }
+          },
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "latestVersion": "",
+        "files": {
+          "schema.json": "/modules/fpc/flight-seo-component/schema.38b41807a737bb669bd98a349386c953.json",
+          "umd": {
+            "editor.js": "/modules/fpc/flight-seo-component/editor.775d2dca855ef0d7823cb5135417c1dd.js",
+            "production.min.js": "/modules/fpc/flight-seo-component/production.min.854d70e0c45d1f280e13c6fc3c727fa4.js",
+            "development.js": "/modules/fpc/flight-seo-component/development.830dfa09e0e6bca6d493fea03fa83264.js",
+            "style.css": "/modules/fpc/flight-seo-component/style.57925f32897319c1e76deca4ea5f009a.css"
+          },
+          "cjs": {
+            "production.js": "/modules/fpc/flight-seo-component/production.7a35759180d2936f6634e166962e557c.js"
+          }
+        },
+        "isNew": true
+      },
+      "component": {
+        "id": "file_u3q9dWVi1K5XNFf",
+        "version": "0.0.1",
+        "content": {
+          "resource": {
+            "entry": {
+              "browser": {
+                "path": "seo-res/common-footer/0.2.7/umd/production.min.js"
+              },
+              "css": {
+                "path": "seo-res/common-footer/0.2.7/umd/style.css"
+              },
+              "debug": {
+                "path": "seo-res/common-footer/0.2.7/umd/development.js"
+              },
+              "node": {
+                "path": "seo-res/common-footer/0.2.7/cjs/production.js"
+              }
+            },
+            "editor-entry": [
+              {
+                "contentId": "",
+                "path": "seo-res/common-footer/0.2.7/cjs/editor.js"
+              }
+            ],
+            "dependencies": []
+          },
+          "meta": {
+            "sharkI18n": "100009239",
+            "sharkL10n": true
+          },
+          "schema": {
+            "description": "组件 API props\ndoc: https://github.com/YousefED/typescript-json-schema/blob/master/api.md\n组件入参类型interface名称约定为ComponentProps！！！",
+            "type": "object",
+            "defaultProperties": [],
+            "definitions": {
+              "Record<string,any>": {
+                "type": "object",
+                "defaultProperties": []
+              }
+            },
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      }
+    }
+  ]
+}

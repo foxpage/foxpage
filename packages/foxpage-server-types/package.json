@@ -1,0 +1,24 @@
+{
+  "version": "0.1.14",
+  "name": "@foxpage/foxpage-server-types",
+  "types": "index.d.ts",
+  "type": "module",
+  "main": "index.d.ts",
+  "license": "MIT",
+  "author": "yhdeng",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "description": "foxpage server types",
+  "keywords": [
+    "foxpage",
+    "foxpage-server-types",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:foxpage/foxpage.git",
+    "directory": "packages/foxpage-server-types"
+  }
+}

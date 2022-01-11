@@ -1,0 +1,46 @@
+import 'reflect-metadata';
+
+import { Get, JsonController, QueryParams } from 'routing-controllers';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+
+import { i18n } from '../../../app.config';
+import { ContentInfo } from '../../types/content-types';
+import { ResData } from '../../types/index-types';
+import { ContentDetailRes, ContentListReq } from '../../types/validates/content-validate-types';
+import * as Response from '../../utils/response';
+import { BaseController } from '../base-controller';
+
+@JsonController('content')
+export class GetContentList extends BaseController {
+  constructor() {
+    super();
+  }
+
+  /**
+   * Get a list of contents under the specified file
+   * @param  {ContentListReq} params
+   * @returns {ContentInfo}
+   */
+  @Get('s')
+  @OpenAPI({
+    summary: i18n.sw.contentList,
+    description: '',
+    tags: ['Content'],
+    operationId: 'content-list',
+  })
+  @ResponseSchema(ContentDetailRes)
+  async index(@QueryParams() params: ContentListReq): Promise<ResData<ContentInfo[]>> {
+    try {
+      // Check the validity of fileId
+      const fileDetail = await this.service.file.info.getDetailById(params.fileId);
+      if (!fileDetail || fileDetail.deleted) {
+        return Response.warning(i18n.file.invalidFileId);
+      }
+
+      const contentList = await this.service.content.file.getFileContentList(params);
+      return Response.success(contentList);
+    } catch (err) {
+      return Response.error(err, i18n.content.getContentListFailed);
+    }
+  }
+}

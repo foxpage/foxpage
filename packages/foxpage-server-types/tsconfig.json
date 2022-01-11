@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "lib": ["DOM", "ESNext"]
+  },
+  "include": ["*", "schema/*", "plugin/*"]
+}

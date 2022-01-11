@@ -1,0 +1,39 @@
+{
+  "id": "fold_4wPLOew6iYq12kj",
+  "list": [
+    {
+      "tags": [
+        {
+          "type": "project_folder"
+        }
+      ],
+      "parentFolderId": "fold_B9NuN5a2IbUdAVG",
+      "folderPath": null,
+      "deleted": false,
+      "id": "fold_4wPLOew6iYq12kj",
+      "name": "test-trans-project123",
+      "intro": "",
+      "applicationId": "appl_K58wh3NkTAdjmvA",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-14T17:43:33.710+08:00",
+      "updateTime": "2021-12-15T09:58:15.446+08:00"
+    },
+    {
+      "tags": [
+        {
+          "type": "resource"
+        }
+      ],
+      "parentFolderId": "",
+      "folderPath": "resource",
+      "deleted": false,
+      "id": "fold_AVy4dtGnkE4BzF6",
+      "name": "_resource",
+      "intro": "",
+      "applicationId": "appl_K58wh3NkTAdjmvA",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2021-12-14T17:42:48.845+08:00",
+      "updateTime": "2021-12-14T17:42:48.846+08:00"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>FoxPage</title>
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, user-scalable=0, maximum-scale=1, minimum-scale=1">
+  <!-- insertion-point-jss -->
+  <!-- <script src="//at.alicdn.com/t/font_1802890_nlwuwm11ukk.js"></script> -->
+  <style type="text/css">
+    body>iframe {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- config injection -->
+  <script>
+    var APP_CONFIG = '{{APP_CONFIG}}';
+    if (!(/APP_CONFIG/.test(APP_CONFIG))) {
+      APP_CONFIG = JSON.parse(APP_CONFIG);
+    }
+  </script>
+  <div id="app" class="app" style="height:100%"></div>
+  <script src="dist/main.bundle.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+{
+  "id": "orga_j9l4qJI9hAXWTer",
+  "list": [
+    {
+      "deleted": false,
+      "id": "orga_j9l4qJI9hAXWTer",
+      "name": "test-organization",
+      "creator": "user-dvbfW1qsl8qkz39",
+      "members": [
+        {
+          "userId": "user-dvbfW1qsl8qkz39",
+          "status": true,
+          "joinTime": "2021-07-26T12:20:19.902+08:00"
+        },
+        {
+          "userId": "user_VEXCnY2nDWYPCq3",
+          "status": false,
+          "joinTime": "2021-10-27T18:53:56.738+08:00"
+        },
+        {
+          "userId": "user_Bb7wCyf23kQ1ooG",
+          "status": true,
+          "joinTime": "2021-10-28T18:52:47.980+08:00"
+        },
+        {
+          "userId": "user_JBsMWAjdl1UKApj",
+          "status": true,
+          "joinTime": "2021-10-28T18:53:09.446+08:00"
+        },
+        {
+          "userId": "user_T8f1iYvnVXwEqMP",
+          "status": false,
+          "joinTime": "2021-10-29T13:49:31.964+08:00"
+        },
+        {
+          "userId": "user_N7L31x7ucIEVqrN",
+          "status": false,
+          "joinTime": "2021-10-29T13:58:35.123+08:00"
+        },
+        {
+          "userId": "user_bstGaHJJujBjIdi",
+          "status": true,
+          "joinTime": "2021-10-29T14:00:06.404+08:00"
+        },
+        {
+          "userId": "user_MANvciwd27RAVdr",
+          "status": false,
+          "joinTime": "2021-11-01T14:08:10.436+08:00"
+        },
+        {
+          "userId": "user_bgP1ceikNey8MwS",
+          "status": true,
+          "joinTime": "2021-12-13T09:36:14.060+08:00"
+        }
+      ],
+      "createTime": "2021-07-26T12:20:11.163+08:00",
+      "updateTime": "2021-12-13T09:36:14.060+08:00"
+    }
+  ]
+}

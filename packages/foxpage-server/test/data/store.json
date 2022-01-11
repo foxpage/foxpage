@@ -1,0 +1,37 @@
+{
+  "id": "",
+  "goodsList": [
+    {
+      "intro": "",
+      "status": 1,
+      "deleted": false,
+      "id": "stor_sFmGWQ8x6wMHPrq",
+      "name": "test-page",
+      "type": "page",
+      "details": {
+        "projectId": "fold_jdL4Pl8Z75lFBOs",
+        "id": "file_AP4IwborzFXHQaC",
+        "applicationId": "appl_yqfu8BI1BRe15fs",
+        "creator": "user-dvbfW1qsl8qkz39"
+      },
+      "createTime": "2021-12-30T14:46:11.252+08:00",
+      "updateTime": "2021-12-30T14:46:11.253+08:00"
+    },
+    {
+      "intro": "",
+      "status": 1,
+      "deleted": false,
+      "id": "stor_fqew5WUYoTFkdJg",
+      "name": "goods-page",
+      "type": "page",
+      "details": {
+        "projectId": "fold_IaIQ6l426IOEJyX",
+        "id": "file_7Qs5gtY49ciOJzI",
+        "applicationId": "appl_yqfu8BI1BRe15fs",
+        "creator": "user-dvbfW1qsl8qkz39"
+      },
+      "createTime": "2021-12-04T11:55:00.469+08:00",
+      "updateTime": "2021-12-04T11:55:00.470+08:00"
+    }
+  ]
+}
