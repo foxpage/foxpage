@@ -37,7 +37,7 @@ export class UpdateFunctionDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateTypeFileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.function.invalidName);
+      return Response.warning(i18n.function.invalidName, 2091501);
     }
 
     try {
@@ -45,7 +45,7 @@ export class UpdateFunctionDetail extends BaseController {
 
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4091501);
       }
 
       // 获取文件的内容
@@ -68,11 +68,11 @@ export class UpdateFunctionDetail extends BaseController {
 
       const result = await this.service.file.info.updateFileDetail(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.function.invalidFileId);
+        return Response.warning(i18n.function.invalidFileId, 2091502);
       }
 
       if (result.code === 2) {
-        return Response.warning(i18n.function.nameExist);
+        return Response.warning(i18n.function.nameExist, 2091503);
       }
 
       this.service.content.info.updateContentItem(contentId, { title: contentName }, { ctx });
@@ -90,9 +90,9 @@ export class UpdateFunctionDetail extends BaseController {
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail || {});
+      return Response.success(fileDetail, 1091501);
     } catch (err) {
-      return Response.error(err, i18n.function.updateFunctionFailed);
+      return Response.error(err, i18n.function.updateFunctionFailed, 3091501);
     }
   }
 }

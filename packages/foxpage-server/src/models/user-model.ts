@@ -2,17 +2,17 @@ import { User } from '@foxpage/foxpage-server-types';
 
 import { NewUser } from '../types/user-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import userModel from './schema/user';
+import { BaseModel } from './base-model';
 
 /**
  * User related data model
  *
  * @export
  * @class UserModel
- * @extends {BaseModelAbstract<User>}
+ * @extends {BaseModel<User>}
  */
-export class UserModel extends BaseModelAbstract<User> {
+export class UserModel extends BaseModel<User> {
   private static _instance: UserModel;
   private userModel: typeof userModel;
 

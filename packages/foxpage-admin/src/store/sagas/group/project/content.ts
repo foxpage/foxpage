@@ -8,6 +8,7 @@ import { fetchFileDetail } from '@/apis/group/file';
 import * as API from '@/apis/group/project/content';
 import { commitToStore, offlineFromStore } from '@/apis/store/list';
 import { FileTypeEnum } from '@/constants/index';
+import { getBusinessI18n } from '@/pages/locale';
 import { ProjectContentActionType } from '@/reducers/group/project/content';
 import { store } from '@/store/index';
 import {
@@ -20,7 +21,9 @@ import {
 
 function* handleFetchList(action: ProjectContentActionType) {
   const { applicationId, fileId, fileType } = action.payload as ProjectContentSearchParams;
-
+  const {
+    content: { fetchFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.updateFetchLoading(true));
   const res = yield call(fileType === 'page' ? API.fetchPageContents : API.fetchTemplateContents, {
     applicationId,
@@ -29,7 +32,7 @@ function* handleFetchList(action: ProjectContentActionType) {
   if (res.code === 200) {
     yield put(ACTIONS.pushContentList(res.data));
   } else {
-    message.error('Fetch content list failed');
+    message.error(res.msg || fetchFailed);
   }
 
   yield put(ACTIONS.updateFetchLoading(false));
@@ -37,17 +40,14 @@ function* handleFetchList(action: ProjectContentActionType) {
 
 function* save(action: ProjectContentActionType) {
   const { applicationId, fileId, fileType } = action.payload as ProjectContentSearchParams;
-
+  const {
+    global: { saveSuccess, saveFailed, nameError },
+  } = getBusinessI18n();
   const state = store.getState().group.project.content;
   const content = state.editContent;
 
-  if (!content.title) {
-    message.warn('Please input name');
-    return;
-  }
-  const localesTag = content.tags ? content.tags.filter(item => item.locale) : [];
-  if (localesTag.length === 0) {
-    message.warn('Please select locale');
+  if (!content?.title) {
+    message.warn(nameError);
     return;
   }
 
@@ -65,11 +65,11 @@ function* save(action: ProjectContentActionType) {
     applicationId,
   });
   if (res.code === 200) {
-    message.success('Save succeed');
+    message.success(saveSuccess);
     yield put(ACTIONS.updateEditDrawerOpen(false));
     yield put(ACTIONS.fetchContentList({ applicationId, fileId, fileType }));
   } else {
-    message.error('Save failed');
+    message.error(res.msg || saveFailed);
   }
 
   yield put(ACTIONS.setSaveLoading(false));
@@ -77,17 +77,19 @@ function* save(action: ProjectContentActionType) {
 
 function* deleteContent(action: ProjectContentActionType) {
   const { applicationId, id, fileId, fileType } = action.payload as ProjectContentDeleteParams;
-
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
   const res = yield call(fileType === 'page' ? API.deletePageContent : API.deleteTemplateContent, {
     applicationId,
     id,
     status: true,
   });
   if (res.code === 200) {
-    message.success('Delete succeed');
+    message.success(deleteSuccess);
     yield put(ACTIONS.fetchContentList({ applicationId, fileId, fileType }));
   } else {
-    message.error('Delete failed');
+    message.error(res.msg || deleteFailed);
   }
 
   yield put(ACTIONS.updateFetchLoading(false));
@@ -95,18 +97,24 @@ function* deleteContent(action: ProjectContentActionType) {
 
 function* fetchLocales(action: ProjectContentActionType) {
   const { applicationId } = action.payload as { applicationId: string };
+  const {
+    application: { fetchLocalesFailed },
+  } = getBusinessI18n();
   const res = yield call(getAppDetail, {
     applicationId,
   });
   if (res.code === 200) {
     yield put(ACTIONS.pushLocales(res.data.locales));
   } else {
-    message.error('Fetch locales failed');
+    message.error(res.msg || fetchLocalesFailed);
   }
 }
 
 function* handleCommitFileToStore(action: ProjectContentActionType) {
   const { id, applicationId, type, intro, onSuccess } = action.payload as GoodsCommitParams;
+  const {
+    global: { commitSuccess, commitFailed },
+  } = getBusinessI18n();
   const rs = yield call(commitToStore, {
     id,
     applicationId,
@@ -114,34 +122,40 @@ function* handleCommitFileToStore(action: ProjectContentActionType) {
     intro,
   });
   if (rs.code === 200) {
-    message.success('Commit succeed');
+    message.success(commitSuccess);
     if (typeof onSuccess === 'function') {
       onSuccess();
     }
   } else {
-    message.error(rs.msg || 'Commit failed');
+    message.error(rs.msg || commitFailed);
   }
 }
 
 function* handleOfflineFileToStore(action: ProjectContentActionType) {
   const { id, applicationId, onSuccess } = action.payload as GoodsOfflineParams;
+  const {
+    global: { revokeSuccess, revokeFailed },
+  } = getBusinessI18n();
   const rs = yield call(offlineFromStore, {
     id,
     applicationId,
   });
   if (rs.code === 200) {
-    message.success('Revoke succeed');
+    message.success(revokeSuccess);
     if (typeof onSuccess === 'function') {
       onSuccess();
     }
   } else {
-    message.error(rs.msg || 'Revoke failed');
+    message.error(rs.msg || revokeFailed);
   }
 }
 
 function* handleFetchFileDetail(action: ProjectContentActionType) {
   const { applicationId, ids } = action.payload as ProjectFileDetailFetchParams;
   yield put(ACTIONS.updateFetchLoading(true));
+  const {
+    file: { fetchDetailFailed },
+  } = getBusinessI18n();
   const rs = yield call(fetchFileDetail, {
     applicationId,
     ids,
@@ -149,7 +163,7 @@ function* handleFetchFileDetail(action: ProjectContentActionType) {
   if (rs.code === 200 && rs.data?.length > 0) {
     yield put(ACTIONS.pushFileDetail(rs.data[0]));
   } else {
-    message.error(rs.msg || 'Fetch file detail failed');
+    message.error(rs.msg || fetchDetailFailed);
   }
   yield put(ACTIONS.updateFetchLoading(false));
 }

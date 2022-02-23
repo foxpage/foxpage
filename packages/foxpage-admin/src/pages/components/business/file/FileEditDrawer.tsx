@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { Button, Input, Select } from 'antd';
 
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Field, Group, Label } from '@/components/widgets/group';
 import { FileTypes, Suffix } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 import { FileType } from '@/types/application/file';
 
 const { Option } = Select;
@@ -18,6 +19,8 @@ interface FileEditProp {
 const FileEditDrawer: React.FC<FileEditProp> = props => {
   const { open, file, onClose, onSave } = props;
   const [editFile, setEditFile] = useState<FileType>(file as FileType);
+  const { locale } = useContext(GlobalContext);
+  const { global, file: fileI18n } = locale.business;
 
   useEffect(() => {
     if (file) {
@@ -36,7 +39,7 @@ const FileEditDrawer: React.FC<FileEditProp> = props => {
     <OperationDrawer
       open={open}
       key={editFile?.id}
-      title={editFile ? 'Edit' : 'Add'}
+      title={editFile ? global.edit : global.add}
       onClose={onClose}
       width={480}
       destroyOnClose
@@ -47,14 +50,14 @@ const FileEditDrawer: React.FC<FileEditProp> = props => {
             onSave(editFile);
           }}
         >
-          Apply
+          {global.apply}
         </Button>
       }
     >
       {editFile ? (
         <Group>
           <Field>
-            <Label>Type</Label>
+            <Label>{global.type}</Label>
             <Select
               style={{ width: 150 }}
               defaultValue={editFile.type ? editFile.type : undefined}
@@ -65,16 +68,16 @@ const FileEditDrawer: React.FC<FileEditProp> = props => {
             >
               {FileTypes.map(item => (
                 <Option value={item.type} key={item.type}>
-                  {item.label}
+                  {fileI18n[item.label]}
                 </Option>
               ))}
             </Select>
           </Field>
           <Field>
-            <Label>Name</Label>
+            <Label>{global.type}</Label>
             <Input
               defaultValue={editFile.name}
-              placeholder="file name"
+              placeholder={fileI18n.nameLabel}
               onChange={e => update('name', e.target.value)}
               addonAfter={
                 <Select
@@ -96,10 +99,10 @@ const FileEditDrawer: React.FC<FileEditProp> = props => {
           </Field>
           {editFile.type === 'page' && (
             <Field>
-              <Label>Pathname</Label>
+              <Label>{fileI18n.pathname}</Label>
               <Input
                 defaultValue={pathnameTag.pathname}
-                placeholder="pathname"
+                placeholder={fileI18n.pathname}
                 onChange={e => {
                   update('tags', [{ pathname: e.target.value }]);
                 }}

@@ -1,19 +1,19 @@
 import _ from 'lodash';
 
-import { Member } from '@foxpage/foxpage-server-types';
+import { Member, Team } from '@foxpage/foxpage-server-types';
 
 import * as Model from '../models';
 import { FoxCtx, PageData } from '../types/index-types';
 import { SearchTeamExist, TeamInfo, TeamSearch } from '../types/team-types';
 
-import { TeamServiceAbstract } from './abstracts/team-service-abstract';
+import { BaseService } from './base-service';
 import * as Service from './index';
 
-export class TeamService extends TeamServiceAbstract {
+export class TeamService extends BaseService<Team> {
   private static _instance: TeamService;
 
   constructor() {
-    super();
+    super(Model.team);
   }
 
   /**

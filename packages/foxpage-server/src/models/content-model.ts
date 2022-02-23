@@ -7,13 +7,13 @@ import {
   FileTagContent,
 } from '../types/content-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import contentModel from './schema/content';
+import { BaseModel } from './base-model';
 
 /**
  *Page content repository related classes
  */
-export class ContentModel extends BaseModelAbstract<Content> {
+export class ContentModel extends BaseModel<Content> {
   private static _instance: ContentModel;
 
   constructor() {

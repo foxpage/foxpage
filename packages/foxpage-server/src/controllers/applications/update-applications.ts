@@ -38,13 +38,13 @@ export class UpdateApplicationDetail extends BaseController {
       // Check the validity of the application
       let appDetail = await this.service.application.getDetailById(params.applicationId);
       if (!appDetail || appDetail.deleted) {
-        return Response.warning(i18n.app.invalidAppId);
+        return Response.warning(i18n.app.invalidAppId, 2031001);
       }
 
       // Permission check
       const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4031001);
       }
 
       // Check whether the updated application slug already exists
@@ -56,7 +56,7 @@ export class UpdateApplicationDetail extends BaseController {
         });
 
         if (!_.isEmpty(duplicationAppDetail) && !duplicationAppDetail.deleted) {
-          return Response.warning(i18n.app.appSlugExist);
+          return Response.warning(i18n.app.appSlugExist, 2031002);
         }
       }
 
@@ -71,13 +71,16 @@ export class UpdateApplicationDetail extends BaseController {
         );
 
         if (checkResult.code === 1) {
-          return Response.warning(i18n.app.resourceUnDeleted + ':' + checkResult.data.join(','));
+          return Response.warning(i18n.app.resourceUnDeleted + ':' + checkResult.data.join(','), 2031003);
         } else if (checkResult.code === 2) {
-          return Response.warning(i18n.app.resourceDuplication + ':' + checkResult.data.join(','));
+          return Response.warning(i18n.app.resourceDuplication + ':' + checkResult.data.join(','), 2031004);
         } else if (checkResult.code === 3) {
-          return Response.warning(i18n.app.resourceTypeUnEditable + ':' + checkResult.data.join(','));
+          return Response.warning(
+            i18n.app.resourceTypeUnEditable + ':' + checkResult.data.join(','),
+            2031005,
+          );
         } else if (checkResult.code === 4) {
-          return Response.warning(i18n.app.invalidResourceIds + ':' + checkResult.data.join(','));
+          return Response.warning(i18n.app.invalidResourceIds + ':' + checkResult.data.join(','), 2031006);
         }
 
         appInfo.resources.forEach((resource) => {
@@ -96,9 +99,9 @@ export class UpdateApplicationDetail extends BaseController {
         content: { id: params.applicationId, before: appDetail, after: newAppDetail },
       });
 
-      return Response.success(newAppDetail || {});
+      return Response.success(newAppDetail, 1031001);
     } catch (err) {
-      return Response.error(err, i18n.app.updateDetailFailed);
+      return Response.error(err, i18n.app.updateDetailFailed, 3031001);
     }
   }
 }

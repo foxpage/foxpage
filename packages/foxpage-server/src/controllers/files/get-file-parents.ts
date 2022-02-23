@@ -38,7 +38,7 @@ export class GetFileAllParentList extends BaseController {
     try {
       const dataType = this.service.log.checkDataIdType(params.id);
       if (!dataType.type) {
-        return Response.success([]);
+        return Response.success([], 1170201);
       }
 
       let parentList: MixedData[] = [];
@@ -80,9 +80,9 @@ export class GetFileAllParentList extends BaseController {
         delete parentList[0];
       }
 
-      return Response.success(parentList);
+      return Response.success(parentList, 1170201);
     } catch (err) {
-      return Response.error(err, i18n.file.getFileParentListFailed);
+      return Response.error(err, i18n.file.getFileParentListFailed, 3170201);
     }
   }
 }

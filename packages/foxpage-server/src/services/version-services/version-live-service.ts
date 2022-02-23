@@ -6,14 +6,14 @@ import { LOG, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { AppTypeContent, PageContentRelationInfos, VersionPublish } from '../../types/content-types';
 import { FoxCtx } from '../../types/index-types';
-import { VersionServiceAbstract } from '../abstracts/version-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class VersionLiveService extends VersionServiceAbstract {
+export class VersionLiveService extends BaseService<ContentVersion> {
   private static _instance: VersionLiveService;
 
   constructor() {
-    super();
+    super(Model.version);
   }
 
   /**

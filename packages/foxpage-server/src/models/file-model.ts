@@ -5,17 +5,17 @@ import { File } from '@foxpage/foxpage-server-types';
 
 import { AppFileType, FileNameSearch, FilePageSearch } from '../types/file-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import fileModel from './schema/file';
+import { BaseModel } from './base-model';
 
 /**
  * File repository related classes
  *
  * @export
  * @class FileModel
- * @extends {BaseModelAbstract<File>}
+ * @extends {BaseModel<File>}
  */
-export class FileModel extends BaseModelAbstract<File> {
+export class FileModel extends BaseModel<File> {
   private static _instance: FileModel;
 
   constructor() {

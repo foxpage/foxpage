@@ -39,7 +39,7 @@ export class GetProjectCatalog extends BaseController {
       const projectDetail = await this.service.folder.info.getDetail(_.pick(params, ['id', 'applicationId']));
 
       if (!projectDetail) {
-        return Response.warning(i18n.project.invalidProjectId);
+        return Response.warning(i18n.project.invalidProjectId, 2040501);
       }
 
       const folderFiles = await this.service.folder.list.getAllChildrenRecursive({
@@ -49,9 +49,9 @@ export class GetProjectCatalog extends BaseController {
         fileTypes: [TYPE.TEMPLATE, TYPE.PAGE],
       });
 
-      return Response.success(folderFiles[params.id]);
+      return Response.success(folderFiles[params.id], 1040501);
     } catch (err) {
-      return Response.error(err, i18n.project.getProjectCatalogFailed);
+      return Response.error(err, i18n.project.getProjectCatalogFailed, 3040501);
     }
   }
 }

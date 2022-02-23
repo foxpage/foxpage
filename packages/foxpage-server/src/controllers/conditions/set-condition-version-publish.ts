@@ -44,7 +44,7 @@ export class SetConditionVersionPublishStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4101001);
       }
 
       // Set publishing status
@@ -54,14 +54,14 @@ export class SetConditionVersionPublishStatus extends BaseController {
       });
 
       if (result.code === 1) {
-        return Response.warning(i18n.condition.conditionVersionHasPublished);
+        return Response.warning(i18n.condition.conditionVersionHasPublished, 2101001);
       }
       await this.service.version.live.runTransaction(ctx.transactions);
       const versionDetail = await this.service.version.live.getDetailById(params.id);
 
-      return Response.success(versionDetail || {});
+      return Response.success(versionDetail, 1101001);
     } catch (err) {
-      return Response.error(err, i18n.condition.setConditionPublishStatusFailed);
+      return Response.error(err, i18n.condition.setConditionPublishStatusFailed, 3101001);
     }
   }
 }

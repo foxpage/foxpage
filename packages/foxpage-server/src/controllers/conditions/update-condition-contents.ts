@@ -39,7 +39,7 @@ export class UpdateContentBaseDetail extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4101301);
       }
 
       const result = await this.service.content.info.updateContentDetail(
@@ -48,19 +48,19 @@ export class UpdateContentBaseDetail extends BaseController {
       );
 
       if (result.code === 1) {
-        return Response.warning(i18n.condition.invalidConditionId);
+        return Response.warning(i18n.condition.invalidConditionId, 2101301);
       } else if (result.code === 2) {
-        return Response.warning(i18n.condition.invalidIdType);
+        return Response.warning(i18n.condition.invalidIdType, 2101302);
       } else if (result.code === 3) {
-        return Response.warning(i18n.condition.conditionNameExist);
+        return Response.warning(i18n.condition.conditionNameExist, 2101303);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1101301);
     } catch (err) {
-      return Response.error(err, i18n.condition.updateConditionFailed);
+      return Response.error(err, i18n.condition.updateConditionFailed, 3101301);
     }
   }
 }

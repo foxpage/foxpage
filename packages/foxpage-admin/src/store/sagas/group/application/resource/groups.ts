@@ -5,6 +5,7 @@ import { getType } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/group/application/resource/groups';
 import * as API from '@/apis/group/application/resource';
 import { FileTagType } from '@/constants/file';
+import { getBusinessI18n } from '@/pages/locale';
 import { AppResourceGroupsActionType } from '@/store/reducers/group/application/resource/groups';
 import {
   AppResourcesGroupsDeleteResourcesGroupParams,
@@ -18,6 +19,9 @@ function* saveResourceGroup(action: AppResourceGroupsActionType) {
     params: AppResourcesGroupsSaveResourcesGroupParams;
     options?: OptionsAction;
   };
+  const {
+    global: { saveFailed },
+  } = getBusinessI18n();
   const { id, appId, name, intro, resourceId, resourceType, config } = params || {};
   const { onSuccess, onFail } = options || {};
   const rs = yield call(id ? API.editGroup : API.postResourcesGroups, {
@@ -42,7 +46,7 @@ function* saveResourceGroup(action: AppResourceGroupsActionType) {
       }),
     );
   } else {
-    message.error(rs.msg || 'Save failed');
+    message.error(rs.msg || saveFailed);
     if (onFail) onFail();
   }
 }
@@ -52,6 +56,9 @@ function* deleteResourceGroup(action: AppResourceGroupsActionType): any {
     params: AppResourcesGroupsDeleteResourcesGroupParams;
     options?: OptionsAction;
   };
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
   const { appId, id } = params;
   const { onSuccess, onFail } = options || {};
 
@@ -62,14 +69,14 @@ function* deleteResourceGroup(action: AppResourceGroupsActionType): any {
   });
   if (rs.code === 200) {
     if (onSuccess) onSuccess();
-    message.success('Delete succeed.');
+    message.success(deleteSuccess);
     yield put(
       ACTIONS.fetchResourcesGroupsAction({
         appId,
       }),
     );
   } else {
-    message.error(rs.msg || 'Delete failed');
+    message.error(rs.msg || deleteFailed);
     if (onFail) onFail();
   }
 }
@@ -79,6 +86,9 @@ function* fetchResourceGroups(action: AppResourceGroupsActionType) {
     params: AppResourcesGroupsFetchResourcesGroupsParams;
     options?: OptionsAction;
   };
+  const {
+    global: { fetchListFailed },
+  } = getBusinessI18n();
   const { appId } = params;
   yield put(
     ACTIONS.updateResourcesGroupsState({
@@ -92,7 +102,7 @@ function* fetchResourceGroups(action: AppResourceGroupsActionType) {
   if (rs.code === 200) {
     groupList = rs.data || [];
   } else {
-    message.error(rs.msg || 'Fetch list failed');
+    message.error(rs.msg || fetchListFailed);
   }
   yield put(
     ACTIONS.updateResourcesGroupsState({

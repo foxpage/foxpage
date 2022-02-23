@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { Button, Modal } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/resource/detail';
 
 const OperateContainer = styled.div`
@@ -29,13 +30,15 @@ type ComponentsProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchTo
 
 const ToolBar: React.FC<ComponentsProps> = ({ curFolderId, selectedRowKeys, newFolder, newFile, remove }) => {
   const { applicationId } = useParams<{ applicationId: string }>();
+  const { locale } = useContext(GlobalContext);
+  const { global, file, folder } = locale.business;
   const handleRemove = () => {
     Modal.confirm({
-      title: 'Are you sure to delete these?',
-      content: 'All content under these nodes will not be visible.',
-      okText: 'Yes',
+      title: folder.deleteTitle,
+      content: folder.deleteMsg,
+      okText: global.yes,
       okType: 'danger',
-      cancelText: 'No',
+      cancelText: global.no,
       onOk() {
         remove({
           applicationId,
@@ -50,30 +53,30 @@ const ToolBar: React.FC<ComponentsProps> = ({ curFolderId, selectedRowKeys, newF
         danger
         type="primary"
         icon={<DeleteOutlined />}
-        title="Remove"
+        title={global.remove}
         disabled={!curFolderId || selectedRowKeys.length === 0}
         onClick={handleRemove}
       >
-        Remove
+        {global.remove}
       </Button>
       <Button
-        title="New folder"
+        title={folder.add}
         icon={<FolderAddOutlined />}
         style={{ marginLeft: 8 }}
         disabled={!curFolderId}
         onClick={newFolder}
       >
-        New folder
+        {folder.add}
       </Button>
       <Button
-        title="New file"
+        title={file.add}
         type="primary"
         icon={<PlusOutlined />}
         style={{ marginLeft: 8 }}
         disabled={!curFolderId}
         onClick={newFile}
       >
-        New file
+        {file.add}
       </Button>
     </OperateContainer>
   );

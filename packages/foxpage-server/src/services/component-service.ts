@@ -218,7 +218,7 @@ export class ComponentService {
    * entry: {
    *  node: {
         "host": "http://app.ares.fx.xxx.com/",
-        "downloadHost": "http://app.ares.fx.xx.com/",
+        "downloadHost": "http://app.ares.fx.xxx.com/",
         "path": "ares-test/flight-searchbox-container/0.3.1/umd/production.min.js",
         "contentId": "cont_gyEx3GoTu5cCMGY",
         "origin": "ARES"

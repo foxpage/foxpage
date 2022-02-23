@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { CaretDownOutlined , CheckOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
@@ -6,6 +6,7 @@ import { Popover } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/template';
+import GlobalContext from '@/pages/GlobalContext';
 
 import { IconContainer, IconMsg } from '../Header';
 
@@ -29,7 +30,8 @@ type ZoomType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Index: React.FC<ZoomType> = props => {
   const { zoom, updateZoom } = props;
-
+  const { locale } = useContext(GlobalContext);
+  const { builder } = locale.business;
   return (
     <Popover
       placement="bottom"
@@ -91,7 +93,7 @@ const Index: React.FC<ZoomType> = props => {
           {(Number(zoom) * 100).toFixed()}%
           <CaretDownOutlined style={{ fontSize: 8 }} />
         </span>
-        <IconMsg>Zoom</IconMsg>
+        <IconMsg>{builder.zoom}</IconMsg>
       </IconContainer>
     </Popover>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import { Button } from 'antd';
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/group/application/list';
 import { Pagination } from '@/pages/common';
 import OperationDrawer from '@/pages/components/business/OperationDrawer';
+import GlobalContext from '@/pages/GlobalContext';
 import { getLoginUser } from '@/utils/login-user';
 
 import ActionBar from './ActionBar';
@@ -43,6 +44,9 @@ function Main(props: IProps) {
   const { page = 1, size = 1, total = 0 } = pageInfo;
   const { organizationId } = getLoginUser();
 
+  const { locale } = useContext(GlobalContext);
+  const { application, global } = locale.business;
+
   useEffect(() => {
     fetchList({ page: 1, search: '', size, organizationId });
   }, []);
@@ -59,11 +63,11 @@ function Main(props: IProps) {
       <Pagination current={page} onChange={handleSetPageNo} pageSize={size} total={total} />
       <OperationDrawer
         open={editDrawerVisible}
-        title={editApp.id ? 'Edit App' : 'New App'}
+        title={editApp.id ? application.edit : application.add}
         onClose={() => updateDrawerVisible(false)}
         actions={
           <Button type="primary" onClick={() => saveApp()}>
-            Apply
+            {global.apply}
           </Button>
         }
       >

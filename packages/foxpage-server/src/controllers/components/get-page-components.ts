@@ -50,7 +50,7 @@ export class GetPageComponentList extends BaseController {
       });
 
       if (!appComponentFolderId) {
-        return Response.warning(i18n.component.invalidFolderType);
+        return Response.warning(i18n.component.invalidFolderType, 2111101);
       }
 
       const fileParams = {
@@ -98,16 +98,19 @@ export class GetPageComponentList extends BaseController {
         );
       });
 
-      return Response.success({
-        data: fileContentList,
-        pageInfo: {
-          page: params.page,
-          size: params.size,
-          total: fileList.count,
+      return Response.success(
+        {
+          data: fileContentList,
+          pageInfo: {
+            page: params.page,
+            size: params.size,
+            total: fileList.count,
+          },
         },
-      });
+        1111101,
+      );
     } catch (err) {
-      return Response.error(err, i18n.component.getPagePagesFailed);
+      return Response.error(err, i18n.component.getPagePagesFailed, 3111101);
     }
   }
 }

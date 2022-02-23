@@ -39,13 +39,13 @@ export class AddComponentVersionDetail extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.contentId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4110101);
       }
 
       // Get versionNumber from version
       const versionNumber = this.service.version.number.createNumberFromVersion(params.version);
       if (!versionNumber) {
-        return Response.warning(i18n.content.invalidVersion + ': "' + params.version + '"');
+        return Response.warning(i18n.content.invalidVersion + ': "' + params.version + '"', 2110101);
       }
 
       // Check the validity of contents and versions
@@ -57,7 +57,7 @@ export class AddComponentVersionDetail extends BaseController {
       ]);
 
       if (!contentDetail || contentDetail.deleted || !isNewVersion) {
-        return Response.warning(i18n.content.invalidContentIdOrVersionExist);
+        return Response.warning(i18n.content.invalidContentIdOrVersionExist, 2110102);
       }
 
       !_.isPlainObject(params.content) && (params.content = {});
@@ -69,7 +69,7 @@ export class AddComponentVersionDetail extends BaseController {
       );
 
       if (missingFields.length > 0) {
-        return Response.warning(i18n.content.contentMissFields + ':' + missingFields.join(','));
+        return Response.warning(i18n.content.contentMissFields + ':' + missingFields.join(','), 2110103);
       }
 
       params.content.id = params.contentId;
@@ -89,9 +89,9 @@ export class AddComponentVersionDetail extends BaseController {
       const versionDetail = await this.service.version.info.getDetailById(<string>newVersionDetail.id);
       ctx.logAttr = Object.assign(ctx.logAttr, { id: newVersionDetail.id, type: TYPE.COMPONENT });
 
-      return Response.success(versionDetail);
+      return Response.success(versionDetail, 1110101);
     } catch (err) {
-      return Response.error(err, i18n.content.addContentVersionFailed);
+      return Response.error(err, i18n.content.addContentVersionFailed, 3110101);
     }
   }
 }

@@ -59,9 +59,9 @@ export class GetFileList extends BaseController {
         data: fileData.list,
       };
 
-      return Response.success(data);
+      return Response.success(data, 1170401);
     } catch (err) {
-      return Response.error(err, i18n.file.listError);
+      return Response.error(err, i18n.file.listError, 3170401);
     }
   }
 }

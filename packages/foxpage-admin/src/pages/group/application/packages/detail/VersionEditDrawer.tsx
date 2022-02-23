@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useMemo, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 import { getComponentsEditVersions } from '@/apis/group/application/packages';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Group, Title } from '@/components/widgets/group';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/packages/detail';
 import { AppComponentEditVersionType } from '@/types/application';
 
@@ -44,6 +45,8 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
   const initialValuesRef = useRef<Promise<AppComponentEditVersionType | undefined> | undefined>();
   const versionDetailRef = useRef<AppComponentEditVersionType | undefined>();
   const [form] = Form.useForm();
+  const { locale } = useContext(GlobalContext);
+  const { global, version } = locale.business;
   const disableState = useMemo(() => {
     return type === 'view';
   }, [type]);
@@ -138,14 +141,14 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
   return (
     <OperationDrawer
       open={open}
-      title={type === 'edit' ? 'Edit Version' : 'New Version'}
+      title={type === 'edit' ? version.edit : version.add}
       onClose={closeDrawer}
       width={700}
       destroyOnClose
       canExpend
       actions={
         <Button type="primary" onClick={onSave}>
-          Apply
+          {global.apply}
         </Button>
       }
       afterVisibleChange={afterVisibleChange}
@@ -154,7 +157,7 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
         <Group>
           <Form.Item
             name="version"
-            label={<Title>Version</Title>}
+            label={<Title>{version.name}</Title>}
             required
             rules={[
               {
@@ -167,7 +170,7 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
                       return !item || item !== String(Number(item));
                     }) !== undefined
                   ) {
-                    return Promise.reject('please input valid version!!!');
+                    return Promise.reject(version.versionError);
                   }
                   return Promise.resolve('');
                 },
@@ -178,7 +181,7 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
           </Form.Item>
         </Group>
         <Group>
-          <Title>Source</Title>
+          <Title>{version.source}</Title>
           <Form.Item name="browser" label="Browser" rules={[{ required: true }]}>
             <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
           </Form.Item>
@@ -191,13 +194,17 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
           <Form.Item name="css" label="Css">
             <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
           </Form.Item>
-          {/* props editor */}
+        </Group>
+        <Group>
           <Form.Item name="editor" label="Editor">
             <PackageSelect applicationId={applicationId} packageType="editor" ignoreContentIds={[contentId]} />
           </Form.Item>
+          <Form.Item name="useStyleEditor" label={version.useStyleEditor} valuePropName="checked">
+            <Switch />
+          </Form.Item>
         </Group>
         <Group>
-          <Title>Dependencies</Title>
+          <Title>{version.dependency}</Title>
           <Form.Item name="dependencies" label="">
             <PackageSelect
               applicationId={applicationId}
@@ -209,11 +216,8 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
           </Form.Item>
         </Group>
         <Group>
-          <Title>Config</Title>
-          <Form.Item name="useStyleEditor" label="UseStyleEditor" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-          <Form.Item name="enableChildren" label="EnableChildren" valuePropName="checked">
+          <Title>{version.config}</Title>
+          <Form.Item name="enableChildren" label={version.enableChildren} valuePropName="checked">
             <Switch />
           </Form.Item>
           <Form.Item name="meta" label="Meta">
@@ -222,7 +226,7 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
           <Form.Item name="schema" label="Schema">
             <JsonEditorFormItem />
           </Form.Item>
-          <Form.Item name="changelog" label="Changelog">
+          <Form.Item name="changelog" label={version.changelog}>
             <Input.TextArea />
           </Form.Item>
         </Group>
@@ -254,7 +258,7 @@ const transformFormToParams = formValues => {
     useStyleEditor,
     enableChildren,
     meta = {},
-    schema = '{}',
+    schema = {},
     changelog = '',
   } = formValues || {};
   const editorEntry = [editor]

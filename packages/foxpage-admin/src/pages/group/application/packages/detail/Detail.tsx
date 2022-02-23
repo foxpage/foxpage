@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useLocation, useParams } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { clearResourcesCache } from '@/apis/group/application/resource';
 import { FileTypeEnum } from '@/constants/index';
 import { StoreBuyGoodsType } from '@/constants/store';
 import { FoxpageBreadcrumb } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/packages/detail';
 import { commitFileToStore, offlineFileFromStore } from '@/store/actions/group/project/content';
 import { FileUrlParams } from '@/types/index';
@@ -49,6 +50,8 @@ const ComponentDetail: React.FC<ComponentDetailProp> = props => {
   const { id = '', type, online } = componentInfo;
   const { applicationId, organizationId, fileId } = useParams<FileUrlParams>();
   const location = useLocation();
+  const { locale } = useContext(GlobalContext);
+  const { global, application, store, version } = locale.business;
   const componentName = new URLSearchParams(location.search).get('name') || 'Component Detail';
 
   const isRefer = fileDetail?.tags?.find(item => item.type === StoreBuyGoodsType.reference);
@@ -60,8 +63,8 @@ const ComponentDetail: React.FC<ComponentDetailProp> = props => {
 
   const handleCommit = () => {
     Modal.confirm({
-      title: 'Are you sure commit?',
-      content: 'This file will be sold on the store.',
+      title: store.commitTitle,
+      content: store.commitMsg,
       onOk: () => {
         commitFileToStore({
           id: fileId,
@@ -72,15 +75,15 @@ const ComponentDetail: React.FC<ComponentDetailProp> = props => {
           },
         });
       },
-      okText: 'Yes',
-      cancelText: 'No',
+      okText: global.yes,
+      cancelText: global.no,
     });
   };
 
   const handleRevoke = () => {
     Modal.confirm({
-      title: 'Are you sure revoke?',
-      content: 'This file will be not sold on the store.',
+      title: store.revokeTitle,
+      content: store.revokeMsg,
       onOk: () => {
         offlineFileFromStore({
           id: fileId,
@@ -90,8 +93,8 @@ const ComponentDetail: React.FC<ComponentDetailProp> = props => {
           },
         });
       },
-      okText: 'Yes',
-      cancelText: 'No',
+      okText: global.yes,
+      cancelText: global.no,
     });
   };
 
@@ -100,9 +103,9 @@ const ComponentDetail: React.FC<ComponentDetailProp> = props => {
       {/* /organization/:organizationId/application/:applicationId/detail/component/:fileId/detail */}
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
+          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
           {
-            name: 'Packages',
+            name: global.packages,
             link: `/#/organization/${organizationId}/application/${applicationId}/detail/packages`,
           },
           { name: componentName },
@@ -114,23 +117,23 @@ const ComponentDetail: React.FC<ComponentDetailProp> = props => {
             {type === 'component' && (
               <>
                 {online ? (
-                  <Button type="default" title="Revoke To Store" style={{ marginRight: 8 }} onClick={handleRevoke}>
+                  <Button type="default" style={{ marginRight: 8 }} onClick={handleRevoke}>
                     <ArrowDownOutlined />
-                    Revoke
+                    {store.revoke}
                   </Button>
                 ) : (
-                  <Button type="default" title="Commit To Store" style={{ marginRight: 8 }} onClick={handleCommit}>
+                  <Button type="default" style={{ marginRight: 8 }} onClick={handleCommit}>
                     <ArrowUpOutlined />
-                    Commit
+                    {store.commit}
                   </Button>
                 )}
               </>
             )}
             <Button type="default" style={{ marginRight: 8 }} onClick={openCloudSyncDrawer}>
-              <CloudSyncOutlined /> Update
+              <CloudSyncOutlined /> {global.update}
             </Button>
             <Button type="primary" disabled={!id} onClick={addVersion}>
-              <PlusOutlined /> New Version
+              <PlusOutlined /> {version.add}
             </Button>
           </>
         )}

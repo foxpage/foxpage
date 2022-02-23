@@ -133,5 +133,37 @@
       "createTime": "2021-12-30T14:29:17.452+08:00",
       "updateTime": "2021-12-30T16:05:22.711+08:00"
     }
+  ],
+  "resourceList": [
+    {
+      "version": "0.0.1",
+      "versionNumber": 1,
+      "status": "base",
+      "deleted": false,
+      "id": "cver_w66xz4dLR69ktnq",
+      "contentId": "cont_gRYXhvGsK2AurEF",
+      "content": {
+        "id": "cont_gRYXhvGsK2AurEF",
+        "realPath": "/modules/fpc/flight-seo-component/production.7a35759180d2936f6634e166962e557c.js"
+      },
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2022-01-07T15:11:53.044+08:00",
+      "updateTime": "2022-01-07T15:11:53.044+08:00"
+    },
+    {
+      "version": "0.0.1",
+      "versionNumber": 1,
+      "status": "base",
+      "deleted": false,
+      "id": "cver_etiPqUwcRA8qcB1",
+      "contentId": "cont_bPC4kZKWz5J2azD",
+      "content": {
+        "id": "cont_bPC4kZKWz5J2azD",
+        "realPath": "/modules/fpc/flight-seo-component/style.57925f32897319c1e76deca4ea5f009a.css"
+      },
+      "creator": "user-dvbfW1qsl8qkz39",
+      "createTime": "2022-01-07T15:11:53.033+08:00",
+      "updateTime": "2022-01-07T15:11:53.033+08:00"
+    }
   ]
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { Table, Tag, Typography } from 'antd';
@@ -6,6 +6,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/store/list';
 import { suffixTagColor } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 import periodFormat from '@/utils/period-format';
 
 const { Paragraph } = Typography;
@@ -24,17 +25,27 @@ type BasicInfoProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToP
 
 const BasicInfo: React.FC<BasicInfoProps> = props => {
   const { selectedItem } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global, file } = locale.business;
   if (!selectedItem) {
     return null;
   }
   return (
     <div>
-      <Paragraph>Name: {selectedItem.name}</Paragraph>
-      <Paragraph>Creator: {selectedItem.creator?.account}</Paragraph>
-      <Paragraph>Application: {selectedItem.application?.name}</Paragraph>
-      <Paragraph>Create Time: {periodFormat(selectedItem?.createTime, 'unknown')}</Paragraph>
       <Paragraph>
-        File:
+        {global.nameLabel}: {selectedItem.name}
+      </Paragraph>
+      <Paragraph>
+        {global.creator}: {selectedItem.creator?.account}
+      </Paragraph>
+      <Paragraph>
+        {global.application}: {selectedItem.application?.name}
+      </Paragraph>
+      <Paragraph>
+        {global.createTime}: {periodFormat(selectedItem?.createTime, 'unknown')}
+      </Paragraph>
+      <Paragraph>
+        {file.name}:
         <Table
           size="small"
           columns={[
@@ -43,18 +54,18 @@ const BasicInfo: React.FC<BasicInfoProps> = props => {
               dataIndex: 'id',
             },
             {
-              title: 'Name',
+              title: global.nameLabel,
               dataIndex: 'name',
             },
             {
-              title: 'FileId',
+              title: `${file.name}Id`,
               key: 'parentFolderId',
               render: (_text: string, record) => {
                 return record.details?.id;
               },
             },
             {
-              title: 'Type',
+              title: global.type,
               dataIndex: 'type',
               render: (text: string) => {
                 return <Tag color={suffixTagColor[text]}>{text}</Tag>;

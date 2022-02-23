@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { Button, Divider, Popconfirm, Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/team';
+import GlobalContext from '@/pages/GlobalContext';
 import { OrganizationUrlParams, Team } from '@/types/index';
 import periodFormat from '@/utils/period-format';
 
@@ -41,6 +42,8 @@ const Main: React.FC<TeamListType> = props => {
     clearAll,
   } = props;
   const { organizationId } = useParams<OrganizationUrlParams>();
+  const { locale } = useContext(GlobalContext);
+  const { global, team } = locale.business;
 
   useEffect(() => {
     fetchTeamList({ organizationId, page: pageInfo.page, size: pageInfo.size });
@@ -51,21 +54,21 @@ const Main: React.FC<TeamListType> = props => {
 
   const columns = [
     {
-      title: 'name',
+      title: global.nameLabel,
       dataIndex: 'name',
     },
     {
-      title: 'User Count',
+      title: team.userCount,
       dataIndex: 'memberCount',
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
     {
-      title: 'Actions',
+      title: global.actions,
       dataIndex: 'updateTime',
       width: 160,
       render: (_text: string, record: Team) => {
@@ -75,23 +78,23 @@ const Main: React.FC<TeamListType> = props => {
               type="default"
               size="small"
               shape="circle"
-              title="Edit"
+              title={team.userManagement}
               onClick={() => updateUserManagementDrawerOpenStatus(true, record)}
             >
               <TeamOutlined />
             </Button>
             <Divider type="vertical" />
-            <Button type="default" size="small" shape="circle" title="Edit" onClick={() => openDrawer(record)}>
+            <Button type="default" size="small" shape="circle" title={global.edit} onClick={() => openDrawer(record)}>
               <EditOutlined />
             </Button>
             <Divider type="vertical" />
             <Popconfirm
-              title="Are you sure to delete this project?"
+              title={`${global.deleteMsg} ${record.name}?`}
               onConfirm={() => {
                 deleteTeam(record);
               }}
-              okText="Yes"
-              cancelText="No"
+              okText={global.yes}
+              cancelText={global.no}
             >
               <Button size="small" shape="circle" icon={<DeleteOutlined />} />
             </Popconfirm>

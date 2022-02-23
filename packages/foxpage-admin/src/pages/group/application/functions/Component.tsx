@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import { FunctionTypeEnum } from '@/constants/function';
 import EditDrawer from '@/pages/builder/function/EditDrawer';
 import { FoxpageBreadcrumb } from '@/pages/common';
 import { suffixTagColor } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/builder/function';
 import { ApplicationUrlParams } from '@/types/application';
 import { FuncItem } from '@/types/application/function';
@@ -43,6 +44,8 @@ function Component(props: IProps) {
   const { pageNum, total, fetching, list, clearAll, changeOffset, openDrawer, fetchFunctions, deleteCondition } = props;
 
   const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
+  const { locale } = useContext(GlobalContext);
+  const { global, folder, application } = locale.business;
 
   useEffect(() => {
     return () => {
@@ -81,7 +84,7 @@ function Component(props: IProps) {
           false,
         );
       } else {
-        message.warning('Delete function failed, please retry later');
+        message.warning(global.deleteFailMsg);
       }
     },
     [applicationId, deleteCondition],
@@ -89,7 +92,7 @@ function Component(props: IProps) {
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
       render: (text: string, record: FuncItem) => {
@@ -106,12 +109,12 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'Folder',
+      title: folder.name,
       dataIndex: 'folderName',
       key: 'folderName',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       render: (_text: string, record: FuncItem) => {
@@ -124,7 +127,7 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (_text: string, record: FuncItem) => {
@@ -132,7 +135,7 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       key: 'createTime',
       width: 200,
@@ -141,7 +144,7 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'Actions',
+      title: global.actions,
       dataIndex: '',
       key: '',
       width: 100,
@@ -155,7 +158,7 @@ function Component(props: IProps) {
           />
           <Divider type="vertical" />
           <Popconfirm
-            title="Are you sure to delete this function?"
+            title={`${global.deleteMsg}${record.name}?`}
             okText="Yes"
             cancelText="No"
             onConfirm={() => handleConditionDelete(record.id)}
@@ -171,8 +174,8 @@ function Component(props: IProps) {
     <>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
-          { name: 'Functions' },
+          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          { name: global.functions },
         ]}
       />
       <div style={{ marginTop: 12 }}>

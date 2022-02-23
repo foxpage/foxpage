@@ -2,17 +2,17 @@ import { Team } from '@foxpage/foxpage-server-types';
 
 import { TeamSearch } from '../types/team-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import teamModel from './schema/team';
+import { BaseModel } from './base-model';
 
 /**
  * Team related data model
  *
  * @export
  * @class TeamModel
- * @extends {BaseModelAbstract<Team>}
+ * @extends {BaseModel<Team>}
  */
-export class TeamModel extends BaseModelAbstract<Team> {
+export class TeamModel extends BaseModel<Team> {
   private static _instance: TeamModel;
 
   constructor() {

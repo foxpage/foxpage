@@ -37,15 +37,15 @@ export class GetComponentVersionDetail extends BaseController {
       const versionDetail = await this.service.version.info.getDetail({ id: params.id, deleted: false });
 
       if (!versionDetail) {
-        return Response.warning(i18n.component.invalidVersionId);
+        return Response.warning(i18n.component.invalidVersionId, 2110601);
       }
 
       const versionContent = await this.service.component.getComponentResourcePath(versionDetail.content);
       versionDetail.content = versionContent;
 
-      return Response.success(versionDetail);
+      return Response.success(versionDetail, 1110601);
     } catch (err) {
-      return Response.error(err, i18n.content.getComponentVersionDetailFailed);
+      return Response.error(err, i18n.content.getComponentVersionDetailFailed, 3110601);
     }
   }
 }

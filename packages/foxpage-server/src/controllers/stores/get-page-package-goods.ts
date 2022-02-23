@@ -79,16 +79,19 @@ export class GetStorePackageList extends BaseController {
         });
       }
 
-      return Response.success({
-        pageInfo: {
-          total: pageData.count || 0,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: pageData.count || 0,
+            page: params.page,
+            size: params.size,
+          },
+          data: packageList || [],
         },
-        data: packageList || [],
-      });
+        1130501,
+      );
     } catch (err) {
-      return Response.error(err, i18n.store.getStorePageListFailed);
+      return Response.error(err, i18n.store.getStorePageListFailed, 3130501);
     }
   }
 }

@@ -21,7 +21,7 @@ import {
 } from '../../types/content-types';
 import { FoxCtx, TypeStatus } from '../../types/index-types';
 import { generationId, randStr } from '../../utils/tools';
-import { VersionServiceAbstract } from '../abstracts/version-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
 interface VersionWithTitle extends ContentVersion {
@@ -29,11 +29,11 @@ interface VersionWithTitle extends ContentVersion {
   versionNumber: number;
 }
 
-export class VersionInfoService extends VersionServiceAbstract {
+export class VersionInfoService extends BaseService<ContentVersion> {
   private static _instance: VersionInfoService;
 
   constructor() {
-    super();
+    super(Model.version);
   }
 
   /**
@@ -97,7 +97,7 @@ export class VersionInfoService extends VersionServiceAbstract {
     if ((<DSL>params.content).relation) {
       const invalidRelations = Service.version.check.relation((<DSL>params.content).relation || {});
       if (invalidRelations.length > 0) {
-        throw new Error('Invalid content relation:' + invalidRelations.join(', '));
+        return { code: 5, data: invalidRelations };
       }
     }
 
@@ -136,6 +136,8 @@ export class VersionInfoService extends VersionServiceAbstract {
 
     // Update
     params.content.id = params.id;
+    (<DSL>params.content).version = '1.0'; // default dsl version
+    console.log(params.content);
     options.ctx.transactions.push(
       Model.version.updateDetailQuery(versionId, {
         version: version,
@@ -423,7 +425,6 @@ export class VersionInfoService extends VersionServiceAbstract {
         templateVersion = templateVersions[0] || {};
       } else {
         const versionObject = await Service.version.list.getContentMaxVersionDetail([templateId]);
-        console.log(versionObject);
         templateVersion = versionObject[templateId] || {};
       }
     }

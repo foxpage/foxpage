@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { message } from 'antd';
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 import { saveComponent, updateContentRelation } from '@/actions/builder/template';
 import * as ACTIONS from '@/actions/builder/template-select';
 import { FileTypeEnum } from '@/constants/index';
+import GlobalContext from '@/pages/GlobalContext';
 import { getComponentTemplateId, updateRelation } from '@/services/builder';
 import { ComponentStructure } from '@/types/builder';
 import { getTemplateRelationKey } from '@/utils/relation';
@@ -41,6 +42,8 @@ const ComponentTemplateSelect: React.FC<ComponentTemplateSelectType> = props => 
     saveComponent,
     updateContentRelation,
   } = props;
+  const { locale } = useContext(GlobalContext);
+  const { builder } = locale.business;
 
   useEffect(() => {
     setTemplateId(
@@ -55,7 +58,7 @@ const ComponentTemplateSelect: React.FC<ComponentTemplateSelectType> = props => 
 
   const handleOnOk = (templateId?: string) => {
     if (!templateId) {
-      message.warning('Please select template');
+      message.warning(builder.selectTemplateError);
       return;
     }
     if (templateId) {
@@ -80,6 +83,7 @@ const ComponentTemplateSelect: React.FC<ComponentTemplateSelectType> = props => 
 
   return (
     <TemplateSelectModal
+      title={builder.selectTemplateModalTitle}
       fileType={FileTypeEnum.template}
       open={pageTemplateSelectModalOpen}
       templateId={templateId}

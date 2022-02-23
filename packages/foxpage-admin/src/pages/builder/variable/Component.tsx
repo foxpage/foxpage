@@ -9,6 +9,7 @@ import * as ACTIONS from '@/actions/builder/variable';
 import { ScopeEnum } from '@/constants/index';
 import RightCloseIcon from '@/pages/builder/component/close';
 import ScopeSelect from '@/pages/components/common/ScopeSelect';
+import GlobalContext from '@/pages/GlobalContext';
 import VariableType from '@/types/application/variable.d';
 
 import DeleteButton from '../../common/DeleteButton';
@@ -53,6 +54,8 @@ const Variable: React.FC<Type> = props => {
   } = props;
   const { container } = useContext(BuilderContext);
   const [group, setGroup] = useState<ScopeEnum>(ScopeEnum.project);
+  const { locale } = useContext(GlobalContext);
+  const { global, variable } = locale.business;
 
   useEffect(() => {
     setGroup(ScopeEnum.project);
@@ -63,12 +66,12 @@ const Variable: React.FC<Type> = props => {
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       render: (_text: string, record: VariableType) => {
@@ -77,19 +80,19 @@ const Variable: React.FC<Type> = props => {
       },
     },
     {
-      title: 'Actions',
+      title: global.actions,
       key: 'updateTime',
       width: 100,
       render: (_text: string, record: VariableType) => {
         return (
           <React.Fragment>
-            {group === 'project' && (
+            {group === ScopeEnum.project && (
               <React.Fragment>
                 <Button
                   type="default"
                   size="small"
                   shape="circle"
-                  title="Edit"
+                  title={global.edit}
                   onClick={() => {
                     openEditDrawer(record);
                     getVariableBuildVersion(record, storeApplicationId);
@@ -99,14 +102,20 @@ const Variable: React.FC<Type> = props => {
                   <EditOutlined />
                 </Button>
                 <Popconfirm
-                  title="Are you sure to delete this variable?"
+                  title={`${global.deleteMsg}${record.name}`}
                   onConfirm={() => {
                     deleteVariables({ applicationId: storeApplicationId, fileId: record.id, folderId: storeFolderId });
                   }}
-                  okText="Yes"
-                  cancelText="No"
+                  okText={global.yes}
+                  cancelText={global.no}
                 >
-                  <DeleteButton type="default" size="small" shape="circle" title="Remove" style={{ marginLeft: 8 }} />
+                  <DeleteButton
+                    type="default"
+                    size="small"
+                    shape="circle"
+                    title={global.remove}
+                    style={{ marginLeft: 8 }}
+                  />
                 </Popconfirm>
               </React.Fragment>
             )}
@@ -135,7 +144,7 @@ const Variable: React.FC<Type> = props => {
   return (
     <React.Fragment>
       <Drawer
-        title="Variable"
+        title={variable.title}
         placement="left"
         visible={visible}
         onClose={onClose}
@@ -160,14 +169,14 @@ const Variable: React.FC<Type> = props => {
             scope={group}
             onScopeChange={group => {
               setGroup(group);
-              if (group === 'project') {
+              if (group === ScopeEnum.project) {
                 getVariables(storeFolderId);
               } else {
                 getVariables();
               }
             }}
           />
-          {group === 'project' && (
+          {group === ScopeEnum.project && (
             <Button
               size="small"
               type="primary"
@@ -175,7 +184,7 @@ const Variable: React.FC<Type> = props => {
                 openEditDrawer(true);
               }}
             >
-              <PlusOutlined /> Add Variable
+              <PlusOutlined /> {variable.add}
             </Button>
           )}
         </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { PlusOutlined } from '@ant-design/icons';
@@ -10,6 +10,8 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/store/list';
 import { FileTypeEnum } from '@/constants/global';
 import { StorePackageResource, StoreProjectResource } from '@/types/store';
+
+import GlobalContext from '../GlobalContext';
 
 const ToolRow = styled.div`
   display: flex;
@@ -88,6 +90,8 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
     updateSearchText,
     updateBuyModalVisible,
   } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global, application, builder, store } = locale.business;
 
   const resourceList: Array<StoreProjectResource | StorePackageResource> =
     type === FileTypeEnum.package ? packageResourceList : projectResourceList;
@@ -120,12 +124,12 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
   return (
     <React.Fragment>
       <ToolRow>
-        <ToolLabel>Application:</ToolLabel>
+        <ToolLabel>{global.application}:</ToolLabel>
         <ToolSelect>
           <Select
             mode="multiple"
             style={{ width: '60%' }}
-            placeholder="select application"
+            placeholder={application.selectApplication}
             defaultValue={[]}
             onChange={value => {
               updateSelectedAppIds(value);
@@ -147,11 +151,13 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
         </ToolSelect>
       </ToolRow>
       <SearchRow>
-        <SearchRowTitle>All({pageInfo.total})</SearchRowTitle>
+        <SearchRowTitle>
+          {global.all}({pageInfo.total})
+        </SearchRowTitle>
         <SearchRowContent>
           <Search
             value={searchText}
-            placeholder="input search text"
+            placeholder={builder.componentSearch}
             allowClear
             onSearch={handleSearch}
             onChange={handleSearchTextChange}
@@ -164,7 +170,7 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
             disabled={!resourceList.find(item => item.checked)}
             onClick={handleAdd}
           >
-            Add
+            {store.buy}
           </Button>
         </SearchRowContent>
       </SearchRow>

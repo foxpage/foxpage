@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import OperationDrawer from '@/components/business/OperationDrawer';
 import { Field, Group, Label } from '@/components/widgets/group';
 import { FileTypeEnum } from '@/constants/index';
 import { FileTypes } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 
 const { Option } = Select;
 
@@ -31,6 +32,8 @@ type EditDrawerProp = ReturnType<typeof mapStateToProps> & typeof mapDispatchToP
 const EditDrawer: React.FC<EditDrawerProp> = props => {
   const { drawerOpen, editFile, saveLoading, closeDrawer, update, save } = props;
   const { folderId, applicationId } = useParams<{ folderId: string; applicationId: string }>();
+  const { locale } = useContext(GlobalContext);
+  const { global, file } = locale.business;
 
   const pathnameTag = editFile?.tags?.find(item => item.pathname) || {};
   return (
@@ -49,14 +52,14 @@ const EditDrawer: React.FC<EditDrawerProp> = props => {
             save({ folderId, applicationId });
           }}
         >
-          Apply
+          {global.apply}
           {saveLoading && <SyncOutlined spin={true} style={{ color: '#fff' }} />}
         </Button>
       }
     >
       <Group>
         <Field>
-          <Label>Type</Label>
+          <Label>{global.type}</Label>
           <Select
             style={{ width: 150 }}
             value={editFile?.type}
@@ -67,22 +70,22 @@ const EditDrawer: React.FC<EditDrawerProp> = props => {
           >
             {FileTypes.map(item => (
               <Option value={item.type} key={item.type}>
-                {item.label}
+                {file[item.type]}
               </Option>
             ))}
           </Select>
         </Field>
         <Field>
-          <Label>Name</Label>
-          <Input value={editFile?.name} placeholder="file name" onChange={e => update('name', e.target.value)} />
+          <Label>{global.nameLabel}</Label>
+          <Input value={editFile?.name} placeholder={file.nameLabel} onChange={e => update('name', e.target.value)} />
         </Field>
 
         {editFile?.type === FileTypeEnum.page && (
           <Field>
-            <Label>Pathname</Label>
+            <Label>{file.pathname}</Label>
             <Input
               value={pathnameTag?.pathname}
-              placeholder="pathname"
+              placeholder={file.pathname}
               onChange={e => {
                 update('tags', [{ pathname: e.target.value }]);
               }}

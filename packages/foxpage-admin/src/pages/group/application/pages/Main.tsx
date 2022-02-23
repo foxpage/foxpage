@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import * as ACTIONS from '@/actions/group/application/pages/list';
 import FileEditDrawer from '@/components/business/file/FileEditDrawer';
 import FileList from '@/components/business/file/FileList';
 import { FileTypeEnum } from '@/constants/global';
+import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationUrlParams } from '@/types/application';
 import { FileType } from '@/types/application/file';
 
@@ -32,6 +33,8 @@ const Main: React.FC<PageListType> = props => {
   const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
   const { loading, list, pageInfo, fetchPageList, clearAll, deletePage, updatePage } = props;
   const [editFile, setEditFile] = useState<FileType | undefined>();
+  const { locale } = useContext(GlobalContext);
+  const { application, file } = locale.business;
 
   useEffect(() => {
     if (applicationId) {
@@ -76,8 +79,8 @@ const Main: React.FC<PageListType> = props => {
     <React.Fragment>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
-          { name: 'Pages' },
+          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          { name: file.page },
         ]}
       />
       <div style={{ marginTop: 12 }}>

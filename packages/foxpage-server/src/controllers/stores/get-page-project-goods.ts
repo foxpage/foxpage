@@ -83,16 +83,19 @@ export class GetStoreProjectList extends BaseController {
         );
       });
 
-      return Response.success({
-        pageInfo: {
-          total: pageData.count,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: pageData.count,
+            page: params.page,
+            size: params.size,
+          },
+          data: projectGoodsList,
         },
-        data: projectGoodsList,
-      });
+        1130601,
+      );
     } catch (err) {
-      return Response.error(err, i18n.store.getStorePageListFailed);
+      return Response.error(err, i18n.store.getStorePageListFailed, 3130601);
     }
   }
 }

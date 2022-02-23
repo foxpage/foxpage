@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useMemo, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { RootState } from 'typesafe-actions';
 
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Group } from '@/components/widgets/group';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/packages/list';
 
 const formItemLayout = {
@@ -27,6 +28,8 @@ type DrawerProp = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps
 const Drawer: React.FC<DrawerProp> = props => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const { componentDrawer, packageType, closeDrawer, addComponent } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global } = locale.business;
   const { open, type, data } = componentDrawer;
   const [form] = Form.useForm();
   const initialValuesRef = useRef<any>({});
@@ -75,7 +78,7 @@ const Drawer: React.FC<DrawerProp> = props => {
   return (
     <OperationDrawer
       open={open}
-      title={type === 'edit' ? 'Edit Component' : 'Add Component'}
+      title={type === 'edit' ? global.edit : global.add}
       onClose={closeDrawer}
       width={480}
       destroyOnClose
@@ -90,11 +93,11 @@ const Drawer: React.FC<DrawerProp> = props => {
         <Form {...formItemLayout} form={form}>
           <Form.Item
             name="name"
-            label="Name"
+            label={global.nameLabel}
             getValueFromEvent={e => e.target.value?.trim()}
             rules={[{ required: true }]}
           >
-            <Input placeholder="Component name" />
+            <Input placeholder={global.nameLabel} />
           </Form.Item>
         </Form>
       </Group>

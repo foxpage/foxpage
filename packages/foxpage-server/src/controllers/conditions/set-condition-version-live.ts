@@ -39,29 +39,32 @@ export class SetConditionLiveVersions extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4100901);
       }
 
       const result = await this.service.content.live.setLiveVersion(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidVersionId);
+        return Response.warning(i18n.content.invalidVersionId, 2100901);
       } else if (result.code === 2) {
-        return Response.warning(i18n.content.versionIsNotReleaseStatus);
+        return Response.warning(i18n.content.versionIsNotReleaseStatus, 2100902);
       } else if (result.code === 3) {
         const contentResult: any = JSON.parse(<string>result.data);
         if (contentResult.code === 3) {
-          return Response.warning(i18n.content.RelationInfoNotExist + ':' + contentResult.data.join(','));
+          return Response.warning(
+            i18n.content.RelationInfoNotExist + ':' + contentResult.data.join(','),
+            2100903,
+          );
         } else if (contentResult.code === 4) {
-          return Response.warning(i18n.content.RelationDependRecursive + ':' + contentResult.data);
+          return Response.warning(i18n.content.RelationDependRecursive + ':' + contentResult.data, 2100904);
         }
       }
 
       await this.service.content.live.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1100901);
     } catch (err) {
-      return Response.error(err, i18n.condition.setConditionStatusFailed);
+      return Response.error(err, i18n.condition.setConditionStatusFailed, 3100901);
     }
   }
 }

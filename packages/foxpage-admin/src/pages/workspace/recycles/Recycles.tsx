@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import { Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/workspace/recycles';
+import GlobalContext from '@/pages/GlobalContext';
 import { ProjectType } from '@/types/index';
 import periodFormat from '@/utils/period-format';
 
@@ -24,6 +25,9 @@ type ProjectsProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPr
 const Projects: React.FC<ProjectsProps> = props => {
   const { loading, pageInfo, projects, searchRecycles, clearAll } = props;
 
+  const { locale } = useContext(GlobalContext);
+  const { global } = locale.business;
+
   useEffect(() => {
     searchRecycles({ page: pageInfo.page, size: pageInfo.size, search: '' });
     return () => {
@@ -32,25 +36,25 @@ const Projects: React.FC<ProjectsProps> = props => {
   }, []);
   const columns = [
     {
-      title: 'name',
+      title: global.nameLabel,
       dataIndex: 'name',
     },
     {
-      title: 'Application',
+      title: global.application,
       dataIndex: 'application',
       render: (_text: string, record: ProjectType) => {
         return record.application.name;
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       render: (_text: string, record: ProjectType) => {
         return record.creator ? record.creator.account : '--';
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),

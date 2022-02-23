@@ -41,7 +41,7 @@ export class AddTeamDetail extends BaseController {
       // Check if the same team exists under the same organization
       const teamExist = await this.service.team.checkTeamExist(params);
       if (teamExist) {
-        return Response.warning(i18n.team.nameExist);
+        return Response.warning(i18n.team.nameExist, 2020201);
       }
 
       // Create team info
@@ -65,9 +65,9 @@ export class AddTeamDetail extends BaseController {
       //   content: { id: newTeam.id, contentId: '', before: {}, after: teamDetail },
       // });
 
-      return Response.success(teamDetail || {});
+      return Response.success(teamDetail, 1020201);
     } catch (err) {
-      return Response.error(err, i18n.team.addTeamFailed);
+      return Response.error(err, i18n.team.addTeamFailed, 3020201);
     }
   }
 }

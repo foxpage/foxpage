@@ -48,16 +48,19 @@ export class GetAppPageConditionList extends BaseController {
         fileList = await this.service.file.list.getFileAssocInfo(result.list, { type: TYPE.CONDITION });
       }
 
-      return Response.success({
-        pageInfo: {
-          total: result.count,
-          page: pageInfo.page,
-          size: pageInfo.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: result.count,
+            page: pageInfo.page,
+            size: pageInfo.size,
+          },
+          data: fileList,
         },
-        data: fileList,
-      });
+        1100201,
+      );
     } catch (err) {
-      return Response.error(err, i18n.condition.getAppPageConditionsFailed);
+      return Response.error(err, i18n.condition.getAppPageConditionsFailed, 3100201);
     }
   }
 }

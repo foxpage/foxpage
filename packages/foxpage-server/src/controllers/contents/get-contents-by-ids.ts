@@ -14,7 +14,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('contents')
-export class GetContentDetails extends BaseController {
+export class GetContentByIds extends BaseController {
   constructor() {
     super();
   }
@@ -53,9 +53,9 @@ export class GetContentDetails extends BaseController {
         (content) => !content.deleted && appFileIds.indexOf(content.fileId) !== -1,
       );
 
-      return Response.success(contentList);
+      return Response.success(contentList, 1160201);
     } catch (err) {
-      return Response.error(err, i18n.content.getContentDetailsFailed);
+      return Response.error(err, i18n.content.getContentDetailsFailed, 3160301);
     }
   }
 }

@@ -53,7 +53,10 @@ export class SetResourceFileContentStatus extends BaseController {
       );
 
       if (invalidFolderIds.length > 0) {
-        return Response.warning(i18n.resource.invalidResourceFolderId + ': ' + invalidFolderIds.join(','));
+        return Response.warning(
+          i18n.resource.invalidResourceFolderId + ': ' + invalidFolderIds.join(','),
+          2121901,
+        );
       }
 
       // Get folder, file details
@@ -77,9 +80,9 @@ export class SetResourceFileContentStatus extends BaseController {
 
       await this.service.folder.info.runTransaction(ctx.transactions);
 
-      return Response.success(i18n.resource.setResourceStatusSuccess);
+      return Response.success(i18n.resource.setResourceStatusSuccess, 2121901);
     } catch (err) {
-      return Response.error(err, i18n.resource.setResourceContentDeletedFailed);
+      return Response.error(err, i18n.resource.setResourceContentDeletedFailed, 3121901);
     }
   }
 }

@@ -26,8 +26,8 @@
           "name": "ARES",
           "type": 2,
           "detail": {
-            "host": "http://app.ares.fx.ccc.com/",
-            "downloadHost": "http://app.ares.fx.cc.com/"
+            "host": "http://app.ares.fx.xxx.com/",
+            "downloadHost": "http://app.ares.fx.xxx.com/"
           }
         }
       ],
@@ -58,8 +58,8 @@
           "name": "ARES",
           "type": 2,
           "detail": {
-            "host": "http://app.ares.fx.cc.com/",
-            "downloadHost": "http://app.ares.fx.cc.com/"
+            "host": "http://app.ares.fx.xxx.com/",
+            "downloadHost": "http://app.ares.fx.xxx.com/"
           }
         }
       ],

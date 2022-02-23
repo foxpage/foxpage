@@ -45,7 +45,7 @@ export class GetProjectPageList extends BaseController {
       // Check the validity of the organization ID and whether the user is under the organization
       const userInOrg = await this.service.org.checkUserInOrg(params.organizationId, ctx.userInfo.id);
       if (!userInOrg) {
-        return Response.warning(i18n.project.userNotInOrg);
+        return Response.warning(i18n.project.userNotInOrg, 2040401);
       }
 
       let appIds: string[] = [];
@@ -69,16 +69,19 @@ export class GetProjectPageList extends BaseController {
           Object.assign(_.pick(params, ['page', 'size', 'search']), { parentFolderIds: [...folderIds] }),
         );
       }
-      return Response.success({
-        pageInfo: {
-          page: params.page,
-          size: params.size,
-          total: orgFolderData.count,
+      return Response.success(
+        {
+          pageInfo: {
+            page: params.page,
+            size: params.size,
+            total: orgFolderData.count,
+          },
+          data: orgFolderData.list,
         },
-        data: orgFolderData.list,
-      });
+        1040401,
+      );
     } catch (err) {
-      return Response.error(err, i18n.org.getOrgFolderFailed);
+      return Response.error(err, i18n.org.getOrgFolderFailed, 3040401);
     }
   }
 }

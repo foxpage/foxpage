@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { ColumnsType } from 'antd/lib/table';
 import { RootState } from 'typesafe-actions';
 
 import { FoxpageTable } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/resource/detail';
 
 const mapStateToProps = (store: RootState) => ({
@@ -52,6 +53,8 @@ const List: React.FC<ComponentsProps> = ({
   const history = useHistory();
   const { location } = history;
   const { applicationId } = useParams<{ applicationId: string }>();
+  const { locale } = useContext(GlobalContext);
+  const { global, file, folder } = locale.business;
   const columns: ColumnsType = [
     {
       title: '',
@@ -65,7 +68,7 @@ const List: React.FC<ComponentsProps> = ({
       ),
     },
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
       render: (name: string, record: any) => {
@@ -81,7 +84,7 @@ const List: React.FC<ComponentsProps> = ({
       },
     },
     {
-      title: 'Rel Path',
+      title: file.relPath,
       dataIndex: 'content',
       key: 'content',
       render: (content: any, record: any) => {
@@ -93,7 +96,7 @@ const List: React.FC<ComponentsProps> = ({
       },
     },
     {
-      title: 'Actions',
+      title: global.actions,
       width: '200px',
       align: 'right',
       key: 'actions',
@@ -138,11 +141,11 @@ const List: React.FC<ComponentsProps> = ({
   const handleDelete = (record: any) => {
     const { id } = record;
     Modal.confirm({
-      title: 'Are you sure to delete it?',
-      content: 'All content under these node will not be visible.',
-      okText: 'Yes',
+      title: folder.deleteTitle,
+      content: folder.deleteMsg,
+      okText: global.yes,
       okType: 'danger',
-      cancelText: 'No',
+      cancelText: global.no,
       onOk() {
         removeResource({
           applicationId,

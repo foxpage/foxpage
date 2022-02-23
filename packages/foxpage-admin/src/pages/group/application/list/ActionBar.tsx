@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { PlusOutlined } from '@ant-design/icons';
@@ -6,6 +6,7 @@ import { Button } from 'antd';
 import styled from 'styled-components';
 
 import * as ACTIONS from '@/actions/group/application/list/index';
+import GlobalContext from '@/pages/GlobalContext';
 
 const Root = styled.div`
   width: 100%;
@@ -27,13 +28,14 @@ type IProps = typeof mapDispatchToProps;
 
 function ActionBar(props: IProps) {
   const { updateDrawerVisible } = props;
-
+  const { locale } = useContext(GlobalContext);
+  const { application } = locale.business;
   return (
     <Root>
       <Actions>
         <Button type="primary" onClick={() => updateDrawerVisible(true)}>
           <PlusOutlined />
-          New app
+          {application.add}
         </Button>
       </Actions>
     </Root>

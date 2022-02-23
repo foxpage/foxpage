@@ -56,9 +56,9 @@ export class GetFileList extends BaseController {
         );
       });
 
-      return Response.success(fileWithOnlineList || []);
+      return Response.success(fileWithOnlineList || [], 1170301);
     } catch (err) {
-      return Response.error(err, i18n.file.listError);
+      return Response.error(err, i18n.file.listError, 3170301);
     }
   }
 }

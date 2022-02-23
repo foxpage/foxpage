@@ -79,9 +79,9 @@ export class GetPageContentList extends BaseController {
         contentListWithUrls.push(Object.assign({}, content, { urls: _.clone(urls) }));
       });
 
-      return Response.success(contentListWithUrls);
+      return Response.success(contentListWithUrls, 1050701);
     } catch (err) {
-      return Response.error(err, i18n.page.getPageContentListFailed);
+      return Response.error(err, i18n.page.getPageContentListFailed, 3050701);
     }
   }
 }

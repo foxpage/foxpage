@@ -39,10 +39,15 @@ export class AddAssetDetail extends BaseController {
 
     // Check the validity of the name
     if (!checkResourceName(params.name)) {
-      return Response.warning(i18n.file.invalidName);
+      return Response.warning(i18n.file.invalidName, 2120301);
     }
 
     try {
+      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4120301);
+      }
+
       const folderDetail: Folder = Object.assign(_.omit(params, 'path'), {
         id: generationId(PRE.FOLDER),
         folderPath: params.path ? formatToPath(params.path) : formatToPath(params.name),
@@ -62,11 +67,11 @@ export class AddAssetDetail extends BaseController {
       ]);
 
       if (nameDetail) {
-        return Response.warning(i18n.resource.nameExist);
+        return Response.warning(i18n.resource.nameExist, 2120302);
       }
 
       if (pathDetail) {
-        return Response.warning(i18n.resource.pathExist);
+        return Response.warning(i18n.resource.pathExist, 2120303);
       }
 
       // Add resource folder
@@ -77,9 +82,9 @@ export class AddAssetDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: folderDetail.id, type: TYPE.RESOURCE });
 
-      return Response.success(resourceDetail);
+      return Response.success(resourceDetail, 1120301);
     } catch (err) {
-      return Response.error(err, i18n.resource.addResourceFolderFailed);
+      return Response.error(err, i18n.resource.addResourceFolderFailed, 3120301);
     }
   }
 }

@@ -6,6 +6,7 @@ import * as ACTIONS from '@/actions/store/list';
 import { fetchAllApplicationList } from '@/apis/group/application/list';
 import * as API from '@/apis/store/list';
 import { FileTypeEnum } from '@/constants/index';
+import { getBusinessI18n } from '@/pages/locale';
 import { StoreResourceListActionType } from '@/reducers/store/list';
 import { store } from '@/store/index';
 import { GoodsAddParams, PaginationReqParams, StoreResourceSearchParams } from '@/types/index';
@@ -13,7 +14,9 @@ import { GoodsAddParams, PaginationReqParams, StoreResourceSearchParams } from '
 function* handleFetchStoreResources(action: StoreResourceListActionType) {
   const { appIds, type, search, page, size } = action.payload as StoreResourceSearchParams;
   yield put(ACTIONS.updateLoading(true));
-
+  const {
+    store: { fetchResourceFailed },
+  } = getBusinessI18n();
   const isPackage = type === FileTypeEnum.package;
   const fetchApi = isPackage ? API.fetchStorePackageResources : API.fetchStoreProjectResources;
 
@@ -26,13 +29,16 @@ function* handleFetchStoreResources(action: StoreResourceListActionType) {
         : ACTIONS.pushProjectStoreResources(res.data, res.pageInfo),
     );
   } else {
-    message.error(res.msg || 'Fetch store resource failed');
+    message.error(res.msg || fetchResourceFailed);
   }
 }
 
 function* handleAddGoods(action: StoreResourceListActionType) {
   const { type } = store.getState().store.list;
   const { appIds, goodsIds, delivery } = action.payload as GoodsAddParams;
+  const {
+    store: { buySuccess, buyFailed },
+  } = getBusinessI18n();
   const res = yield call(type === FileTypeEnum.package ? API.addPackageGoods : API.addPageGoods, {
     appIds,
     goodsIds,
@@ -40,21 +46,24 @@ function* handleAddGoods(action: StoreResourceListActionType) {
   });
 
   if (res.code === 200) {
-    message.success('Add succeed');
+    message.success(buySuccess);
     yield put(ACTIONS.updateBuyModalVisible(false));
   } else {
-    message.error(res.msg || 'Add failed');
+    message.error(res.msg || buyFailed);
   }
 }
 
 function* handleFetchAllApplication(action: StoreResourceListActionType) {
   const { page, search, size } = action.payload as PaginationReqParams;
+  const {
+    application: { fetchListFailed },
+  } = getBusinessI18n();
   const res = yield call(fetchAllApplicationList, { page, search: search || '', size });
 
   if (res.code === 200) {
     yield put(ACTIONS.pushAllApplicationList(res.data));
   } else {
-    message.error(res.msg || 'Fetch application list failed');
+    message.error(res.msg || fetchListFailed);
   }
 }
 

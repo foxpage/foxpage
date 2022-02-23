@@ -37,7 +37,7 @@ export class AddUsers extends BaseController {
       const userInfo = ctx.userInfo || {};
 
       if (userInfo.id !== params.id) {
-        return Response.warning(i18n.user.canNotChangeCurrentPwd);
+        return Response.warning(i18n.user.canNotChangeCurrentPwd, 2060201);
       }
 
       // Check the validity of the original password
@@ -50,7 +50,7 @@ export class AddUsers extends BaseController {
       );
 
       if (!validOldPwd) {
-        return Response.warning(i18n.user.invalidOldPwd);
+        return Response.warning(i18n.user.invalidOldPwd, 2060202);
       }
 
       // 更新密码
@@ -61,9 +61,9 @@ export class AddUsers extends BaseController {
           .digest('hex'),
       });
 
-      return Response.success(i18n.user.pwdChangeSuccess);
+      return Response.success(i18n.user.pwdChangeSuccess, 1060201);
     } catch (err) {
-      return Response.error(err, i18n.user.pwdChangeFailed);
+      return Response.error(err, i18n.user.pwdChangeFailed, 3060201);
     }
   }
 }

@@ -4,12 +4,16 @@ import { getType } from 'typesafe-actions';
 
 import * as API from '@/apis/group/application/pages';
 import { defaultSuffix } from '@/pages/common/constant/FileType';
+import { getBusinessI18n } from '@/pages/locale';
 import * as ACTIONS from '@/store/actions/group/application/pages/list';
 import { ApplicationPageActionType } from '@/store/reducers/group/application/pages/list';
 import { FileDeleteParams, FileSearchParams, FileUpdateParams } from '@/types/application/file';
 
 function* fetchApplicationPages(action: ApplicationPageActionType) {
   const { applicationId, page, size } = action.payload as FileSearchParams;
+  const {
+    file: { fetchPageListFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.updateLoading(true));
   const rs = yield call(API.getApplicationPages, {
     applicationId,
@@ -20,19 +24,22 @@ function* fetchApplicationPages(action: ApplicationPageActionType) {
     yield put(ACTIONS.updateLoading(false));
     yield put(ACTIONS.pushApplicationPages(rs.data || [], rs.pageInfo));
   } else {
-    message.error(rs.msg || 'Fetch page list failed.');
+    message.error(rs.msg || fetchPageListFailed);
   }
 }
 
 function* handleUpdatePage(action: ApplicationPageActionType) {
   const { file, applicationId, onSuccess } = action.payload as FileUpdateParams;
-
+  const {
+    global: { updateFailed },
+    application: { nameInvalid, typeInvalid },
+  } = getBusinessI18n();
   if (!file.name) {
-    message.warning('Please input name');
+    message.warning(nameInvalid);
     return;
   }
   if (!file.type) {
-    message.warning('Please select type');
+    message.warning(typeInvalid);
     return;
   }
 
@@ -50,25 +57,27 @@ function* handleUpdatePage(action: ApplicationPageActionType) {
       onSuccess();
     }
   } else {
-    message.error(rs.msg || 'Fetch list failed');
+    message.error(rs.msg || updateFailed);
   }
 }
 
 function* handleDeletePage(action: ApplicationPageActionType) {
   const { id, applicationId, onSuccess } = action.payload as FileDeleteParams;
-
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
   const rs = yield call(API.deletePages, {
     id,
     applicationId,
     status: true,
   });
   if (rs.code === 200) {
-    message.success('Delete succeed');
+    message.success(deleteSuccess);
     if (typeof onSuccess === 'function') {
       onSuccess();
     }
   } else {
-    message.error(rs.msg || 'Delete failed');
+    message.error(rs.msg || deleteFailed);
   }
 }
 

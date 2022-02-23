@@ -42,12 +42,12 @@ export class UpdateOrganizationDetail extends BaseController {
       let orgDetail = await this.service.org.getDetailById(params.organizationId);
 
       if (!orgDetail || orgDetail.deleted) {
-        return Response.warning(i18n.org.invalidOrgId);
+        return Response.warning(i18n.org.invalidOrgId, 2010901);
       }
 
       const hasAuth = await this.service.auth.organization(params.organizationId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4010901);
       }
 
       // Update
@@ -62,9 +62,9 @@ export class UpdateOrganizationDetail extends BaseController {
       //   content: { id: params.id, contentId: '', before: orgDetail, after: newOrgDetail },
       // });
 
-      return Response.success(newOrgDetail || {});
+      return Response.success(newOrgDetail, 1010901);
     } catch (err) {
-      return Response.error(err, i18n.org.updateOrgFailed);
+      return Response.error(err, i18n.org.updateOrgFailed, 3010901);
     }
   }
 }

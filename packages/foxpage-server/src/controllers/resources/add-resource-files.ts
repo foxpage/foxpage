@@ -37,18 +37,23 @@ export class AddResourceFileDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: FileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.resource.invalidName);
+      return Response.warning(i18n.resource.invalidName, 2120201);
     }
 
     if (!params.folderId) {
-      return Response.warning(i18n.resource.invalidFolderId);
+      return Response.warning(i18n.resource.invalidFolderId, 2120202);
     }
 
     try {
       // Check the existence of the file
       const fileExist = await this.service.file.info.checkExist(params);
       if (fileExist) {
-        return Response.warning(i18n.resource.resourceNameExist);
+        return Response.warning(i18n.resource.resourceNameExist, 2120203);
+      }
+
+      const hasAuth = await this.service.auth.folder(params.folderId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4120201);
       }
 
       // Create document details
@@ -64,9 +69,9 @@ export class AddResourceFileDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: <string>fileDetail.id, type: TYPE.RESOURCE });
 
-      return Response.success(newFileDetail);
+      return Response.success(newFileDetail, 1120201);
     } catch (err) {
-      return Response.error(err, i18n.resource.addResourceFileFailed);
+      return Response.error(err, i18n.resource.addResourceFileFailed, 3120201);
     }
   }
 }

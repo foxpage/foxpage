@@ -1,5 +1,6 @@
-import { ContentVersion } from '@foxpage/foxpage-server-types';
 import _ from 'lodash';
+
+import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { GetFunctionBuildDetail } from '../../../../src/controllers/functions/get-function-build-versions';
 import { RelationService } from '../../../../src/services/relation-service';

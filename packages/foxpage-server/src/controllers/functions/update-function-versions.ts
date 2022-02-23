@@ -39,19 +39,19 @@ export class UpdateFunctionVersionDetail extends BaseController {
     try {
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4091401);
       }
 
       const result = await this.service.version.info.updateVersionDetail(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.function.invalidVersionId);
+        return Response.warning(i18n.function.invalidVersionId, 2091401);
       } else if (result.code === 2) {
-        return Response.warning(i18n.function.unEditedStatus);
+        return Response.warning(i18n.function.unEditedStatus, 2091402);
       } else if (result.code === 3) {
-        return Response.warning(i18n.function.versionExist);
+        return Response.warning(i18n.function.versionExist, 2091403);
       } else if (result.code === 4) {
-        return Response.warning(i18n.function.missingFields + (<string[]>result.data).join(','));
+        return Response.warning(i18n.function.missingFields + (<string[]>result.data).join(','), 2091404);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
@@ -59,9 +59,9 @@ export class UpdateFunctionVersionDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: <string>result.data, type: TYPE.FUNCTION });
 
-      return Response.success(versionDetail || {});
+      return Response.success(versionDetail, 1091401);
     } catch (err) {
-      return Response.error(err, i18n.function.updateFunctionVersionFailed);
+      return Response.error(err, i18n.function.updateFunctionVersionFailed, 3091401);
     }
   }
 }

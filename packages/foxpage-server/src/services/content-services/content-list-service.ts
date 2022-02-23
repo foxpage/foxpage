@@ -7,14 +7,14 @@ import { TAG } from '../../../config/constant';
 import * as Model from '../../models';
 import { ContentLiveVersion, FolderFileContent } from '../../types/content-types';
 import { AppFileType } from '../../types/file-types';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class ContentListService extends ContentServiceAbstract {
+export class ContentListService extends BaseService<Content> {
   private static _instance: ContentListService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**

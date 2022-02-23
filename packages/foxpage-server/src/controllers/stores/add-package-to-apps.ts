@@ -43,7 +43,7 @@ export class AddStorePackageToApplication extends BaseController {
         params.appIds.map((appId) => this.service.auth.application(appId, { ctx })),
       );
       if (hasAuth.indexOf(false) !== -1) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4130201);
       }
 
       // Current only support reference
@@ -72,6 +72,7 @@ export class AddStorePackageToApplication extends BaseController {
           if (existFiles.length > 0) {
             return Response.warning(
               i18n.store.appHasExistPackageNames + ':' + _.map(existFiles, 'name').join(','),
+              2130201,
             );
           }
 
@@ -124,9 +125,9 @@ export class AddStorePackageToApplication extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.goodsIds[0], type: TYPE.GOODS });
 
-      return Response.success(i18n.store.addStorePackageToApplicationSuccess);
+      return Response.success(i18n.store.addStorePackageToApplicationSuccess, 1130201);
     } catch (err) {
-      return Response.error(err, i18n.store.addStorePackageToApplicationFailed);
+      return Response.error(err, i18n.store.addStorePackageToApplicationFailed, 3130201);
     }
   }
 }

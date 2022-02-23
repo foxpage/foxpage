@@ -41,7 +41,7 @@ export class GetProjectPagesList extends BaseController {
       // Verify the effectiveness of the project
       const projectDetail = await this.service.folder.info.getDetailById(params.projectId);
       if (projectDetail.applicationId !== params.applicationId) {
-        return Response.warning(i18n.project.invalidProjectId);
+        return Response.warning(i18n.project.invalidProjectId, 2040601);
       }
 
       // Get the pageId of the path
@@ -87,9 +87,9 @@ export class GetProjectPagesList extends BaseController {
       });
 
       // Get live details
-      return Response.success(fileContent);
+      return Response.success(fileContent, 1040601);
     } catch (err) {
-      return Response.error(err, i18n.project.getProjectPagesFailed);
+      return Response.error(err, i18n.project.getProjectPagesFailed, 3040601);
     }
   }
 }

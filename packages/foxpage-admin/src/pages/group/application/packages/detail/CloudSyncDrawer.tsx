@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { RootState } from 'typesafe-actions';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Group, Title } from '@/components/widgets';
 import { FileTagType } from '@/constants/file';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/packages/detail';
 import { fetchResourcesGroupsAction } from '@/store/actions/group/application/resource/groups';
 import { ComponentRemote, FileUrlParams } from '@/types/application';
@@ -21,7 +22,7 @@ const { TreeNode } = TreeSelect;
 
 const mapStateToProps = (store: RootState) => ({
   open: store.group.application.packages.detail.cloudSyncDrawer.open,
-  componentRemotes: store.group.application.packages.detail.cloudSyncDrawer.componentRemotes,
+  componentRemote: store.group.application.packages.detail.cloudSyncDrawer.componentRemote,
   lastVersion: store.group.application.packages.detail.cloudSyncDrawer.lastVersion,
   loading: store.group.application.packages.detail.cloudSyncDrawer.loading,
   groupList: store.group.application.resource.groups.groupList,
@@ -48,8 +49,7 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
     groupLoading,
     groupList,
     componentInfo,
-    componentRemotes,
-    versions,
+    componentRemote,
     fileDetail,
     lastVersion,
     fetchGroups,
@@ -61,6 +61,8 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
   const { applicationId, fileId } = useParams<FileUrlParams>();
   const [groupId, setGroupId] = useState<string>('');
   const [mappingRelation, setMappingRelation] = useState<Record<string, string>>({});
+  const { locale } = useContext(GlobalContext);
+  const { global, version: versionI18n, resource } = locale.business;
 
   useEffect(() => {
     if (open) {
@@ -82,36 +84,28 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
   }, [fileDetail?.tags, open]);
 
   useEffect(() => {
-    if (componentRemotes.length === 0) {
-      return;
-    }
-    const {
-      content: {
-        resource: {
-          entry: { node, css, browser, debug },
+    if (componentRemote?.component) {
+      const {
+        content: {
+          resource: {
+            entry: { node, css, browser, debug },
+          },
         },
-      },
-    } = componentRemotes[0].component;
+      } = componentRemote.component;
 
-    setMappingRelation({
-      node: getShortPath(node?.path),
-      browser: getShortPath(browser?.path),
-      debug: getShortPath(debug?.path),
-      css: getShortPath(css?.path),
-    });
-  }, [componentRemotes]);
+      setMappingRelation({
+        node: getShortPath(node?.path),
+        browser: getShortPath(browser?.path),
+        debug: getShortPath(debug?.path),
+        css: getShortPath(css?.path),
+      });
+    }
+  }, [componentRemote]);
 
   const handleSave = () => {
-    if (
-      componentRemotes.length === 0 &&
-      versions.length > 0 &&
-      versions[0].version !== componentRemotes[0].resource.version
-    ) {
-      message.warning('No resource to save');
-      return;
-    }
-    const savedComponent = _.cloneDeep<ComponentRemote[]>(componentRemotes);
-    if (savedComponent.length > 0) {
+    if (componentRemote) {
+      const savedComponent = _.cloneDeep<ComponentRemote>(componentRemote);
+
       const {
         component: {
           content: {
@@ -119,7 +113,7 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
           },
         },
         resource: { groupName, version, resourceName },
-      } = savedComponent[0];
+      } = savedComponent;
       const prefix = `${groupName}/${resourceName}/${version}/`;
       if (mappingRelation.browser) {
         entry.browser = { contentId: '', path: prefix + mappingRelation.browser };
@@ -133,17 +127,17 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
       if (mappingRelation.css) {
         entry.css = { contentId: '', path: prefix + mappingRelation.css };
       }
-    }
 
-    saveComponentRemote({
-      applicationId,
-      components: savedComponent,
-    });
+      saveComponentRemote({
+        applicationId,
+        components: [savedComponent],
+      });
+    }
   };
 
   const handleSearch = (groupId: string) => {
     if (!groupId) {
-      message.warning('Please select group');
+      message.warning(resource.groupError);
       return;
     }
     fetchComponentRemotes({
@@ -169,12 +163,12 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
   };
 
   const treeNode = useMemo(() => {
-    if (componentRemotes.length === 0) {
+    if (!componentRemote) {
       return null;
     }
     const {
       resource: { files },
-    } = componentRemotes[0];
+    } = componentRemote;
 
     return (
       <>
@@ -191,24 +185,23 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
         })}
       </>
     );
-  }, [componentRemotes]);
+  }, [componentRemote]);
 
   const treeSelectProps = {
     style: { width: '100%' },
     dropdownStyle: { maxHeight: 400, overflow: 'auto' },
-    placeholder: 'Please select',
     treeDefaultExpandAll: true,
     allowClear: true,
   };
 
-  const componentRemote = useMemo(() => {
-    if (componentRemotes.length === 0) {
+  const componentRemoteNode = useMemo(() => {
+    if (!componentRemote) {
       return null;
     }
     const {
       resource: { files, latestVersion, version, resourceName },
       component: { version: componentNewVersion },
-    } = componentRemotes[0];
+    } = componentRemote;
 
     return (
       <Group>
@@ -216,11 +209,11 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
         <table className="source-diff-table">
           <tbody>
             <tr>
-              <td>resource version</td>
+              <td>{versionI18n.componentVersion}</td>
               <td className="after">{version}</td>
             </tr>
             <tr>
-              <td>resource folder</td>
+              <td>{resource.resourceVersion}</td>
               <td className="after">{resourceName}</td>
             </tr>
             {Object.entries(files).map(([key, value]) => {
@@ -248,7 +241,7 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
             })}
           </tbody>
         </table>
-        <Title>Resource version</Title>
+        <Title>{resource.resourceVersion}</Title>
         <table className="source-diff-table">
           <tbody>
             <tr>
@@ -260,7 +253,7 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
             </tr>
           </tbody>
         </table>
-        <Title>Component version</Title>
+        <Title>{versionI18n.componentVersion}</Title>
         <table className="source-diff-table">
           <tbody>
             <tr>
@@ -338,18 +331,18 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
         </table>
       </Group>
     );
-  }, [componentRemotes, treeNode, mappingRelation]);
+  }, [componentRemote, treeNode, mappingRelation]);
 
   return (
     <OperationDrawer
       open={open}
-      title="Sync from cloud"
+      title={versionI18n.syncTitle}
       onClose={closeDrawer}
       width={700}
       destroyOnClose
       actions={
         <Button type="primary" onClick={handleSave}>
-          Apply
+          {global.apply}
         </Button>
       }
     >
@@ -358,11 +351,11 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
           <Group>
             <Row>
               <Col span={2} offset={2} style={{ paddingTop: 5 }}>
-                <Title>Group:</Title>
+                <Title>{resource.group}:</Title>
               </Col>
               <Col span={12}>
                 <Select
-                  placeholder="Group"
+                  placeholder={resource.group}
                   value={groupId}
                   style={{ width: '100%' }}
                   onChange={(value: string) => {
@@ -384,14 +377,14 @@ const ComponentCloudSyncDrawer: React.FC<CloudSyncDrawerProps> = props => {
                   }}
                   style={{ marginLeft: 12 }}
                 >
-                  <SearchOutlined /> Search
+                  <SearchOutlined /> {global.search}
                 </Button>
               </Col>
             </Row>
           </Group>
         </Spin>
         <Spin spinning={loading} style={{ minHeight: 100 }}>
-          {componentRemote}
+          {componentRemoteNode}
         </Spin>
       </>
     </OperationDrawer>

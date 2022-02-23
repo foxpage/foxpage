@@ -43,9 +43,9 @@ export class GetAppConditionList extends BaseController {
         contentIds: params.ids || [],
       });
 
-      return Response.success(_.map(contentVersionList, 'content'));
+      return Response.success(_.map(contentVersionList, 'content'), 1100401);
     } catch (err) {
-      return Response.error(err, i18n.condition.getAppConditionFailed);
+      return Response.error(err, i18n.condition.getAppConditionFailed, 3100401);
     }
   }
 }

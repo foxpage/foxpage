@@ -2,17 +2,17 @@ import { Organization } from '@foxpage/foxpage-server-types';
 
 import { Search } from '../types/index-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import orgModel from './schema/organization';
+import { BaseModel } from './base-model';
 
 /**
  * Organize related data model
  *
  * @export
  * @class OrgModel
- * @extends {BaseModelAbstract<Organization>}
+ * @extends {BaseModel<Organization>}
  */
-export class OrgModel extends BaseModelAbstract<Organization> {
+export class OrgModel extends BaseModel<Organization> {
   private static _instance: OrgModel;
 
   constructor() {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { BarsOutlined, EditOutlined } from '@ant-design/icons';
@@ -10,6 +10,7 @@ import JsonEditor from '@/components/business/JsonEditor';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Field, Group, Label } from '@/components/widgets/group';
 import { FileTypeEnum } from '@/constants/index';
+import GlobalContext from '@/pages/GlobalContext';
 import { FuncContentItem, FuncItem } from '@/types/application/function';
 import { FunctionVariableProps, StaticVariableProps } from '@/types/application/variable.d';
 import { getFunctionRelationKey } from '@/utils/relation';
@@ -55,6 +56,8 @@ const EditDrawer: React.FC<Type> = props => {
     updateVariableRelations,
     onSave,
   } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global, variable, function: functionI18n } = locale.business;
 
   const [drawerVisible, setDrawerVisible] = useState<boolean>(false);
   const [func, setFunc] = useState<FuncContentItem | undefined>(undefined);
@@ -97,13 +100,13 @@ const EditDrawer: React.FC<Type> = props => {
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
       render: (_text: string, record: FuncContentItem) => record.schemas[0].name,
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       width: 100,
@@ -122,7 +125,7 @@ const EditDrawer: React.FC<Type> = props => {
   return (
     <OperationDrawer
       open={editorDrawerOpen}
-      title={editVariable && editVariable.id ? 'Edit' : 'Add'}
+      title={editVariable && editVariable.id ? variable.edit : variable.add}
       onClose={() => {
         closeDrawer();
       }}
@@ -135,29 +138,29 @@ const EditDrawer: React.FC<Type> = props => {
             onSave();
           }}
         >
-          Apply
+          {global.apply}
         </Button>
       }
     >
       {editVariable ? (
         <Group>
           <Field>
-            <Label>Name</Label>
+            <Label>{global.nameLabel}</Label>
             <Input
               value={editVariable.name}
               disabled={!!editVariable.id}
-              placeholder="variable name"
+              placeholder={global.nameLabel}
               onChange={e => update('name', e.target.value)}
             />
           </Field>
           <Field>
-            <Label>Type</Label>
+            <Label>{global.type}</Label>
             {isEditType ? (
               <>
                 <Input
                   disabled={!!editVariable.id}
                   style={{ width: 200 }}
-                  placeholder="input type"
+                  placeholder={global.type}
                   value={type}
                   onChange={e => {
                     updateContent('type', e.target.value);
@@ -204,7 +207,7 @@ const EditDrawer: React.FC<Type> = props => {
           {type === VariableTypes[1] ? (
             <React.Fragment>
               <Field>
-                <Label>Function</Label>
+                <Label>{functionI18n.name}</Label>
                 <Table columns={columns} bordered dataSource={func ? [func] : []} pagination={false} size="small" />
                 <Button
                   type="dashed"
@@ -214,11 +217,11 @@ const EditDrawer: React.FC<Type> = props => {
                     setDrawerVisible(true);
                   }}
                 >
-                  Select Function
+                  {variable.selectFunction}
                 </Button>
               </Field>
               <Field>
-                <Label>Args</Label>
+                <Label>{variable.args}</Label>
                 <JsonEditor
                   jsonData={(editVariable.content.schemas[0].props as FunctionVariableProps).args || []}
                   onChangeJSON={json => {
@@ -232,7 +235,7 @@ const EditDrawer: React.FC<Type> = props => {
             </React.Fragment>
           ) : (
             <Field>
-              <Label>Value</Label>
+              <Label>{variable.value}</Label>
               <JsonEditor
                 refreshFlag={editVariable.id}
                 jsonData={(editVariable.content.schemas[0].props as StaticVariableProps)?.value || {}}

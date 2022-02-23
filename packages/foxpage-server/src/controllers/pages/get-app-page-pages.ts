@@ -43,16 +43,19 @@ export class GetAppPageFileList extends BaseController {
         fileList = await this.service.file.list.getFileAssocInfo(result.list);
       }
 
-      return Response.success({
-        pageInfo: {
-          total: result.count,
-          page: pageInfo.page,
-          size: pageInfo.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: result.count,
+            page: pageInfo.page,
+            size: pageInfo.size,
+          },
+          data: fileList,
         },
-        data: fileList,
-      });
+        1050301,
+      );
     } catch (err) {
-      return Response.error(err, i18n.page.getAppPageFileFailed);
+      return Response.error(err, i18n.page.getAppPageFileFailed, 3050301);
     }
   }
 }

@@ -1,11 +1,17 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { Link, NavLink, useHistory } from 'react-router-dom';
 
 import { DownOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Dropdown, Layout, Menu } from 'antd';
+import enUS from 'antd/lib/locale/en_US';
+import zhCN from 'antd/lib/locale/zh_CN';
 import styled from 'styled-components';
 
+import { ZH_CN_STRING } from '@/constants/global';
+import GlobalContext from '@/pages/GlobalContext';
 import { getImageLinkByEnv, getLoginUser, setLoginUser } from '@/utils/index';
+
+import businessLocale from '../locale';
 
 const { Header } = Layout;
 
@@ -76,14 +82,40 @@ const UserName = styled.div`
   }
 `;
 
+const LocaleItem = styled.div`
+  cursor: pointer;
+  display: inline-flex;
+  margin-right: 24px;
+  color: #000000d9;
+  border: 1px solid #d9d9d9;
+  line-height: 20px;
+  padding: 2px 12px;
+  border-radius: 4px;
+  transition: all 0.3s;
+  &:hover {
+    border-color: #1890ff;
+  }
+`;
+
 const FoxpageHeader = () => {
   const { organizationId, userInfo } = getLoginUser();
   const history = useHistory();
+
+  const { locale, setLocale } = useContext(GlobalContext);
+  const { organization, store, login } = locale.business || businessLocale[ZH_CN_STRING];
 
   const handleLogout = useCallback(() => {
     setLoginUser();
     history.push('/login');
   }, []);
+
+  const handleLocaleChange = () => {
+    const newLocale = {
+      ...(locale.locale === ZH_CN_STRING ? enUS : zhCN),
+      business: locale.locale === ZH_CN_STRING ? businessLocale.en : businessLocale[ZH_CN_STRING],
+    };
+    setLocale(newLocale);
+  };
 
   return (
     <Header
@@ -114,7 +146,7 @@ const FoxpageHeader = () => {
             activeStyle={{ color: '#212121 !important', textDecoration: 'none !important', fontWeight: 'bold' }}
             to={`/organization/${organizationId}/projects`}
           >
-            Organization
+            {organization.name}
           </NavLinkContent>
         </NavItem>
         {/* <NavItem>
@@ -130,11 +162,12 @@ const FoxpageHeader = () => {
             activeStyle={{ color: '#212121 !important', textDecoration: 'none !important', fontWeight: 'bold' }}
             to="/store"
           >
-            Store
+            {store.name}
           </NavLinkContent>
         </NavItem>
       </MainNav>
       <User>
+        <LocaleItem onClick={handleLocaleChange}>{locale.locale === ZH_CN_STRING ? 'English' : '简体中文'}</LocaleItem>
         <Avatar size={28} icon={<UserOutlined />} />
         <Dropdown
           trigger={['click']}
@@ -142,7 +175,7 @@ const FoxpageHeader = () => {
             <Menu>
               <Menu.Item key="0" onClick={handleLogout}>
                 <LogoutOutlined style={{ marginRight: 8 }} />
-                Logout
+                {login.loginOut}
               </Menu.Item>
             </Menu>
           }

@@ -38,12 +38,12 @@ export class SetFileStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4170501);
       }
 
       const fileDetail = await this.service.file.info.getDetailById(params.id);
       if (!fileDetail) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2170501);
       }
 
       // Set status
@@ -54,9 +54,9 @@ export class SetFileStatus extends BaseController {
       // Get file details
       const newFileDetail: File = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(newFileDetail);
+      return Response.success(newFileDetail, 1170501);
     } catch (err) {
-      return Response.error(err, i18n.file.setDeleteStatusFailed);
+      return Response.error(err, i18n.file.setDeleteStatusFailed, 3170501);
     }
   }
 }

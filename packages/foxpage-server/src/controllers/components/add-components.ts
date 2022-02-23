@@ -40,7 +40,7 @@ export class AddComponentDetail extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4110201);
       }
 
       // Get the default folder Id of the application component
@@ -50,7 +50,7 @@ export class AddComponentDetail extends BaseController {
       });
 
       if (!appComponentFolderId) {
-        return Response.warning(i18n.component.invalidFolderType);
+        return Response.warning(i18n.component.invalidFolderType, 2110201);
       }
 
       // Create page content information
@@ -66,12 +66,12 @@ export class AddComponentDetail extends BaseController {
       const result = await this.service.file.info.addFileDetail(fileDetail, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.component.invalidApplicationId);
+        return Response.warning(i18n.component.invalidApplicationId, 2110202);
       }
 
       // Check if there is a component with the same name
       if (result.code === 2) {
-        return Response.warning(i18n.component.nameExist);
+        return Response.warning(i18n.component.nameExist, 2110203);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
@@ -79,9 +79,9 @@ export class AddComponentDetail extends BaseController {
       const newFileDetail = await this.service.file.info.getDetailById((<File>result.data).id);
       ctx.logAttr = Object.assign(ctx.logAttr, { id: (<File>result.data).id, type: TYPE.COMPONENT });
 
-      return Response.success(newFileDetail);
+      return Response.success(newFileDetail, 1110201);
     } catch (err) {
-      return Response.error(err, i18n.content.addContentBaseFailed);
+      return Response.error(err, i18n.content.addContentBaseFailed, 3110201);
     }
   }
 }

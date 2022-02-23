@@ -41,22 +41,22 @@ export class SetFunctionContentStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4090701);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidContentId);
+        return Response.warning(i18n.content.invalidContentId, 2090701);
       } else if (result.code === 2) {
-        return Response.warning(i18n.function.contentCannotBeDeleted);
+        return Response.warning(i18n.function.contentCannotBeDeleted, 2090702);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1090701);
     } catch (err) {
-      return Response.error(err, i18n.function.setFunctionContentDeletedFailed);
+      return Response.error(err, i18n.function.setFunctionContentDeletedFailed, 3090701);
     }
   }
 }

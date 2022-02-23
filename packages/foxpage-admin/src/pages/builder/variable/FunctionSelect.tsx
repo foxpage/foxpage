@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 // import { EyeOutlined } from '@ant-design/icons';
@@ -11,6 +11,7 @@ import OperationDrawer from '@/components/business/OperationDrawer';
 import ScopeSelect from '@/components/common/ScopeSelect';
 import { Group } from '@/components/widgets';
 import { ScopeEnum } from '@/constants/index';
+import GlobalContext from '@/pages/GlobalContext';
 import { FuncFetchParams, FuncItem } from '@/types/application/function';
 
 const PAGE_SIZE = 10;
@@ -63,7 +64,8 @@ const ConditionSelect: React.FC<FunctionSelectType> = props => {
   } = props;
   const [group, setGroup] = useState<ScopeEnum>(ScopeEnum.project);
   const [selectedRow, setSelectedRow] = useState<FuncItem | undefined>(undefined);
-
+  const { locale } = useContext(GlobalContext);
+  const { global, variable } = locale.business;
   useEffect(() => {
     if (applicationId && visible) {
       const params: FuncFetchParams = {
@@ -71,7 +73,7 @@ const ConditionSelect: React.FC<FunctionSelectType> = props => {
         page: pageNum,
         size: PAGE_SIZE,
       };
-      if (group === 'project') {
+      if (group === ScopeEnum.project) {
         params.folderId = folderId;
       }
       fetchList(params);
@@ -88,12 +90,12 @@ const ConditionSelect: React.FC<FunctionSelectType> = props => {
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       render: (_text: string, record: FuncItem) => {
@@ -108,7 +110,7 @@ const ConditionSelect: React.FC<FunctionSelectType> = props => {
     <OperationDrawer
       open={visible}
       onClose={onClose}
-      title="Select Function"
+      title={variable.selectFunction}
       width={480}
       destroyOnClose
       actions={
@@ -119,7 +121,7 @@ const ConditionSelect: React.FC<FunctionSelectType> = props => {
             onClose();
           }}
         >
-          Apply
+          {global.apply}
         </Button>
       }
     >

@@ -37,21 +37,24 @@ export class SetComponentLiveVersions extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4111501);
       }
 
       const result = await this.service.content.live.setLiveVersion(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidVersionId);
+        return Response.warning(i18n.content.invalidVersionId, 2111501);
       } else if (result.code === 2) {
-        return Response.warning(i18n.content.versionIsNotReleaseStatus);
+        return Response.warning(i18n.content.versionIsNotReleaseStatus, 2111502);
       } else if (result.code === 3) {
         const contentResult: Record<string, any> = JSON.parse(<string>result.data);
         if (contentResult.code === 1) {
-          return Response.warning(i18n.content.ComponentInfoNotExist + ':' + contentResult.data.join(','));
+          return Response.warning(
+            i18n.content.ComponentInfoNotExist + ':' + contentResult.data.join(','),
+            2111503,
+          );
         } else if (contentResult.code === 2) {
-          return Response.warning(i18n.content.ComponentDependRecursive + ':' + contentResult.data);
+          return Response.warning(i18n.content.ComponentDependRecursive + ':' + contentResult.data, 2111504);
         }
       }
 
@@ -60,9 +63,9 @@ export class SetComponentLiveVersions extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.COMPONENT });
 
-      return Response.success(versionDetail);
+      return Response.success(versionDetail, 1111501);
     } catch (err) {
-      return Response.error(err, i18n.component.setComponentContentLiveFailed);
+      return Response.error(err, i18n.component.setComponentContentLiveFailed, 3111501);
     }
   }
 }

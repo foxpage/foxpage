@@ -1,9 +1,9 @@
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
+import { BaseModel } from './base-model';
 
 /**
  *Page content repository related classes
  */
-export class ContentModel extends BaseModelAbstract {
+export class ContentModel extends BaseModel {
   private static _instance: ContentModel;
 
   constructor() {

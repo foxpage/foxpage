@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { CopyOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ControlOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Popconfirm } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
+import { updateConditionBindDrawerVisible } from '@/actions/builder/condition';
 import * as ACTIONS from '@/actions/builder/template';
+import GlobalContext from '@/pages/GlobalContext';
 
 import { SYSTEM_PAGE } from '../../constant';
 
@@ -53,6 +55,7 @@ const mapStateToProps = (store: RootState) => ({
 const mapDispatchToProps = {
   deleteComponent: ACTIONS.deleteComponent,
   copyComponent: ACTIONS.copyComponent,
+  openConditionBind: () => updateConditionBindDrawerVisible(true),
 };
 
 type Type = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -60,7 +63,9 @@ type Type = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 const Tools: React.FC<Type> = props => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const [rect, setRect] = useState<{ top: number; height: number; width: number }>({ top: 0, height: 0, width: 0 });
-  const { selectedComponent, versionChange, deleteComponent, copyComponent } = props;
+  const { selectedComponent, versionChange, deleteComponent, copyComponent, openConditionBind } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global, builder } = locale.business;
 
   const getSelectedElement = (id: string) => {
     return document.getElementById(id || SYSTEM_PAGE);
@@ -106,13 +111,16 @@ const Tools: React.FC<Type> = props => {
       <Boundary style={{ top, width: Math.max(width, 42), height }} />
       {selectedComponent.id && (
         <OperateTool style={{ top: top - BUTTON_SIZE < 0 ? top + height : top - BUTTON_SIZE }}>
+          <Button onClick={openConditionBind}>
+            <ControlOutlined />
+          </Button>
           <Popconfirm
-            title="Are you sure to copy this component?"
+            title={builder.componentCopyMsg}
             onConfirm={() => {
               copyComponent(applicationId, selectedComponent.wrapper || selectedComponent.id);
             }}
-            okText="Yes"
-            cancelText="No"
+            okText={global.yes}
+            cancelText={global.no}
           >
             <Button>
               <CopyOutlined />
@@ -120,12 +128,12 @@ const Tools: React.FC<Type> = props => {
           </Popconfirm>
 
           <Popconfirm
-            title="Are you sure to delete this component?"
+            title={builder.componentDeleteMsg}
             onConfirm={() => {
               deleteComponent(applicationId, selectedComponent.wrapper || selectedComponent.id);
             }}
-            okText="Yes"
-            cancelText="No"
+            okText={global.yes}
+            cancelText={global.no}
           >
             <Button>
               <DeleteOutlined />

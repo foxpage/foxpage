@@ -39,7 +39,7 @@ export class UpdatePageVersionDetail extends BaseController {
       // Check permission
       const hasAuth = await this.service.auth.content(params.targetContentId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4052001);
       }
 
       // Get source template details
@@ -123,9 +123,9 @@ export class UpdatePageVersionDetail extends BaseController {
 
       await this.service.version.info.runTransaction(ctx.transactions);
 
-      return Response.success(i18n.page.cloneToPageSuccess);
+      return Response.success(i18n.page.cloneToPageSuccess, 1052001);
     } catch (err) {
-      return Response.error(err, i18n.content.updatePageVersionFailed);
+      return Response.error(err, i18n.content.updatePageVersionFailed, 3052001);
     }
   }
 }

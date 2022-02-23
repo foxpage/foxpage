@@ -1,4 +1,4 @@
 export const ResourceTypeArray = [
-  { type: 1, label: 'self-build' },
-  { type: 2, label: 'third-party' },
+  { type: 1, label: 'selfBuild' },
+  { type: 2, label: 'thirdParty' },
 ];

@@ -39,23 +39,23 @@ export class OfflineGoodsFromStore extends BaseController {
       // Check offline permission
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4130701);
       }
 
       // Get product details
       let goodsDetail = await this.service.store.goods.getDetailByAppFileId(params.applicationId, params.id);
 
       if (!goodsDetail) {
-        return Response.warning(i18n.store.invalidTypeId);
+        return Response.warning(i18n.store.invalidTypeId, 2130701);
       }
 
       // Set the status of the product to be off the shelf
       await this.service.store.goods.updateDetail(goodsDetail.id, { status: 0 });
       goodsDetail = await this.service.store.goods.getDetailById(goodsDetail.id);
 
-      return Response.success(goodsDetail || {});
+      return Response.success(goodsDetail, 1130701);
     } catch (err) {
-      return Response.error(err, i18n.store.offlineGoodsFromStoreFailed);
+      return Response.error(err, i18n.store.offlineGoodsFromStoreFailed, 3130701);
     }
   }
 }

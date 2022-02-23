@@ -52,7 +52,7 @@ export class OrgUpdateDetailReq {
 
   @JSONSchema({ description: 'Organization Name' })
   @IsString()
-  @Length(2, 100)
+  @Length(1, 100)
   name: string;
 }
 
@@ -193,7 +193,7 @@ export class AddOrgMembersReq {
 
   @JSONSchema({ description: 'Organization member name' })
   @IsString()
-  @Length(4, 50)
+  @Length(1, 100)
   account: string;
 }
 

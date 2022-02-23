@@ -50,9 +50,9 @@ export class AddTemplateContentDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: contentDetail.id, type: TYPE.TEMPLATE });
 
-      return Response.success(templateContentDetail);
+      return Response.success(templateContentDetail, 1070101);
     } catch (err) {
-      return Response.error(err, i18n.template.addNewTemplateContentFailed);
+      return Response.error(err, i18n.template.addNewTemplateContentFailed, 3070101);
     }
   }
 }

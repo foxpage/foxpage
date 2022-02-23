@@ -5,14 +5,14 @@ import { Content, ContentVersion } from '@foxpage/foxpage-server-types';
 import { LOG, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { AppTypeContent, ContentVersionNumber, LiveContentVersion } from '../../types/content-types';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class ContentLiveService extends ContentServiceAbstract {
+export class ContentLiveService extends BaseService<Content> {
   private static _instance: ContentLiveService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**

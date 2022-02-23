@@ -1,5 +1,6 @@
-import { Application } from '@foxpage/foxpage-server-types';
 import _ from 'lodash';
+
+import { Application } from '@foxpage/foxpage-server-types';
 
 import { UpdateApplicationDetail } from '../../../../src/controllers/applications/update-applications';
 import { ApplicationService } from '../../../../src/services/application-service';

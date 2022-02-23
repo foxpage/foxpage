@@ -4,6 +4,8 @@ import { ControlOutlined, FunctionOutlined, LayoutOutlined, SlidersOutlined } fr
 import { Tooltip } from 'antd';
 import styled from 'styled-components';
 
+import GlobalContext from '@/pages/GlobalContext';
+
 import Condition from './condition/Component';
 import Function from './function/Component';
 import Variable from './variable/Component';
@@ -41,6 +43,11 @@ const Icon = styled.div`
 
 const ToolBar = () => {
   const { currentMenu, setCurMenu } = useContext(BuilderContext);
+  const {
+    locale: {
+      business: { global, package: packageI18n },
+    },
+  } = useContext(GlobalContext);
   return (
     <React.Fragment>
       <Container>
@@ -50,7 +57,7 @@ const ToolBar = () => {
             setCurMenu(currentMenu === 'component' ? undefined : 'component');
           }}
         >
-          <Tooltip title="Components" placement="left">
+          <Tooltip title={packageI18n.component} placement="left">
             <LayoutOutlined style={{ fontSize: 16 }} />
           </Tooltip>
         </Icon>
@@ -60,7 +67,7 @@ const ToolBar = () => {
             setCurMenu(currentMenu === 'variable' ? undefined : 'variable');
           }}
         >
-          <Tooltip title="Variables" placement="left">
+          <Tooltip title={global.variables} placement="left">
             <SlidersOutlined style={{ fontSize: 16 }} />
           </Tooltip>
         </Icon>
@@ -70,7 +77,7 @@ const ToolBar = () => {
             setCurMenu(currentMenu === 'condition' ? undefined : 'condition');
           }}
         >
-          <Tooltip title="Conditions" placement="left">
+          <Tooltip title={global.conditions} placement="left">
             <ControlOutlined style={{ fontSize: 16 }} />
           </Tooltip>
         </Icon>
@@ -80,7 +87,7 @@ const ToolBar = () => {
             setCurMenu(currentMenu === 'function' ? undefined : 'function');
           }}
         >
-          <Tooltip title="Functions" placement="left">
+          <Tooltip title={global.functions} placement="left">
             <FunctionOutlined style={{ fontSize: 16 }} />
           </Tooltip>
         </Icon>

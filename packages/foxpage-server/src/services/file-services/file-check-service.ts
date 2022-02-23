@@ -1,16 +1,17 @@
 import _ from 'lodash';
 
-import { Tag } from '@foxpage/foxpage-server-types';
+import { File, Tag } from '@foxpage/foxpage-server-types';
 
+import * as Model from '../../models';
 import { AppFileTag, FileCheck } from '../../types/file-types';
-import { FileServiceAbstract } from '../abstracts/file-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class FileCheckService extends FileServiceAbstract {
+export class FileCheckService extends BaseService<File> {
   private static _instance: FileCheckService;
 
   constructor() {
-    super();
+    super(Model.file);
   }
 
   /**

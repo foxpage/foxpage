@@ -7,3 +7,5 @@ export enum FileTypeEnum {
   function = 'function',
   package = 'package',
 }
+
+export const ZH_CN_STRING = 'zh-cn';

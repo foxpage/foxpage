@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 
 import { EyeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
@@ -9,6 +9,8 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/store/list';
 import { FileTypeEnum } from '@/constants/index';
 import getImageUrlByEnv from '@/utils/get-image-url-by-env';
+
+import GlobalContext from '../GlobalContext';
 
 import BuyModal from './buy/BuyModal';
 import PreviewModal from './preview/PreviewModal';
@@ -78,6 +80,8 @@ const Store: React.FC<StoreResourceProps> = props => {
     updateType,
     fetchAllApplicationList,
   } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global, file } = locale.business;
 
   useEffect(() => {
     fetchStoreResources({ page: pageInfo.page, size: pageInfo.size, search: '', type: FileTypeEnum.page });
@@ -150,10 +154,10 @@ const Store: React.FC<StoreResourceProps> = props => {
                     hoverable
                     bordered
                   >
-                    <Meta title={resource.name} description={`Application: ${resource.application.name}`} />
+                    <Meta title={resource.name} description={`${global.application}: ${resource.application.name}`} />
                     {isPageOrTemplate && (
                       <FileName>
-                        File:
+                        {file.name}:
                         {resource.files.map(item => {
                           return <span style={{ marginLeft: 6 }}>{item.name}</span>;
                         })}
@@ -169,7 +173,7 @@ const Store: React.FC<StoreResourceProps> = props => {
         </Row>
       </Spin>
     );
-  }, [loading, type, projectResourceList, packageResourceList]);
+  }, [loading, type, projectResourceList, packageResourceList, global, file]);
 
   const PaneContent = useMemo(() => {
     return (
@@ -200,13 +204,13 @@ const Store: React.FC<StoreResourceProps> = props => {
     <StyledLayout>
       <Content style={{ padding: '24px', minHeight: 280 }}>
         <Tabs centered size="large" destroyInactiveTabPane defaultActiveKey="page" onChange={handleTabsChange}>
-          <TabPane tab="Page" key={FileTypeEnum.page}>
+          <TabPane tab={file.page} key={FileTypeEnum.page}>
             {PaneContent}
           </TabPane>
-          <TabPane tab="Template" key={FileTypeEnum.template}>
+          <TabPane tab={file.template} key={FileTypeEnum.template}>
             {PaneContent}
           </TabPane>
-          <TabPane tab="Package" key={FileTypeEnum.package}>
+          <TabPane tab={file.package} key={FileTypeEnum.package}>
             {PaneContent}
           </TabPane>
         </Tabs>

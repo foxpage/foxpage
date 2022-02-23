@@ -36,7 +36,7 @@ export class UpdateTemplateDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateFileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.template.invalidTemplateName);
+      return Response.warning(i18n.template.invalidTemplateName, 2071701);
     }
 
     try {
@@ -44,25 +44,25 @@ export class UpdateTemplateDetail extends BaseController {
 
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4071701);
       }
 
       const result = await this.service.file.info.updateFileDetail(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.template.invalidTemplateId);
+        return Response.warning(i18n.template.invalidTemplateId, 2071702);
       }
 
       if (result.code === 2) {
-        return Response.warning(i18n.template.templateNameExist);
+        return Response.warning(i18n.template.templateNameExist, 2071703);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail || {});
+      return Response.success(fileDetail, 1071701);
     } catch (err) {
-      return Response.error(err, i18n.template.updateTemplateFailed);
+      return Response.error(err, i18n.template.updateTemplateFailed, 3071701);
     }
   }
 }

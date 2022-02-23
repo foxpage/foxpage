@@ -85,6 +85,13 @@ export const updateConditionDrawerVisible = createAction(
   }),
 )();
 
+export const updateConditionBindDrawerVisible = createAction(
+  'BUILDER_CONDITION__UPDATE_CONDITION_BIND_DRAWER_VISIBLE',
+  (open: boolean) => ({
+    open,
+  }),
+)();
+
 export const searchLocalTimeVariable = createAction(
   'BUILDER_CONDITION__SEARCH_LOCAL_TIME_VARIABLE',
   (search: string[], cb: (data: VariableType[]) => void) => ({

@@ -50,7 +50,7 @@ export class GetComponentVersionDetail extends BaseController {
       const contentDetail = await this.service.content.info.getDetail({ fileId: fileId, deleted: false });
 
       if (!contentDetail) {
-        return Response.warning(i18n.component.invalidFileId);
+        return Response.warning(i18n.component.invalidFileId, 2110501);
       }
 
       // Get user info and component online store info
@@ -79,9 +79,9 @@ export class GetComponentVersionDetail extends BaseController {
         _.omit(contentDetail, ['creator', 'fileId']),
       ) as FileContentDetail;
 
-      return Response.success(contentUserInfo);
+      return Response.success(contentUserInfo, 1110501);
     } catch (err) {
-      return Response.error(err, i18n.component.getComponentContentDetailFailed);
+      return Response.error(err, i18n.component.getComponentContentDetailFailed, 3110501);
     }
   }
 }

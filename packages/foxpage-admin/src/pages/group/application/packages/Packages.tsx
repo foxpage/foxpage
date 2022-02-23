@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useLocation, useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 
 import { GetComponentSearchsProps } from '@/apis/group/application/packages';
 import { FoxpageBreadcrumb } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/packages/list';
 
 import EditDrawer from './EditDrawer';
@@ -32,6 +33,8 @@ const Packages: React.FC<PackagesProps> = props => {
   const location = useLocation();
   const packageType: GetComponentSearchsProps['type'] = (new URLSearchParams(location.search).get('packageType') ||
     'component') as GetComponentSearchsProps['type'];
+  const { locale } = useContext(GlobalContext);
+  const { global, application, package: packageI18n } = locale.business;
   useEffect(() => {
     updateListState({
       applicationId,
@@ -49,8 +52,8 @@ const Packages: React.FC<PackagesProps> = props => {
     <div>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
-          { name: 'Packages' },
+          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          { name: global.packages },
         ]}
       />
       <Tabs
@@ -63,7 +66,7 @@ const Packages: React.FC<PackagesProps> = props => {
           tab={
             <span>
               <CodepenOutlined />
-              Component
+              {packageI18n.component}
             </span>
           }
           key="component"
@@ -72,7 +75,7 @@ const Packages: React.FC<PackagesProps> = props => {
           tab={
             <span>
               <FormOutlined />
-              Editor
+              {packageI18n.editor}
             </span>
           }
           key="editor"
@@ -81,7 +84,7 @@ const Packages: React.FC<PackagesProps> = props => {
           tab={
             <span>
               <ImportOutlined />
-              Library
+              {packageI18n.library}
             </span>
           }
           key="library"

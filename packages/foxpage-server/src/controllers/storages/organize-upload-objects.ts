@@ -35,12 +35,12 @@ export class UploadObjectToStorage extends BaseController {
       const uploadResult = await this.service.storage.organizeUpload(params);
 
       if (uploadResult.code === 0) {
-        return Response.success(i18n.storage.organizeUploadSuccess);
+        return Response.success(i18n.storage.organizeUploadSuccess, 1150301);
       } else {
-        return Response.warning(i18n.storage.organizeUploadFailed + ':' + uploadResult.data);
+        return Response.warning(i18n.storage.organizeUploadFailed + ':' + uploadResult.data, 2150301);
       }
     } catch (err) {
-      return Response.error(err, i18n.storage.uploadObjectsFailed);
+      return Response.error(err, i18n.storage.uploadObjectsFailed, 3150301);
     }
   }
 }

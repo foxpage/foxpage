@@ -6,6 +6,7 @@ import { getType } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/builder/variable';
 import * as API from '@/apis/group/application/variable';
 import { VariableTypes } from '@/pages/common/constant/VariableFile';
+import { getBusinessI18n } from '@/pages/locale';
 import { searchVariableRelation } from '@/services/builder';
 import { store } from '@/store/index';
 import { VariableActionType } from '@/store/reducers/builder/variable';
@@ -16,6 +17,9 @@ import { isNameError } from '@/utils/error';
 function* getVariables(action: VariableActionType) {
   const { applicationId } = store.getState().builder.page;
   const { folderId } = action.payload as { folderId?: string };
+  const {
+    variable: { fetchFailed },
+  } = getBusinessI18n();
 
   yield put(ACTIONS.setLoadingStatus(true));
   const params: any = {
@@ -31,7 +35,7 @@ function* getVariables(action: VariableActionType) {
     yield put(ACTIONS.pushVariables(res.data, res.pageInfo));
     yield put(ACTIONS.setLoadingStatus(false));
   } else {
-    message.error('Get variable failed');
+    message.error(res.msg || fetchFailed);
   }
 }
 
@@ -40,6 +44,9 @@ function* getApplicationVariables(action: VariableActionType) {
     applicationId: string;
     pageInfo?: PaginationInfo;
   };
+  const {
+    variable: { fetchFailed },
+  } = getBusinessI18n();
 
   yield put(ACTIONS.setLoadingStatus(true));
   const params = {
@@ -53,7 +60,7 @@ function* getApplicationVariables(action: VariableActionType) {
     yield put(ACTIONS.pushVariables(res.data, res.pageInfo));
     yield put(ACTIONS.setLoadingStatus(false));
   } else {
-    message.error('Get variable failed');
+    message.error(res.msg || fetchFailed);
   }
 }
 
@@ -63,6 +70,9 @@ function* saveVariables(action: VariableActionType) {
   if (isNameError(editVariable?.name)) {
     return null;
   }
+  const {
+    global: { saveFailed },
+  } = getBusinessI18n();
 
   const schemas = editVariable.content.schemas;
   schemas[0].name = editVariable.name;
@@ -100,12 +110,15 @@ function* saveVariables(action: VariableActionType) {
       yield put(ACTIONS.getVariables(folderId));
     }
   } else {
-    message.error(res.msg || 'Save variable failed');
+    message.error(res.msg || saveFailed);
   }
 }
 
 function* getBuildVersion(action: VariableActionType) {
   const { file, applicationId } = action.payload as { file: VariableType; applicationId: string };
+  const {
+    variable: { fetchDetailFailed },
+  } = getBusinessI18n();
   const res = yield call(API.getVariableBuildVersion, {
     applicationId,
     id: file.contentId,
@@ -115,12 +128,15 @@ function* getBuildVersion(action: VariableActionType) {
       ACTIONS.pushVariableBuilderVersion({ ...file, content: res.data.content, relations: res.data.relations }),
     );
   } else {
-    message.error('Fetch variable detail failed');
+    message.error(res.msg || fetchDetailFailed);
   }
 }
 
 function* deleteVariable(action: VariableActionType) {
   const { applicationId, folderId, fileId, successCb } = action.payload as VariableDeleteParams;
+  const {
+    global: { deleteFailed },
+  } = getBusinessI18n();
   const res = yield call(API.deleteVariable, {
     applicationId,
     id: fileId,
@@ -133,7 +149,7 @@ function* deleteVariable(action: VariableActionType) {
       yield put(ACTIONS.getVariables(folderId));
     }
   } else {
-    message.error('Delete variable failed');
+    message.error(res.msg || deleteFailed);
   }
 }
 

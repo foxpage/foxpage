@@ -3,9 +3,9 @@ import _ from 'lodash';
 import { StoreOrder } from '@foxpage/foxpage-server-types';
 
 import * as Model from '../../models';
-import { BaseServiceAbstract } from '../abstracts/base-service-abstract';
+import { BaseService } from '../base-service';
 
-export class StoreOrderService extends BaseServiceAbstract<StoreOrder> {
+export class StoreOrderService extends BaseService<StoreOrder> {
   private static _instance: StoreOrderService;
 
   constructor() {

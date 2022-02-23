@@ -39,10 +39,10 @@ export class DownloadStorageObjects extends BaseController {
         ctx.set('Content-type', 'application/zip');
         return Response.download(downloadInfo.contentBuffer);
       } else {
-        return Response.warning(JSON.stringify(downloadInfo));
+        return Response.warning(JSON.stringify(downloadInfo), 2150101);
       }
     } catch (err) {
-      return Response.error(err, i18n.storage.downloadObjectsFailed);
+      return Response.error(err, i18n.storage.downloadObjectsFailed, 3150101);
     }
   }
 }

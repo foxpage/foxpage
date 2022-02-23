@@ -2,17 +2,17 @@ import { Log } from '@foxpage/foxpage-server-types';
 
 import { DataLogPage } from '../types/log-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import logModel from './schema/log';
+import { BaseModel } from './base-model';
 
 /**
  * Log data processing related classes
  *
  * @export
  * @class LogModel
- * @extends {BaseModelAbstract<Log>}
+ * @extends {BaseModel<Log>}
  */
-export class LogModel extends BaseModelAbstract<Log> {
+export class LogModel extends BaseModel<Log> {
   private static _instance: LogModel;
 
   constructor() {

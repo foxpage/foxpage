@@ -40,17 +40,17 @@ export class UpdatePageVersionDetail extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4051901);
       }
 
       const checkResult = this.service.version.check.structure(params.content || {});
       if (checkResult.code !== 0) {
         if (checkResult.code === 1) {
-          return Response.warning(i18n.page.invalidPageContentId + ': ' + checkResult?.msg || '');
+          return Response.warning(i18n.page.invalidPageContentId + ': ' + checkResult?.msg || '', 2051901);
         } else if (checkResult.code === 2) {
-          return Response.warning(i18n.page.invalidRelationFormat + ': ' + checkResult?.msg || '');
+          return Response.warning(i18n.page.invalidRelationFormat + ': ' + checkResult?.msg || '', 2051902);
         } else if (checkResult.code === 3) {
-          return Response.warning(i18n.page.invalidStructureNames + ': ' + checkResult?.msg || '');
+          return Response.warning(i18n.page.invalidStructureNames + ': ' + checkResult?.msg || '', 2051903);
         }
       }
 
@@ -60,22 +60,22 @@ export class UpdatePageVersionDetail extends BaseController {
 
       if (result.code !== 0) {
         if (result.code === 1) {
-          return Response.warning(i18n.page.invalidVersionId);
+          return Response.warning(i18n.page.invalidVersionId, 2051904);
         } else if (result.code === 2) {
-          return Response.warning(i18n.page.unEditedStatus);
+          return Response.warning(i18n.page.unEditedStatus, 2051905);
         } else if (result.code === 3) {
-          return Response.warning(i18n.page.versionExist);
+          return Response.warning(i18n.page.versionExist, 2051906);
         } else if (result.code === 4) {
-          return Response.warning(i18n.page.missingFields + result.data.join(','));
+          return Response.warning(i18n.page.missingFields + result.data.join(','), 2051907);
         }
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
       const versionDetail = await this.service.version.info.getDetailById(<string>result.data);
 
-      return Response.success(versionDetail || {});
+      return Response.success(versionDetail, 1051901);
     } catch (err) {
-      return Response.error(err, i18n.content.updatePageVersionFailed);
+      return Response.error(err, i18n.content.updatePageVersionFailed, 3051901);
     }
   }
 }

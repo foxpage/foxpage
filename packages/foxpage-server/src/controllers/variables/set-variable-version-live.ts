@@ -37,30 +37,33 @@ export class SetVariableLiveVersions extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.VARIABLE });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4080901);
       }
 
       const result = await this.service.content.live.setLiveVersion(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidVersionId);
+        return Response.warning(i18n.content.invalidVersionId, 2080901);
       } else if (result.code === 2) {
-        return Response.warning(i18n.content.versionIsNotReleaseStatus);
+        return Response.warning(i18n.content.versionIsNotReleaseStatus, 2080902);
       } else if (result.code === 3) {
         const contentResult: any = JSON.parse(<string>result.data);
         if (contentResult.code === 3) {
-          return Response.warning(i18n.content.RelationInfoNotExist + ':' + contentResult.data.join(','));
+          return Response.warning(
+            i18n.content.RelationInfoNotExist + ':' + contentResult.data.join(','),
+            2080903,
+          );
         } else if (contentResult.code === 4) {
-          return Response.warning(i18n.content.RelationDependRecursive + ':' + contentResult.data);
+          return Response.warning(i18n.content.RelationDependRecursive + ':' + contentResult.data, 2080904);
         }
       }
 
       await this.service.content.live.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.live.getDetailById(params.id);
 
-      return Response.success(contentDetail);
+      return Response.success(contentDetail, 1080901);
     } catch (err) {
-      return Response.error(err, i18n.variable.setVariableContentLiveFailed);
+      return Response.error(err, i18n.variable.setVariableContentLiveFailed, 3080901);
     }
   }
 }

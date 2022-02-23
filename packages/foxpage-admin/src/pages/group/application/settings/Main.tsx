@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/group/application/settings';
 import { ResourceTypeArray } from '@/constants/resource';
 import { FoxpageBreadcrumb } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationEditType, RegionType } from '@/types/application';
 import { ContentUrlParams } from '@/types/application/content';
 
@@ -66,6 +67,8 @@ type SettingType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProp
 
 const Main: React.FC<SettingType> = props => {
   const { applicationId, organizationId } = useParams<ContentUrlParams>();
+  const { locale } = useContext(GlobalContext);
+  const { global, setting, resource: resourceI18n, application: applicationI18n } = locale.business;
   const {
     loading,
     application,
@@ -96,19 +99,7 @@ const Main: React.FC<SettingType> = props => {
       const { locales = [], resources = [] } = application;
       setEditApplication({
         ...application,
-        resources:
-          resources.length > 0
-            ? resources
-            : [
-                {
-                  name: '',
-                  type: '',
-                  detail: {
-                    host: '',
-                    downloadHost: '',
-                  },
-                },
-              ],
+        resources: resources.length > 0 ? resources : [],
         localeObjects:
           locales.length > 0
             ? locales.map((locale: string) => {
@@ -118,12 +109,7 @@ const Main: React.FC<SettingType> = props => {
                   language: array[0],
                 };
               })
-            : [
-                {
-                  region: '',
-                  language: '',
-                },
-              ],
+            : [],
       } as ApplicationEditType);
     }
   }, [application]);
@@ -226,8 +212,8 @@ const Main: React.FC<SettingType> = props => {
     <React.Fragment>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
-          { name: 'Settings' },
+          { name: applicationI18n.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          { name: global.setting },
         ]}
       />
       <Spin tip="Loading" spinning={loading}>
@@ -235,13 +221,13 @@ const Main: React.FC<SettingType> = props => {
           <Row>
             <Col span={6}>
               <Title level={3} type="secondary" style={{ textAlign: 'right' }}>
-                Basic Info
+                {setting.basicInfo}
               </Title>
             </Col>
           </Row>
           <Row>
             <Col span={6}>
-              <Label>Name</Label>
+              <Label>{global.nameLabel}</Label>
             </Col>
             <Col span={10}>
               <Input
@@ -254,7 +240,7 @@ const Main: React.FC<SettingType> = props => {
           </Row>
           <Row>
             <Col span={6}>
-              <Label>Introduction</Label>
+              <Label>{setting.Introduction}</Label>
             </Col>
             <Col span={10}>
               <Input
@@ -268,13 +254,13 @@ const Main: React.FC<SettingType> = props => {
           <Row>
             <Col span={6}>
               <Title level={3} type="secondary" style={{ textAlign: 'right' }}>
-                Access Control
+                {setting.accessControl}
               </Title>
             </Col>
           </Row>
           <Row>
             <Col span={6}>
-              <Label>Host</Label>
+              <Label>{global.host}</Label>
             </Col>
 
             <Col span={10}>
@@ -288,7 +274,7 @@ const Main: React.FC<SettingType> = props => {
           </Row>
           <Row>
             <Col span={6}>
-              <Label>Slug</Label>
+              <Label>{setting.slug}</Label>
             </Col>
             <Col span={10}>
               <Input
@@ -302,7 +288,7 @@ const Main: React.FC<SettingType> = props => {
           <Row>
             <Col span={6}>
               <Title level={3} type="secondary" style={{ textAlign: 'right' }}>
-                Locale
+                {global.locale}
               </Title>
             </Col>
           </Row>
@@ -313,7 +299,7 @@ const Main: React.FC<SettingType> = props => {
                 return (
                   <Row key={`${locale.region}${locale.language}`}>
                     <Col span={24}>
-                      <span style={{ marginRight: 12 }}>Country/Region</span>
+                      <span style={{ marginRight: 12 }}>{setting.region}</span>
                       <Select
                         value={locale.region}
                         style={{ width: 120 }}
@@ -327,7 +313,7 @@ const Main: React.FC<SettingType> = props => {
                           </Option>
                         ))}
                       </Select>
-                      <span style={{ margin: '0 12px' }}>Language</span>
+                      <span style={{ margin: '0 12px' }}>{setting.language}</span>
                       <Select
                         style={{ width: 120 }}
                         value={locale.language}
@@ -341,30 +327,34 @@ const Main: React.FC<SettingType> = props => {
                           </Option>
                         ))}
                       </Select>
-                      <PlusOutlined
+                      {/* <PlusOutlined
                         style={iconStyle}
                         onClick={() => {
                           handleAddLocale(index + 1);
                         }}
+                      /> */}
+                      <MinusOutlined
+                        style={iconStyle}
+                        onClick={() => {
+                          handleRemoveLocale(index);
+                        }}
                       />
-                      {editApplication?.localeObjects?.length > 1 ? (
-                        <MinusOutlined
-                          style={iconStyle}
-                          onClick={() => {
-                            handleRemoveLocale(index);
-                          }}
-                        />
-                      ) : null}
                     </Col>
                   </Row>
                 );
               })}
             </Col>
+            <Col span={10} offset={6}>
+              <Button type="dashed" onClick={() => handleAddLocale(editApplication?.localeObjects?.length || 0)} block>
+                <PlusOutlined style={{ marginRight: 8, cursor: 'pointer' }} />
+                {applicationI18n.addLocale}
+              </Button>
+            </Col>
           </Row>
           <Row>
             <Col span={6}>
               <Title level={3} type="secondary" style={{ textAlign: 'right' }}>
-                Resource
+                {setting.resource}
               </Title>
             </Col>
           </Row>
@@ -373,7 +363,7 @@ const Main: React.FC<SettingType> = props => {
               {editApplication?.resources?.map((resource, index) => {
                 return (
                   <Row style={{ display: 'block' }} key={resource.id}>
-                    <ResourceLabel style={{ width: 38 }}>Name</ResourceLabel>
+                    <ResourceLabel style={{ width: 38 }}>{global.nameLabel}</ResourceLabel>
                     <Input
                       value={resource.name}
                       style={{ width: 200 }}
@@ -381,7 +371,7 @@ const Main: React.FC<SettingType> = props => {
                         handleUpdateResource(index, 'name', e.target.value);
                       }}
                     />
-                    <ResourceLabel style={{ marginLeft: 12 }}>Type</ResourceLabel>
+                    <ResourceLabel style={{ marginLeft: 12 }}>{global.type}</ResourceLabel>
                     <Select
                       style={{ width: 200 }}
                       value={resource.type}
@@ -391,12 +381,12 @@ const Main: React.FC<SettingType> = props => {
                     >
                       {ResourceTypeArray?.map(item => (
                         <Option key={item.type} value={item.type}>
-                          {item.label}
+                          {resourceI18n[item.label]}
                         </Option>
                       ))}
                     </Select>
                     <br />
-                    <ResourceLabel style={{ width: 38 }}>Host</ResourceLabel>
+                    <ResourceLabel style={{ width: 38 }}>{global.host}</ResourceLabel>
                     <Input
                       value={resource.detail.host}
                       style={{ width: 200 }}
@@ -407,7 +397,7 @@ const Main: React.FC<SettingType> = props => {
                         });
                       }}
                     />
-                    <ResourceLabel style={{ marginLeft: 12 }}>Download Host</ResourceLabel>
+                    <ResourceLabel style={{ marginLeft: 12 }}>{setting.downloadHost}</ResourceLabel>
                     <Input
                       value={resource.detail.downloadHost}
                       style={{ width: 200 }}
@@ -419,30 +409,34 @@ const Main: React.FC<SettingType> = props => {
                       }}
                     />
 
-                    <PlusOutlined
+                    {/* <PlusOutlined
                       style={{ margin: '8px 0 0 8px', cursor: 'pointer' }}
                       onClick={() => {
                         handleAddResource(index + 1);
                       }}
+                    /> */}
+                    <MinusOutlined
+                      style={{ margin: '8px 0 0 8px', cursor: 'pointer' }}
+                      onClick={() => {
+                        handleRemoveResource(index);
+                      }}
                     />
-                    {editApplication?.resources?.length > 1 && !resource.id ? (
-                      <MinusOutlined
-                        style={{ margin: '8px 0 0 8px', cursor: 'pointer' }}
-                        onClick={() => {
-                          handleRemoveResource(index);
-                        }}
-                      />
-                    ) : null}
                   </Row>
                 );
               })}
+            </Col>
+            <Col span={10} offset={6}>
+              <Button type="dashed" onClick={() => handleAddResource(editApplication?.resources?.length || 0)} block>
+                <PlusOutlined style={{ marginRight: 8, cursor: 'pointer' }} />
+                {applicationI18n.addResource}
+              </Button>
             </Col>
           </Row>
 
           <Row>
             <Col span={10} offset={6}>
               <Button type="primary" onClick={() => handleSave()} block>
-                Save
+                {global.save}
               </Button>
             </Col>
           </Row>

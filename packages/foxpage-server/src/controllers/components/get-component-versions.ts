@@ -35,7 +35,7 @@ export class GetComponentVersionDetail extends BaseController {
     try {
       const contentDetail = await this.service.content.info.getDetail({ fileId: params.id, deleted: false });
       if (!contentDetail) {
-        return Response.warning(i18n.component.invalidFileId);
+        return Response.warning(i18n.component.invalidFileId, 2111001);
       }
 
       const versionDetail = await this.service.version.info.getDetail({
@@ -74,9 +74,10 @@ export class GetComponentVersionDetail extends BaseController {
               versionDetail,
             )
           : {},
+        1111001,
       );
     } catch (err) {
-      return Response.error(err, i18n.content.getComponentVersionDetailFailed);
+      return Response.error(err, i18n.content.getComponentVersionDetailFailed, 3111001);
     }
   }
 }

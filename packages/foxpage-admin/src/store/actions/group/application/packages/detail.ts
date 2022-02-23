@@ -115,8 +115,8 @@ export const fetchComponentRemotes = createAction(
 
 export const pushComponentRemotes = createAction(
   'ORG_APP_COMPONENT_DETAIL__PUSH_COMPONENT_REMOTES',
-  (remotes: ComponentRemote[], lastVersion: AppComponentEditVersionType) => ({
-    remotes,
+  (remote: ComponentRemote, lastVersion: AppComponentEditVersionType) => ({
+    remote,
     lastVersion,
   }),
 )();

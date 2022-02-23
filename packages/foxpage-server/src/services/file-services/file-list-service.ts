@@ -14,14 +14,14 @@ import {
   FileUserInfo,
 } from '../../types/file-types';
 import { PageData, PageSize } from '../../types/index-types';
-import { FileServiceAbstract } from '../abstracts/file-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class FileListService extends FileServiceAbstract {
+export class FileListService extends BaseService<File> {
   private static _instance: FileListService;
 
   constructor() {
-    super();
+    super(Model.file);
   }
 
   /**

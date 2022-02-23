@@ -39,22 +39,22 @@ export class SetPageContentStatus extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.PAGE });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4051101);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidContentId);
+        return Response.warning(i18n.content.invalidContentId, 2051101);
       } else if (result.code === 2) {
-        return Response.warning(i18n.page.contentCannotBeDeleted);
+        return Response.warning(i18n.page.contentCannotBeDeleted, 2051102);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1051101);
     } catch (err) {
-      return Response.error(err, i18n.page.setPageContentDeletedFailed);
+      return Response.error(err, i18n.page.setPageContentDeletedFailed, 3051101);
     }
   }
 }

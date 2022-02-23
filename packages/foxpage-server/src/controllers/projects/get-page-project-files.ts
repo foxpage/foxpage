@@ -37,7 +37,7 @@ export class GetProjectFileList extends BaseController {
       // Check if the folder is deleted
       const folderDetail = await this.service.folder.info.getDetailById(params.id);
       if (!folderDetail || (!params.deleted && folderDetail.deleted)) {
-        return Response.warning(i18n.project.projectIsInvalidOrDeleted);
+        return Response.warning(i18n.project.projectIsInvalidOrDeleted, 2040301);
       }
 
       this.service.folder.list.setPageSize(params);
@@ -47,16 +47,19 @@ export class GetProjectFileList extends BaseController {
         data: FileFolderInfo;
       } = await this.service.folder.list.getPageChildrenList(params, [TYPE.TEMPLATE, TYPE.PAGE]);
 
-      return Response.success({
-        pageInfo: {
-          page: params.page,
-          size: params.size,
-          total: childrenList.count,
+      return Response.success(
+        {
+          pageInfo: {
+            page: params.page,
+            size: params.size,
+            total: childrenList.count,
+          },
+          data: childrenList.data || [],
         },
-        data: childrenList.data || [],
-      });
+        1040301,
+      );
     } catch (err) {
-      return Response.error(err, i18n.project.getChildrenFilesFailed);
+      return Response.error(err, i18n.project.getChildrenFilesFailed, 3040301);
     }
   }
 }

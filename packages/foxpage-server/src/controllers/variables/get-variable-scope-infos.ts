@@ -130,16 +130,19 @@ export class GetAppScopeVariableList extends BaseController {
         );
       }
 
-      return Response.success({
-        pageInfo: {
-          total: contentVersionList.length,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: contentVersionList.length,
+            page: params.page,
+            size: params.size,
+          },
+          data: _.chunk(contentVersionList, params.size)?.[params.page - 1] || [],
         },
-        data: _.chunk(contentVersionList, params.size)?.[params.page - 1] || [],
-      });
+        1080501,
+      );
     } catch (err) {
-      return Response.error(err, i18n.variable.getAppVariableFailed);
+      return Response.error(err, i18n.variable.getAppVariableFailed, 3080501);
     }
   }
 }

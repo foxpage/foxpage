@@ -1,8 +1,9 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 
 import { Radio } from 'antd';
 
 import { ScopeEnum } from '@/constants/scope';
+import GlobalContext from '@/pages/GlobalContext';
 
 interface Type {
   scope: ScopeEnum;
@@ -11,7 +12,8 @@ interface Type {
 
 const ScopeSelect: React.FC<Type> = props => {
   const { scope, onScopeChange } = props;
-
+  const { locale } = useContext(GlobalContext);
+  const { global } = locale.business;
   const handleScopeChange = useCallback(e => {
     const value = e.target.value;
     onScopeChange(value);
@@ -21,8 +23,8 @@ const ScopeSelect: React.FC<Type> = props => {
     <Radio.Group
       size="small"
       options={[
-        { label: 'Project', value: 'project' },
-        { label: 'Application', value: 'application' },
+        { label: global.project, value: 'project' },
+        { label: global.application, value: 'application' },
       ]}
       optionType="button"
       value={scope}

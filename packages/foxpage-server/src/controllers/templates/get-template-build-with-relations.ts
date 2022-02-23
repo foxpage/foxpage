@@ -40,7 +40,7 @@ export class GetAppTemplateBuildInfoList extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
       if (params.ids.length === 0) {
-        return Response.success([]);
+        return Response.success([], 1070601);
       }
 
       const contentFileObject = await this.service.file.list.getContentFileByIds(params.ids);
@@ -73,16 +73,16 @@ export class GetAppTemplateBuildInfoList extends BaseController {
       });
 
       if (dependMissing.length > 0) {
-        return Response.error(new Error(dependMissing.join(',')), i18n.page.pageDependMissing);
+        return Response.error(new Error(dependMissing.join(',')), i18n.page.pageDependMissing, 3070601);
       }
 
       if (recursiveItem.length > 0) {
-        return Response.error(new Error(recursiveItem.join(',')), i18n.page.pageHasRecursiveDepend);
+        return Response.error(new Error(recursiveItem.join(',')), i18n.page.pageHasRecursiveDepend, 3070602);
       }
 
-      return Response.success(contentAndRelation);
+      return Response.success(contentAndRelation, 1070601);
     } catch (err) {
-      return Response.error(err, i18n.condition.getAppPageFailed);
+      return Response.error(err, i18n.condition.getAppPageFailed, 3070603);
     }
   }
 }

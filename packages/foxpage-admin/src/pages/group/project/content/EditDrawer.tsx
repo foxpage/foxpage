@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ import JSONEditor from '@/components/business/JsonEditor';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Field, Group, Label } from '@/components/widgets/group';
 import { FileTypeEnum } from '@/constants/index';
+import GlobalContext from '@/pages/GlobalContext';
 import { ProjectContentTag } from '@/types/application/project';
 import { ProjectContentUrlParams } from '@/types/project';
 
@@ -52,6 +53,8 @@ const EditDrawer: React.FC<ProjectContentEditDrawerType> = props => {
     fetchLocales,
   } = props;
   const { fileId, applicationId } = useParams<ProjectContentUrlParams>();
+  const { locale } = useContext(GlobalContext);
+  const { global, content } = locale.business;
 
   const localesTag: ProjectContentTag[] =
     editContent && editContent.tags ? editContent.tags.filter(item => item.locale) || [] : [];
@@ -81,7 +84,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawerType> = props => {
   return (
     <OperationDrawer
       open={editorDrawerOpen}
-      title={editContent && editContent.id ? 'Edit' : 'Add'}
+      title={editContent && editContent.id ? content.edit : content.add}
       onClose={() => {
         closeDrawer(false);
       }}
@@ -94,7 +97,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawerType> = props => {
             save({ applicationId, fileId, fileType: fileDetail?.type || FileTypeEnum.page });
           }}
         >
-          Apply
+          {global.apply}
           {saveLoading && <SyncOutlined spin={true} style={{ color: '#fff' }} />}
         </Button>
       }
@@ -102,15 +105,15 @@ const EditDrawer: React.FC<ProjectContentEditDrawerType> = props => {
       {editContent ? (
         <Group>
           <Field>
-            <Label>Name</Label>
+            <Label>{global.nameLabel}</Label>
             <Input
               value={editContent.title}
-              placeholder="content name"
+              placeholder={content.nameLabel}
               onChange={e => update('title', e.target.value)}
             />
           </Field>
           <Field>
-            <Label>Locale</Label>
+            <Label>{global.locale}</Label>
             <LocaleSelect>
               {locales.map((locale: string) => {
                 const selected = localesTag.find(item => item.locale === locale);
@@ -130,7 +133,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawerType> = props => {
             </LocaleSelect>
           </Field>
           <Field>
-            <Label>Query</Label>
+            <Label>{content.query}</Label>
             <JSONEditor
               jsonData={queryTag.query || {}}
               onChangeJSON={json => {

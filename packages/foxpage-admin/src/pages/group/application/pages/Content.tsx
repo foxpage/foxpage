@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useLocation, useParams } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { fetchApplicationInfo } from '@/actions/group/application/settings';
 import ContentEditDrawer from '@/components/business/content/ContentEditDrawer';
 import ContentList from '@/components/business/content/ContentList';
 import { FileTypeEnum } from '@/constants/index';
+import GlobalContext from '@/pages/GlobalContext';
 import { ContentType, ContentUrlParams } from '@/types/application/content';
 
 import { FoxpageBreadcrumb } from '../../../common';
@@ -45,6 +46,8 @@ const Main: React.FC<PageListType> = props => {
 
   const { search } = useLocation();
   const folderId = new URLSearchParams(search).get('folderId');
+  const { locale } = useContext(GlobalContext);
+  const { global, application, file } = locale.business;
 
   useEffect(() => {
     return () => {
@@ -99,9 +102,9 @@ const Main: React.FC<PageListType> = props => {
     <React.Fragment>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
-          { name: 'Pages', link: `/#/organization/${organizationId}/application/${applicationId}/detail/page` },
-          { name: 'Contents' },
+          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          { name: file.page, link: `/#/organization/${organizationId}/application/${applicationId}/detail/page` },
+          { name: global.contents },
         ]}
       />
       <div style={{ marginTop: 12 }}>

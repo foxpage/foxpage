@@ -26,5 +26,15 @@
     "removeComments": false,
     "declaration": true
   },
-  "exclude": ["node_modules", "lib", "dist", "es", "__mocks__/**/*", ".cache", "__*", "commitlint.config.js"]
+  "exclude": [
+    "node_modules",
+    "lib",
+    "dist",
+    "es",
+    "__mocks__/*",
+    "__mocks__/**/*",
+    ".cache",
+    "__*",
+    "commitlint.config.js"
+  ]
 }

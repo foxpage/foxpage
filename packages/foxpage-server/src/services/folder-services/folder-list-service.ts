@@ -16,14 +16,14 @@ import {
   WorkspaceFolderSearch,
 } from '../../types/file-types';
 import { PageData } from '../../types/index-types';
-import { FolderServiceAbstract } from '../abstracts/folder-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class FolderListService extends FolderServiceAbstract {
+export class FolderListService extends BaseService<Folder> {
   private static _instance: FolderListService;
 
   constructor() {
-    super();
+    super(Model.folder);
   }
 
   /**

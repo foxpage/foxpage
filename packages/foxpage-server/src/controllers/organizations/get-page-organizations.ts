@@ -33,9 +33,9 @@ export class GetOrgList extends BaseController {
     try {
       const orgPageList = await this.service.org.getPageList(params);
 
-      return Response.success(orgPageList);
+      return Response.success(orgPageList, 1010601);
     } catch (err) {
-      return Response.error(err, i18n.org.getOrgListFailed);
+      return Response.error(err, i18n.org.getOrgListFailed, 3010601);
     }
   }
 }

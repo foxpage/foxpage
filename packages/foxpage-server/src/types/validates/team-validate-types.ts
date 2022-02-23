@@ -61,7 +61,7 @@ export class TeamListReq {
 export class AddTeamDetailReq {
   @JSONSchema({ description: 'Team name' })
   @IsString()
-  @Length(2, 100)
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'The ID of the organization to which the team belongs' })
@@ -158,7 +158,7 @@ export class UpdateTeamDetailReq {
 
   @JSONSchema({ description: 'Team name' })
   @IsString()
-  @Length(2, 100)
+  @Length(1, 100)
   name: string;
 }
 

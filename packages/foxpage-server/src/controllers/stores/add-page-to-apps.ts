@@ -52,7 +52,7 @@ export class AddStorePageToApplication extends BaseController {
       const goodsList = await this.service.store.goods.getDetailByIds(params.goodsIds);
 
       if (goodsList.length === 0) {
-        return Response.warning(i18n.store.invalidGoodsIds);
+        return Response.warning(i18n.store.invalidGoodsIds, 2130301);
       }
 
       const invalidGoods = _.filter(goodsList, (goods) => {
@@ -60,7 +60,7 @@ export class AddStorePageToApplication extends BaseController {
       });
 
       if (invalidGoods.length > 0) {
-        return Response.warning(i18n.store.invalidGoods + _.map(invalidGoods, 'name').join(','));
+        return Response.warning(i18n.store.invalidGoods + _.map(invalidGoods, 'name').join(','), 2130302);
       }
 
       // TODO Check app permissions
@@ -129,9 +129,9 @@ export class AddStorePageToApplication extends BaseController {
 
       await this.service.store.goods.runTransaction(ctx.transactions);
 
-      return Response.success(i18n.store.addGoodsToAppSuccess);
+      return Response.success(i18n.store.addGoodsToAppSuccess, 1130301);
     } catch (err) {
-      return Response.error(err, i18n.store.addStorePageToApplicationFailed);
+      return Response.error(err, i18n.store.addStorePageToApplicationFailed, 3130301);
     }
   }
 }

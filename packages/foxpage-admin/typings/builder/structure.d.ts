@@ -21,7 +21,7 @@ export interface ComponentSchemaType {
 }
 
 export interface ComponentDirectiveType {
-  [name: string]: string | Array<string>;
+  [name: string]: string | Array<string> | undefined;
 }
 
 export interface ComponentPropsType {
@@ -39,7 +39,7 @@ export interface ComponentStructure {
   wrapper?: string;
   children: Array<ComponentStructure>;
   resource?: ComponentSourceType;
-  schema?: string;
+  schema?: ComponentSchemaType;
   meta?: string;
   position?: number;
   relation?: RelationType;
@@ -113,4 +113,18 @@ export interface TemplateFetchResponse extends BaseResponse {
 
 export interface DslError {
   [componentId: string]: string[];
+}
+
+export interface ComponentSaveParams {
+  applicationId: string;
+  folderId: string;
+  isWrapper: boolean;
+}
+
+export interface ComponentAddParams {
+  type: 'insert' | 'append';
+  componentId: string;
+  pos: string;
+  desc: ComponentStructure;
+  parentId: string;
 }

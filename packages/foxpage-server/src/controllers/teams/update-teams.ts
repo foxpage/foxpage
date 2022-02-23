@@ -36,13 +36,13 @@ export class UpdateTeamDetail extends BaseController {
       // Get team details
       let teamDetail = await this.service.team.getDetailById(params.teamId);
       if (!teamDetail || teamDetail.deleted) {
-        return Response.warning(i18n.team.invalidTeamId);
+        return Response.warning(i18n.team.invalidTeamId, 2020801);
       }
 
       // Permission check
       const hasAuth = await this.service.auth.team(params.teamId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4020801);
       }
 
       if (teamDetail.name !== params.name) {
@@ -61,9 +61,9 @@ export class UpdateTeamDetail extends BaseController {
         // });
       }
 
-      return Response.success(teamDetail || {});
+      return Response.success(teamDetail, 1020801);
     } catch (err) {
-      return Response.error(err, i18n.team.updateTeamFailed);
+      return Response.error(err, i18n.team.updateTeamFailed, 3020801);
     }
   }
 }

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { Form, Input } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/list/index';
+import GlobalContext from '@/pages/GlobalContext';
 
 const formItemLayout = {
   labelCol: { span: 4 },
@@ -27,10 +28,16 @@ type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const EditPanel = (props: IProps) => {
   const { editApp = {}, update } = props;
+  const { locale } = useContext(GlobalContext);
+  const { application } = locale.business;
   return (
     <div style={{ padding: 12 }}>
-      <Form.Item {...formItemLayout} label="App name">
-        <Input defaultValue={editApp.name} placeholder="App name" onChange={e => update('name', e.target.value)} />
+      <Form.Item {...formItemLayout} label={application.nameLabel}>
+        <Input
+          defaultValue={editApp.name}
+          placeholder={application.nameLabel}
+          onChange={e => update('name', e.target.value)}
+        />
       </Form.Item>
     </div>
   );

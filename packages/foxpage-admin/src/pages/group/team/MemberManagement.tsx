@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/team';
 import { fetchOrganizationUsers } from '@/actions/group/user';
+import GlobalContext from '@/pages/GlobalContext';
 import { OrganizationUrlParams } from '@/types/index';
 import periodFormat from '@/utils/period-format';
 
@@ -60,6 +61,8 @@ const MemberManagement: React.FC<MemberManagementType> = props => {
   } = props;
   const { organizationId } = useParams<OrganizationUrlParams>();
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const { locale } = useContext(GlobalContext);
+  const { global, team } = locale.business;
 
   useEffect(() => {
     if (managementTeam?.id) {
@@ -82,7 +85,7 @@ const MemberManagement: React.FC<MemberManagementType> = props => {
 
   const handleAdd = () => {
     if (selectedUserIds.length === 0) {
-      message.warning('Please select users');
+      message.warning(team.selectUserPlaceHolder);
       return;
     }
 
@@ -97,7 +100,7 @@ const MemberManagement: React.FC<MemberManagementType> = props => {
 
   return (
     <Modal
-      title="User Management"
+      title={team.userManagement}
       centered
       visible={userManagementDrawerOpen}
       onCancel={handleClose}
@@ -111,7 +114,7 @@ const MemberManagement: React.FC<MemberManagementType> = props => {
         <div style={{ display: 'flex', marginBottom: 12 }}>
           <Select
             mode="multiple"
-            placeholder="select users"
+            placeholder={team.selectUserPlaceHolder}
             value={selectedUserIds}
             onChange={handleSelectUserChange}
             style={{ width: '100%' }}
@@ -132,7 +135,7 @@ const MemberManagement: React.FC<MemberManagementType> = props => {
               handleAdd();
             }}
           >
-            <PlusOutlined /> Add Users
+            <PlusOutlined /> {team.addUser}
           </Button>
         </div>
 
@@ -140,32 +143,32 @@ const MemberManagement: React.FC<MemberManagementType> = props => {
           size="small"
           columns={[
             {
-              title: 'Account',
+              title: team.account,
               dataIndex: 'account',
             },
             {
-              title: 'UserId',
+              title: team.userId,
               dataIndex: 'userId',
             },
             {
-              title: 'JoinTime',
+              title: team.joinTime,
               key: 'joinTime',
               width: 200,
               render: (text: string) => periodFormat(text, 'unknown'),
             },
             {
-              title: 'Actions',
+              title: global.actions,
               key: 'status',
               width: 80,
               render: (_text: string, user) => {
                 return (
                   <Popconfirm
-                    title="Are you sure to delete this user?"
+                    title={`${global.deleteMsg} ${user.account}?`}
                     onConfirm={() => {
                       deleteTeamUsers({ teamId: managementTeam.id, users: [user] });
                     }}
-                    okText="Yes"
-                    cancelText="No"
+                    okText={global.yes}
+                    cancelText={global.no}
                   >
                     <Button size="small" shape="circle" icon={<DeleteOutlined />} />
                   </Popconfirm>

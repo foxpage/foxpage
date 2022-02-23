@@ -47,16 +47,19 @@ export class GetOrganizationPageMemberList extends BaseController {
         });
       }
 
-      return Response.success({
-        pageInfo: {
-          page: params.page || 1,
-          size: params.size || 20,
-          total: allMembers.length || 0,
+      return Response.success(
+        {
+          pageInfo: {
+            page: params.page || 1,
+            size: params.size || 20,
+            total: allMembers.length || 0,
+          },
+          data: memberList || [],
         },
-        data: memberList || [],
-      });
+        1010401,
+      );
     } catch (err) {
-      return Response.error(err, i18n.org.getOrgMemberListFailed);
+      return Response.error(err, i18n.org.getOrgMemberListFailed, 3010401);
     }
   }
 }

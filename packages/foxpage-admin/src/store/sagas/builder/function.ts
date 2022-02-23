@@ -4,6 +4,7 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/function';
 import * as API from '@/apis/group/application/function';
+import { getBusinessI18n } from '@/pages/locale';
 import { FunctionActionType } from '@/reducers/builder/function';
 import { searchVariableRelation } from '@/services/builder';
 import { store } from '@/store/index';
@@ -21,13 +22,15 @@ import { isNameError } from '@/utils/error';
 
 function* handleFetchList(actions: FunctionActionType) {
   yield put(ACTIONS.updateLoading(true));
-
+  const {
+    function: { fetchFailed },
+  } = getBusinessI18n();
   const { params } = actions.payload as { params: FuncFetchParams };
   const rs: FuncFetchRes = yield call(API.getFunctions, params);
   if (rs.code === 200) {
     yield put(ACTIONS.pushList(rs));
   } else {
-    message.error('Fetch condition list failed');
+    message.error(rs.msg || fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -35,13 +38,15 @@ function* handleFetchList(actions: FunctionActionType) {
 
 function* fetchApplicationFunctions(actions: FunctionActionType) {
   yield put(ACTIONS.updateLoading(true));
-
+  const {
+    function: { fetchFailed },
+  } = getBusinessI18n();
   const { applicationId, page, size } = actions.payload as FuncFetchParams;
   const rs: FuncFetchRes = yield call(API.getApplicationFunctions, { applicationId, page, size });
   if (rs.code === 200) {
     yield put(ACTIONS.pushList(rs));
   } else {
-    message.error('Fetch function list failed');
+    message.error(rs.msg || fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -69,6 +74,9 @@ function* handleSaveFunction(actions: FunctionActionType) {
   if (isNameError(params?.name)) {
     return;
   }
+  const {
+    global: { saveSuccess, saveFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.updateLoading(true));
 
   const isError = yield setRelationToContent(params);
@@ -79,11 +87,11 @@ function* handleSaveFunction(actions: FunctionActionType) {
 
   const rs: FuncNewRes = yield call(API.addFunction, params);
   if (rs.code === 200) {
-    message.success('Add new functions succeed');
+    message.success(saveSuccess);
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error('Add function failed');
+    message.error(rs.msg || saveFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -91,7 +99,9 @@ function* handleSaveFunction(actions: FunctionActionType) {
 
 function* handleDeleteFunction(actions: FunctionActionType) {
   yield put(ACTIONS.updateLoading(true));
-
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
   const { params, cb, refreshData } = actions.payload as {
     params: FuncDeleteParams;
     cb?: () => void;
@@ -99,7 +109,7 @@ function* handleDeleteFunction(actions: FunctionActionType) {
   };
   const rs: FuncDeleteRes = yield call(API.deleteFunction, params);
   if (rs.code === 200) {
-    message.success('Delete function succeed');
+    message.success(deleteSuccess);
 
     if (typeof cb === 'function') cb();
 
@@ -107,7 +117,7 @@ function* handleDeleteFunction(actions: FunctionActionType) {
       yield refresh();
     }
   } else {
-    message.error('Delete function failed, please retry later');
+    message.error(rs.msg || deleteFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -122,6 +132,9 @@ function* handleUpdateFunction(actions: FunctionActionType) {
   if (isNameError(params?.name)) {
     return;
   }
+  const {
+    global: { updateSuccess, updateFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.updateLoading(true));
 
   const isError = yield setRelationToContent(params);
@@ -132,10 +145,10 @@ function* handleUpdateFunction(actions: FunctionActionType) {
 
   const rs: FuncUpdateRes = yield call(API.updateFunction, params);
   if (rs.code === 200) {
-    message.success('Update function succeed');
+    message.success(updateSuccess);
     if (typeof cb === 'function') cb();
   } else {
-    message.error('Update function failed, please retry later');
+    message.error(rs.msg || updateFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));

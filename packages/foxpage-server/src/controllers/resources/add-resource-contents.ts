@@ -38,9 +38,14 @@ export class AddResourceContentDetail extends BaseController {
   @ResponseSchema(ContentVersionDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: AddResourceContentReq): Promise<ResData<ContentVersion>> {
     try {
-      let fileTitle = _.last(params.content.realPath.split('/')) || '';
+      let fileTitle = _.last(params.content.realPath?.split('/')) || '';
       if (!fileTitle) {
-        return Response.warning(i18n.resource.invalidName);
+        return Response.warning(i18n.resource.invalidName, 2120101);
+      }
+
+      const hasAuth = await this.service.auth.folder(params.folderId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4120101);
       }
 
       // content title default remove has value
@@ -56,7 +61,7 @@ export class AddResourceContentDetail extends BaseController {
       });
 
       if (fileDetail) {
-        return Response.warning(i18n.resource.resourceNameExist);
+        return Response.warning(i18n.resource.resourceNameExist, 2120102);
       }
 
       const resourceFileDetail: File = {
@@ -71,9 +76,7 @@ export class AddResourceContentDetail extends BaseController {
       };
 
       // Compatible with the prefix '/' of realPath
-      if (params.content?.realPath) {
-        params.content.realPath = '/' + _.pull(params.content.realPath.split('/'), '').join('/');
-      }
+      params.content.realPath = '/' + _.pull(params.content.realPath.split('/'), '').join('/');
 
       this.service.file.info.createFileContentVersion(resourceFileDetail, { ctx, content: params.content });
 
@@ -82,9 +85,9 @@ export class AddResourceContentDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: resourceFileDetail.id, type: TYPE.RESOURCE });
 
-      return Response.success(fileDetail);
+      return Response.success(fileDetail, 1120101);
     } catch (err) {
-      return Response.error(err, i18n.resource.addResourceContentFailed);
+      return Response.error(err, i18n.resource.addResourceContentFailed, 3120101);
     }
   }
 }

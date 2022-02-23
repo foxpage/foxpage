@@ -36,7 +36,7 @@ export class GetTemplateContentList extends BaseController {
       // Check file deleted status
       const fileDetail = await this.service.file.info.getDetailById(params.fileId);
       if (!fileDetail || (!params.deleted && fileDetail.deleted)) {
-        return Response.warning(i18n.page.fileIsInvalidOrDeleted);
+        return Response.warning(i18n.page.fileIsInvalidOrDeleted, 2070801);
       }
 
       const contentParams: ContentSearch = {
@@ -48,9 +48,9 @@ export class GetTemplateContentList extends BaseController {
       };
       const contentList = await this.service.content.file.getFileContentList(contentParams);
 
-      return Response.success(contentList);
+      return Response.success(contentList, 1070801);
     } catch (err) {
-      return Response.error(err, i18n.template.getTemplateContentListFailed);
+      return Response.error(err, i18n.template.getTemplateContentListFailed, 3070801);
     }
   }
 }

@@ -36,7 +36,7 @@ export class SetOrganizationMemberList extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: OrgMemberDetailReq): Promise<ResData<Organization>> {
     const newMembers: MemberBase[] = params.members || [];
     if (newMembers.length === 0) {
-      return Response.warning(i18n.org.invalidMemberList);
+      return Response.warning(i18n.org.invalidMemberList, 2010801);
     }
 
     try {
@@ -45,7 +45,7 @@ export class SetOrganizationMemberList extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.organization(params.organizationId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4010801);
       }
 
       const userIds = _.map(params.members, 'userId');
@@ -58,7 +58,7 @@ export class SetOrganizationMemberList extends BaseController {
       const sourceMembers = sourceOrgDetail?.members || [];
 
       if (!sourceOrgDetail || sourceOrgDetail.deleted) {
-        return Response.warning(i18n.org.invalidOrgId);
+        return Response.warning(i18n.org.invalidOrgId, 2010802);
       }
 
       // New member data to object
@@ -88,9 +88,9 @@ export class SetOrganizationMemberList extends BaseController {
       //   content: { id: params.id, contentId: '', before: sourceOrgDetail, after: orgDetail },
       // });
 
-      return Response.success(orgDetail);
+      return Response.success(orgDetail, 1010801);
     } catch (err) {
-      return Response.error(err, i18n.org.updateOrgMemberFailed);
+      return Response.error(err, i18n.org.updateOrgMemberFailed, 3010801);
     }
   }
 }

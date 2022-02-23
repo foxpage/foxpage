@@ -40,22 +40,22 @@ export class SetResourceFolderStatus extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.RESOURCE });
       const hasAuth = await this.service.auth.folder(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4121701);
       }
 
       const result = await this.service.folder.info.setFolderDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.folder.invalidFolderId);
+        return Response.warning(i18n.folder.invalidFolderId, 2121701);
       } else if (result.code === 2) {
-        return Response.warning(i18n.resource.folderCannotBeDeleted);
+        return Response.warning(i18n.resource.folderCannotBeDeleted, 2121702);
       }
 
       await this.service.folder.info.runTransaction(ctx.transactions);
       const folderDetail = await this.service.folder.info.getDetailById(params.id);
 
-      return Response.success(folderDetail || {});
+      return Response.success(folderDetail, 1121701);
     } catch (err) {
-      return Response.error(err, i18n.resource.setResourceFolderDeletedFailed);
+      return Response.error(err, i18n.resource.setResourceFolderDeletedFailed, 3121701);
     }
   }
 }

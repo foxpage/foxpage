@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 
 import { setAddDrawerOpenStatus } from '@/actions/group/project/list';
 import * as ACTIONS from '@/actions/workspace/projects';
+import GlobalContext from '@/pages/GlobalContext';
 import EditDrawer from '@/pages/group/project/drawer/EditDrawer';
 import { OrganizationUrlParams } from '@/types/index';
 import getImageUrlByEnv from '@/utils/get-image-url-by-env';
@@ -36,6 +37,9 @@ const Projects: React.FC<ProjectsProps> = props => {
 
   const history = useHistory();
 
+  const { locale } = useContext(GlobalContext);
+  const { global, project } = locale.business;
+
   useEffect(() => {
     searchMyProjects({ page: pageInfo.page, size: pageInfo.size, search: '' });
     return () => {
@@ -51,7 +55,7 @@ const Projects: React.FC<ProjectsProps> = props => {
     <React.Fragment>
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
         <Button type="primary" onClick={openDrawer}>
-          <PlusOutlined /> Add Project
+          <PlusOutlined /> {project.add}
         </Button>
       </div>
       <Row gutter={16} style={{ minHeight: 24, paddingBottom: 24, maxWidth: 1136, margin: '0 auto' }}>
@@ -71,7 +75,7 @@ const Projects: React.FC<ProjectsProps> = props => {
                 hoverable
                 bordered
               >
-                <Meta title={project.name} description={`Application: ${project.application.name}`} />
+                <Meta title={project.name} description={`${global.application}: ${project.application.name}`} />
               </Card>
             </Col>
           );

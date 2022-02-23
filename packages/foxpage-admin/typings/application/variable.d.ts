@@ -36,6 +36,8 @@ interface VariableType {
   tags: Array<FileTag>
 };
 
+export default VariableType;
+
 export interface VariableSearchParams {
   applicationId: string;
   id?: string;
@@ -65,5 +67,3 @@ export interface GetApplicationVariableParams extends PaginationReqParams {
 export interface GetApplicationVariableResult extends BaseResponse<VariableType> {
   list: VariableType[];
 }
-
-export default VariableType;

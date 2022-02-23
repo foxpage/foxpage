@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useContext, useEffect, useState } from 'react';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import { connect } from 'react-redux';
 
@@ -8,18 +8,13 @@ import { RootState } from 'typesafe-actions';
 
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Field, Group, Label } from '@/components/widgets/group';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/builder/function';
 import { OptionsAction } from '@/types/common';
 
 import './codemirror.css';
 
 require('codemirror/mode/htmlmixed/htmlmixed');
-
-const DRAWER_NAME = {
-  new: 'Add',
-  edit: 'Edit',
-  view: 'View',
-};
 
 const FN_TYPE = ['sync'];
 
@@ -54,6 +49,8 @@ function EditDrawer(props: IProps) {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [fnType, setFnType] = useState(0);
+  const { locale } = useContext(GlobalContext);
+  const { global, function: functionI18n } = locale.business;
 
   // init drawer type
   const [type, setType] = useState('');
@@ -152,14 +149,14 @@ function EditDrawer(props: IProps) {
   return (
     <OperationDrawer
       open={visible}
-      title={DRAWER_NAME[type] || 'view'}
+      title={global[type] || global.view}
       onClose={handleDrawerClose}
       width={550}
       destroyOnClose
       actions={
         type !== 'view' ? (
           <Button type="primary" onClick={handleApplyClick}>
-            Apply
+            {global.apply}
           </Button>
         ) : (
           <></>
@@ -168,7 +165,7 @@ function EditDrawer(props: IProps) {
     >
       <Group>
         <Field>
-          <Label>Name</Label>
+          <Label>{global.nameLabel}</Label>
           <Input
             placeholder="name must contain at least 5 characters"
             disabled={func.id}
@@ -177,7 +174,7 @@ function EditDrawer(props: IProps) {
           />
         </Field>
         <Field>
-          <Label>Type</Label>
+          <Label>{global.type}</Label>
           <Select placeholder="type" disabled={func.id} value={fnType} onChange={setFnType} style={{ width: 160 }}>
             {FN_TYPE.map((item, idx) => (
               <Option key={item} value={idx}>
@@ -187,7 +184,7 @@ function EditDrawer(props: IProps) {
           </Select>
         </Field>
         <Field>
-          <Label>Function</Label>
+          <Label>{functionI18n.name}</Label>
           <CodeBox>
             <CodeMirror
               key={func.id}

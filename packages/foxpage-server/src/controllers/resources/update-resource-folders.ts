@@ -37,7 +37,7 @@ export class UpdateResourceFolderDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateResourceFolderReq): Promise<ResData<Folder>> {
     // Check the validity of the name
     if (params.name && !checkResourceName(params.name)) {
-      return Response.warning(i18n.file.invalidName);
+      return Response.warning(i18n.file.invalidName, 2122101);
     }
 
     try {
@@ -45,19 +45,19 @@ export class UpdateResourceFolderDetail extends BaseController {
 
       const hasAuth = await this.service.auth.folder(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4122101);
       }
 
       // Check that the folder is a resource folder, not a resource group or a parent folder of the resource group
       const folderObject = await this.service.folder.list.getAllParentsRecursive([params.id]);
       if (!folderObject[params.id] || folderObject[params.id].length < 3) {
-        return Response.warning(i18n.resource.invalidResourceFolderId);
+        return Response.warning(i18n.resource.invalidResourceFolderId, 2122102);
       }
 
       // Check the effectiveness of resources
       let folderDetail = await this.service.folder.info.getDetailById(params.id);
       if (!folderDetail || folderDetail.deleted || folderDetail.applicationId !== params.applicationId) {
-        return Response.warning(i18n.resource.invalidResourceFolderId);
+        return Response.warning(i18n.resource.invalidResourceFolderId, 2122103);
       }
 
       // Check the folder name and whether the path is duplicate
@@ -70,7 +70,7 @@ export class UpdateResourceFolderDetail extends BaseController {
         deleted: false,
       });
       if (duplicationFolder) {
-        return Response.warning(i18n.resource.nameOrPathExist);
+        return Response.warning(i18n.resource.nameOrPathExist, 2122104);
       }
 
       this.service.folder.info.updateContentItem(
@@ -82,9 +82,9 @@ export class UpdateResourceFolderDetail extends BaseController {
       await this.service.folder.info.runTransaction(ctx.transactions);
       folderDetail = await this.service.folder.info.getDetailById(params.id);
 
-      return Response.success(folderDetail);
+      return Response.success(folderDetail, 1122101);
     } catch (err) {
-      return Response.error(err, i18n.resource.updateResourceFolderDetailFailed);
+      return Response.error(err, i18n.resource.updateResourceFolderDetailFailed, 3122101);
     }
   }
 }

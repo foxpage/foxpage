@@ -38,14 +38,14 @@ export class UpdateVariableDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateTypeFileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.variable.invalidVariableName);
+      return Response.warning(i18n.variable.invalidVariableName, 2081501);
     }
 
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.VARIABLE });
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4081501);
       }
 
       // Get the contents of the file
@@ -69,11 +69,11 @@ export class UpdateVariableDetail extends BaseController {
       const result = await this.service.file.info.updateFileDetail(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.variable.invalidVariableId);
+        return Response.warning(i18n.variable.invalidVariableId, 2081502);
       }
 
       if (result.code === 2) {
-        return Response.warning(i18n.variable.variableNameExist);
+        return Response.warning(i18n.variable.variableNameExist, 2081503);
       }
 
       this.service.content.info.updateContentItem(contentId, { title: contentName }, { ctx });
@@ -91,9 +91,9 @@ export class UpdateVariableDetail extends BaseController {
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail);
+      return Response.success(fileDetail, 1081501);
     } catch (err) {
-      return Response.error(err, i18n.variable.updateVariableFailed);
+      return Response.error(err, i18n.variable.updateVariableFailed, 3081501);
     }
   }
 }

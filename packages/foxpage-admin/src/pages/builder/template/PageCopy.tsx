@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { message } from 'antd';
@@ -7,6 +7,7 @@ import { RootState } from 'typesafe-actions';
 import { clonePage, fetchPageRenderTree } from '@/actions/builder/template';
 import * as ACTIONS from '@/actions/builder/template-select';
 import { FileTypeEnum } from '@/constants/index';
+import GlobalContext from '@/pages/GlobalContext';
 
 import TemplateSelectModal from './TemplateSelectModal';
 
@@ -28,10 +29,11 @@ type PageCopyType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPro
 const PageCopy: React.FC<PageCopyType> = props => {
   const { contentId, applicationId, pageCopyModalOpen, fileType, updatePageCopyModalOpen, clonePage, fetchTree } =
     props;
-
+  const { locale } = useContext(GlobalContext);
+  const { builder } = locale.business;
   const handleOnOk = (sourceContentId?: string) => {
     if (!sourceContentId) {
-      message.warning('Please select page');
+      message.warning(builder.selectPageError);
       return;
     }
 
@@ -48,7 +50,7 @@ const PageCopy: React.FC<PageCopyType> = props => {
 
   return (
     <TemplateSelectModal
-      title="Select Page"
+      title={builder.selectPageModalTitle}
       fileType={FileTypeEnum.page}
       open={pageCopyModalOpen}
       onCancel={() => {

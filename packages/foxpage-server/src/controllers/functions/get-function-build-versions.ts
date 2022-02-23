@@ -39,9 +39,9 @@ export class GetFunctionBuildDetail extends BaseController {
         versionNumber,
       });
 
-      return Response.success(contentVersion);
+      return Response.success(contentVersion, 1090301);
     } catch (err) {
-      return Response.error(err, i18n.variable.getAppVariableFailed);
+      return Response.error(err, i18n.variable.getAppVariableFailed, 3090301);
     }
   }
 }

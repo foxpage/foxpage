@@ -96,16 +96,19 @@ export class GetAppScopeFunctionList extends BaseController {
         });
       });
 
-      return Response.success({
-        pageInfo: {
-          total: contentVersionList.length,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: contentVersionList.length,
+            page: params.page,
+            size: params.size,
+          },
+          data: _.chunk(contentVersionList, params.size)?.[params.page - 1] || [],
         },
-        data: _.chunk(contentVersionList, params.size)?.[params.page - 1] || [],
-      });
+        1090401,
+      );
     } catch (err) {
-      return Response.error(err, i18n.function.getAppFunctionFailed);
+      return Response.error(err, i18n.function.getAppFunctionFailed, 3090401);
     }
   }
 }

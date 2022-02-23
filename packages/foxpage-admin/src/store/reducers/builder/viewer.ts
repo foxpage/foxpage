@@ -2,13 +2,7 @@ import produce from 'immer';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder';
-import {
-  clearLoadedResource,
-  pushLoadedResource,
-  pushNoResourceComponentName,
-  updateLoadingStatus,
-  updateRequireLoadStatus,
-} from '@/actions/builder/component-load';
+import { pushLoadedResource, updateLoadingStatus, updateRequireLoadStatus } from '@/actions/builder/component-load';
 import { clearAll } from '@/actions/builder/condition';
 import { clearAll as templateClearAll } from '@/actions/builder/template';
 
@@ -38,17 +32,6 @@ const reducer = (state = initialState, action) =>
       case getType(updateLoadingStatus): {
         const { value } = action.payload;
         draft.loading = value;
-        break;
-      }
-
-      case getType(pushNoResourceComponentName): {
-        const { names } = action.payload;
-        draft.noResourceComponentNames = names;
-        break;
-      }
-
-      case getType(clearLoadedResource): {
-        draft.loadedComponent = {};
         break;
       }
 

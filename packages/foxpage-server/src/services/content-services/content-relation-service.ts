@@ -1,17 +1,18 @@
 import _ from 'lodash';
 
-import { DSL, DslRelation } from '@foxpage/foxpage-server-types';
+import { Content, DSL, DslRelation } from '@foxpage/foxpage-server-types';
 
 import { TYPE } from '../../../config/constant';
+import * as Model from '../../models';
 import { ContentVersionNumber, ContentVersionString, RelationsRecursive } from '../../types/content-types';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class ContentRelationService extends ContentServiceAbstract {
+export class ContentRelationService extends BaseService<Content> {
   private static _instance: ContentRelationService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**

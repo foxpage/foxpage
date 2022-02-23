@@ -1,7 +1,6 @@
 import { fork } from 'redux-saga/effects';
 
 import componentList from './component-list';
-import componentLoad from './component-load';
 import condition from './condition';
 import fn from './function';
 import more from './more';
@@ -13,7 +12,6 @@ import variable from './variable';
 
 export default function* rootSaga() {
   yield fork(componentList);
-  yield fork(componentLoad);
   yield fork(template);
   yield fork(templateSelect);
   yield fork(page);

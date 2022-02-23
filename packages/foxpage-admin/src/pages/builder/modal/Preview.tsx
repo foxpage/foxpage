@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/template';
+import GlobalContext from '@/pages/GlobalContext';
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -38,7 +39,8 @@ const Index: React.FC<Type> = props => {
   const { editStatus, previewModalVisible, renderHtml, updatePreviewModalVisible, fetchRenderHtml, saveToServer } =
     props;
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-
+  const { locale } = useContext(GlobalContext);
+  const { builder } = locale.business;
   useEffect(() => {
     if (iframeRef.current && !previewModalVisible) {
       const frameDocument = iframeRef.current.contentDocument;
@@ -79,7 +81,7 @@ const Index: React.FC<Type> = props => {
 
   return (
     <StyledModal
-      title="Preview"
+      title={builder.preview}
       visible={previewModalVisible}
       width={1048}
       onOk={onOk}

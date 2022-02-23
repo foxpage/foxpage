@@ -148,9 +148,9 @@ export class GetAppComponentListByNameVersion extends BaseController {
         components.push(content);
       }
 
-      return Response.success(components);
+      return Response.success(components, 1110401);
     } catch (err) {
-      return Response.error(err, i18n.component.getAppComponentListFailed);
+      return Response.error(err, i18n.component.getAppComponentListFailed, 3110401);
     }
   }
 }

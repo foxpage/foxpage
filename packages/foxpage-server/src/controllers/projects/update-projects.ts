@@ -38,11 +38,11 @@ export class UpdateProjectDetail extends BaseController {
     try {
       const hasAuth = await this.service.auth.folder(params.projectId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4040901);
       }
 
       if (params.name && !checkName(params.name)) {
-        return Response.warning(i18n.folder.invalidName);
+        return Response.warning(i18n.folder.invalidName, 2040901);
       }
 
       const folderDetail: AppTypeFolderUpdate = Object.assign(_.omit(params, ['path', 'projectId']), {
@@ -53,9 +53,9 @@ export class UpdateProjectDetail extends BaseController {
       const result = await this.service.folder.info.updateTypeFolderDetail(folderDetail, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.folder.invalidFolderId);
+        return Response.warning(i18n.folder.invalidFolderId, 2040902);
       } else if (result.code === 2) {
-        return Response.warning(i18n.folder.nameExist);
+        return Response.warning(i18n.folder.nameExist, 2040903);
       }
 
       await this.service.folder.info.runTransaction(ctx.transactions);
@@ -63,9 +63,9 @@ export class UpdateProjectDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.projectId, type: TYPE.PROJECT });
 
-      return Response.success(newFolderDetail || {});
+      return Response.success(newFolderDetail, 1040901);
     } catch (err) {
-      return Response.error(err, i18n.project.updateProjectFailed);
+      return Response.error(err, i18n.project.updateProjectFailed, 3040901);
     }
   }
 }

@@ -1,6 +1,6 @@
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
+import { BaseModel } from './base-model';
 
-export class OrgModel extends BaseModelAbstract {
+export class OrgModel extends BaseModel {
   private static _instance: OrgModel;
 
   constructor() {

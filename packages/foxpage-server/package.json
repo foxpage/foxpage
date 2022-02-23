@@ -1,7 +1,7 @@
 {
   "name": "foxpage-server",
-  "version": "0.1.0",
-  "description": "Foxpage server apis",
+  "version": "0.3.0",
+  "description": "Foxpage server",
   "main": "app.ts",
   "prepublishOnly": "npm run build",
   "scripts": {
@@ -15,19 +15,23 @@
   },
   "keywords": [
     "foxpage",
-    "server",
+    "web",
     "api",
-    "typescript"
+    "typescript",
+    "ts",
+    "mongodb",
+    "koa",
+    "routing-controllers",
+    "javascript"
   ],
   "author": "yhdeng",
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.36.0",
     "@foxpage/foxpage-plugin": "^0.1.2",
-    "@foxpage/foxpage-plugin-ares": "^0.0.1",
-    "@foxpage/foxpage-plugin-aws-s3": "^0.0.7",
-    "@foxpage/foxpage-plugin-unpkg": "^0.0.1",
-    "@foxpage/foxpage-server-types": "^0.1.1",
+    "@foxpage/foxpage-plugin-aws-s3": "^0.3.0",
+    "@foxpage/foxpage-plugin-unpkg": "^0.3.0",
+    "@foxpage/foxpage-server-types": "^0.3.0",
     "@foxpage/foxpage-shared": "^0.2.3",
     "@foxpage/foxpage-types": "^0.2.11",
     "@types/jsonwebtoken": "^8.5.1",

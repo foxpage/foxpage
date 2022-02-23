@@ -2,13 +2,16 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Drawer, message, Popconfirm, Radio, Spin, Table } from 'antd';
+import { Button, Divider, Drawer, message, Popconfirm, Spin, Table } from 'antd';
 import { DrawerProps } from 'antd/lib/drawer';
 import styled from 'styled-components';
+import { RootState } from 'typesafe-actions';
 
-// import { RootState } from 'typesafe-actions';
 import { Pagination } from '@/components/common/index';
+import { ScopeEnum } from '@/constants/index';
 import RightCloseIcon from '@/pages/builder/component/close';
+import ScopeSelect from '@/pages/components/common/ScopeSelect';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/builder/function';
 import { FuncItem } from '@/types/application/function';
 
@@ -18,18 +21,13 @@ import EditDrawer from './EditDrawer';
 
 const PAGE_SIZE = 10;
 
-const OPTIONS = [
-  { label: 'Project', value: 'project' },
-  { label: 'Application', value: 'application' },
-];
-
 const Toolbar = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
 `;
 
-const mapStateToProps = (state: any) => ({
+const mapStateToProps = (state: RootState) => ({
   applicationId: state.builder.page.applicationId,
   folderId: state.builder.page.folderId,
   pageNum: state.builder.fn.pageNum,
@@ -68,7 +66,9 @@ function Component(props: IProps) {
     clearAll,
   } = props;
   const { container } = useContext(BuilderContext);
-  const [group, setGroup] = useState<'project' | 'application'>('project');
+  const [group, setGroup] = useState<ScopeEnum>(ScopeEnum.project);
+  const { locale } = useContext(GlobalContext);
+  const { global, function: functionI18n } = locale.business;
 
   useEffect(() => {
     return () => {
@@ -83,7 +83,7 @@ function Component(props: IProps) {
   const fetchFunctionList = () => {
     if (applicationId) {
       const params =
-        group === 'project' && !!folderId
+        group === ScopeEnum.project && !!folderId
           ? {
               applicationId,
               folderId,
@@ -109,7 +109,7 @@ function Component(props: IProps) {
           status: true,
         });
       } else {
-        message.warning('Delete function failed, please retry later');
+        message.warning(global.deleteFailMsg);
       }
     },
     [applicationId, folderId, deleteCondition],
@@ -117,12 +117,12 @@ function Component(props: IProps) {
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       render: (_text: string, record: FuncItem) => {
@@ -132,13 +132,13 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'Action',
+      title: global.actions,
       dataIndex: '',
       key: '',
       width: 100,
       render: (_text: string, record: FuncItem) => (
         <>
-          {group === 'project' ? (
+          {group === ScopeEnum.project ? (
             <>
               <Button
                 size="small"
@@ -148,7 +148,7 @@ function Component(props: IProps) {
               />
               <Divider type="vertical" />
               <Popconfirm
-                title="Are you sure to delete this condition?"
+                title={`${global.deleteMsg}${record.name}?`}
                 okText="Yes"
                 cancelText="No"
                 onConfirm={() => handleConditionDelete(record.id)}
@@ -169,15 +169,14 @@ function Component(props: IProps) {
     },
   ];
 
-  const handleGroupChange = useCallback(e => {
-    const _value = e.target.value;
-    setGroup(_value);
+  const handleGroupChange = useCallback(group => {
+    setGroup(group);
   }, []);
 
   return (
     <>
       <Drawer
-        title="Function"
+        title={functionI18n.name}
         placement="left"
         mask={false}
         visible
@@ -198,15 +197,15 @@ function Component(props: IProps) {
         extra={<RightCloseIcon onClose={onClose} />}
       >
         <Toolbar>
-          <Radio.Group size="small" options={OPTIONS} optionType="button" value={group} onChange={handleGroupChange} />
-          {group === OPTIONS[0].value && (
+          <ScopeSelect scope={group} onScopeChange={handleGroupChange} />
+          {group === ScopeEnum.project && (
             <Button
               type="primary"
               size="small"
               icon={<PlusOutlined />}
               onClick={() => openDrawer(true, undefined, 'new')}
             >
-              Add Function
+              {functionI18n.add}
             </Button>
           )}
         </Toolbar>

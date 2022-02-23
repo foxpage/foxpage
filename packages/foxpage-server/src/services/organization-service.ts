@@ -6,14 +6,14 @@ import * as Model from '../models';
 import { FoxCtx, MemberInfo, PageList, Search } from '../types/index-types';
 import { OrgBaseInfo, OrgInfo } from '../types/organization-types';
 
-import { OrgServiceAbstract } from './abstracts/organization-service-abstract';
+import { BaseService } from './base-service';
 import * as Service from './index';
 
-export class OrgService extends OrgServiceAbstract {
+export class OrgService extends BaseService<Organization> {
   private static _instance: OrgService;
 
   constructor() {
-    super();
+    super(Model.org);
   }
 
   /**

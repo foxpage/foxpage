@@ -12,6 +12,7 @@ import {
 } from '@foxpage/foxpage-server-types';
 
 import { TYPE } from '../../../config/constant';
+import * as Model from '../../models';
 import { ComponentContentInfo, ComponentInfo, ComponentNameVersion } from '../../types/component-types';
 import {
   AppNameVersion,
@@ -24,14 +25,14 @@ import {
   NameVersionPackage,
 } from '../../types/content-types';
 import { TRecord } from '../../types/index-types';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class ComponentContentService extends ContentServiceAbstract {
+export class ComponentContentService extends BaseService<Content> {
   private static _instance: ComponentContentService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**
@@ -50,7 +51,7 @@ export class ComponentContentService extends ContentServiceAbstract {
    * @returns Promise
    */
   async getComponentsFromDSL(applicationId: string, schemas: DslSchemas[]): Promise<Component[]> {
-    // 递归获取所有组件名称等信息
+    // Get component name infos
     const componentInfos = this.getComponentInfoRecursive(schemas);
     const componentList = await this.getComponentDetails(applicationId, componentInfos);
     return componentList;

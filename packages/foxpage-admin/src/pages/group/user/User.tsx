@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { Button, Modal, Popconfirm, Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/user';
+import GlobalContext from '@/pages/GlobalContext';
 import { OrganizationUrlParams } from '@/types/application';
 import periodFormat from '@/utils/period-format';
 
@@ -32,7 +33,8 @@ type UserListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPro
 
 const User: React.FC<UserListType> = props => {
   const { loading, users, addedUsers, updateAccountDrawerOpen, fetchUsers, deleteUser, updateAddedUserInfo } = props;
-
+  const { locale } = useContext(GlobalContext);
+  const { global, team, login } = locale.business;
   const { organizationId } = useParams<OrganizationUrlParams>();
 
   useEffect(() => {
@@ -42,11 +44,15 @@ const User: React.FC<UserListType> = props => {
   useEffect(() => {
     if (addedUsers && addedUsers.account && addedUsers.password) {
       Modal.info({
-        title: 'Account Info',
+        title: team.accountInfo,
         content: (
           <div>
-            <div>Account:&nbsp;&nbsp;{addedUsers.account}</div>
-            <div>Password:&nbsp;{addedUsers.password}</div>
+            <div>
+              {login.account}:&nbsp;&nbsp;{addedUsers.account}
+            </div>
+            <div>
+              {login.password}:&nbsp;{addedUsers.password}
+            </div>
           </div>
         ),
         onOk() {
@@ -65,7 +71,7 @@ const User: React.FC<UserListType> = props => {
             updateAccountDrawerOpen(true);
           }}
         >
-          <PlusOutlined /> Add User
+          <PlusOutlined /> {team.addUser}
         </Button>
       </div>
       <Table
@@ -73,32 +79,32 @@ const User: React.FC<UserListType> = props => {
         loading={loading}
         columns={[
           {
-            title: 'Account',
+            title: team.account,
             dataIndex: 'account',
           },
           {
-            title: 'UserId',
+            title: team.userId,
             dataIndex: 'userId',
           },
           {
-            title: 'JoinTime',
+            title: team.joinTime,
             key: 'joinTime',
             width: 200,
             render: (_text: string, record) => periodFormat(record.joinTime, 'unknown'),
           },
           {
-            title: 'Actions',
+            title: global.actions,
             key: 'status',
             width: 80,
             render: (_text: string, user) => {
               return (
                 <Popconfirm
-                  title={'Are you sure to delete this user?'}
+                  title={`${global.deleteMsg} ${user.account}?`}
                   onConfirm={() => {
                     deleteUser({ organizationId, userIds: [user.userId] });
                   }}
-                  okText="Yes"
-                  cancelText="No"
+                  okText={global.yes}
+                  cancelText={global.no}
                 >
                   <Button size="small" shape="circle" icon={<DeleteOutlined />} />
                 </Popconfirm>

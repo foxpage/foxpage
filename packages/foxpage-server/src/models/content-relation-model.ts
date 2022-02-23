@@ -1,16 +1,16 @@
 import { ContentRelation } from '@foxpage/foxpage-server-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import relationModel from './schema/content-relation';
+import { BaseModel } from './base-model';
 
 /**
  *relation repository
  *
  * @export
  * @class FileModel
- * @extends {BaseModelAbstract<File>}
+ * @extends {BaseModel<File>}
  */
-export class RelationModel extends BaseModelAbstract<ContentRelation> {
+export class RelationModel extends BaseModel<ContentRelation> {
   private static _instance: RelationModel;
 
   constructor() {

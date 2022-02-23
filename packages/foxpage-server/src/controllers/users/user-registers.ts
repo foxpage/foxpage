@@ -37,11 +37,11 @@ export class UserRegister extends BaseController {
     try {
       // Check the validity of the name and email address
       if (!checkName(params.account)) {
-        return Response.warning(i18n.user.invalidName);
+        return Response.warning(i18n.user.invalidName, 2060601);
       }
 
       if (!checkEmail(params.email)) {
-        return Response.warning(i18n.user.invalidEmail);
+        return Response.warning(i18n.user.invalidEmail, 2060602);
       }
 
       // Check if the username already exists
@@ -55,12 +55,12 @@ export class UserRegister extends BaseController {
       // Save new user information
       const result = await Service.user.register(userInfo, { ctx });
       if (!result.account) {
-        return Response.warning(i18n.user.exist);
+        return Response.warning(i18n.user.exist, 2060603);
       }
 
-      return Response.success(result || {});
+      return Response.success(result || {}, 1060601);
     } catch (err) {
-      return Response.error(err, i18n.user.registerFailed);
+      return Response.error(err, i18n.user.registerFailed, 3060601);
     }
   }
 }

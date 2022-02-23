@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Table, Tag } from 'antd';
 
 import { suffixTagColor } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 import { FileType } from '@/types/application/file';
 import { PaginationInfo } from '@/types/common';
 import periodFormat from '@/utils/period-format';
@@ -24,10 +25,12 @@ interface FileListProps {
 const FileList: React.FC<FileListProps> = props => {
   const { loading, organizationId, applicationId, fileType, list, pageInfo, onEdit, onDelete, onPageInfoChange } =
     props;
+  const { locale } = useContext(GlobalContext);
+  const { global, folder, file } = locale.business;
 
   const columns = [
     {
-      title: 'name',
+      title: global.nameLabel,
       dataIndex: 'name',
       render: (text: string, record: FileType) => {
         return (
@@ -47,20 +50,20 @@ const FileList: React.FC<FileListProps> = props => {
       },
     },
     {
-      title: 'Folder',
+      title: folder.name,
       dataIndex: 'folderName',
       key: 'folderName',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       render: (text: string, _record: FileType) => {
-        return <Tag color={suffixTagColor[text]}>{text}</Tag>;
+        return <Tag color={suffixTagColor[text]}>{file[text]}</Tag>;
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (_text: string, record: FileType) => {
@@ -68,14 +71,14 @@ const FileList: React.FC<FileListProps> = props => {
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       key: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
     {
-      title: 'Actions',
+      title: global.actions,
       key: 'updateTime',
       width: 130,
       render: (_text: string, record: FileType) => {
@@ -97,7 +100,7 @@ const FileList: React.FC<FileListProps> = props => {
               type="default"
               size="small"
               shape="circle"
-              title="Edit"
+              title={global.edit}
               onClick={() => {
                 onEdit(record);
               }}
@@ -106,12 +109,12 @@ const FileList: React.FC<FileListProps> = props => {
             </Button>
             <Divider type="vertical" />
             <Popconfirm
-              title={`Are you sure to delete this ${record.type}?`}
+              title={`${global.deleteMsg}${record.name}?`}
               onConfirm={() => {
                 onDelete(record);
               }}
-              okText="Yes"
-              cancelText="No"
+              okText={global.yes}
+              cancelText={global.no}
             >
               <Button size="small" shape="circle" icon={<DeleteOutlined />} />
             </Popconfirm>

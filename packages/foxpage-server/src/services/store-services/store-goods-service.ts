@@ -6,10 +6,10 @@ import { TYPE } from '../../../config/constant';
 import * as Model from '../../models';
 import { PageData } from '../../types/index-types';
 import { StoreFileStatus, StorePageParams } from '../../types/store-types';
-import { BaseServiceAbstract } from '../abstracts/base-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class StoreGoodsService extends BaseServiceAbstract<StoreGoods> {
+export class StoreGoodsService extends BaseService<StoreGoods> {
   private static _instance: StoreGoodsService;
 
   constructor() {

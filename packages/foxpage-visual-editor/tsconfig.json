@@ -1,0 +1,86 @@
+{
+  "compilerOptions": {
+    // editor
+    "charset": "utf-8",
+    "newLine": "LF",
+    // syntax
+    "strict": true,
+    "alwaysStrict": true,
+    "noImplicitAny": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": false,
+    "lib": [
+      "dom",
+      "es7",
+      "esnext"
+    ],
+    "jsx": "react",
+    // compile
+    "rootDirs": [
+      "."
+    ],
+    "skipLibCheck": true,
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    // "declaration": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "allowJs": true,
+    "locale": "zh-cn",
+    "outDir": "./lib",
+    "baseUrl": ".",
+    "paths": {
+      "@/pages/*": [
+        "src/pages/*"
+      ],
+      "@/configs/*": [
+        "src/configs/*"
+      ],
+      "@/apis/*": [
+        "src/apis/*"
+      ],
+      "@/components/*": [
+        "src/pages/components/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/store/*": [
+        "src/store/*"
+      ],
+      "@/actions/*": [
+        "src/store/actions/*"
+      ],
+      "@/reducers/*": [
+        "src/store/reducers/*"
+      ],
+      "@/sagas/*": [
+        "src/store/sagas/*"
+      ],
+      "@/types/*": [
+        "typings/*"
+      ],
+      "@/services/*": [
+        "src/services/*"
+      ],
+      "@/constants/*": [
+        "src/constants/*"
+      ],
+    }
+  },
+  "include": [
+    "src/*",
+    "src/**/*",
+    "typings/*",
+    "typings/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

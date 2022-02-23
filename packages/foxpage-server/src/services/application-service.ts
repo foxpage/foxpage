@@ -9,14 +9,14 @@ import { FolderFileContent } from '../types/content-types';
 import { FoxCtx, PageList } from '../types/index-types';
 import { generationId } from '../utils/tools';
 
-import { ApplicationServiceAbstract } from './abstracts/application-service-abstract';
+import { BaseService } from './base-service';
 import * as Service from './index';
 
-export class ApplicationService extends ApplicationServiceAbstract {
+export class ApplicationService extends BaseService<Application> {
   private static _instance: ApplicationService;
 
   constructor() {
-    super();
+    super(Model.application);
   }
 
   /**

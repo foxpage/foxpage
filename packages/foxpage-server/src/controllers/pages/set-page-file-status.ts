@@ -40,22 +40,22 @@ export class SetPageFileStatus extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.PAGE });
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4051201);
       }
 
       const result = await this.service.file.info.setFileDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2051201);
       } else if (result.code === 2) {
-        return Response.warning(i18n.page.fileCannotBeDeleted);
+        return Response.warning(i18n.page.fileCannotBeDeleted, 251202);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail || {});
+      return Response.success(fileDetail, 4151201);
     } catch (err) {
-      return Response.error(err, i18n.page.setPageFileDeletedFailed);
+      return Response.error(err, i18n.page.setPageFileDeletedFailed, 3051201);
     }
   }
 }

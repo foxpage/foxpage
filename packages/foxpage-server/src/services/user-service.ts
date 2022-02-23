@@ -7,19 +7,19 @@ import { User, UserRegisterType } from '@foxpage/foxpage-server-types';
 import * as appConfig from '../../app.config';
 import { LOG, PRE } from '../../config/constant';
 import * as Model from '../models';
-// import thirdPartyLogin from '../third-parties/login';
+import thirdPartyLogin from '../third-parties/login';
 import { Creator, FoxCtx } from '../types/index-types';
 import { LoginParams, NewUser, RegisterParams, UserAccountInfo } from '../types/user-types';
 import { generationId } from '../utils/tools';
 
-import { UserServiceAbstract } from './abstracts/user-service-abstract';
+import { BaseService } from './base-service';
 
-export class UserService extends UserServiceAbstract {
+export class UserService extends BaseService<User> {
   private static _instance: UserService;
   protected userBase: Creator;
 
   constructor() {
-    super();
+    super(Model.user);
   }
 
   /**
@@ -101,14 +101,12 @@ export class UserService extends UserServiceAbstract {
   async checkLogin(params: LoginParams, options: { ctx: FoxCtx }): Promise<Boolean> {
     // 第三方登录
     if (appConfig.config.login) {
-      console.log(options);
       // TODO Need to check whether the current user has organization information
-      // const userInfo: UserAccountInfo = await thirdPartyLogin.signIn(params);
-      // // Save current user information
-      // await this.checkAndSaveUserInfo(userInfo, { ctx: options.ctx });
+      const userInfo: UserAccountInfo = await thirdPartyLogin.signIn(params);
+      // Save current user information
+      await this.checkAndSaveUserInfo(userInfo, { ctx: options.ctx });
 
-      // return userInfo.account !== '';
-      return false;
+      return userInfo.account !== '';
     } else {
       const userPwd = await Model.user.getUserPwdByAccount(params.account);
       const pwdMd5 = crypto

@@ -98,7 +98,7 @@ export class LoginKeyRes extends ResponseBase {
 export class AddUserReq {
   @JSONSchema({ description: 'User Name' })
   @IsNotEmpty()
-  @Length(5, 30)
+  @Length(1, 30)
   account: string;
 
   @JSONSchema({ description: 'User mailbox' })
@@ -134,6 +134,7 @@ export class AddUserRes extends ResponseBase {
 export class UpdateUserPassword {
   @JSONSchema({ description: 'User ID' })
   @IsNotEmpty()
+  @Length(20, 20)
   id: string;
 
   @JSONSchema({ description: 'User original password' })

@@ -5,11 +5,15 @@ import { getType } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/builder/more';
 import * as API from '@/apis/builder/index';
 import { FileTypeEnum } from '@/constants/index';
+import { getBusinessI18n } from '@/pages/locale';
 import { store } from '@/store/index';
 import { MoreActionType } from '@/store/reducers/builder/more';
 import { DslFetchParams } from '@/types/builder/more';
 
 function* handleFetchDsl(action: MoreActionType) {
+  const {
+    builder: { fetchDslFailed },
+  } = getBusinessI18n();
   const { fileType } = store.getState().builder.page;
   const { applicationId, ids } = action.payload as DslFetchParams;
   yield put(ACTIONS.updateLoading(true));
@@ -21,7 +25,7 @@ function* handleFetchDsl(action: MoreActionType) {
   if (res.code === 200 && res.data?.length > 0) {
     yield put(ACTIONS.pushDsl(res.data[0]?.content));
   } else {
-    message.error('Fetch dsl failed');
+    message.error(res.msg || fetchDslFailed);
   }
   yield put(ACTIONS.updateLoading(false));
 }

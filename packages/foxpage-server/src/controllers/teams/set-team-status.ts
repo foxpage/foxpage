@@ -39,13 +39,13 @@ export class UpdateTeamDetail extends BaseController {
       // Get team details
       const sourceTeamDetail = await this.service.team.getDetailById(params.teamId);
       if (!sourceTeamDetail || sourceTeamDetail.deleted) {
-        return Response.warning(i18n.team.invalidTeamId);
+        return Response.warning(i18n.team.invalidTeamId, 2020601);
       }
 
       // Permission check
       const hasAuth = await this.service.auth.team(params.teamId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4020601);
       }
 
       // TODO: Check whether the pre-conditions are met,
@@ -56,7 +56,7 @@ export class UpdateTeamDetail extends BaseController {
       }
 
       if (validUsers) {
-        return Response.warning(i18n.team.memberNotEmpty);
+        return Response.warning(i18n.team.memberNotEmpty, 2020602);
       }
 
       // Set deletion status
@@ -65,9 +65,9 @@ export class UpdateTeamDetail extends BaseController {
 
       const teamDetail = await this.service.team.getDetailById(params.teamId);
 
-      return Response.success(teamDetail || {});
+      return Response.success(teamDetail, 1020601);
     } catch (err) {
-      return Response.error(err, i18n.team.updateTeamFailed);
+      return Response.error(err, i18n.team.updateTeamFailed, 3020601);
     }
   }
 }

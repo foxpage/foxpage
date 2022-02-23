@@ -31,9 +31,10 @@ export interface FoxCtx extends Context {
   };
 }
 
-// 通用返回状态
+// Common response
 export interface ResMsg {
   code: number;
+  status?: number;
   msg?: string;
 }
 

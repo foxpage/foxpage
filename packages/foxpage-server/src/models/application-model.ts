@@ -2,13 +2,13 @@ import { Application } from '@foxpage/foxpage-server-types';
 
 import { AppInfo, AppSearch } from '../types/app-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import appModel from './schema/application';
+import { BaseModel } from './base-model';
 
 /**
  * Application repository related classes
  */
-export class ApplicationModel extends BaseModelAbstract<Application> {
+export class ApplicationModel extends BaseModel<Application> {
   private static _instance: ApplicationModel;
 
   constructor() {

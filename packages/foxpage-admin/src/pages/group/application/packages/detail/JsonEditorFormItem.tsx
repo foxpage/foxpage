@@ -7,7 +7,8 @@ interface JsonEditorFormItemProps {
   disabled?: boolean;
   onChange?(value: string): void;
 }
-const JsonEditorFormItem: React.FC<JsonEditorFormItemProps> = ({ value = '{}', disabled, onChange = () => {} }) => {
+
+const JsonEditorFormItem: React.FC<JsonEditorFormItemProps> = ({ value = {}, disabled, onChange = () => {} }) => {
   const jsonStrRef = useRef<string>(value);
   const [refreshFlag, setRefreshFlag] = useState(false);
   const onChangeJSON = useCallback(

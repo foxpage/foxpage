@@ -1,0 +1,90 @@
+{
+  "name": "@foxpage/foxpage-visual-editor",
+  "version": "0.3.0",
+  "description": "foxpage visual editor",
+  "keywords": [
+    "foxpage",
+    "visual-editor",
+    "react"
+  ],
+  "author": {
+    "name": "sqjing"
+  },
+  "homepage": "https://github.com/foxpage/foxpage",
+  "license": "MIT",
+  "main": "dist/main.bundle.js",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/foxpage/foxpage",
+    "directory": "@foxpage/foxpage-visual-editor"
+  },
+  "scripts": {
+    "build": "npm run clean && webpack --config ./webpack/webpack.prd.config.js",
+    "clean": "rimraf dist",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^4.7.0",
+    "@foxpage/foxpage-component-editor-context": "^0.3.11",
+    "@foxpage/foxpage-component-editor-widgets": "^0.3.16",
+    "@foxpage/foxpage-js-sdk": "^0.4.2",
+    "@foxpage/foxpage-types": "^0.4.2",
+    "antd": "^4.18.3",
+    "lodash": "^4.17.21",
+    "react": "^17.0.2",
+    "react-dom": "^16.14.0",
+    "rimraf": "^3.0.2",
+    "shortid": "^2.2.16",
+    "styled-components": "^5.3.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.14.3",
+    "@babel/core": "^7.14.3",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-proposal-export-default-from": "^7.12.13",
+    "@babel/plugin-proposal-export-namespace-from": "^7.14.2",
+    "@babel/plugin-proposal-json-strings": "^7.14.2",
+    "@babel/plugin-proposal-numeric-separator": "^7.14.2",
+    "@babel/plugin-proposal-object-rest-spread": "^7.14.4",
+    "@babel/plugin-proposal-throw-expressions": "^7.12.13",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-arrow-functions": "^7.13.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.14.0",
+    "@babel/polyfill": "^7.12.1",
+    "@babel/preset-env": "^7.14.4",
+    "@babel/preset-react": "^7.13.13",
+    "@babel/preset-typescript": "^7.13.0",
+    "@types/lodash": "^4.14.170",
+    "@types/react": "^17.0.9",
+    "@types/react-dom": "^17.0.6",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/styled-components": "^5.1.10",
+    "babel-loader": "^8.2.2",
+    "babel-plugin-import": "^1.13.3",
+    "babel-polyfill": "^6.26.0",
+    "buffer": "^6.0.3",
+    "copy-webpack-plugin": "^9.0.0",
+    "crypto-browserify": "^3.12.0",
+    "css-loader": "^5.2.6",
+    "expose-loader": "^3.0.0",
+    "file-loader": "^6.2.0",
+    "html-react-parser": "^1.2.6",
+    "identity-obj-proxy": "^3.0.0",
+    "stream-browserify": "^3.0.0",
+    "style-loader": "^2.0.0",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "web-vitals": "^1.1.2",
+    "webpack": "^5.38.1",
+    "webpack-bundle-analyzer": "^4.4.2",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2",
+    "webpack-merge": "^5.8.0"
+  }
+}

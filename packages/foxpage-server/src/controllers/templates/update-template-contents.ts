@@ -38,7 +38,7 @@ export class UpdateTemplateContentDetail extends BaseController {
 
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4071601);
       }
 
       const result = await this.service.content.info.updateContentDetail(
@@ -47,19 +47,19 @@ export class UpdateTemplateContentDetail extends BaseController {
       );
 
       if (result.code === 1) {
-        return Response.warning(i18n.template.invalidTemplateContentId);
+        return Response.warning(i18n.template.invalidTemplateContentId, 2071601);
       } else if (result.code === 2) {
-        return Response.warning(i18n.template.invalidIdType);
+        return Response.warning(i18n.template.invalidIdType, 2071602);
       } else if (result.code === 3) {
-        return Response.warning(i18n.template.templateNameExist);
+        return Response.warning(i18n.template.templateNameExist, 2071603);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1071601);
     } catch (err) {
-      return Response.error(err, i18n.template.updateTemplateContentFailed);
+      return Response.error(err, i18n.template.updateTemplateContentFailed, 3071601);
     }
   }
 }

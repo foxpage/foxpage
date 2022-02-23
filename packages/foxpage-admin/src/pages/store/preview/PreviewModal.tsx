@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { Modal as AntdModal } from 'antd';
@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/store/list';
+import GlobalContext from '@/pages/GlobalContext';
 
 import BasicInfo from './BasicInfo';
 // import Dsl from './Dsl';
@@ -38,7 +39,8 @@ type StoreResourcePreviewProps = ReturnType<typeof mapStateToProps> & typeof map
 
 const PreviewModal: React.FC<StoreResourcePreviewProps> = props => {
   const { previewModalVisible, updatePreviewModalVisible } = props;
-
+  const { locale } = useContext(GlobalContext);
+  const { builder } = locale.business;
   const handleClose = () => {
     updatePreviewModalVisible(false);
   };
@@ -46,7 +48,7 @@ const PreviewModal: React.FC<StoreResourcePreviewProps> = props => {
   return (
     <Modal
       width="80%"
-      title="Preview"
+      title={builder.preview}
       destroyOnClose
       maskClosable={false}
       visible={previewModalVisible}

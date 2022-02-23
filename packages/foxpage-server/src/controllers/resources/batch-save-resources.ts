@@ -31,11 +31,11 @@ export class SaveRemoteResourceList extends BaseController {
   @ResponseSchema(FileListRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: SaveResourceListReq): Promise<ResData<any[]>> {
     try {
-      // // Check permission
-      // const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
-      // if (!hasAuth) {
-      //   return Response.accessDeny(i18n.system.accessDeny);
-      // }
+      // Check permission
+      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4120501);
+      }
 
       const checkResult = await this.service.resource.checkRemoteResourceExist(
         params.resources,
@@ -43,9 +43,15 @@ export class SaveRemoteResourceList extends BaseController {
       );
 
       if (checkResult.code === 1) {
-        return Response.warning(i18n.resource.versionExist + ':' + (<string[]>checkResult.data).join(','));
+        return Response.warning(
+          i18n.resource.versionExist + ':' + (<string[]>checkResult.data).join(','),
+          2120501,
+        );
       } else if (checkResult.code === 2) {
-        return Response.warning(i18n.resource.nameExist + ':' + (<string[]>checkResult.data).join(','));
+        return Response.warning(
+          i18n.resource.nameExist + ':' + (<string[]>checkResult.data).join(','),
+          2120502,
+        );
       }
 
       // Add resource version
@@ -57,9 +63,9 @@ export class SaveRemoteResourceList extends BaseController {
 
       await this.service.folder.info.runTransaction(ctx.transactions);
 
-      return Response.success(i18n.resource.saveResourcesSuccess);
+      return Response.success(i18n.resource.saveResourcesSuccess, 1120501);
     } catch (err) {
-      return Response.error(err, i18n.resource.saveResourcesFailed);
+      return Response.error(err, i18n.resource.saveResourcesFailed, 3120501);
     }
   }
 }

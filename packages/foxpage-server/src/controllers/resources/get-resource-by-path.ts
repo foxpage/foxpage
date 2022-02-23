@@ -12,8 +12,8 @@ import {
   FileFolderChildren,
   FileFolderContentChildren,
   FolderChildren,
-  NewResourceDetail,
-  ResourceFolderChildren,
+  // NewResourceDetail,
+  // ResourceFolderChildren,
   ResourceFolderContentChildren,
 } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
@@ -23,7 +23,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('resources')
-export class GetResourceDetail extends BaseController {
+export class GetResourceDetailByPath extends BaseController {
   constructor() {
     super();
   }
@@ -102,23 +102,23 @@ export class GetResourceDetail extends BaseController {
         ) as ResourceFolderContentChildren;
 
         // Get resource latest versions
-        if (originPathList.length === 1) {
-          const resourceLatestVersion = await this.service.resource.getResourceGroupLatestVersion(folderId);
-          (<ResourceFolderContentChildren>resourceDetail.children).newResources = <NewResourceDetail[]>(
-            _.remove(resourceLatestVersion, { id: undefined })
-          );
-          const resourceLatestVersionObject = _.keyBy(resourceLatestVersion, 'id');
-          resourceDetail.children.folders.forEach((folder) => {
-            if (resourceLatestVersionObject[folder.id]) {
-              (<ResourceFolderChildren>folder).newVersion = resourceLatestVersionObject[folder.id];
-            }
-          });
-        }
+        // if (originPathList.length === 1) {
+        //   const resourceLatestVersion = await this.service.resource.getResourceGroupLatestVersion(folderId);
+        //   (<ResourceFolderContentChildren>resourceDetail.children).newResources = <NewResourceDetail[]>(
+        //     _.remove(resourceLatestVersion, { id: undefined })
+        //   );
+        //   const resourceLatestVersionObject = _.keyBy(resourceLatestVersion, 'id');
+        //   resourceDetail.children?.folders?.forEach((folder) => {
+        //     if (resourceLatestVersionObject[folder.id]) {
+        //       (<ResourceFolderChildren>folder).newVersion = resourceLatestVersionObject[folder.id];
+        //     }
+        //   });
+        // }
       }
 
-      return Response.success(resourceDetail || {});
+      return Response.success(resourceDetail, 1121001);
     } catch (err) {
-      return Response.error(err, i18n.resource.getResourceDetailFailed);
+      return Response.error(err, i18n.resource.getResourceDetailFailed, 3121001);
     }
   }
 }

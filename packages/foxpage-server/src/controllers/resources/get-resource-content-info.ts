@@ -35,7 +35,7 @@ export class GetResourceContentDetail extends BaseController {
   async index(@QueryParams() params: ResourceContentDetailReq): Promise<ResData<ContentVersion>> {
     let { id = '', fileId = '' } = params;
     if (!id && !fileId) {
-      return Response.warning(i18n.resource.fileIdOrContentIdMustPassOne);
+      return Response.warning(i18n.resource.fileIdOrContentIdMustPassOne, 2121101);
     }
 
     try {
@@ -44,7 +44,7 @@ export class GetResourceContentDetail extends BaseController {
         const contentList = await this.service.content.file.getContentByFileIds([fileId]);
 
         if (contentList.length === 0) {
-          return Response.warning(i18n.resource.invalidResourceFileId);
+          return Response.warning(i18n.resource.invalidResourceFileId, 2121102);
         }
 
         id = contentList[0].id;
@@ -56,9 +56,9 @@ export class GetResourceContentDetail extends BaseController {
         versionNumber: 1,
       });
 
-      return Response.success(versionDetail || {});
+      return Response.success(versionDetail || {}, 1121101);
     } catch (err) {
-      return Response.error(err, i18n.resource.getResourceDetailFailed);
+      return Response.error(err, i18n.resource.getResourceDetailFailed, 3121101);
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch, useHistory, useLocation, useParams, useRouteMatch } from 'react-router-dom';
 
@@ -19,6 +19,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/settings';
+import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationUrlParams } from '@/types/application';
 
 import Conditions from '../conditions';
@@ -70,6 +71,8 @@ const Detail: React.FC<ApplicationDetailProps> = props => {
   const routeMatch = useRouteMatch();
   const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
   const { application, getAppDetail } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global, file } = locale.business;
   useEffect(() => {
     getAppDetail(applicationId);
   }, []);
@@ -105,36 +108,36 @@ const Detail: React.FC<ApplicationDetailProps> = props => {
           theme="light"
         >
           <Menu.Item key="dashbroad" icon={<BorderOutlined />}>
-            Dashbroad
+            {global.dashboard}
           </Menu.Item>
           <Menu.Item key="page" icon={<FileOutlined />}>
-            Page
+            {file.page}
           </Menu.Item>
           <Menu.Item key="template" icon={<LayoutOutlined />}>
-            Template
+            {file.template}
           </Menu.Item>
           <Menu.Item key="function" icon={<FunctionOutlined />}>
-            Function
+            {global.functions}
           </Menu.Item>
           <Menu.Item key="variable" icon={<SlidersOutlined />}>
-            Variable
+            {global.variables}
           </Menu.Item>
           <Menu.Item key="condition" icon={<ForkOutlined />}>
-            Condition
+            {global.functions}
           </Menu.Item>
           <Menu.Item key="resource" icon={<FileTextOutlined />}>
-            Resource
+            {global.resources}
           </Menu.Item>
           <Menu.Item key="packages" icon={<BookOutlined />}>
-            Packages
+            {global.packages}
           </Menu.Item>
 
           <Menu.Item key="dynamics" icon={<BranchesOutlined />}>
-            Dynamics
+            {global.dynamics}
           </Menu.Item>
 
           <Menu.Item key="setting" icon={<SettingOutlined />}>
-            Setting
+            {global.setting}
           </Menu.Item>
           {/* <SubMenu key="resource" title="Resource">
               <Menu.Item key="packages">Packages</Menu.Item>

@@ -39,30 +39,30 @@ export class UpdateTemplateVersionDetail extends BaseController {
     try {
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4071801);
       }
 
       const checkResult = this.service.version.check.structure(params.content || {});
       if (checkResult.code !== 0) {
         if (checkResult.code === 1) {
-          return Response.warning(i18n.page.invalidPageContentId + ':' + checkResult?.msg || '');
+          return Response.warning(i18n.page.invalidPageContentId + ':' + checkResult?.msg || '', 2071801);
         } else if (checkResult.code === 2) {
-          return Response.warning(i18n.page.invalidRelationFormat + ':' + checkResult?.msg || '');
+          return Response.warning(i18n.page.invalidRelationFormat + ':' + checkResult?.msg || '', 2071802);
         } else if (checkResult.code === 3) {
-          return Response.warning(i18n.page.invalidStructureNames + ':' + checkResult?.msg || '');
+          return Response.warning(i18n.page.invalidStructureNames + ':' + checkResult?.msg || '', 2071803);
         }
       }
 
       const result = await this.service.version.info.updateVersionDetail(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.template.invalidVersionId);
+        return Response.warning(i18n.template.invalidVersionId, 2071804);
       } else if (result.code === 2) {
-        return Response.warning(i18n.template.unEditedStatus);
+        return Response.warning(i18n.template.unEditedStatus, 2071805);
       } else if (result.code === 3) {
-        return Response.warning(i18n.template.versionExist);
+        return Response.warning(i18n.template.versionExist, 2071806);
       } else if (result.code === 4) {
-        return Response.warning(i18n.template.missingFields + (<string[]>result.data).join(','));
+        return Response.warning(i18n.template.missingFields + (<string[]>result.data).join(','), 2071807);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
@@ -70,9 +70,9 @@ export class UpdateTemplateVersionDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: <string>result.data, type: TYPE.TEMPLATE });
 
-      return Response.success(versionDetail || {});
+      return Response.success(versionDetail, 1071801);
     } catch (err) {
-      return Response.error(err, i18n.template.updateTemplateVersionFailed);
+      return Response.error(err, i18n.template.updateTemplateVersionFailed, 3071801);
     }
   }
 }

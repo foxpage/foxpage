@@ -6,6 +6,7 @@ import * as ACTIONS from '@/actions/group/project/list';
 import { fetchList } from '@/apis/group/application/list';
 import * as API from '@/apis/group/project';
 import { rootFolderType } from '@/pages/common/constant/FileType';
+import { getBusinessI18n } from '@/pages/locale';
 import { ProjectListActionType } from '@/reducers/group/project/list';
 import { store } from '@/store/index';
 import { PaginationReqParams } from '@/types/common';
@@ -16,7 +17,9 @@ function* handleFetchApp(action: ProjectListActionType) {
   const { page = 1, search = '', size = 10 } = action.payload as PaginationReqParams;
   const userInfo = getLoginUser();
   const organizationId = userInfo?.organizationId || '';
-
+  const {
+    global: { fetchListFailed },
+  } = getBusinessI18n();
   const rs = yield call(fetchList, {
     page,
     search,
@@ -26,7 +29,7 @@ function* handleFetchApp(action: ProjectListActionType) {
   if (rs.code === 200) {
     yield put(ACTIONS.pushApps(rs.data || []));
   } else {
-    message.error(rs.msg || 'Fetch list failed');
+    message.error(rs.msg || fetchListFailed);
   }
 }
 
@@ -34,7 +37,9 @@ function* handleFetchList(action: ProjectListActionType) {
   const { page = 1, search = '', size = 10 } = action.payload as PaginationReqParams;
   const userInfo = getLoginUser();
   const organizationId = userInfo?.organizationId;
-
+  const {
+    global: { fetchListFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.setLoading(true));
   const rs = yield call(API.fetchProjects, {
     page,
@@ -45,23 +50,27 @@ function* handleFetchList(action: ProjectListActionType) {
   if (rs.code === 200) {
     yield put(ACTIONS.pushProjectList(rs.data || [], rs.pageInfo));
   } else {
-    message.error(rs.msg || 'Fetch list failed');
+    message.error(rs.msg || fetchListFailed);
   }
 }
 
 function* save(action: ProjectListActionType) {
   const { organizationId, onSuccess } = action.payload as ProjectSaveParams;
   const { editProject, pageInfo } = store.getState().group.project.list;
+  const {
+    global: { fetchListFailed },
+    application: { nameInvalid, nameLengthInvalid, notSelectError },
+  } = getBusinessI18n();
   if (!editProject.name) {
-    message.warning('Please input name');
+    message.warning(nameInvalid);
     return;
   }
   if (editProject.name.length < 5) {
-    message.warning('name must be longer than or equal to 5 characters');
+    message.warning(nameLengthInvalid);
     return;
   }
   if (!editProject.application || !editProject.application.id) {
-    message.warning('Please select application');
+    message.warning(notSelectError);
     return;
   }
   yield put(ACTIONS.setSaveLoading(true));
@@ -85,7 +94,7 @@ function* save(action: ProjectListActionType) {
       );
     }
   } else {
-    message.error(rs.msg || 'Fetch list failed');
+    message.error(rs.msg || fetchListFailed);
   }
   yield put(ACTIONS.setSaveLoading(false));
 }
@@ -93,18 +102,20 @@ function* save(action: ProjectListActionType) {
 function* deleteProject(action: ProjectListActionType) {
   const { id, applicationId } = action.payload as { id: string; applicationId: string };
   const { pageInfo, projectList } = store.getState().group.project.list;
-
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
   const rs = yield call(API.deleteProject, {
     projectId: id,
     applicationId,
     status: true,
   });
   if (rs.code === 200) {
-    message.success('Delete succeed');
+    message.success(deleteSuccess);
     const page = projectList.length === 1 && pageInfo.page > 1 ? pageInfo.page - 1 : pageInfo.page;
     yield put(ACTIONS.fetchProjectList({ ...pageInfo, page, search: '' }));
   } else {
-    message.error(rs.msg || 'Delete failed');
+    message.error(rs.msg || deleteFailed);
   }
 }
 

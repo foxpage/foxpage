@@ -13,14 +13,14 @@ import {
   NameVersion,
   VersionSearch,
 } from '../../types/content-types';
-import { VersionServiceAbstract } from '../abstracts/version-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class VersionListService extends VersionServiceAbstract {
+export class VersionListService extends BaseService<ContentVersion> {
   private static _instance: VersionListService;
 
   constructor() {
-    super();
+    super(Model.version);
   }
 
   /**
@@ -62,7 +62,8 @@ export class VersionListService extends VersionServiceAbstract {
       this.getContentInfoByIdAndNumber(contentLiveInfo),
     ]);
 
-    // 获取组件中关联的资源信息，返回包含资源的组件信息
+    // Get the resource information associated with the component,
+    // and return the component information containing the resource
     const componentList = await Service.version.component.mappingResourceToComponent(
       _.flatten(contentVersionList),
     );

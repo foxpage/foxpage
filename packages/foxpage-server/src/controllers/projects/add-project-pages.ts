@@ -45,14 +45,19 @@ export class AddAppsPageDetail extends BaseController {
   @ResponseSchema(ProjectListRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: AddProjectPagesReq): Promise<ResData<File>> {
     try {
+      const hasAuth = await this.service.auth.folder(params.projectId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4040101);
+      }
+
       // Check the validity of applications and documents
       const folderDetail = await this.service.folder.info.getDetailById(params.projectId);
       if (!folderDetail || folderDetail.deleted) {
-        return Response.warning(i18n.project.invalidProjectId);
+        return Response.warning(i18n.project.invalidProjectId, 2040101);
       }
 
       if (folderDetail.applicationId !== params.applicationId) {
-        return Response.warning(i18n.project.invalidApplicationIdOrProjectId);
+        return Response.warning(i18n.project.invalidApplicationIdOrProjectId, 2040102);
       }
 
       let newPageList: any[] = [];
@@ -112,9 +117,9 @@ export class AddAppsPageDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.projectId, type: TYPE.PROJECT });
 
-      return Response.success(newPageList);
+      return Response.success(newPageList, 1040101);
     } catch (err) {
-      return Response.error(err, i18n.project.addProjectPagesFailed);
+      return Response.error(err, i18n.project.addProjectPagesFailed, 3040101);
     }
   }
 }

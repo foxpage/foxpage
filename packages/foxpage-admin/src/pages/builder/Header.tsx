@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useContext } from 'react';
 import { connect } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 
@@ -25,6 +25,7 @@ import { PageParam } from '@/types/builder/page';
 import { getLoginUser } from '@/utils/login-user';
 
 import { PublishIcon } from '../common/CustomIcon';
+import GlobalContext from '../GlobalContext';
 
 import ViewModel from './headerButtons/ViewModel';
 import Zoom from './headerButtons/Zoom';
@@ -153,6 +154,8 @@ const Index: React.FC<HeaderType> = props => {
   const history = useHistory();
   const { organizationId } = getLoginUser();
   const { folderId, fileId, contentId } = useParams<PageParam>();
+  const { locale } = useContext(GlobalContext);
+  const { global, builder, version } = locale.business;
 
   const { state } = useLocation();
 
@@ -183,14 +186,14 @@ const Index: React.FC<HeaderType> = props => {
         </span>
 
         <Part style={{ flex: 2 }}>
-          {versionType === 'page' && (
+          {versionType === FileTypeEnum.page && (
             <IconContainer
               onClick={() => {
                 updatePageCopyModalOpen(true);
               }}
             >
               <FileSearchOutlined />
-              <IconMsg>Page Store</IconMsg>
+              <IconMsg>{builder.pageStore}</IconMsg>
             </IconContainer>
           )}
         </Part>
@@ -208,7 +211,7 @@ const Index: React.FC<HeaderType> = props => {
             }}
           >
             <ArrowLeftOutlined />
-            <IconMsg>Last Step</IconMsg>
+            <IconMsg>{builder.lastStep}</IconMsg>
           </IconContainer>
           <IconContainer
             className={nextStepStatus ? '' : 'disabled'}
@@ -219,7 +222,7 @@ const Index: React.FC<HeaderType> = props => {
             }}
           >
             <ArrowRightOutlined />
-            <IconMsg>Next Step</IconMsg>
+            <IconMsg>{builder.nextStep}</IconMsg>
           </IconContainer>
         </Part>
         <Part style={{ flex: 1, justifyContent: 'flex-end' }}>
@@ -237,11 +240,11 @@ const Index: React.FC<HeaderType> = props => {
                 </MoreItem>
               </>
             }
-            trigger={['hover', 'click']}
+            trigger={['click']}
           >
             <IconContainer>
               <MoreOutlined rotate={90} />
-              <IconMsg>More</IconMsg>
+              <IconMsg>{builder.more}</IconMsg>
             </IconContainer>
           </Popover>
           {versionType === 'page' && (
@@ -251,7 +254,7 @@ const Index: React.FC<HeaderType> = props => {
               }}
             >
               <EyeOutlined />
-              <IconMsg>Preview</IconMsg>
+              <IconMsg>{builder.preview}</IconMsg>
             </IconContainer>
           )}
           <IconContainer
@@ -263,7 +266,7 @@ const Index: React.FC<HeaderType> = props => {
             }}
           >
             {saveLoading ? <SyncOutlined spin={true} style={activeIconStyle} /> : <CloudUploadOutlined />}
-            <IconMsg>Save</IconMsg>
+            <IconMsg>{global.save}</IconMsg>
           </IconContainer>
           <IconContainer
             onClick={() => {
@@ -271,7 +274,7 @@ const Index: React.FC<HeaderType> = props => {
             }}
           >
             {publishLoading ? <SyncOutlined spin={true} style={activeIconStyle} /> : <PublishIcon />}
-            <IconMsg>Publish</IconMsg>
+            <IconMsg>{version.publish}</IconMsg>
           </IconContainer>
         </Part>
       </StyledHeader>

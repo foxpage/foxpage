@@ -40,15 +40,15 @@ export class GetResourceVersionList extends BaseController {
       // Check the validity of the page
       const contentDetail = await this.service.content.info.getDetailById(params.id);
       if (!contentDetail || contentDetail.deleted) {
-        return Response.warning(i18n.content.invalidContentId);
+        return Response.warning(i18n.content.invalidContentId, 2121301);
       }
 
       // Get a list of all valid versions
       const versionList = await this.service.version.list.getVersionList({ contentId: params.id });
 
-      return Response.success(versionList);
+      return Response.success(versionList, 1121301);
     } catch (err) {
-      return Response.error(err, i18n.content.getContentVersionListFailed);
+      return Response.error(err, i18n.content.getContentVersionListFailed, 3121301);
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ import EditDrawer from '@/pages/builder/condition/EditDrawer';
 import { FoxpageBreadcrumb } from '@/pages/common';
 import { ConditionEnum } from '@/pages/common/constant/Condition';
 import { suffixTagColor } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 import { ConditionItem } from '@/types/application/condition';
 import periodFormat from '@/utils/period-format';
 
@@ -53,6 +54,9 @@ function Component(props: IProps) {
     clearAll,
   } = props;
 
+  const { locale } = useContext(GlobalContext);
+  const { global, folder, condition, application } = locale.business;
+
   useEffect(() => {
     clearAll();
   }, []);
@@ -92,7 +96,7 @@ function Component(props: IProps) {
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
       render: (text: string, record: ConditionItem) => {
@@ -109,12 +113,12 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'Folder',
+      title: folder.name,
       dataIndex: 'folderName',
       key: 'folderName',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       render: (_text: string, record: ConditionItem) => {
@@ -129,7 +133,7 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (_text: string, record: ConditionItem) => {
@@ -137,7 +141,7 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       key: 'createTime',
       width: 200,
@@ -146,7 +150,7 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'Actions',
+      title: global.actions,
       dataIndex: '',
       key: '',
       width: 100,
@@ -163,9 +167,9 @@ function Component(props: IProps) {
           />
           <Divider type="vertical" />
           <Popconfirm
-            title="Are you sure to delete this condition?"
-            okText="Yes"
-            cancelText="No"
+            title={`${global.deleteMsg}${record.name}?`}
+            okText={global.yes}
+            cancelText={global.no}
             onConfirm={() => handleConditionDelete(record.id)}
           >
             <Button size="small" shape="circle" icon={<DeleteOutlined />} />
@@ -179,8 +183,8 @@ function Component(props: IProps) {
     <>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
-          { name: 'Conditions' },
+          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          { name: condition.name },
         ]}
       />
       <div style={{ marginTop: 12 }}>

@@ -41,22 +41,22 @@ export class SetComponentContentStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4111301);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidContentId);
+        return Response.warning(i18n.content.invalidContentId, 2111301);
       } else if (result.code === 2) {
-        return Response.warning(i18n.component.contentCannotBeDeleted);
+        return Response.warning(i18n.component.contentCannotBeDeleted, 2111302);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail);
+      return Response.success(contentDetail, 1111301);
     } catch (err) {
-      return Response.error(err, i18n.component.setComponentContentDeletedFailed);
+      return Response.error(err, i18n.component.setComponentContentDeletedFailed, 3111301);
     }
   }
 }

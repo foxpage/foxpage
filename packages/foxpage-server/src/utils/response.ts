@@ -8,7 +8,7 @@ import { ResData, ResMsg } from '../types/index-types';
  * @param  {any} data
  * @returns ResData
  */
-export function success(data: any): ResData<{}> | ResMsg {
+export function success(data: any, status?: number): ResData<{}> | ResMsg {
   let body: any = { code: RESPONSE_LEVEL.SUCCESS };
 
   if (_.isString(data)) {
@@ -19,6 +19,8 @@ export function success(data: any): ResData<{}> | ResMsg {
   } else {
     body.data = data;
   }
+
+  body.status = status || 0;
 
   return body;
 }
@@ -36,10 +38,11 @@ export function download(content: Buffer): Buffer {
  * @param  {string} msg
  * @returns ResMsg
  */
-export function warning(msg: string): ResMsg {
+export function warning(msg: string, status?: number): ResMsg {
   // ctx.response.status = 400;
   const body = {
     code: RESPONSE_LEVEL.WARNING,
+    status: status || 1,
     msg: msg,
   };
   return body;
@@ -51,11 +54,12 @@ export function warning(msg: string): ResMsg {
  * @param  {string} msg
  * @returns ResMsg
  */
-export function error(error: Error | unknown, msg: string): ResMsg {
+export function error(error: Error | unknown, msg: string, status?: number): ResMsg {
   const err = error as Error;
 
   const body = {
     code: RESPONSE_LEVEL.ERROR,
+    status: status || 1,
     msg: msg || err.message,
     err: [err.message],
   };
@@ -72,9 +76,10 @@ export function error(error: Error | unknown, msg: string): ResMsg {
  * @param  {string} msg?
  * @returns ResMsg
  */
-export function accessDeny(msg?: string): ResMsg {
+export function accessDeny(msg?: string, status?: number): ResMsg {
   const body = {
     code: RESPONSE_LEVEL.ACCESS_DENY,
+    status: status || 1,
     msg: msg || 'Access Deny, please contact the App owner to authorization',
   };
   return body;

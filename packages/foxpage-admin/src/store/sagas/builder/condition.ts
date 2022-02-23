@@ -22,15 +22,19 @@ import {
 import VariableType from '@/types/application/variable';
 import { isNameError } from '@/utils/error';
 
+import { getBusinessI18n } from '../../../pages/locale/index';
+
 function* handleFetchList(actions: ConditionActionType) {
   yield put(ACTIONS.updateLoading(true));
-
+  const {
+    condition: { fetchFailed },
+  } = getBusinessI18n();
   const { params } = actions.payload as { params: ConditionFetchParams };
   const rs: ConditionFetchRes = yield call(API.getConditions, params);
   if (rs.code === 200) {
     yield put(ACTIONS.pushList(rs));
   } else {
-    message.error('Fetch condition list failed');
+    message.error(rs.msg || fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -38,13 +42,15 @@ function* handleFetchList(actions: ConditionActionType) {
 
 function* fetchApplicationConditions(actions: ConditionActionType) {
   yield put(ACTIONS.updateLoading(true));
-
+  const {
+    condition: { fetchFailed },
+  } = getBusinessI18n();
   const { applicationId, page, size } = actions.payload as ConditionFetchParams;
   const rs: ConditionFetchRes = yield call(API.getApplicationConditions, { applicationId, page, size });
   if (rs.code === 200) {
     yield put(ACTIONS.pushList(rs));
   } else {
-    message.error('Fetch condition list failed');
+    message.error(rs.msg || fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -80,6 +86,9 @@ function* handleSaveCondition(actions: ConditionActionType) {
   if (isNameError(params?.name)) {
     return;
   }
+  const {
+    global: { saveSuccess, saveFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.updateLoading(true));
   if (params.content) {
     const { relation, hasError } = yield searchVariableRelation({
@@ -96,7 +105,7 @@ function* handleSaveCondition(actions: ConditionActionType) {
   }
   const rs: ConditionNewRes = yield call(API.addCondition, params);
   if (rs.code === 200) {
-    message.success('Add new condition succeed');
+    message.success(saveSuccess);
 
     if (typeof cb === 'function') cb(rs.data.contentId);
 
@@ -104,7 +113,7 @@ function* handleSaveCondition(actions: ConditionActionType) {
       yield refresh();
     }
   } else {
-    message.error('Add condition failed');
+    message.error(rs.msg || saveFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -112,7 +121,9 @@ function* handleSaveCondition(actions: ConditionActionType) {
 
 function* handleDeleteCondition(actions: ConditionActionType) {
   yield put(ACTIONS.updateLoading(true));
-
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
   const {
     params,
     cb,
@@ -124,7 +135,7 @@ function* handleDeleteCondition(actions: ConditionActionType) {
   };
   const rs: ConditionDeleteRes = yield call(API.deleteCondition, params);
   if (rs.code === 200) {
-    message.success('Delete condition succeed');
+    message.success(deleteSuccess);
 
     if (typeof cb === 'function') cb();
 
@@ -132,7 +143,7 @@ function* handleDeleteCondition(actions: ConditionActionType) {
       yield refresh();
     }
   } else {
-    message.error('Delete condition failed, please retry later');
+    message.error(rs.msg || deleteFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -151,6 +162,9 @@ function* handleUpdateCondition(actions: ConditionActionType) {
   if (isNameError(params?.name)) {
     return;
   }
+  const {
+    global: { updateSuccess, updateFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.updateLoading(true));
   const { applicationId, folderId } = params;
 
@@ -168,7 +182,7 @@ function* handleUpdateCondition(actions: ConditionActionType) {
 
   const rs: ConditionUpdateRes = yield call(API.updateCondition, params);
   if (rs.code === 200) {
-    message.success('Update condition succeed');
+    message.success(updateSuccess);
 
     if (typeof cb === 'function') cb();
 
@@ -176,7 +190,7 @@ function* handleUpdateCondition(actions: ConditionActionType) {
       yield refresh();
     }
   } else {
-    message.error('Update condition failed, please retry later');
+    message.error(rs.msg || updateFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -184,7 +198,9 @@ function* handleUpdateCondition(actions: ConditionActionType) {
 
 function* handleUpdateConditionVersion(actions: ConditionActionType) {
   yield put(ACTIONS.updateLoading(true));
-
+  const {
+    global: { updateSuccess, updateFailed },
+  } = getBusinessI18n();
   const { params, cb } = actions.payload as {
     cb: () => void;
     params: ConditionUpdateParams;
@@ -200,11 +216,11 @@ function* handleUpdateConditionVersion(actions: ConditionActionType) {
     id: params.content?.id,
   } as ConditionUpdateParams);
   if (rs.code === 200) {
-    message.success('Update condition succeed');
+    message.success(updateSuccess);
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error('Update condition failed, please retry later');
+    message.error(rs.msg || updateFailed);
   }
 }
 

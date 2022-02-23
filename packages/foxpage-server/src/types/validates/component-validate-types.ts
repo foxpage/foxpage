@@ -166,6 +166,7 @@ export class AddComponentReq {
 
   @JSONSchema({ description: 'Component name' })
   @IsString()
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'Component type, component|editor|library' })

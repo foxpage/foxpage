@@ -42,13 +42,13 @@ export class UpdateComponentVersionDetail extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4111901);
       }
 
       // Check the validity of the version ID
       const versionDetail = await this.service.version.info.getDetailById(params.id);
       if (!versionDetail || versionDetail.deleted) {
-        return Response.warning(i18n.content.invalidVersionId);
+        return Response.warning(i18n.content.invalidVersionId, 2111901);
       }
 
       const contentDetail = await this.service.content.info.getDetailById(versionDetail.contentId);
@@ -66,7 +66,7 @@ export class UpdateComponentVersionDetail extends BaseController {
         );
 
         if (missingFields.length > 0) {
-          return Response.warning(i18n.content.contentMissFields + ':' + missingFields.join(','));
+          return Response.warning(i18n.content.contentMissFields + ':' + missingFields.join(','), 2111902);
         }
 
         // Check the validity of the version
@@ -77,7 +77,7 @@ export class UpdateComponentVersionDetail extends BaseController {
             deleted: false,
           });
           if (newVersionDetail && newVersionDetail.id !== versionDetail.id) {
-            return Response.warning(i18n.component.versionExist);
+            return Response.warning(i18n.component.versionExist, 2111903);
           }
         }
       } else {
@@ -107,7 +107,7 @@ export class UpdateComponentVersionDetail extends BaseController {
       );
 
       if (result.code === 1) {
-        return Response.warning(i18n.component.missingFields + (<string[]>result?.data).join(','));
+        return Response.warning(i18n.component.missingFields + (<string[]>result?.data).join(','), 2111904);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
@@ -115,9 +115,9 @@ export class UpdateComponentVersionDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.COMPONENT });
 
-      return Response.success(newVersionDetail);
+      return Response.success(newVersionDetail, 1111901);
     } catch (err) {
-      return Response.error(err, i18n.component.updateComponentVersionFailed);
+      return Response.error(err, i18n.component.updateComponentVersionFailed, 3111901);
     }
   }
 }

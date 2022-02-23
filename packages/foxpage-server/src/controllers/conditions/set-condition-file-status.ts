@@ -42,22 +42,22 @@ export class SetConditionFileStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4100801);
       }
 
       const result = await this.service.file.info.setFileDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2100801);
       } else if (result.code === 2) {
-        return Response.warning(i18n.condition.fileCannotBeDeleted);
+        return Response.warning(i18n.condition.fileCannotBeDeleted, 2100802);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail || {});
+      return Response.success(fileDetail, 1100801);
     } catch (err) {
-      return Response.error(err, i18n.condition.setConditionStatusFailed);
+      return Response.error(err, i18n.condition.setConditionStatusFailed, 3100801);
     }
   }
 }

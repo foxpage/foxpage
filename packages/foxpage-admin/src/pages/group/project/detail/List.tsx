@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { Link, useLocation, useParams } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/group/project/detail';
 import { DeleteButton } from '@/pages/common';
 import { suffixTagColor } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 import { ProjectDetailUrlParams, ProjectFileType } from '@/types/project';
 import periodFormat from '@/utils/period-format';
 import { isFromWorkspace, PROJECT_URL_PREFIX, WORKSPACE_URL_PREFIX } from '@/utils/project/file';
@@ -38,12 +39,14 @@ const FileList: React.FC<ProjectListProp> = props => {
     fetchFileList,
     openDrawer,
   } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global, file } = locale.business;
   const { folderId, applicationId, organizationId } = useParams<ProjectDetailUrlParams>();
   const { pathname, search } = useLocation();
   const fromWorkspace = isFromWorkspace(search);
   const columns = [
     {
-      title: 'name',
+      title: global.nameLabel,
       dataIndex: 'name',
       render: (text: string, record: ProjectFileType) => {
         return (
@@ -51,9 +54,11 @@ const FileList: React.FC<ProjectListProp> = props => {
             onClick={() => {
               localStorage['foxpage_project_file'] = JSON.stringify(record);
             }}
-            to={`/organization/${organizationId}/${fromWorkspace ? WORKSPACE_URL_PREFIX : PROJECT_URL_PREFIX
-              }/${applicationId}/folder/${folderId}/file/${record.id}/content/?fileType=${record.type}&from=${fromWorkspace ? 'workspace' : 'project'
-              }`}
+            to={`/organization/${organizationId}/${
+              fromWorkspace ? WORKSPACE_URL_PREFIX : PROJECT_URL_PREFIX
+            }/${applicationId}/folder/${folderId}/file/${record.id}/content/?fileType=${record.type}&from=${
+              fromWorkspace ? 'workspace' : 'project'
+            }`}
           >
             {text}
           </Link>
@@ -61,15 +66,15 @@ const FileList: React.FC<ProjectListProp> = props => {
       },
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       render: (text: string) => {
-        return <Tag color={suffixTagColor[text]}>{text}</Tag>;
+        return <Tag color={suffixTagColor[text]}>{file[text]}</Tag>;
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (_text: string, record: ProjectFileType) => {
@@ -77,20 +82,20 @@ const FileList: React.FC<ProjectListProp> = props => {
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       key: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
     {
-      title: 'Actions',
+      title: global.actions,
       key: 'updateTime',
       width: 130,
       render: (_text: string, record: ProjectFileType) => {
         return (
           <React.Fragment>
-            <Button type="default" size="small" shape="circle" title="build">
+            <Button type="default" size="small" shape="circle" title={global.build}>
               <Link
                 to={{
                   pathname: `/application/${applicationId}/folder/${folderId}/file/${record.id}/builder`,
@@ -107,21 +112,27 @@ const FileList: React.FC<ProjectListProp> = props => {
               type="default"
               size="small"
               shape="circle"
-              title="Edit"
+              title={global.edit}
               onClick={() => openDrawer(true, record)}
               style={{ marginLeft: 8 }}
             >
               <EditOutlined />
             </Button>
             <Popconfirm
-              title={`Are you sure to delete this ${record.type}?`}
+              title={`${file.deleteMessage}${file[record.type]}?`}
               onConfirm={() => {
                 deleteFile({ id: record.id, applicationId, folderId });
               }}
-              okText="Yes"
-              cancelText="No"
+              okText={global.yes}
+              cancelText={global.no}
             >
-              <DeleteButton type="default" size="small" shape="circle" title="Remove" style={{ marginLeft: 8 }} />
+              <DeleteButton
+                type="default"
+                size="small"
+                shape="circle"
+                title={global.remove}
+                style={{ marginLeft: 8 }}
+              />
             </Popconfirm>
           </React.Fragment>
         );

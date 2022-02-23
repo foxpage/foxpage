@@ -33,7 +33,6 @@ const componentSourceMap: ComponentSourceMapType = {} as ComponentSourceMapType;
 
 const initialState = {
   version,
-  hoveredComponent: initComponent,
   componentSourceMap,
   versionType: '',
   componentList,
@@ -47,7 +46,6 @@ const initialState = {
   componentEditorValue,
   selectedComponent: initComponent,
   selectedWrapperComponent: initComponent,
-  componentEditorOpen: false,
   loading: false,
   editStatus: false,
   lastStepStatus: false,
@@ -213,11 +211,6 @@ const templateReducer = (state: initialDataType = initialState, action: Template
         break;
       }
 
-      case getType(ACTIONS.setComponentEditor): {
-        const { componentEditorOpen } = action.payload;
-        draft.componentEditorOpen = componentEditorOpen;
-        break;
-      }
       case getType(ACTIONS.updateLoadingStatus): {
         const { value } = action.payload;
         draft.loading = value;
@@ -227,7 +220,7 @@ const templateReducer = (state: initialDataType = initialState, action: Template
       case getType(ACTIONS.pushEditorValue): {
         const { key, value, isWrapper } = action.payload;
         const component = isWrapper ? state.selectedWrapperComponent : state.selectedComponent;
-        const newComponent = Object.assign({}, component) as ComponentStructure;
+        const newComponent = Object.assign({}, component);
         newComponent[key] = value;
         newComponent.isUpdate = true;
         if (isWrapper) {
@@ -382,12 +375,6 @@ const templateReducer = (state: initialDataType = initialState, action: Template
       case getType(ACTIONS.clearLastSteps): {
         draft.lastSteps = [];
         draft.lastStepStatus = false;
-        break;
-      }
-
-      case getType(ACTIONS.setHoveredComponent): {
-        const { component } = action.payload;
-        draft.hoveredComponent = component || initComponent;
         break;
       }
 

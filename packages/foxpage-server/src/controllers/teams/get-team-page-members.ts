@@ -47,16 +47,19 @@ export class GetTeamMemberList extends BaseController {
         });
       }
 
-      return Response.success({
-        pageInfo: {
-          total: allMembers.length || 0,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: allMembers.length || 0,
+            page: params.page,
+            size: params.size,
+          },
+          data: memberList,
         },
-        data: memberList,
-      });
+        1020401,
+      );
     } catch (err) {
-      return Response.error(err, i18n.team.getTeamMemberListFailed);
+      return Response.error(err, i18n.team.getTeamMemberListFailed, 3020401);
     }
   }
 }

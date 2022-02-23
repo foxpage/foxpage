@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 
 import { ResourceTypeArray } from '@/constants/resource';
 import { FoxpageBreadcrumb } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/resource/detail';
 
 import FileDrawer from './components/FileDrawer';
@@ -41,6 +42,8 @@ const ResourceDetail: React.FC<ComponentsProps> = ({ groupInfo = {}, updateBaseS
   const { applicationId, organizationId, resourceRoot } =
     useParams<{ applicationId: string; organizationId: string; resourceRoot: string }>();
   const { folderPath, relativePathBreadCrumb = [] } = useRelativePathData();
+  const { locale } = useContext(GlobalContext);
+  const { global, resource, application: applicationI18n } = locale.business;
   useEffect(() => {
     updateBaseState({
       folderPath,
@@ -57,9 +60,9 @@ const ResourceDetail: React.FC<ComponentsProps> = ({ groupInfo = {}, updateBaseS
     <div>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
+          { name: applicationI18n.applicationList, link: `/#/organization/${organizationId}/application/list` },
           {
-            name: 'Resource Groups',
+            name: resource.resourceGroup,
             link: `/#/organization/${organizationId}/application/${applicationId}/detail/resource`,
           },
           ...relativePathBreadCrumb,
@@ -71,19 +74,26 @@ const ResourceDetail: React.FC<ComponentsProps> = ({ groupInfo = {}, updateBaseS
         </Card>
         <UrlInfo>
           <UrlInfoItem>
-            <strong>Name:</strong>
+            <strong>{resource.groupName}:</strong>
             <span>{groupInfo.name || ''}</span>
           </UrlInfoItem>
           <UrlInfoItem>
-            <strong>Intro:</strong>
+            <strong>{resource.groupInfo}:</strong>
             <span>{groupInfo.intro || ''}</span>
           </UrlInfoItem>
           <UrlInfoItem>
-            <strong>Resource Type:</strong>
-            <span>{ResourceTypeArray.find(item => item.type === groupInfo.group?.type)?.label}</span>
+            <strong>{resource.groupType}:</strong>
+            <span>
+              {
+                resource[
+                  ResourceTypeArray.find(item => item.type === groupInfo.group?.type)?.label ||
+                    ResourceTypeArray[0].label
+                ]
+              }
+            </span>
           </UrlInfoItem>
           <UrlInfoItem>
-            <strong>Host:</strong>
+            <strong>{global.host}:</strong>
             <span>{groupInfo.group?.detail?.host}</span>
           </UrlInfoItem>
         </UrlInfo>

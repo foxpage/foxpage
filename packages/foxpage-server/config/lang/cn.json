@@ -258,6 +258,7 @@
     "invalidVersionId": "无效的版本ID",
     "versionExist": "条件版本号已存在",
     "missingFields": "条件版本详情缺少必要的字段",
+    "invalidRelations": "无效的依赖",
     "unEditedStatus": "当前版本的不能编辑",
     "setConditionStatusFailed": "设置条件删除状态失败",
     "versionCannotBeDeleted": "当前条件版本不能被删除",

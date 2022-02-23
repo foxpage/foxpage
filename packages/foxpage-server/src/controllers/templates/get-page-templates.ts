@@ -39,7 +39,7 @@ export class GetPageTemplateList extends BaseController {
       if (params.folderId) {
         const folderDetail = await this.service.folder.info.getDetailById(params.folderId);
         if (!folderDetail || folderDetail.deleted || folderDetail.applicationId !== params.applicationId) {
-          return Response.warning(i18n.folder.invalidFolderId);
+          return Response.warning(i18n.folder.invalidFolderId, 2070401);
         }
       } else {
         params.folderId = await this.service.folder.info.getAppTypeFolderId({
@@ -78,16 +78,19 @@ export class GetPageTemplateList extends BaseController {
         });
       }
 
-      return Response.success({
-        pageInfo: {
-          total: fileList.length,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: fileList.length,
+            page: params.page,
+            size: params.size,
+          },
+          data: fileVersion,
         },
-        data: fileVersion,
-      });
+        1070401,
+      );
     } catch (err) {
-      return Response.error(err, i18n.template.getPageTemplateFailed);
+      return Response.error(err, i18n.template.getPageTemplateFailed, 3070401);
     }
   }
 }

@@ -43,7 +43,7 @@ export class GetWorkspaceRecycleList extends BaseController {
 
       const creator = ctx.userInfo.id;
       if (!creator) {
-        return Response.warning(i18n.user.invalidUser);
+        return Response.warning(i18n.user.invalidUser, 2140401);
       }
 
       const folderInfoList = await this.service.folder.list.getWorkspaceFolderList(
@@ -60,16 +60,19 @@ export class GetWorkspaceRecycleList extends BaseController {
         ),
       );
 
-      return Response.success({
-        pageInfo: {
-          page: params.page,
-          size: params.size,
-          total: folderInfoList.count,
+      return Response.success(
+        {
+          pageInfo: {
+            page: params.page,
+            size: params.size,
+            total: folderInfoList.count,
+          },
+          data: folderInfoList.list,
         },
-        data: folderInfoList.list,
-      });
+        1140401,
+      );
     } catch (err) {
-      return Response.error(err, i18n.project.getWorkspaceRecycleListFailed);
+      return Response.error(err, i18n.project.getWorkspaceRecycleListFailed, 3140401);
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -6,6 +6,7 @@ import { Button, Popconfirm, Space, Table, Tabs, Tag } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import { StoreBuyGoodsType } from '@/constants/store';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/packages/detail';
 import { StateType } from '@/store/reducers/group/application/packages/detail';
 import { AppComponentVersionType } from '@/types/application';
@@ -61,16 +62,8 @@ const VersionList: React.FC<ComponentDetailProp> = ({
   viewVersion,
 }) => {
   const { applicationId, fileId } = useParams<{ applicationId: string; fileId: string }>();
-  // const onClickDisable = useCallback(
-  //   id => {
-  //     updateVersionStatus({
-  //       applicationId,
-  //       id,
-  //       status: 'discard',
-  //     });
-  //   },
-  //   [applicationId, updateVersionStatus],
-  // );
+  const { locale } = useContext(GlobalContext);
+  const { global, package: packageI18n, version } = locale.business;
   const onClickPublish = useCallback(
     id => {
       updateVersionStatus({
@@ -107,7 +100,7 @@ const VersionList: React.FC<ComponentDetailProp> = ({
   );
   const columns = [
     {
-      title: 'Version',
+      title: version.name,
       dataIndex: 'version',
       key: 'version',
       render: (version: string, record: AppComponentVersionType) => {
@@ -125,7 +118,7 @@ const VersionList: React.FC<ComponentDetailProp> = ({
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (creator: Creator) => {
@@ -133,20 +126,20 @@ const VersionList: React.FC<ComponentDetailProp> = ({
       },
     },
     {
-      title: 'UpdateTime',
+      title: global.updateTime,
       dataIndex: 'updateTime',
       key: 'updateTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
     {
-      title: 'Status',
+      title: version.status,
       dataIndex: 'status',
       key: 'status',
       width: 100,
     },
     {
-      title: 'Actions',
+      title: global.actions,
       key: 'action',
       align: 'center' as never,
       width: 200,
@@ -156,20 +149,20 @@ const VersionList: React.FC<ComponentDetailProp> = ({
         if (isRefer) {
           actionList.push(
             <Button type="link" title="View" size="small" onClick={() => onClickViewOrEdit('view', record.id)}>
-              View
+              {global.view}
             </Button>,
           );
         } else {
           if (record.status === 'base') {
             actionList.push(
               <Button type="link" title="Edit" size="small" onClick={() => onClickViewOrEdit('edit', record.id)}>
-                Edit
+                {global.edit}
               </Button>,
             );
           } else {
             actionList.push(
               <Button type="link" title="View" size="small" onClick={() => onClickViewOrEdit('view', record.id)}>
-                View
+                {global.edit}
               </Button>,
             );
           }
@@ -183,14 +176,14 @@ const VersionList: React.FC<ComponentDetailProp> = ({
 
               actionList.push(
                 <Popconfirm
-                  title="Are you sure set this version status to live?"
+                  title={packageI18n.setVersionLiveTip}
                   arrowPointAtCenter
                   onConfirm={() => {
                     onClickLive(componentInfo.id, record.versionNumber);
                   }}
                 >
                   <Button type="link" title="Live" size="small">
-                    Live
+                    {version.live}
                   </Button>
                 </Popconfirm>,
               );
@@ -198,7 +191,7 @@ const VersionList: React.FC<ComponentDetailProp> = ({
           } else {
             actionList.push(
               <Button type="link" size="small" title="Publish" onClick={() => onClickPublish(record.id)}>
-                {record.status === 'discard' ? 'RePublish' : 'Publish'}
+                {record.status === 'discard' ? version.republish : version.publish}
               </Button>,
             );
           }
@@ -222,7 +215,7 @@ const VersionList: React.FC<ComponentDetailProp> = ({
   }, [applicationId, fileId]);
   return (
     <Tabs defaultActiveKey="versions" style={{ marginTop: 24 }}>
-      <TabPane tab="Versions" key="versions">
+      <TabPane tab={global.versions} key="versions">
         <Table
           dataSource={versions}
           columns={columns}

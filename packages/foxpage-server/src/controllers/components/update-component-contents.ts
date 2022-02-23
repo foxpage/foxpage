@@ -38,7 +38,7 @@ export class UpdateComponentContentDetail extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4111801);
       }
 
       const result = await this.service.content.info.updateContentDetail(
@@ -52,7 +52,7 @@ export class UpdateComponentContentDetail extends BaseController {
       );
 
       if (result.code === 1 || result.code === 2) {
-        return Response.warning(i18n.component.invalidContentId);
+        return Response.warning(i18n.component.invalidContentId, 2111801);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
@@ -60,9 +60,9 @@ export class UpdateComponentContentDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.COMPONENT });
 
-      return Response.success(contentDetail);
+      return Response.success(contentDetail, 1111801);
     } catch (err) {
-      return Response.error(err, i18n.component.updateComponentContentFailed);
+      return Response.error(err, i18n.component.updateComponentContentFailed, 3111801);
     }
   }
 }

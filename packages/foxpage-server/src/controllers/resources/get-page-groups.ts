@@ -64,16 +64,19 @@ export class GetResourceGroupPageList extends BaseController {
           });
       });
 
-      return Response.success({
-        data: groupInfo.list,
-        pageInfo: {
-          total: groupInfo.count || 0,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          data: groupInfo.list,
+          pageInfo: {
+            total: groupInfo.count,
+            page: params.page,
+            size: params.size,
+          },
         },
-      });
+        1120701,
+      );
     } catch (err) {
-      return Response.error(err, i18n.resource.getPageResourceFailed);
+      return Response.error(err, i18n.resource.getPageResourceFailed, 3120701);
     }
   }
 }

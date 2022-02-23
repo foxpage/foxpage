@@ -23,15 +23,15 @@
     "resolveJsonModule": true
   },
   "include": [
-    "app.ts",
-    "index.ts",
-    "install.ts",
-    "app.config.ts",
-    "foxpage.config.ts",
     "src/**/*",
     "config/**/*",
+    "app.ts",
+    "index.ts",
+    "app.config.ts",
+    "install.ts",
+    "scripts/*.ts",
     "static/**/*",
-    "scripts/*.ts"
+    "foxpage.config.ts"
   ],
   "exclude": ["node_modules", "dist", "jest.config.js", "test/**/*", "src/**/__mocks__/**/*"]
 }

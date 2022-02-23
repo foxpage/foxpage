@@ -38,12 +38,12 @@ export class UpdateComponentFileDetail extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4112001);
       }
 
       const result = await this.service.file.info.updateFileDetail(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.component.invalidFileId);
+        return Response.warning(i18n.component.invalidFileId, 2112001);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
@@ -51,9 +51,9 @@ export class UpdateComponentFileDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.COMPONENT });
 
-      return Response.success(fileDetail);
+      return Response.success(fileDetail, 1112001);
     } catch (err) {
-      return Response.error(err, i18n.component.updateComponentFileFailed);
+      return Response.error(err, i18n.component.updateComponentFileFailed, 3112001);
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -9,16 +9,11 @@ import { RootState } from 'typesafe-actions';
 
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Field, Group, Label } from '@/components/widgets/group';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/builder/condition';
 import { OptionsAction } from '@/types/common';
 
 import { ConditionFormula, ConditionType } from '../../common/constant/Condition';
-
-const DRAWER_NAME = {
-  new: 'Add',
-  edit: 'Edit',
-  view: 'View',
-};
 
 const { Option } = Select;
 
@@ -71,9 +66,10 @@ function EditDrawer(props: IProps) {
   } = props;
   const [name, setName] = useState('');
   const [logicType, setLogicType] = useState(0);
-
   // init drawer type
   const [type, setType] = useState('');
+  const { locale } = useContext(GlobalContext);
+  const { global, condition: conditionI18n } = locale.business;
   useEffect(() => {
     setType(drawerType);
   }, [drawerType]);
@@ -232,14 +228,14 @@ function EditDrawer(props: IProps) {
   return (
     <OperationDrawer
       open={visible}
-      title={DRAWER_NAME[type] || 'view'}
+      title={global[type] || global.view}
       onClose={handleDrawerClose}
       width={550}
       destroyOnClose
       actions={
         type !== 'view' ? (
           <Button type="primary" onClick={handleApplyClick}>
-            Apply
+            {global.apply}
           </Button>
         ) : (
           <></>
@@ -248,16 +244,16 @@ function EditDrawer(props: IProps) {
     >
       <Group>
         <Field>
-          <Label>Name</Label>
+          <Label>{global.nameLabel}</Label>
           <Input
-            placeholder="condition name"
+            placeholder={conditionI18n.nameLabel}
             disabled={type === 'view'}
             value={name}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           />
         </Field>
         <Field>
-          <Label>Arithmetic logic</Label>
+          <Label>{conditionI18n.arithmeticLogic}</Label>
           <Select
             placeholder="logic"
             disabled={type !== 'new'}
@@ -274,7 +270,7 @@ function EditDrawer(props: IProps) {
           </Select>
         </Field>
         <Field>
-          <Label>Terms</Label>
+          <Label>{global.terms}</Label>
           {optData.map((item, index) => (
             <Container key={index}>
               <FormulaContainer>

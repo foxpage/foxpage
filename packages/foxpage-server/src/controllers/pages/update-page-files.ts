@@ -36,29 +36,29 @@ export class UpdatePageDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateFileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.file.invalidPageName);
+      return Response.warning(i18n.file.invalidPageName, 2051801);
     }
 
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4051801);
       }
 
       const result: Record<string, any> = await this.service.file.info.updateFileDetail(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.page.invalidPageId);
+        return Response.warning(i18n.page.invalidPageId, 2051803);
       }
 
       if (result.code === 2) {
-        return Response.warning(i18n.page.pageNameExist);
+        return Response.warning(i18n.page.pageNameExist, 2051803);
       }
 
       // Check if the path of the file already exists
       if (result.code === 3) {
-        return Response.warning(i18n.file.pathNameExist);
+        return Response.warning(i18n.file.pathNameExist, 2051804);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
@@ -66,9 +66,9 @@ export class UpdatePageDetail extends BaseController {
       // Get file details
       const pageDetail: File = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(pageDetail);
+      return Response.success(pageDetail, 1051801);
     } catch (err) {
-      return Response.error(err, i18n.file.updateFailed);
+      return Response.error(err, i18n.file.updateFailed, 3051801);
     }
   }
 }

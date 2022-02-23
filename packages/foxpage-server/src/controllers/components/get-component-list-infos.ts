@@ -122,9 +122,9 @@ export class GetAppComponentListInfos extends BaseController {
         componentCell && components.push(componentCell);
       }
 
-      return Response.success(components);
+      return Response.success(components, 1110701);
     } catch (err) {
-      return Response.error(err, i18n.component.getAppComponentFailed);
+      return Response.error(err, i18n.component.getAppComponentFailed, 3110701);
     }
   }
 }

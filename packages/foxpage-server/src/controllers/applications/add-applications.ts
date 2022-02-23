@@ -38,7 +38,7 @@ export class AddApplicationDetail extends BaseController {
     try {
       const validOrg = await this.service.org.checkOrgValid(params.organizationId);
       if (!validOrg) {
-        return Response.warning(i18n.org.invalidOrgId);
+        return Response.warning(i18n.org.invalidOrgId, 2030101);
       }
 
       // Check if the same slug exists under the organization
@@ -48,7 +48,7 @@ export class AddApplicationDetail extends BaseController {
         );
 
         if (appDetail && !appDetail.deleted) {
-          return Response.warning(i18n.app.appSlugExist);
+          return Response.warning(i18n.app.appSlugExist, 2030102);
         }
       }
 
@@ -82,9 +82,9 @@ export class AddApplicationDetail extends BaseController {
       const appDetailWithFolder = await this.service.application.getAppDetailWithFolder(<string>appParams.id);
       ctx.logAttr = Object.assign(ctx.logAttr, { id: appParams.id, type: TYPE.APPLICATION });
 
-      return Response.success(appDetailWithFolder);
+      return Response.success(appDetailWithFolder, 1030101);
     } catch (err) {
-      return Response.error(err, i18n.app.addNewDetailFailed);
+      return Response.error(err, i18n.app.addNewDetailFailed, 3030101);
     }
   }
 }

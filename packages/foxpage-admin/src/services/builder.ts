@@ -6,6 +6,7 @@ import { Page, RelationInfo, RenderAppInfo } from '@foxpage/foxpage-types';
 
 import { searchVariable } from '@/apis/group/application/variable/index';
 import { REACT_COMPONENT_TYPE, WRAPPER_COMPONENT_NAME } from '@/constants/build';
+import { getBusinessI18n } from '@/pages/locale';
 import { ConditionContentItem } from '@/types/application/condition';
 import { FuncContentItem } from '@/types/application/function';
 import VariableType, { VariableContent } from '@/types/application/variable';
@@ -106,6 +107,7 @@ const getPosition = (componentId: string, tree: ComponentStructure[]): number =>
     const treeItem = tree[i];
     if (treeItem.id === componentId) {
       index = i;
+      break;
     } else if (treeItem.children && treeItem.children.length > 0) {
       index = getPosition(componentId, treeItem.children);
     }
@@ -305,6 +307,9 @@ const searchVariableRelation = async (params: {
   functions: FuncContentItem[];
   hasError: boolean;
 }> => {
+  const {
+    variable: { notExist },
+  } = getBusinessI18n();
   const { applicationId, folderId, props, oldRelation } = params;
   const relation: RelationType = getRelationFromProps(JSON.stringify(props || {}));
   const variableSearches: string[] = [];
@@ -346,7 +351,7 @@ const searchVariableRelation = async (params: {
   }
   for (const item in result.relation) {
     if (!result.relation[item].id) {
-      message.error(`Variable(${item}) no exist!`);
+      message.error(notExist.replace('${name}', item));
       result.hasError = true;
       delete result.relation[item];
     }

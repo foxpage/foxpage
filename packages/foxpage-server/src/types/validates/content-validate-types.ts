@@ -534,7 +534,7 @@ export class TagContentVersionReq {
   @JSONSchema({ description: 'Content Tags' })
   @IsArray()
   @ValidateNested()
-  tags: Array<object>;
+  tags: Record<string, any>[];
 }
 
 export class AppFileContentStatusReq {

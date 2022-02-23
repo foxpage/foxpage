@@ -49,7 +49,7 @@ export class GetComponentPageVersionList extends BaseController {
       // Get the content ID under the file
       const contentDetail = await this.service.content.info.getDetail({ fileId, deleted: false });
       if (!contentDetail) {
-        return Response.warning(i18n.component.invalidFileId);
+        return Response.warning(i18n.component.invalidFileId, 2110901);
       }
 
       const versionList = await this.service.version.list.getVersionList({
@@ -87,16 +87,19 @@ export class GetComponentPageVersionList extends BaseController {
         );
       }
 
-      return Response.success({
-        data: _.chunk(contentVersionList, params.size)[params.page - 1] || [],
-        pageInfo: {
-          page: params.page,
-          size: params.size,
-          total: contentVersionList.length,
+      return Response.success(
+        {
+          data: _.chunk(contentVersionList, params.size)[params.page - 1] || [],
+          pageInfo: {
+            page: params.page,
+            size: params.size,
+            total: contentVersionList.length,
+          },
         },
-      });
+        1110901,
+      );
     } catch (err) {
-      return Response.error(err, i18n.component.getComponentPageVersionListFailed);
+      return Response.error(err, i18n.component.getComponentPageVersionListFailed, 3110901);
     }
   }
 }

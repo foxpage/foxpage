@@ -37,18 +37,18 @@ export class AddPageDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: FileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.file.invalidName);
+      return Response.warning(i18n.file.invalidName, 2050201);
     }
 
     try {
       if (!params.folderId) {
-        return Response.warning(i18n.folder.invalidFolderId);
+        return Response.warning(i18n.folder.invalidFolderId, 2050202);
       }
 
       // Check permission
       const hasAuth = await this.service.auth.folder(params.folderId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4050201);
       }
 
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: TYPE.PAGE });
@@ -56,26 +56,26 @@ export class AddPageDetail extends BaseController {
 
       // Check the validity of the application ID
       if (result.code === 1) {
-        return Response.warning(i18n.app.idInvalid);
+        return Response.warning(i18n.app.idInvalid, 2050203);
       }
 
       // Check the existence of the file
       if (result.code === 2) {
-        return Response.warning(i18n.file.nameExist);
+        return Response.warning(i18n.file.nameExist, 2050204);
       }
 
       // Check if the path of the file already exists
       if (result.code === 3) {
-        return Response.warning(i18n.file.pathNameExist);
+        return Response.warning(i18n.file.pathNameExist, 2050205);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: (<File>result.data).id, type: TYPE.PAGE });
 
-      return Response.success(result.data || {});
+      return Response.success(result.data || {}, 1050201);
     } catch (err) {
-      return Response.error(err, i18n.page.addNewPageFailed);
+      return Response.error(err, i18n.page.addNewPageFailed, 3050201);
     }
   }
 }

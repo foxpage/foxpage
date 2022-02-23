@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useMemo, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/group/application/resource/detail';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Group } from '@/components/widgets/group';
+import GlobalContext from '@/pages/GlobalContext';
 
 const formItemLayout = {
   labelCol: { span: 6 },
@@ -34,6 +35,8 @@ const Drawer: React.FC<ComponentsProps> = props => {
   const { open, type, data, curFolderId, closeDrawer, addFolder, updateFolder } = props;
   const [form] = Form.useForm();
   const initialValuesRef = useRef<any>({});
+  const { locale } = useContext(GlobalContext);
+  const { global, folder } = locale.business;
   useMemo(() => {
     let initialValues = {};
     if (type === 'edit') {
@@ -95,20 +98,20 @@ const Drawer: React.FC<ComponentsProps> = props => {
   return (
     <OperationDrawer
       open={open}
-      title={'Add Folder'}
+      title={folder.add}
       onClose={onClose}
       width={480}
       destroyOnClose
       actions={
         <Button type="primary" onClick={onSave}>
-          Apply
+          {global.apply}
         </Button>
       }
       afterVisibleChange={afterVisibleChange}
     >
       <Group>
         <Form {...formItemLayout} form={form}>
-          <Form.Item name="name" label="Folder Name" rules={[{ required: true }]}>
+          <Form.Item name="name" label={folder.nameLabel} rules={[{ required: true }]}>
             <Input />
           </Form.Item>
         </Form>

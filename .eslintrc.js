@@ -4,7 +4,13 @@ module.exports = {
   },
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'simple-import-sort', 'import'],
-  extends: ['prettier/@typescript-eslint'],
+  extends: [
+    // "eslint:recommended",
+    'prettier/@typescript-eslint',
+    // 'plugin:prettier/recommended',
+    // "plugin:@typescript-eslint/eslint-recommended",
+    // 'plugin:@typescript-eslint/recommended',
+  ],
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',

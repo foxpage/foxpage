@@ -4,17 +4,17 @@ import { Folder } from '@foxpage/foxpage-server-types';
 
 import { FolderChildrenSearch, FolderPageSearch, WorkspaceFolderSearch } from '../types/file-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import folderModel from './schema/folder';
+import { BaseModel } from './base-model';
 
 /**
  * Folder repository related classes
  *
  * @export
  * @class FolderModel
- * @extends {BaseModelAbstract<Folder>}
+ * @extends {BaseModel<Folder>}
  */
-export class FolderModel extends BaseModelAbstract<Folder> {
+export class FolderModel extends BaseModel<Folder> {
   private static _instance: FolderModel;
 
   constructor() {

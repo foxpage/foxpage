@@ -37,9 +37,9 @@ export class GetAllApplicationPageList extends BaseController {
       this.service.application.setPageSize(params);
       const result = await this.service.application.getPageListWithOrgInfo(params);
 
-      return Response.success(result);
+      return Response.success(result, 1030301);
     } catch (err) {
-      return Response.error(err, i18n.app.listError);
+      return Response.error(err, i18n.app.listError, 3030301);
     }
   }
 }

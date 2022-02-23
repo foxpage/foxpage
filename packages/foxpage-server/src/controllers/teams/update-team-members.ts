@@ -36,7 +36,7 @@ export class SetTeamMemberList extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: TeamMemberDetailReq): Promise<ResData<Team>> {
     const newMembers: MemberBase[] = params.members || [];
     if (newMembers.length === 0) {
-      return Response.warning(i18n.team.invalidMemberList);
+      return Response.warning(i18n.team.invalidMemberList, 2020701);
     }
 
     try {
@@ -49,13 +49,13 @@ export class SetTeamMemberList extends BaseController {
       ]);
 
       if (!sourceTeamDetail || sourceTeamDetail.deleted) {
-        return Response.warning(i18n.team.invalidTeamId);
+        return Response.warning(i18n.team.invalidTeamId, 2020702);
       }
 
       // Permission check
       const hasAuth = await this.service.auth.team(params.teamId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4020701);
       }
 
       // New member data to object
@@ -84,9 +84,9 @@ export class SetTeamMemberList extends BaseController {
       //   content: { id: teamDetail.id, before: sourceTeamDetail, after: teamDetail },
       // });
 
-      return Response.success(teamDetail || {});
+      return Response.success(teamDetail, 1020701);
     } catch (err) {
-      return Response.error(err, i18n.team.updateTeamMemberFailed);
+      return Response.error(err, i18n.team.updateTeamMemberFailed, 3020701);
     }
   }
 }

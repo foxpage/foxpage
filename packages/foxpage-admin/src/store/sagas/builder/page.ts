@@ -12,12 +12,16 @@ import {
 } from '@/actions/builder/template';
 import * as API from '@/apis/builder/catalog';
 import { fetchFileDetail } from '@/apis/group/file';
+import { getBusinessI18n } from '@/pages/locale';
 import { store } from '@/store/index';
 import { PageActionType } from '@/store/reducers/builder/page';
 import { FileDetailFetchParams } from '@/types/application/file';
 import { PageParam } from '@/types/builder';
 
 function* fetchList(action: PageActionType) {
+  const {
+    builder: { fetchCatalogFailed },
+  } = getBusinessI18n();
   const { applicationId, folderId = '', fileId, contentId, fileType } = action.payload as PageParam;
   yield put(ACTIONS.setLoadingStatus(true));
   if (!contentId && !fileId) {
@@ -28,7 +32,7 @@ function* fetchList(action: PageActionType) {
     if (res.code === 200) {
       yield put(ACTIONS.pushPageList(res.data.files));
     } else {
-      message.error('Fetch catalog failed');
+      message.error(res.msg || fetchCatalogFailed);
     }
   } else if (fileId) {
     const res = yield call(fileType === 'page' ? API.fetchPagesCatalog : API.fetchTemplatesCatalog, {
@@ -38,7 +42,7 @@ function* fetchList(action: PageActionType) {
     if (res.code === 200) {
       yield put(ACTIONS.pushPageList(res.data));
     } else {
-      message.error('Fetch catalog failed');
+      message.error(res.msg || fetchCatalogFailed);
     }
   }
   yield put(ACTIONS.setLoadingStatus(false));

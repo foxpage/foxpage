@@ -39,22 +39,22 @@ export class SetVariableContentStatus extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.VARIABLE });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4080701);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidContentId);
+        return Response.warning(i18n.content.invalidContentId, 4080702);
       } else if (result.code === 2) {
-        return Response.warning(i18n.variable.contentCannotBeDeleted);
+        return Response.warning(i18n.variable.contentCannotBeDeleted, 4080703);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail);
+      return Response.success(contentDetail, 1080701);
     } catch (err) {
-      return Response.error(err, i18n.variable.setVariableContentDeletedFailed);
+      return Response.error(err, i18n.variable.setVariableContentDeletedFailed, 3080701);
     }
   }
 }

@@ -36,19 +36,19 @@ export class UpdateFileDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateFileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.file.invalidName);
+      return Response.warning(i18n.file.invalidName, 2170601);
     }
 
     try {
       // Permission check
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4170601);
       }
 
       const fileDetail = await this.service.file.info.getDetailById(params.id);
       if (!fileDetail || fileDetail.deleted) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2170602);
       }
 
       // If the file name is updated, check whether the new file name exists,
@@ -67,7 +67,7 @@ export class UpdateFileDetail extends BaseController {
         const newFileExist = await this.service.file.check.checkExist(newFileParams);
 
         if (newFileExist) {
-          return Response.warning(i18n.file.nameExist);
+          return Response.warning(i18n.file.nameExist, 2170603);
         }
       }
 
@@ -78,9 +78,9 @@ export class UpdateFileDetail extends BaseController {
       // Get file details
       const newFileDetail: File = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(newFileDetail);
+      return Response.success(newFileDetail, 1170601);
     } catch (err) {
-      return Response.error(err, i18n.file.updateFailed);
+      return Response.error(err, i18n.file.updateFailed, 3170601);
     }
   }
 }

@@ -41,7 +41,7 @@ export class GetPageList extends BaseController {
         fileDetail.applicationId !== params.applicationId ||
         fileDetail.type !== TYPE.PAGE
       ) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2050801);
       }
 
       params.page = !params.page || params.page < 1 ? 1 : params.page;
@@ -50,16 +50,19 @@ export class GetPageList extends BaseController {
         Object.assign({}, params, { type: TYPE.PAGE as FileTypes }),
       );
 
-      return Response.success({
-        pageInfo: {
-          total: result.count,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: result.count,
+            page: params.page,
+            size: params.size,
+          },
+          data: result.list,
         },
-        data: result.list,
-      });
+        1050801,
+      );
     } catch (err) {
-      return Response.error(err, i18n.page.getPagePagesFailed);
+      return Response.error(err, i18n.page.getPagePagesFailed, 3050801);
     }
   }
 }

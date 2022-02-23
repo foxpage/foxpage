@@ -50,9 +50,9 @@ export class GetContentTagVersions extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
 
       console.log(params);
-      return Response.success([]);
+      return Response.success([], 1160401);
     } catch (err) {
-      return Response.error(err, i18n.content.getContentListFailed);
+      return Response.error(err, i18n.content.getContentListFailed, 3160401);
     }
   }
 }

@@ -76,16 +76,19 @@ export class GetPageFunctionList extends BaseController {
         });
       }
 
-      return Response.success({
-        pageInfo: {
-          total: fileList.length,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: fileList.length,
+            page: params.page,
+            size: params.size,
+          },
+          data: fileVersion,
         },
-        data: fileVersion,
-      });
+        1090601,
+      );
     } catch (err) {
-      return Response.error(err, i18n.function.getPageFunctionFailed);
+      return Response.error(err, i18n.function.getPageFunctionFailed, 3090601);
     }
   }
 }

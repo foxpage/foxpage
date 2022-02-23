@@ -39,7 +39,7 @@ export class AddTeamMembers extends BaseController {
       // Check permissions
       const hasAuth = await this.service.auth.team(params.teamId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4020101);
       }
 
       // Check the validity of members
@@ -59,7 +59,7 @@ export class AddTeamMembers extends BaseController {
       });
 
       if (invalidUserIds.length > 0) {
-        return Response.warning(i18n.user.invalidUser + ':' + invalidUserIds.join(','));
+        return Response.warning(i18n.user.invalidUser + ':' + invalidUserIds.join(','), 2020101);
       }
 
       const teamMemberIds = _.map(memberList[0]?.members, 'userId');
@@ -88,9 +88,9 @@ export class AddTeamMembers extends BaseController {
       await this.service.team.runTransaction(ctx.transactions);
       const teamInfo = await this.service.team.getDetailById(params.teamId);
 
-      return Response.success(teamInfo);
+      return Response.success(teamInfo, 1020101);
     } catch (err) {
-      return Response.error(err, i18n.team.addTeamMembersFailed);
+      return Response.error(err, i18n.team.addTeamMembersFailed, 3020101);
     }
   }
 }

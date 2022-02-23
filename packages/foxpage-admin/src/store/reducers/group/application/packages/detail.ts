@@ -31,7 +31,7 @@ export interface StateType {
   cloudSyncDrawer: {
     open: boolean;
     loading: boolean;
-    componentRemotes: ComponentRemote[];
+    componentRemote?: ComponentRemote;
     lastVersion?: AppComponentEditVersionType;
   };
   versionList: {
@@ -59,7 +59,6 @@ const defaultState = {
   cloudSyncDrawer: {
     open: false,
     loading: false,
-    componentRemotes: [],
   },
   versionDrawer: {
     open: false,
@@ -134,8 +133,8 @@ const reducer = (state: StateType = defaultState, action: AppComponentDetailActi
         break;
       }
       case getType(ACTIONS.pushComponentRemotes): {
-        const { remotes, lastVersion } = action.payload;
-        draft.cloudSyncDrawer.componentRemotes = remotes;
+        const { remote, lastVersion } = action.payload;
+        draft.cloudSyncDrawer.componentRemote = remote;
         draft.cloudSyncDrawer.lastVersion = lastVersion;
         draft.cloudSyncDrawer.loading = false;
         break;

@@ -42,9 +42,9 @@ export class GetVariableList extends BaseController {
         contentIds: params.ids,
       });
 
-      return Response.success(_.map(pageList, 'content'));
+      return Response.success(_.map(pageList, 'content'), 1080601);
     } catch (err) {
-      return Response.error(err, i18n.variable.getAppVariableFailed);
+      return Response.error(err, i18n.variable.getAppVariableFailed, 3080601);
     }
   }
 }

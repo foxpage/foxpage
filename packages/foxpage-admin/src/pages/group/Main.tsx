@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 
 import {
@@ -15,6 +15,7 @@ import styled from 'styled-components';
 
 import { getLoginUser } from '@/utils/login-user';
 
+import GlobalContext from '../GlobalContext';
 import Dynamics from '../workspace/dynamics';
 import Projects from '../workspace/projects';
 import Recycles from '../workspace/recycles';
@@ -48,6 +49,16 @@ const Group = () => {
   const routeMatch = useRouteMatch();
   const userInfo = getLoginUser();
   const organizationId = userInfo?.organizationId;
+
+  const { locale } = useContext(GlobalContext);
+  const { workspace, global } = locale.business;
+
+  if (!organizationId) {
+    history.push({
+      pathname: '/login',
+    });
+    return null;
+  }
   useEffect(() => {
     setSelectedKeys(
       location.pathname
@@ -70,32 +81,32 @@ const Group = () => {
         <OrganizationName>Trip.com IBU PLT</OrganizationName>
         <Menu onClick={handleClick} mode="inline" selectedKeys={selectedKeys} theme="light">
           {/* <OrganizationName></OrganizationName> */}
-          <Menu.ItemGroup key="workspace" title="My Workspace">
+          <Menu.ItemGroup key="workspace" title={workspace.name}>
             <Menu.Item key="projects" icon={<ProjectOutlined />}>
-              Projects
+              {global.projects}
             </Menu.Item>
             <Menu.Item key="dynamics" icon={<SwitcherOutlined />}>
-              Dynamics
+              {global.dynamics}
             </Menu.Item>
             <Menu.Item key="recycles" icon={<RestOutlined />}>
-              Recycles
+              {global.recycles}
             </Menu.Item>
           </Menu.ItemGroup>
-          <Menu.ItemGroup key="management" title="Management">
+          <Menu.ItemGroup key="management" title={global.management}>
             <Menu.Item key="application" icon={<AppstoreOutlined />}>
-              Application
+              {global.application}
             </Menu.Item>
             <Menu.Item key="project" icon={<ProjectOutlined />}>
-              Project
+              {global.project}
             </Menu.Item>
             <Menu.Item key="team" icon={<UsergroupAddOutlined />}>
-              Team
+              {global.team}
             </Menu.Item>
             <Menu.Item key="user" icon={<UserOutlined />}>
-              User
+              {global.user}
             </Menu.Item>
             <Menu.Item key="setting" icon={<SettingOutlined />}>
-              Setting
+              {global.setting}
             </Menu.Item>
           </Menu.ItemGroup>
           {/* <OrganizationName>Manifests</OrganizationName> */}
@@ -127,11 +138,11 @@ const Group = () => {
           <Route path="/organization/:organizationId/recycles" component={Recycles} />
           <Route path="/organization/:organizationId/project" component={Project} />
           <Route path="/organization/:organizationId/team" component={Team} />
-          <Redirect from="/organization" to={`/organization/${organizationId}/application/list`} />
           <Redirect
             from={`/organization/${organizationId}/application`}
             to={`/organization/${organizationId}/application/list`}
           />
+          <Redirect from="/organization" to={`/organization/${organizationId}/projects`} />
         </Switch>
       </Content>
     </Layout>

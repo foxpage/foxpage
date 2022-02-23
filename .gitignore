@@ -117,7 +117,8 @@ dist/
 /packages/foxpage-server/static/swagger/swagger.json
 /packages/foxpage-server.npmrc
 /packages/foxpage-plugin-aws-s3/lib/*
-/packages/foxpage-plugin-ares/lib
+/packages/foxpage-plugin-ares
 /packages/foxpage-plugin-unpkg/lib
 /packages/foxpage-server/src/controllers/users/keys.ts
 /packages/foxpage-server/src/controllers/users/generate-keys.ts
+/.VSCodeCounter

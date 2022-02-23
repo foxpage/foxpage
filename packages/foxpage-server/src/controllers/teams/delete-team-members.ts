@@ -39,9 +39,9 @@ export class DeleteTeamMemberList extends BaseController {
       await this.service.team.runTransaction(ctx.transactions);
       const teamInfo = await this.service.team.getDetailById(params.teamId);
 
-      return Response.success(teamInfo || {});
+      return Response.success(teamInfo, 1020301);
     } catch (err) {
-      return Response.error(err, i18n.team.updateTeamMemberFailed);
+      return Response.error(err, i18n.team.updateTeamMemberFailed, 3020301);
     }
   }
 }

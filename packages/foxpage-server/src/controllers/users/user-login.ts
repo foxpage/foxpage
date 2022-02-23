@@ -50,10 +50,10 @@ export class UserLogin extends BaseController {
 
       // Login failed
       if (!loginStatus) {
-        return Response.warning(i18n.user.namePwdError);
+        return Response.warning(i18n.user.namePwdError, 2060501);
       }
 
-      // 获取用户基础信息, 用户所属组织信息
+      // Get user base and org info
       const userInfo = await this.service.user.getUserDetailByAccount(params.account);
       const userOrgInfo = await this.service.org.getUserOrgById(userInfo.id || '');
 
@@ -68,15 +68,18 @@ export class UserLogin extends BaseController {
         { expiresIn: 86400 * 100, algorithm: 'RS256' },
       );
 
-      return Response.success({
-        userInfo: Object.assign(
-          { organizationId: userOrgInfo.id || '' },
-          _.pick(userInfo, ['id', 'account', 'email', 'nickName', 'changePwdStatus']),
-        ),
-        token,
-      });
+      return Response.success(
+        {
+          userInfo: Object.assign(
+            { organizationId: userOrgInfo?.id || '' },
+            _.pick(userInfo, ['id', 'account', 'email', 'nickName', 'changePwdStatus']),
+          ),
+          token,
+        },
+        1060501,
+      );
     } catch (err) {
-      return Response.error(err, i18n.user.loginFailed);
+      return Response.error(err, i18n.user.loginFailed, 3060501);
     }
   }
 }

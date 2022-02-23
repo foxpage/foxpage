@@ -127,7 +127,7 @@ export class AddResourceContentReq {
   @Length(20, 20)
   applicationId: string;
 
-  @JSONSchema({ description: 'File ID' })
+  @JSONSchema({ description: 'Folder ID' })
   @IsString()
   @Length(20, 20)
   folderId: string;
@@ -197,6 +197,7 @@ export class UpdateResourceFolderReq {
   @JSONSchema({ description: 'Folder name' })
   @IsString()
   @IsOptional()
+  @Length(0, 100)
   name: string;
 
   @JSONSchema({ description: 'Introduction to Folder' })
@@ -356,6 +357,7 @@ export class UpdateResourceConfigReq {
 
   @JSONSchema({ description: 'Resource group name' })
   @IsString()
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'Resource group config' })

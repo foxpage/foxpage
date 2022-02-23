@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { RootState } from 'typesafe-actions';
 
 import { REACT_COMPONENT_TYPE } from '@/constants/build';
+import GlobalContext from '@/pages/GlobalContext';
 import { ComponentStructure } from '@/types/builder';
 
 import { newWrapperComponent } from '../../../services/builder';
@@ -69,7 +70,8 @@ const Container: React.FC<ContainerProps> = props => {
     id: undefined,
     status: false,
   });
-
+  const { locale } = useContext(GlobalContext);
+  const { file } = locale.business;
   const { id: dragedComponentId, status: dragStatus = false } = dragState;
   const ROOT_TOP = 0; // todo
   let dndInfo: any = {}; // dnd default info
@@ -91,8 +93,8 @@ const Container: React.FC<ContainerProps> = props => {
       dragInfo.parentId && SYSTEM_PAGE !== dragInfo.parentId
         ? dragInfo.parentId
         : versionType === 'page'
-          ? version.content.schemas[0]?.id
-          : undefined;
+        ? version.content.schemas[0]?.id
+        : undefined;
     let finalParentId;
     if (dragInfo.method === 'INSERT') {
       finalParentId = parentId;
@@ -124,25 +126,25 @@ const Container: React.FC<ContainerProps> = props => {
       const wrapperComponent = componentList.find((item: ComponentStructure) => item.id === wrapper);
       const content = wrapperComponent
         ? {
-          id: wrapper,
-          label: wrapperComponent.label,
-          name: wrapperComponent.name,
-          props: wrapperComponent.props || {},
-          parentId: finalParentId,
-          children: wrapperComponent.children || [],
-          type: wrapperComponent.type || REACT_COMPONENT_TYPE,
-          directive: wrapperComponent.directive,
-        }
+            id: wrapper,
+            label: wrapperComponent.label,
+            name: wrapperComponent.name,
+            props: wrapperComponent.props || {},
+            parentId: finalParentId,
+            children: wrapperComponent.children || [],
+            type: wrapperComponent.type || REACT_COMPONENT_TYPE,
+            directive: wrapperComponent.directive,
+          }
         : {
-          id: desc.id,
-          label: desc.label,
-          name: desc.name,
-          props: desc.props || {},
-          parentId: finalParentId,
-          children: dragInfo.children || [],
-          type: REACT_COMPONENT_TYPE,
-          directive: desc.directive,
-        };
+            id: desc.id,
+            label: desc.label,
+            name: desc.name,
+            props: desc.props || {},
+            parentId: finalParentId,
+            children: dragInfo.children || [],
+            type: REACT_COMPONENT_TYPE,
+            directive: desc.directive,
+          };
       const params = {
         id: version.content.id,
         parentId: finalParentId,
@@ -275,6 +277,7 @@ const Container: React.FC<ContainerProps> = props => {
           }
         } else {
           // cannot insert children
+          // eslint-disable-next-line no-lonely-if
           if (clientY >= top + 10 && clientY <= bottom - 10) {
             const { componentId, destIndex } = getNodeData(overComponent);
             Object.assign(
@@ -386,7 +389,7 @@ const Container: React.FC<ContainerProps> = props => {
       TreeMemo({
         renderStructure:
           versionType === 'page'
-            ? [{ id: SYSTEM_PAGE, name: SYSTEM_PAGE, label: 'Page', children: renderStructure }]
+            ? [{ id: SYSTEM_PAGE, name: SYSTEM_PAGE, label: file.page, children: renderStructure }]
             : renderStructure,
         dragedComponentId,
         expendIds,

@@ -3,6 +3,7 @@ import { writeFile } from 'fs';
 import path from 'path';
 
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
+// import heapdump from 'heapdump';
 import bodyParser from 'koa-bodyparser';
 import router from 'koa-router';
 import serve from 'koa-static';
@@ -85,6 +86,13 @@ export function startService(options: { createSwagger?: boolean }) {
         }),
       );
     }
+
+    // setInterval(() => {
+    //   const filename = `${__dirname}/heapdump-${process.pid}-${Date.now()}.heapsnapshot`;
+    //   heapdump.writeSnapshot(filename, () => {
+    //     console.log(`${filename} dump completed.`);
+    //   });
+    // }, 10 * 1000);
 
     app.on('error', (err: Error) => {
       console.error(`Unexpected error: ${err.message}`);

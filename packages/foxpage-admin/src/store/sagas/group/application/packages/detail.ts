@@ -4,6 +4,7 @@ import { getType } from 'typesafe-actions';
 
 import * as API from '@/apis/group/application/packages';
 import { fetchFileDetail } from '@/apis/group/file';
+import { getBusinessI18n } from '@/pages/locale';
 import * as ACTIONS from '@/store/actions/group/application/packages/detail';
 import { store } from '@/store/index';
 import { AppComponentDetailActionType } from '@/store/reducers/group/application/packages/detail';
@@ -25,6 +26,9 @@ function* fetchComponentInfo(action: AppComponentDetailActionType) {
     params: AppComponentDetailFetchComponentInfoParams;
     options?: OptionsAction;
   };
+  const {
+    component: { fetchDetailFailed },
+  } = getBusinessI18n();
   const { applicationId, id } = params || {};
   const { onSuccess } = options;
   yield put(
@@ -45,7 +49,7 @@ function* fetchComponentInfo(action: AppComponentDetailActionType) {
     );
     yield put(ACTIONS.updateComponentInfoState(rs.data || {}));
   } else {
-    message.error(rs.msg || 'Fetch component info failed.');
+    message.error(rs.msg || fetchDetailFailed);
   }
 }
 
@@ -117,6 +121,9 @@ function* fetchVersionList(action: AppComponentDetailActionType) {
 }
 
 function* updateVersionStatus(action: AppComponentDetailActionType) {
+  const {
+    global: { updateFailed, updateSuccess },
+  } = getBusinessI18n();
   const { params, options = {} } = action.payload as {
     params: AppComponentDetailUpdateComponentVersionStatueParams;
     options?: OptionsAction;
@@ -126,9 +133,9 @@ function* updateVersionStatus(action: AppComponentDetailActionType) {
   if (rs.code === 200) {
     if (onSuccess) onSuccess();
     yield put(ACTIONS.fetchComponentVersionsAction({}));
-    message.success('Update version status success...');
+    message.success(updateSuccess);
   } else {
-    message.error(rs.msg);
+    message.error(rs.msg || updateFailed);
   }
 }
 
@@ -149,6 +156,9 @@ function* liveVersion(action: AppComponentDetailActionType) {
 
 function* handleFetchFileDetail(action: AppComponentDetailActionType) {
   const { applicationId, ids } = action.payload as FileDetailFetchParams;
+  const {
+    file: { fetchDetailFailed },
+  } = getBusinessI18n();
   const rs = yield call(fetchFileDetail, {
     applicationId,
     ids,
@@ -156,30 +166,36 @@ function* handleFetchFileDetail(action: AppComponentDetailActionType) {
   if (rs.code === 200 && rs.data?.length > 0) {
     yield put(ACTIONS.pushFileDetail(rs.data[0]));
   } else {
-    message.error(rs.msg || 'Fetch file detail failed');
+    message.error(rs.msg || fetchDetailFailed);
   }
 }
 
 function* handleFetchComponentRemotes(action: AppComponentDetailActionType) {
   const params = action.payload as ComponentRemotesFetchParams;
+  const {
+    component: { fetchUpdateInfoFailed },
+  } = getBusinessI18n();
   const rs = yield call(API.searchComponentRemotes, params);
   if (rs.code === 200 && rs.data) {
     const { components, lastVersion } = rs.data;
-    yield put(ACTIONS.pushComponentRemotes(components, lastVersion));
+    yield put(ACTIONS.pushComponentRemotes(components?.length > 0 ? components[0] : undefined, lastVersion));
   } else {
-    message.error(rs.msg || 'Fetch component updates failed');
+    message.error(rs.msg || fetchUpdateInfoFailed);
   }
 }
 
 function* handleSaveComponentRemote(action: AppComponentDetailActionType) {
   const params = action.payload as ComponentRemoteSaveParams;
+  const {
+    global: { saveFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.updateCloudSyncDrawerLoadingStatus(true));
   const rs = yield call(API.saveComponentRemote, params);
   if (rs.code === 200) {
     yield put(ACTIONS.updateCloudSyncDrawerOpenStatus(false));
     yield put(ACTIONS.fetchComponentVersionsAction({}));
   } else {
-    message.error(rs.msg || 'Save failed');
+    message.error(rs.msg || saveFailed);
   }
   yield put(ACTIONS.updateCloudSyncDrawerLoadingStatus(false));
 }

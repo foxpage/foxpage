@@ -3,13 +3,16 @@ import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
 import * as API from '@/apis/group/application/list/';
+import { getBusinessI18n } from '@/pages/locale';
 import * as ACTIONS from '@/store/actions/group/application/settings';
 import { SettingsActionType } from '@/store/reducers/group/application/settings';
 import { ApplicationEditType } from '@/types/application';
 
 function* handleFetchApplicationInfo(action: SettingsActionType) {
   const { applicationId } = action.payload as { applicationId: string };
-
+  const {
+    application: { fetchDetailFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.updateLoading(true));
   const rs = yield call(API.getAppDetail, { applicationId });
 
@@ -17,7 +20,7 @@ function* handleFetchApplicationInfo(action: SettingsActionType) {
     yield put(ACTIONS.pushApplicationInfo(rs.data));
     yield put(ACTIONS.updateLoading(false));
   } else {
-    message.error(rs.msg || 'Fetch application info failed.');
+    message.error(rs.msg || fetchDetailFailed);
   }
 }
 
@@ -32,28 +35,40 @@ function* handleFetchAllLocales(action: SettingsActionType) {
 }
 
 function* handleSaveApplicationInfo(action: SettingsActionType) {
+  const {
+    application: { nameInvalid, resourceNameInvalid, resourceTypeInvalid, hostInvalid, regionInvalid, languageInvalid },
+    global: { saveSuccess, saveFailed },
+  } = getBusinessI18n();
   const application = action.payload as ApplicationEditType;
 
   if (!application.name) {
-    message.warn('Please input name');
-    return;
-  }
-  if (!application.host) {
-    message.warn('Please input host');
-    return;
-  }
-  if (!application.slug) {
-    message.warn('Please input slug');
+    message.warn(nameInvalid);
     return;
   }
 
   for (const localeObj of application.localeObjects) {
     if (!localeObj.region) {
-      message.warn('Please select country/region');
+      message.warn(regionInvalid);
       return;
     }
     if (!localeObj.language) {
-      message.warn('Please select language');
+      message.warn(languageInvalid);
+      return;
+    }
+  }
+
+  for (const resource of application.resources) {
+    const { detail, name, type } = resource;
+    if (!name) {
+      message.warn(resourceNameInvalid);
+      return;
+    }
+    if (!type) {
+      message.warn(resourceTypeInvalid);
+      return;
+    }
+    if (!detail?.host) {
+      message.warn(hostInvalid);
       return;
     }
   }
@@ -70,9 +85,9 @@ function* handleSaveApplicationInfo(action: SettingsActionType) {
   });
 
   if (rs.code === 200) {
-    message.success('Save succeed');
+    message.success(saveSuccess);
   } else {
-    message.error(rs.msg || 'Save failed.');
+    message.error(rs.msg || saveFailed);
   }
   yield put(ACTIONS.updateLoading(false));
 }

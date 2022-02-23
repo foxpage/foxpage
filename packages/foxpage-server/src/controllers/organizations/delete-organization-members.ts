@@ -43,16 +43,16 @@ export class DeleteOrganizationMembers extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.organization(params.organizationId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4010301);
       }
 
       this.service.org.updateMembersStatus(params.organizationId, params.userIds, false, { ctx });
       await this.service.org.runTransaction(ctx.transactions);
       const orgInfo = await this.service.org.getDetailById(params.organizationId);
 
-      return Response.success(orgInfo);
+      return Response.success(orgInfo, 1010301);
     } catch (err) {
-      return Response.error(err, i18n.org.deletedOrgMemberFailed);
+      return Response.error(err, i18n.org.deletedOrgMemberFailed, 3010301);
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/project/list';
 import OperationDrawer from '@/components/business/OperationDrawer';
+import GlobalContext from '@/pages/GlobalContext';
 import { Application } from '@/types/application';
 
 const { Option } = Select;
@@ -51,6 +52,8 @@ const Drawer: React.FC<DrawerProp> = props => {
     onSaveSuccess,
   } = props;
   const { organizationId } = useParams<{ organizationId: string }>();
+  const { locale } = useContext(GlobalContext);
+  const { project, global } = locale.business;
 
   useEffect(() => {
     fetchApps({ page: 1, size: APP_PAGE_SIZE });
@@ -72,21 +75,21 @@ const Drawer: React.FC<DrawerProp> = props => {
             save({ organizationId, onSuccess: onSaveSuccess });
           }}
         >
-          Apply
+          {global.apply}
           {saveLoading && <SyncOutlined spin={true} style={{ color: '#fff' }} />}
         </Button>
       }
     >
       {editProject ? (
         <div style={{ padding: 12 }}>
-          <Form.Item {...formItemLayout} label="Project name">
+          <Form.Item {...formItemLayout} label={project.nameLabel}>
             <Input
               defaultValue={editProject.name}
-              placeholder="Project name"
+              placeholder={project.nameLabel}
               onChange={e => update('name', e.target.value)}
             />
           </Form.Item>
-          <Form.Item {...formItemLayout} label="Application">
+          <Form.Item {...formItemLayout} label={global.application}>
             <Select
               disabled={!!editProject.id}
               defaultValue={editProject.application ? editProject.application.id : undefined}

@@ -42,9 +42,9 @@ export class GetPageLivesList extends BaseController {
         contentIds: params.ids || [],
       });
 
-      return Response.success(_.map(pageList, 'content'));
+      return Response.success(_.map(pageList, 'content'), 1051001);
     } catch (err) {
-      return Response.error(err, i18n.condition.getAppPageFailed);
+      return Response.error(err, i18n.condition.getAppPageFailed, 3051001);
     }
   }
 }

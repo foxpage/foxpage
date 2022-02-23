@@ -1,7 +1,7 @@
 // import { App } from './app-instance';
 
 jest.mock('@/utils/mongoose');
-jest.mock('@/models/abstracts/base-model-abstract');
+jest.mock('@/models/base-model');
 jest.mock('@/models/application-model');
 jest.mock('@/models/content-model');
 jest.mock('@/models/content-relation-model');

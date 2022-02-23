@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 
@@ -9,8 +9,10 @@ import { RootState } from 'typesafe-actions';
 
 import { FileTagType } from '@/constants/file';
 import { FoxpageBreadcrumb } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/resource/groups';
 import { ResourceGroup } from '@/types/application';
+import { ApplicationUrlParams } from '@/types/index';
 
 import EditDrawer from './EditDrawer';
 
@@ -92,7 +94,9 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
   editGroup,
 }) => {
   const isInit = useRef(false);
-  const { applicationId, organizationId } = useParams<{ applicationId: string; organizationId: string }>();
+  const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
+  const { locale } = useContext(GlobalContext);
+  const { global, resource, application: applicationI18n } = locale.business;
   useEffect(() => {
     dispatchFetchGroups({
       appId: applicationId,
@@ -104,11 +108,11 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
   };
   const onDeleteGroup = (id: string) => {
     Modal.confirm({
-      title: 'Are you sure to delete it?',
-      content: 'All content under these group will not be visible.',
-      okText: 'Yes',
+      title: resource.deleteTitle,
+      content: resource.deleteMsg,
+      okText: global.yes,
       okType: 'danger',
-      cancelText: 'No',
+      cancelText: global.no,
       onOk() {
         deleteGroup({
           appId: applicationId,
@@ -122,13 +126,13 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
     <div>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
-          { name: 'Resource Groups' },
+          { name: applicationI18n.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          { name: resource.resourceGroup },
         ]}
       />
       <OptionsBox>
         <Button type="primary" onClick={addGroup}>
-          <PlusOutlined /> Add Resource Group
+          <PlusOutlined /> {resource.addResourceGroup}
         </Button>
       </OptionsBox>
       <GroupsBox>

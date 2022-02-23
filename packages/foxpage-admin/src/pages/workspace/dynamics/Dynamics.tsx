@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/workspace/dynamics';
 import { dynamicType } from '@/constants/workspace';
 import { suffixTagColor } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 import { Dynamic } from '@/types/workspace';
 import periodFormat from '@/utils/period-format';
 
@@ -49,6 +50,9 @@ type DynamicProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPro
 const Dynamics: React.FC<DynamicProps> = props => {
   const { loading, pageInfo, dynamics, searchDynamics, clearAll } = props;
 
+  const { locale } = useContext(GlobalContext);
+  const { global } = locale.business;
+
   useEffect(() => {
     searchDynamics({ page: pageInfo.page, size: pageInfo.size, search: '' });
     return () => {
@@ -74,18 +78,23 @@ const Dynamics: React.FC<DynamicProps> = props => {
                       ) : (
                         <Link to={originUrl.replace('/#', '')}>{name}</Link>
                       )}
-                      <div>User：{user}</div>
+                      <div>
+                        {global.user}：{user}
+                      </div>
                     </>
                   )}
                 </>
               }
               description={
                 <>
-                  {applicationName && <div>Application：{applicationName}</div>}
+                  {applicationName && (
+                    <div>
+                      {global.application}：{applicationName}
+                    </div>
+                  )}
 
                   <div>
-                    Type：
-                    <Tag color={suffixTagColor[realMethod]}>{dynamicType[realMethod]}</Tag>
+                    {global.type}：<Tag color={suffixTagColor[realMethod]}>{global[dynamicType[realMethod]]}</Tag>
                   </div>
                 </>
               }

@@ -2,6 +2,7 @@ import { createAction } from 'typesafe-actions';
 
 import { ConditionItem } from '@/types/application/condition';
 import {
+  ComponentSaveParams,
   ComponentSourceMapType,
   ComponentStaticDeleteParams,
   ComponentStaticSaveParams,
@@ -38,13 +39,6 @@ export const pushTemplateData = createAction(
 export const setSelectedComponent = createAction('BUILDER_TEMPLATE__SET_SELECTED_COMPONENT', (id?: string) => ({
   id,
 }))();
-
-export const setComponentEditor = createAction(
-  'BUILDER_TEMPLATE__SET_COMPONENT_EDITOR',
-  (componentEditorOpen = false) => ({
-    componentEditorOpen,
-  }),
-)();
 
 export const updateVersion = createAction('BUILDER_TEMPLATE__UPDATE_VERSION', (version: DslType) => ({
   version,
@@ -137,10 +131,8 @@ export const pushEditorValue = createAction(
 
 export const saveComponentEditorValue = createAction(
   'BUILDER_TEMPLATE__SAVE_COMPONENT_EDITOR_VALUE',
-  (applicationId: string, isWrapper: boolean, folderId: string) => ({
-    applicationId,
-    isWrapper,
-    folderId,
+  (params: ComponentSaveParams) => ({
+    ...params,
   }),
 )();
 
@@ -231,13 +223,6 @@ export const updateWrapperProps = createAction(
   (key: string, value: string) => ({
     key,
     value,
-  }),
-)();
-
-export const setHoveredComponent = createAction(
-  'BUILDER_TEMPLATE__SET_HOVERED_COMPONENT',
-  (component?: ComponentStructure) => ({
-    component,
   }),
 )();
 

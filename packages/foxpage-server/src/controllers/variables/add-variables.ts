@@ -37,10 +37,15 @@ export class AddVariableDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: FileVersionDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.file.invalidName);
+      return Response.warning(i18n.file.invalidName, 2080101);
     }
 
     try {
+      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4080101);
+      }
+
       if (!params.folderId) {
         params.folderId = await this.service.folder.info.getAppTypeFolderId({
           applicationId: params.applicationId,
@@ -48,7 +53,7 @@ export class AddVariableDetail extends BaseController {
         });
 
         if (!params.folderId) {
-          return Response.warning(i18n.folder.invalidFolderId);
+          return Response.warning(i18n.folder.invalidFolderId, 2080102);
         }
       }
 
@@ -57,12 +62,12 @@ export class AddVariableDetail extends BaseController {
 
       // Check the validity of the application ID
       if (result.code === 1) {
-        return Response.warning(i18n.app.idInvalid);
+        return Response.warning(i18n.app.idInvalid, 2080103);
       }
 
       // Check if the variable exists
       if (result.code === 2) {
-        return Response.warning(i18n.file.nameExist);
+        return Response.warning(i18n.file.nameExist, 2080104);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
@@ -70,9 +75,12 @@ export class AddVariableDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: (<File>result.data)?.id, type: TYPE.VARIABLE });
 
-      return Response.success(Object.assign({ contentId: (<any>result.data)?.contentId }, fileDetail));
+      return Response.success(
+        Object.assign({ contentId: (<any>result.data)?.contentId }, fileDetail),
+        1080101,
+      );
     } catch (err) {
-      return Response.error(err, i18n.variable.addNewVariableFailed);
+      return Response.error(err, i18n.variable.addNewVariableFailed, 3080101);
     }
   }
 }

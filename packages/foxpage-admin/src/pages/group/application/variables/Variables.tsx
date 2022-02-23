@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import * as ACTIONS from '@/actions/builder/variable';
 import EditDrawer from '@/pages/builder/variable/EditDrawer';
 import { FoxpageBreadcrumb } from '@/pages/common';
 import { suffixTagColor } from '@/pages/common/constant/FileType';
+import GlobalContext from '@/pages/GlobalContext';
 import VariableType from '@/types/application/variable.d';
 import periodFormat from '@/utils/period-format';
 
@@ -49,6 +50,9 @@ const Variable: React.FC<Type> = props => {
     clearAll,
   } = props;
 
+  const { locale } = useContext(GlobalContext);
+  const { global, folder, application } = locale.business;
+
   useEffect(() => {
     getApplicationVariables(applicationId, pageInfo);
     return () => {
@@ -79,29 +83,29 @@ const Variable: React.FC<Type> = props => {
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
       render: (text: string, record: VariableType) => {
         return (
           <>
             {text}
-            {record.tags?.find(item => item.copyFrom) && (
+            {/* {record.tags?.find(item => item.copyFrom) && (
               <Tag color={suffixTagColor.refer} style={{ marginLeft: 4 }}>
                 refer
               </Tag>
-            )}
+            )} */}
           </>
         );
       },
     },
     {
-      title: 'Folder',
+      title: folder.name,
       dataIndex: 'folderName',
       key: 'folderName',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'schemas',
       render: (_text: string, record: VariableType) => {
@@ -110,7 +114,7 @@ const Variable: React.FC<Type> = props => {
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (_text: string, record: VariableType) => {
@@ -118,7 +122,7 @@ const Variable: React.FC<Type> = props => {
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       key: 'createTime',
       width: 200,
@@ -127,7 +131,7 @@ const Variable: React.FC<Type> = props => {
       },
     },
     {
-      title: 'Actions',
+      title: global.actions,
       key: 'id',
       width: 100,
       render: (_text: string, record: VariableType) => {
@@ -148,12 +152,12 @@ const Variable: React.FC<Type> = props => {
             </Button>
             <Divider type="vertical" />
             <Popconfirm
-              title="Are you sure to delete this variable?"
+              title={`${global.deleteMsg} ${record.name}?`}
               onConfirm={() => {
                 handleDelete(record.id);
               }}
-              okText="Yes"
-              cancelText="No"
+              okText={global.yes}
+              cancelText={global.no}
             >
               <Button size="small" shape="circle" icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -166,8 +170,8 @@ const Variable: React.FC<Type> = props => {
     <React.Fragment>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Application List', link: `/#/organization/${organizationId}/application/list` },
-          { name: 'Variables' },
+          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          { name: global.variables },
         ]}
       />
       <div style={{ marginTop: 12 }}>

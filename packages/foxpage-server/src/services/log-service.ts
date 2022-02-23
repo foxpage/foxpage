@@ -9,9 +9,9 @@ import { FoxCtx, PageData } from '../types/index-types';
 import { ContentChange, DataLogPage, UserOperationParams } from '../types/log-types';
 import { generationId } from '../utils/tools';
 
-import { LogServiceAbstract } from './abstracts/log-service-abstract';
+import { BaseService } from './base-service';
 
-export class LogService extends LogServiceAbstract {
+export class LogService extends BaseService<Log> {
   private static _instance: LogService;
 
   protected transactionId: string = '';
@@ -21,7 +21,7 @@ export class LogService extends LogServiceAbstract {
   protected dataType: string = ''; // Current request data type folder|file|component|editor...
 
   constructor() {
-    super();
+    super(Model.log);
   }
 
   /**

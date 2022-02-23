@@ -43,7 +43,7 @@ export class GetPageVariableList extends BaseController {
       if (params.folderId) {
         const folderDetail = await this.service.folder.info.getDetailById(params.folderId);
         if (!folderDetail || folderDetail.deleted || folderDetail.applicationId !== params.applicationId) {
-          return Response.warning(i18n.folder.invalidFolderId);
+          return Response.warning(i18n.folder.invalidFolderId, 2080301);
         }
 
         fileListPromise.push(
@@ -120,16 +120,19 @@ export class GetPageVariableList extends BaseController {
         }
       }
 
-      return Response.success({
-        pageInfo: {
-          total: fileList.length,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: fileList.length,
+            page: params.page,
+            size: params.size,
+          },
+          data: fileVersion,
         },
-        data: fileVersion,
-      });
+        1080301,
+      );
     } catch (err) {
-      return Response.error(err, i18n.variable.getPageVariableFailed);
+      return Response.error(err, i18n.variable.getPageVariableFailed, 3080301);
     }
   }
 }

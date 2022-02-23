@@ -25,7 +25,7 @@ export class AuthService {
   async application(applicationId: string, options: { ctx: FoxCtx }): Promise<boolean> {
     const appDetail = await Service.application.getDetailById(applicationId);
 
-    return appDetail?.creator === options.ctx.userInfo.id;
+    return appDetail?.creator === options.ctx.userInfo?.id;
   }
 
   /**
@@ -37,7 +37,7 @@ export class AuthService {
   async organization(organizationId: string, options: { ctx: FoxCtx }): Promise<boolean> {
     const orgDetail = await Service.org.getDetailById(organizationId);
 
-    return orgDetail?.creator === options.ctx.userInfo.id;
+    return orgDetail?.creator === options.ctx.userInfo?.id;
   }
 
   /**
@@ -49,7 +49,7 @@ export class AuthService {
   async team(teamId: string, options: { ctx: FoxCtx }): Promise<boolean> {
     const teamDetail = await Service.team.getDetailById(teamId);
 
-    return teamDetail?.creator === options.ctx.userInfo.id;
+    return teamDetail?.creator === options.ctx.userInfo?.id;
   }
 
   /**

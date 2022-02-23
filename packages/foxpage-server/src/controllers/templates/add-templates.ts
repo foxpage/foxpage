@@ -38,12 +38,12 @@ export class AddTemplateDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: FileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.file.invalidName);
+      return Response.warning(i18n.file.invalidName, 2070201);
     }
 
     try {
       if (!params.folderId) {
-        return Response.warning(i18n.folder.invalidFolderId);
+        return Response.warning(i18n.folder.invalidFolderId, 2070202);
       }
 
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: TYPE.TEMPLATE });
@@ -51,12 +51,12 @@ export class AddTemplateDetail extends BaseController {
 
       // Check the validity of the application ID
       if (result.code === 1) {
-        return Response.warning(i18n.app.idInvalid);
+        return Response.warning(i18n.app.idInvalid, 2070203);
       }
 
       // Check if the template exists
       if (result.code === 2) {
-        return Response.warning(i18n.template.templateNameExist);
+        return Response.warning(i18n.template.templateNameExist, 2070204);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
@@ -64,9 +64,9 @@ export class AddTemplateDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: (<File>result.data).id, type: TYPE.TEMPLATE });
 
-      return Response.success(templateFileDetail || {});
+      return Response.success(templateFileDetail, 1070201);
     } catch (err) {
-      return Response.error(err, i18n.template.addNewTemplateFailed);
+      return Response.error(err, i18n.template.addNewTemplateFailed, 3070201);
     }
   }
 }

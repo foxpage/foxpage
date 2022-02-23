@@ -12,7 +12,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('content')
-export class SetContentVersionLive extends BaseController {
+export class SetContentLiveVersion extends BaseController {
   constructor() {
     super();
   }
@@ -35,7 +35,7 @@ export class SetContentVersionLive extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.contentId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4160801);
       }
 
       // Get the specified version details,
@@ -46,12 +46,12 @@ export class SetContentVersionLive extends BaseController {
       ]);
 
       if (!versionDetail || versionDetail.status !== 'release') {
-        return Response.warning(i18n.content.invalidVersionOrStatus);
+        return Response.warning(i18n.content.invalidVersionOrStatus, 2160801);
       }
 
       // The content page does not exist or has been deleted
       if (!contentDetail || contentDetail.deleted) {
-        return Response.warning(i18n.content.invalidContentId);
+        return Response.warning(i18n.content.invalidContentId, 2160802);
       }
 
       // Set live version
@@ -64,9 +64,9 @@ export class SetContentVersionLive extends BaseController {
       await this.service.content.info.runTransaction(ctx.transactions);
       const newContentDetail = await this.service.content.info.getDetailById(params.contentId);
 
-      return Response.success(newContentDetail);
+      return Response.success(newContentDetail, 1160801);
     } catch (err) {
-      return Response.error(err, i18n.content.setContentVersionStatusFailed);
+      return Response.error(err, i18n.content.setContentVersionStatusFailed, 3160801);
     }
   }
 }

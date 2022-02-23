@@ -34,13 +34,13 @@ export class GetContentList extends BaseController {
       // Check the validity of fileId
       const fileDetail = await this.service.file.info.getDetailById(params.fileId);
       if (!fileDetail || fileDetail.deleted) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2160301);
       }
 
       const contentList = await this.service.content.file.getFileContentList(params);
-      return Response.success(contentList);
+      return Response.success(contentList, 1160301);
     } catch (err) {
-      return Response.error(err, i18n.content.getContentListFailed);
+      return Response.error(err, i18n.content.getContentListFailed, 3160301);
     }
   }
 }

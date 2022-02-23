@@ -40,7 +40,7 @@ export class GetAppPageLiveInfoList extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
       if (params.ids.length === 0) {
-        return Response.success([]);
+        return Response.success([], 1050901);
       }
       const contentFileObject = await this.service.file.list.getContentFileByIds(params.ids);
       const validContentIds: string[] = [];
@@ -71,16 +71,16 @@ export class GetAppPageLiveInfoList extends BaseController {
       });
 
       if (dependMissing.length > 0) {
-        return Response.error(new Error(dependMissing.join(',')), i18n.page.pageDependMissing);
+        return Response.error(new Error(dependMissing.join(',')), i18n.page.pageDependMissing, 3050901);
       }
 
       if (recursiveItem.length > 0) {
-        return Response.error(new Error(recursiveItem.join(',')), i18n.page.pageHasRecursiveDepend);
+        return Response.error(new Error(recursiveItem.join(',')), i18n.page.pageHasRecursiveDepend, 3050902);
       }
 
-      return Response.success(contentAndRelation);
+      return Response.success(contentAndRelation, 1050901);
     } catch (err) {
-      return Response.error(err, i18n.condition.getAppPageFailed);
+      return Response.error(err, i18n.condition.getAppPageFailed, 3050903);
     }
   }
 }

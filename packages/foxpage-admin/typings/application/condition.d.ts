@@ -42,7 +42,7 @@ export declare interface ConditionItem {
   content: ConditionContentItem;
   relations?: RelationsType;
   creator?: Creator;
-  tags: Array<FileTag>;
+  tags?: Array<FileTag>;
 }
 
 export declare interface ConditionFetchRes extends ResponseBody {

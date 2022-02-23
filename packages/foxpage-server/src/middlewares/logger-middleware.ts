@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { KoaMiddlewareInterface, Middleware } from 'routing-controllers';
 
+import { LangEnums } from '@foxpage/foxpage-server-types';
 import { createLogger } from '@foxpage/foxpage-shared';
 
 import { config, i18n } from '../../app.config';
@@ -19,6 +20,7 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
     ctx.transactions = [];
     ctx.logAttr = { transactionId: generationId(PRE.TRAN), applicationId: params.applicationId || '' };
     ctx.userInfo = { id: '', account: '' };
+    ctx.lang = <LangEnums>ctx.request.header?.lang || 'en'; // response language
     ctx.log = {
       requestTime: new Date().getTime(),
       responseTime: 0,

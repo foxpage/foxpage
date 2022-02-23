@@ -77,6 +77,10 @@ export class AppResource {
   @IsObject()
   @IsOptional()
   detail: any;
+
+  @JSONSchema({ description: 'Resource id' })
+  @IsString()
+  @IsOptional()
   id: string;
 }
 
@@ -84,7 +88,7 @@ export class AppBaseDetail {
   @JSONSchema({ description: 'Application Name' })
   @IsString()
   @IsNotEmpty()
-  @Length(5, 50)
+  @Length(1, 50)
   name: string;
 
   @JSONSchema({ description: 'Application introdution' })

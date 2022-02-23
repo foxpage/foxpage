@@ -1,9 +1,9 @@
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
+import { BaseModel } from './base-model';
 
 /**
  * Application repository related classes
  */
-export class ApplicationModel extends BaseModelAbstract {
+export class ApplicationModel extends BaseModel {
   private static _instance: ApplicationModel;
 
   constructor() {

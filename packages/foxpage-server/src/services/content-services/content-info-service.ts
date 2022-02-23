@@ -8,14 +8,14 @@ import { FolderFileContent, UpdateTypeContent } from '../../types/content-types'
 import { FoxCtx, TypeStatus } from '../../types/index-types';
 import { AppResource } from '../../types/validates/app-validate-types';
 import { generationId, randStr } from '../../utils/tools';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class ContentInfoService extends ContentServiceAbstract {
+export class ContentInfoService extends BaseService<Content> {
   private static _instance: ContentInfoService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**

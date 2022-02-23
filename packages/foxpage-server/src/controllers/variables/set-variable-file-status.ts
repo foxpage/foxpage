@@ -40,22 +40,22 @@ export class SetVariableFileStatus extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.VARIABLE });
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4080801);
       }
 
       const result = await this.service.file.info.setFileDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2080801);
       } else if (result.code === 2) {
-        return Response.warning(i18n.variable.fileCannotBeDeleted);
+        return Response.warning(i18n.variable.fileCannotBeDeleted, 2080803);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail);
+      return Response.success(fileDetail, 1080801);
     } catch (err) {
-      return Response.error(err, i18n.variable.setVariableFileDeletedFailed);
+      return Response.error(err, i18n.variable.setVariableFileDeletedFailed, 3080801);
     }
   }
 }

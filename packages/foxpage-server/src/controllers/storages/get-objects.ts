@@ -38,9 +38,9 @@ export class GetStorageList extends BaseController {
         bucket: params.bucket || '',
         maxKeys: params.size || 10,
       });
-      return Response.success(list);
+      return Response.success(list, 1150201);
     } catch (err) {
-      return Response.error(err, i18n.storage.getStorageListFailed);
+      return Response.error(err, i18n.storage.getStorageListFailed, 3150201);
     }
   }
 }

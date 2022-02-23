@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/builder/component-list';
 import { setSelectedComponent } from '@/actions/builder/template';
 import RightCloseIcon from '@/pages/builder/component/close';
+import GlobalContext from '@/pages/GlobalContext';
 import { ComponentType } from '@/types/builder';
 
 import DragContent from '../../dnd/DragContent';
@@ -38,7 +39,8 @@ const ListDrawer: React.FC<DrawerProps> = props => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const [searchText, setSearchText] = useState<string>('');
   const { visible, container, loading, allComponent, onClose = () => {}, fetchComponentList, showPlaceholder } = props;
-
+  const { locale } = useContext(GlobalContext);
+  const { builder } = locale.business;
   useEffect(() => {
     if (allComponent.length === 0) {
       fetchComponentList(applicationId);
@@ -46,7 +48,7 @@ const ListDrawer: React.FC<DrawerProps> = props => {
   }, []);
   return (
     <Drawer
-      title="Component List"
+      title={builder.componentList}
       placement="left"
       visible={visible}
       onClose={onClose}
@@ -67,7 +69,7 @@ const ListDrawer: React.FC<DrawerProps> = props => {
     >
       <div style={{ padding: '8px 16px' }}>
         <Search
-          placeholder="input search text"
+          placeholder={builder.componentSearch}
           onSearch={text => {
             setSearchText(text);
           }}

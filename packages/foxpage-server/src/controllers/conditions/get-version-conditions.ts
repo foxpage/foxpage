@@ -35,7 +35,7 @@ export class GetVersionDetail extends BaseController {
   async index(@QueryParams() params: PageContentVersionDetailReq): Promise<ResData<ContentVersionWithLive>> {
     try {
       if (!params.contentId) {
-        return Response.warning(i18n.content.invalidVersionIdOrVersion);
+        return Response.warning(i18n.content.invalidVersionIdOrVersion, 2100601);
       }
 
       params.versionNumber = params.versionNumber;
@@ -51,9 +51,9 @@ export class GetVersionDetail extends BaseController {
         versionDetail.isLiveVersion = contentDetail.liveVersionNumber === versionDetail.versionNumber;
       }
 
-      return Response.success(versionDetail);
+      return Response.success(versionDetail, 1100601);
     } catch (err) {
-      return Response.error(err, i18n.content.getConditionVersionDetailFailed);
+      return Response.error(err, i18n.content.getConditionVersionDetailFailed, 3100601);
     }
   }
 }

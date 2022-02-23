@@ -2,15 +2,16 @@ import _ from 'lodash';
 
 import { ContentVersion, DSL, File } from '@foxpage/foxpage-server-types';
 
+import * as Model from '../../models';
 import { NameVersion, RelationAssocContent, RelationsRecursive } from '../../types/content-types';
-import { VersionServiceAbstract } from '../abstracts/version-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class VersionRelationService extends VersionServiceAbstract {
+export class VersionRelationService extends BaseService<ContentVersion> {
   private static _instance: VersionRelationService;
 
   constructor() {
-    super();
+    super(Model.version);
   }
 
   /**

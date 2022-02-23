@@ -37,10 +37,15 @@ export class AddConditionDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: FileVersionDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.file.invalidName);
+      return Response.warning(i18n.file.invalidName, 2100101);
     }
 
     try {
+      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4100101);
+      }
+
       if (!params.folderId) {
         params.folderId = await this.service.folder.info.getAppTypeFolderId({
           applicationId: params.applicationId,
@@ -48,7 +53,7 @@ export class AddConditionDetail extends BaseController {
         });
 
         if (!params.folderId) {
-          return Response.warning(i18n.folder.invalidFolderId);
+          return Response.warning(i18n.folder.invalidFolderId, 2100102);
         }
       }
 
@@ -57,21 +62,21 @@ export class AddConditionDetail extends BaseController {
 
       // Check the validity of the application ID
       if (result.code === 1) {
-        return Response.warning(i18n.app.idInvalid);
+        return Response.warning(i18n.app.idInvalid, 21001013);
       }
 
       // Check if the template exists
       if (result.code === 2) {
-        return Response.warning(i18n.condition.conditionNameExist);
+        return Response.warning(i18n.condition.conditionNameExist, 2100104);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: (result.data as File).id, type: TYPE.CONDITION });
 
-      return Response.success(result.data || {});
+      return Response.success(result.data || {}, 1100101);
     } catch (err) {
-      return Response.error(err, i18n.condition.addNewConditionFailed);
+      return Response.error(err, i18n.condition.addNewConditionFailed, 3100101);
     }
   }
 }

@@ -31,9 +31,9 @@ export class GetApplicationLocales extends BaseController {
   async index(@QueryParams() params: AppLocalesReq): Promise<ResData<string[]>> {
     try {
       console.log(params);
-      return Response.success(config?.allLocales || []);
+      return Response.success(config?.allLocales || [], 1030601);
     } catch (err) {
-      return Response.error(err, i18n.app.getLocalesError);
+      return Response.error(err, i18n.app.getLocalesError, 3030601);
     }
   }
 }

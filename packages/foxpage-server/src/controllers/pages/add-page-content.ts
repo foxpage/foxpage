@@ -38,7 +38,7 @@ export class AddPageContentDetail extends BaseController {
       // Check permission
       const hasAuth = await this.service.auth.file(params.fileId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4050101);
       }
 
       // Check if the name already exists
@@ -48,7 +48,7 @@ export class AddPageContentDetail extends BaseController {
         deleted: false,
       });
       if (nameExist) {
-        return Response.warning(i18n.page.pageNameExist);
+        return Response.warning(i18n.page.pageNameExist, 2050101);
       }
 
       const contentParams: Partial<Content> = {
@@ -65,9 +65,9 @@ export class AddPageContentDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: contentDetail.id, type: TYPE.PAGE });
 
-      return Response.success(contentDetail);
+      return Response.success(contentDetail, 1050101);
     } catch (err) {
-      return Response.error(err, i18n.page.addNewPageContentFailed);
+      return Response.error(err, i18n.page.addNewPageContentFailed, 3050101);
     }
   }
 }

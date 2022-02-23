@@ -1,12 +1,10 @@
 import React, { useContext, useState } from 'react';
-import { connect } from 'react-redux';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Popconfirm, Table } from 'antd';
 import styled from 'styled-components';
-import { RootState } from 'typesafe-actions';
 
-import { updateComponentCondition } from '@/actions/builder/template';
+import GlobalContext from '@/pages/GlobalContext';
 import { ConditionItem } from '@/types/application/condition';
 
 import BuilderContext from '../../BuilderContext';
@@ -17,51 +15,37 @@ const Toolbar = styled.div`
   position: relative;
 `;
 
-interface IProps {
+interface ConditionEditorProps {
   conditions: ConditionItem[];
-  timeConditions: ConditionItem[];
+  updateComponentCondition: (conditions: ConditionItem[]) => void;
 }
 
-const mapStateToProps = (_store: RootState) => ({});
-
-const mapDispatchToProps = {
-  updateComponentCondition,
-};
-
-type ConditionEditorProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
-
 const ConditionList: React.FC<ConditionEditorProps> = props => {
-  const { conditions, timeConditions, updateComponentCondition } = props;
+  const { conditions, updateComponentCondition } = props;
   const { setCurMenu } = useContext(BuilderContext);
   const [selectDrawerShow, setSelectDrawerShow] = useState<boolean>(false);
-  // const [group, setGroup] = useState<'project' | 'application'>('project');
-
-  // const handleGroupChange = useCallback(e => {
-  //   const _value = e.target.value;
-  //   setGroup(_value);
-  // }, []);
+  const { locale: i18n } = useContext(GlobalContext);
+  const { global } = i18n.business;
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'id',
       render: (_text: string, record: ConditionItem) => record.content.schemas[0].name,
     },
     {
-      title: 'Action',
+      title: global.actions,
       dataIndex: '',
       key: '',
       width: 60,
       render: (_text: string, record) => (
         <Popconfirm
-          title="Are you sure to delete this condition?"
-          okText="Yes"
-          cancelText="No"
+          title={`${global.deleteMsg}${record.name}`}
+          okText={global.yes}
+          cancelText={global.no}
           onConfirm={() =>
-            updateComponentCondition(
-              conditions.filter(condition => condition.content.id !== record.content.id).concat(timeConditions),
-            )
+            updateComponentCondition(conditions.filter(condition => condition.content.id !== record.content.id))
           }
         >
           <Button size="small" shape="circle" icon={<DeleteOutlined />} />
@@ -83,7 +67,7 @@ const ConditionList: React.FC<ConditionEditorProps> = props => {
             setCurMenu(undefined);
           }}
         >
-          Select
+          {global.select}
         </Button>
       </Toolbar>
       <Table
@@ -96,7 +80,7 @@ const ConditionList: React.FC<ConditionEditorProps> = props => {
       />
       <ConditionSelect
         onChange={(selectedConditions: ConditionItem[]) => {
-          updateComponentCondition(selectedConditions.concat(timeConditions));
+          updateComponentCondition(selectedConditions);
         }}
         visible={selectDrawerShow}
         conditions={conditions}
@@ -106,4 +90,4 @@ const ConditionList: React.FC<ConditionEditorProps> = props => {
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ConditionList);
+export default ConditionList;

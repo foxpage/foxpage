@@ -45,34 +45,34 @@ export class UpdateConditionVersionDetail extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4101201);
       }
 
       // Get the version number of base
       const versionDetail = await this.service.version.info.getMaxBaseContentVersionDetail(params.id);
       if (!versionDetail) {
-        return Response.warning(i18n.condition.invalidContentId);
+        return Response.warning(i18n.condition.invalidContentId, 2101201);
       }
 
       const versionParams = Object.assign({}, params, _.pick(versionDetail, ['id', 'version']));
       const result = await this.service.version.info.updateVersionDetail(versionParams, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.condition.invalidVersionId);
+        return Response.warning(i18n.condition.invalidVersionId, 2101202);
       } else if (result.code === 2) {
-        return Response.warning(i18n.condition.unEditedStatus);
+        return Response.warning(i18n.condition.unEditedStatus, 2101203);
       } else if (result.code === 3) {
-        return Response.warning(i18n.condition.versionExist);
+        return Response.warning(i18n.condition.versionExist, 2101204);
       } else if (result.code === 4) {
-        return Response.warning(i18n.condition.missingFields + (<string[]>result.data).join(','));
+        return Response.warning(i18n.condition.missingFields + (<string[]>result.data).join(','), 2101205);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
       const contentVersionDetail = await this.service.version.info.getDetailById(params.id);
 
-      return Response.success(contentVersionDetail);
+      return Response.success(contentVersionDetail, 1101201);
     } catch (err) {
-      return Response.error(err, i18n.content.updateConditionVersionFailed);
+      return Response.error(err, i18n.content.updateConditionVersionFailed, 3101201);
     }
   }
 }

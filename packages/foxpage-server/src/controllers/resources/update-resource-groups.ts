@@ -37,12 +37,12 @@ export class UpdateResourceGroup extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateResourceConfigReq): Promise<ResData<Folder>> {
     try {
       if (!params.name) {
-        return Response.warning(i18n.resource.invalidName);
+        return Response.warning(i18n.resource.invalidName, 2122201);
       }
 
       const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4122201);
       }
 
       let groupDetail = await this.service.folder.info.getDetailById(params.id);
@@ -59,7 +59,7 @@ export class UpdateResourceGroup extends BaseController {
       });
 
       if (!isGroup) {
-        return Response.warning(i18n.resource.invalidResourceGroupId);
+        return Response.warning(i18n.resource.invalidResourceGroupId, 2122202);
       }
 
       // Check if group name has exist
@@ -71,7 +71,7 @@ export class UpdateResourceGroup extends BaseController {
       });
 
       if (existGroup.length > 0) {
-        return Response.warning(i18n.resource.groupNameExist);
+        return Response.warning(i18n.resource.groupNameExist, 2122203);
       }
 
       tags.push(Object.assign({ type: TAG.RESOURCE_CONFIG }, params.config));
@@ -85,9 +85,9 @@ export class UpdateResourceGroup extends BaseController {
 
       groupDetail = await this.service.folder.info.getDetailById(params.id);
 
-      return Response.success(groupDetail);
+      return Response.success(groupDetail, 1122201);
     } catch (err) {
-      return Response.error(err, i18n.resource.updateResourceConfigFailed);
+      return Response.error(err, i18n.resource.updateResourceConfigFailed, 3122201);
     }
   }
 }

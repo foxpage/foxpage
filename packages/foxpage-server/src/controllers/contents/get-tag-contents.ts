@@ -42,9 +42,9 @@ export class GetContentTagContent extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
 
-      const tags = (params.tags || []) as Tag[];
+      const tags = params.tags as Tag[];
       if (tags.length === 0) {
-        return Response.warning(i18n.content.tagsCannotBeEmpty);
+        return Response.warning(i18n.content.tagsCannotBeEmpty, 2160601);
       }
 
       // Get qualified content details
@@ -52,7 +52,7 @@ export class GetContentTagContent extends BaseController {
 
       // Return empty results
       if (contentVersionList.length === 0) {
-        return Response.success([]);
+        return Response.success([], 1160601);
       }
 
       const contentIds = _.map(contentVersionList, 'id');
@@ -61,9 +61,9 @@ export class GetContentTagContent extends BaseController {
       const tagContentList: TagContent[] = _.map(contentList, (content) => {
         return { content: content };
       });
-      return Response.success(tagContentList || []);
+      return Response.success(tagContentList, 1160601);
     } catch (err) {
-      return Response.error(err, i18n.content.getContentListFailed);
+      return Response.error(err, i18n.content.getContentListFailed, 3160601);
     }
   }
 }

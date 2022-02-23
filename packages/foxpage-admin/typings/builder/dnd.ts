@@ -15,3 +15,9 @@ export interface RectType {
   left: number;
   bottom?: number;
 }
+
+export interface Drop {
+  componentNode: Element;
+  parentNode: Element;
+  pos: string;
+}

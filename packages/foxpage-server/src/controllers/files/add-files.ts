@@ -36,7 +36,7 @@ export class AddFileDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: FileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.file.invalidName);
+      return Response.warning(i18n.file.invalidName, 2170101);
     }
 
     try {
@@ -47,12 +47,12 @@ export class AddFileDetail extends BaseController {
 
       // Check the validity of the application ID
       if (!appDetail) {
-        return Response.warning(i18n.app.idInvalid);
+        return Response.warning(i18n.app.idInvalid, 2170102);
       }
 
       // Check the existence of the file
       if (fileExist) {
-        return Response.warning(i18n.file.nameExist);
+        return Response.warning(i18n.file.nameExist, 2170103);
       }
 
       // Add file info
@@ -88,9 +88,9 @@ export class AddFileDetail extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: <string>newFileDetail.id, type: TYPE.FILE });
 
-      return Response.success(newFileDetail);
+      return Response.success(newFileDetail, 1170101);
     } catch (err) {
-      return Response.error(err, i18n.file.addNewFailed);
+      return Response.error(err, i18n.file.addNewFailed, 3170101);
     }
   }
 }

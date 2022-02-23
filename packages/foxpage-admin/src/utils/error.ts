@@ -1,14 +1,19 @@
 import { message } from 'antd';
 
-import { nameErrorMessage, nameRuleReg } from '@/constants/build';
+import { nameRuleReg } from '@/constants/build';
+import { getBusinessI18n } from '@/pages/locale';
 
 export const isNameError = (name?: string) => {
+  const {
+    application: { nameInvalid },
+    global: { nameFormatInvalid },
+  } = getBusinessI18n();
   if (!name) {
-    message.warning('Please input name');
+    message.warning(nameInvalid);
     return true;
   }
   if (nameRuleReg.test(name)) {
-    message.warning(nameErrorMessage);
+    message.warning(nameFormatInvalid);
     return true;
   }
   return false;

@@ -39,22 +39,22 @@ export class SetTemplateContentStatus extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.TEMPLATE });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4071001);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidContentId);
+        return Response.warning(i18n.content.invalidContentId, 2071001);
       } else if (result.code === 2) {
-        return Response.warning(i18n.template.contentCannotBeDeleted);
+        return Response.warning(i18n.template.contentCannotBeDeleted, 2071002);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1071001);
     } catch (err) {
-      return Response.error(err, i18n.template.setTemplateContentDeletedFailed);
+      return Response.error(err, i18n.template.setTemplateContentDeletedFailed, 3071001);
     }
   }
 }

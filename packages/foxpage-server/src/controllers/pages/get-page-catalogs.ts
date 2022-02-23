@@ -45,7 +45,7 @@ export class GetPageCatalogList extends BaseController {
         fileDetail.applicationId !== params.applicationId ||
         fileDetail.type !== TYPE.PAGE
       ) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2050601);
       }
 
       const result = await this.service.content.file.getFilePageContent({
@@ -56,9 +56,9 @@ export class GetPageCatalogList extends BaseController {
         type: TYPE.PAGE as FileTypes,
       });
 
-      return Response.success(result.list);
+      return Response.success(result.list, 1050601);
     } catch (err) {
-      return Response.error(err, i18n.page.getPagePagesFailed);
+      return Response.error(err, i18n.page.getPagePagesFailed, 3050601);
     }
   }
 }

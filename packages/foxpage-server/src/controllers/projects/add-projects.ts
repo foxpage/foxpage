@@ -14,7 +14,7 @@ import * as Response from '../../utils/response';
 import { checkName, formatToPath, generationId } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('projects')
+@JsonController()
 export class AddProjectDetail extends BaseController {
   constructor() {
     super();
@@ -29,7 +29,9 @@ export class AddProjectDetail extends BaseController {
    * @param  {Header} headers
    * @returns {Folder}
    */
-  @Post('')
+  @Post('projects')
+  @Post('workspace/projects')
+  @Post('applications/projects')
   @OpenAPI({
     summary: i18n.sw.addProjectDetail,
     description: '/project/detail',
@@ -39,7 +41,7 @@ export class AddProjectDetail extends BaseController {
   @ResponseSchema(ProjectDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: AddProjectDetailReq): Promise<ResData<Folder>> {
     if (!checkName(params.name)) {
-      return Response.warning(i18n.project.invalidProjectName);
+      return Response.warning(i18n.project.invalidProjectName, 2040201);
     }
 
     try {
@@ -57,18 +59,18 @@ export class AddProjectDetail extends BaseController {
       });
 
       if (result.code === 1) {
-        return Response.warning(i18n.project.invalidType);
+        return Response.warning(i18n.project.invalidType, 2040202);
       } else if (result.code === 2) {
-        return Response.warning(i18n.project.projectNameExist);
+        return Response.warning(i18n.project.projectNameExist, 2040203);
       }
 
       await this.service.folder.info.runTransaction(ctx.transactions);
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: folderDetail.id, type: TYPE.PROJECT });
 
-      return Response.success(result.data as Folder);
+      return Response.success(result.data as Folder, 1040201);
     } catch (err) {
-      return Response.error(err, i18n.project.addProjectFailed);
+      return Response.error(err, i18n.project.addProjectFailed, 3040201);
     }
   }
 }

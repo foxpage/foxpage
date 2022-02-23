@@ -3,6 +3,7 @@ import { ConditionContentSchemaItem } from '@/types/application/condition';
 export const CONDITION_RELATION_KEY = '__conditions';
 export const TEMPLATE_RELATION_KEY = '__templates';
 export const FUNCTION_RELATION_KEY = '__functions';
+export const TIME_CONDITION_PREFIX = '__condition';
 
 export const getFunctionRelationKey = (contentId: string) => {
   return `${FUNCTION_RELATION_KEY}:${contentId}`;
@@ -21,5 +22,5 @@ export const getTemplateRelationKey = (contentId: string) => {
 };
 
 export const isTimeConditionRelation = (schemaItems: ConditionContentSchemaItem) => {
-  return schemaItems && schemaItems.children?.length === 3 && schemaItems.name?.startsWith(CONDITION_RELATION_KEY);
+  return schemaItems && schemaItems.children?.length === 3 && schemaItems.name?.startsWith(TIME_CONDITION_PREFIX);
 };

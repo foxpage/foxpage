@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { Button, Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/list';
+import GlobalContext from '@/pages/GlobalContext';
 import { Application } from '@/types/application';
 import { OrganizationUrlParams } from '@/types/index';
 import periodFormat from '@/utils/period-format';
@@ -27,33 +28,36 @@ const ListView = (props: ApplicationListProps) => {
   const { fetching, list, pageInfo, updateDrawerVisible, fetchList } = props;
   const { organizationId } = useParams<OrganizationUrlParams>();
 
+  const { locale } = useContext(GlobalContext);
+  const { global } = locale.business;
+
   const handleEdit = app => {
     updateDrawerVisible(true, app);
   };
 
   const columns = [
     {
-      title: 'name',
+      title: global.nameLabel,
       dataIndex: 'name',
       render: (text: string, app: Application) => {
         return <Link to={`/organization/${organizationId}/application/${app.id}/detail/page`}>{text}</Link>;
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       render: (_text: string, record: Application) => {
         return record.creator?.account || '--';
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
     {
-      title: 'Actions',
+      title: global.actions,
       dataIndex: 'updateTime',
       width: 80,
       render: (_text: string, record: Application) => {
@@ -62,7 +66,7 @@ const ListView = (props: ApplicationListProps) => {
             type="default"
             size="small"
             shape="circle"
-            title="Edit"
+            title={global.edit}
             onClick={() => {
               handleEdit(record);
             }}

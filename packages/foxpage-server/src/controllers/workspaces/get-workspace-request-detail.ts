@@ -52,9 +52,9 @@ export class GetWorkspaceRequestDetail extends BaseController {
         }
       });
 
-      return Response.success(logData);
+      return Response.success(logData, 1140501);
     } catch (err) {
-      return Response.error(err, i18n.page.getWorkspaceRequestDetailFailed);
+      return Response.error(err, i18n.page.getWorkspaceRequestDetailFailed, 3140501);
     }
   }
 }

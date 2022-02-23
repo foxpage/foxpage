@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { getApplicationsResources } from '@/apis/group/application/resource';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Group } from '@/components/widgets/group';
 import { FileTagType } from '@/constants/file';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/resource/groups';
 import { AppResourceGroupType, AppResourcesGroupsSaveResourcesGroupParams } from '@/types/application/resources';
 
@@ -34,6 +35,8 @@ const Drawer: React.FC<ComponentsProps> = props => {
   const { drawerOpen, editGroup, resetDrawer, saveGroups } = props;
   const [resourceType, setResourceType] = useState<AppResourceGroupType[]>([]);
   const [form] = Form.useForm();
+  const { locale } = useContext(GlobalContext);
+  const { global, resource, application: applicationI18n } = locale.business;
   const fetchResourceType = useCallback(async () => {
     const rs = await getApplicationsResources({
       applicationId,
@@ -87,24 +90,24 @@ const Drawer: React.FC<ComponentsProps> = props => {
   return (
     <OperationDrawer
       open={drawerOpen}
-      title={editGroup?.id ? 'Edit Group' : 'Add Group'}
+      title={editGroup?.id ? resource.editGroup : resource.addGroup}
       onClose={resetDrawer}
       width={480}
       destroyOnClose
       actions={
         <Button type="primary" onClick={onSave}>
-          {editGroup?.id ? 'Edit' : 'Add'} Resource Group
+          {global.apply}
         </Button>
       }
     >
       <Group>
         <Form {...formItemLayout} form={form} name="control-hooks" initialValues={editGroup}>
-          <Form.Item name="name" label="Group Name" rules={[{ required: true }]}>
+          <Form.Item name="name" label={resource.groupName} rules={[{ required: true }]}>
             <Input />
           </Form.Item>
           <Form.Item
             name="resourceId"
-            label="Resource Type"
+            label={resource.groupType}
             rules={[{ required: true, message: 'resourceType is required' }]}
           >
             <Radio.Group disabled={editGroup?.id}>
@@ -116,10 +119,10 @@ const Drawer: React.FC<ComponentsProps> = props => {
                 ))}
             </Radio.Group>
           </Form.Item>
-          <Form.Item name="intro" label="Group Info">
+          <Form.Item name="intro" label={resource.groupInfo}>
             <Input />
           </Form.Item>
-          <Form.Item name="manifestPath" label="Manifest Path">
+          <Form.Item name="manifestPath" label={resource.manifestPath}>
             <Input />
           </Form.Item>
         </Form>

@@ -1,3 +1,5 @@
+import { getLeadingCommentRanges } from 'typescript';
+
 export type ContentBaseStatus = 'base';
 export type ContentDiscardStatus = 'discard';
 export type ContentAlphaStatus = 'alpha';
@@ -115,6 +117,7 @@ export interface DSL {
   id: string;
   schemas: DslSchemas[];
   relation: Record<string, DslRelation>;
+  version?: string;
 }
 
 export interface ComponentDSL {
@@ -391,3 +394,8 @@ export type AppFolderTypes =
   | AppLibraryType
   | AppResourceType
   | AppFunctionType;
+
+export type LangEn = 'en';
+export type LangCn = 'cn';
+
+export type LangEnums = LangEn | LangCn;

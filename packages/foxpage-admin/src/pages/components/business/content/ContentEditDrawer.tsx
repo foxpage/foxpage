@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { CheckOutlined } from '@ant-design/icons';
 import { Button, Input, Tag } from 'antd';
@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import JSONEditor from '@/components/business/JsonEditor';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Field, Group, Label } from '@/components/widgets/group';
+import GlobalContext from '@/pages/GlobalContext';
 import { ContentType } from '@/types/application/content';
 import { TagType } from '@/types/application/tag';
 
@@ -28,6 +29,8 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
   const [editContent, setEditContent] = useState<ContentType>(content as ContentType);
   const [localesTag, setLocalesTag] = useState<TagType[]>([]);
   const [queryTag, setQueryTag] = useState<TagType>({});
+  const { locale } = useContext(GlobalContext);
+  const { global, content: contentI18n, file } = locale.business;
 
   useEffect(() => {
     if (content) {
@@ -75,7 +78,7 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
   return (
     <OperationDrawer
       open={open}
-      title={editContent && editContent.id ? 'Edit' : 'Add'}
+      title={editContent && editContent.id ? global.edit : global.add}
       onClose={onClose}
       width={480}
       destroyOnClose
@@ -86,22 +89,22 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
             onSave(editContent);
           }}
         >
-          Apply
+          {global.add}
         </Button>
       }
     >
       {editContent ? (
         <Group>
           <Field>
-            <Label>Name</Label>
+            <Label>{global.nameLabel}</Label>
             <Input
               value={editContent.title}
-              placeholder="content name"
+              placeholder={contentI18n.nameLabel}
               onChange={e => update('title', e.target.value)}
             />
           </Field>
           <Field>
-            <Label>Locale</Label>
+            <Label>{global.locale}</Label>
             <LocaleSelect>
               {locales.map((locale: string) => {
                 const selected = localesTag.find(item => item.locale === locale);
@@ -122,7 +125,7 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
             </LocaleSelect>
           </Field>
           <Field>
-            <Label>Query</Label>
+            <Label>{contentI18n.query}</Label>
             <JSONEditor
               jsonData={queryTag.query || {}}
               onChangeJSON={json => {

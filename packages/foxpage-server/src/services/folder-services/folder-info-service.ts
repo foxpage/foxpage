@@ -13,14 +13,14 @@ import {
 } from '../../types/file-types';
 import { FoxCtx, TypeStatus } from '../../types/index-types';
 import { formatToPath, generationId } from '../../utils/tools';
-import { FolderServiceAbstract } from '../abstracts/folder-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class FolderInfoService extends FolderServiceAbstract {
+export class FolderInfoService extends BaseService<Folder> {
   private static _instance: FolderInfoService;
 
   constructor() {
-    super();
+    super(Model.folder);
   }
 
   /**

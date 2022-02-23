@@ -6,14 +6,14 @@ import { PRE, TYPE } from '../../../config/constant';
 import * as Model from '../../models';
 import { ContentVersionNumber, ContentVersionString, VersionCheckResult } from '../../types/content-types';
 import { generationId } from '../../utils/tools';
-import { VersionServiceAbstract } from '../abstracts/version-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class VersionCheckService extends VersionServiceAbstract {
+export class VersionCheckService extends BaseService<ContentVersion> {
   private static _instance: VersionCheckService;
 
   constructor() {
-    super();
+    super(Model.version);
   }
 
   /**
@@ -166,6 +166,11 @@ export class VersionCheckService extends VersionServiceAbstract {
   relation(relation: Record<string, DslRelation>): string[] {
     let invalidKeys: string[] = [];
     for (const key in relation) {
+      // do not check system variable, conditions ..
+      if (relation[key].type && _.startsWith(relation[key].type, 'sys_')) {
+        continue;
+      }
+
       if (
         key.indexOf('.') !== -1 ||
         !relation[key].type ||

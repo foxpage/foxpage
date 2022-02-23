@@ -1,13 +1,16 @@
 import _ from 'lodash';
 
-import { CircleDepend, ContentCheck } from '../../types/content-types';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { Content } from '@foxpage/foxpage-server-types';
 
-export class ContentCheckService extends ContentServiceAbstract {
+import * as Model from '../../models';
+import { CircleDepend, ContentCheck } from '../../types/content-types';
+import { BaseService } from '../base-service';
+
+export class ContentCheckService extends BaseService<Content> {
   private static _instance: ContentCheckService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**

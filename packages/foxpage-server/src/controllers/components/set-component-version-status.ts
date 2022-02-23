@@ -39,15 +39,15 @@ export class SetComponentVersionStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4111701);
       }
 
       const result = await this.service.version.info.setVersionDeleteStatus(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.component.invalidVersionId);
+        return Response.warning(i18n.component.invalidVersionId, 2111701);
       } else if (result.code === 2) {
-        return Response.warning(i18n.component.versionCannotBeDeleted);
+        return Response.warning(i18n.component.versionCannotBeDeleted, 2111702);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
@@ -55,9 +55,9 @@ export class SetComponentVersionStatus extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.COMPONENT });
 
-      return Response.success(versionDetail);
+      return Response.success(versionDetail, 1111701);
     } catch (err) {
-      return Response.error(err, i18n.component.setComponentVersionDeletedFailed);
+      return Response.error(err, i18n.component.setComponentVersionDeletedFailed, 3111701);
     }
   }
 }

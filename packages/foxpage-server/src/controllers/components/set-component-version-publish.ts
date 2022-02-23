@@ -41,7 +41,7 @@ export class SetComponentVersionPublishStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4111601);
       }
 
       // TODO Need to check whether the value of status is within the specified range
@@ -50,7 +50,7 @@ export class SetComponentVersionPublishStatus extends BaseController {
       const result = await this.service.version.live.setVersionPublishStatus(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.component.componentVersionHasPublished);
+        return Response.warning(i18n.component.componentVersionHasPublished, 2111601);
       }
 
       await this.service.version.live.runTransaction(ctx.transactions);
@@ -58,9 +58,9 @@ export class SetComponentVersionPublishStatus extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.COMPONENT });
 
-      return Response.success(versionDetail);
+      return Response.success(versionDetail, 1111601);
     } catch (err) {
-      return Response.error(err, i18n.component.setComponentPublishStatusFailed);
+      return Response.error(err, i18n.component.setComponentPublishStatusFailed, 3111601);
     }
   }
 }

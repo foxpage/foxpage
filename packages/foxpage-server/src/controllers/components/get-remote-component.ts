@@ -1,9 +1,10 @@
 import 'reflect-metadata';
 
-import { ComponentDSL, ContentVersion } from '@foxpage/foxpage-server-types';
 import _ from 'lodash';
 import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+
+import { ComponentDSL, ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { NewResourceDetail } from '../../types/file-types';
@@ -144,12 +145,15 @@ export class GetRemoteComponent extends BaseController {
         });
       });
 
-      return Response.success({
-        components: componentResourceList,
-        lastVersion: maxComponentVersion[params.id] || {},
-      });
+      return Response.success(
+        {
+          components: componentResourceList,
+          lastVersion: maxComponentVersion[params.id] || {},
+        },
+        1111201,
+      );
     } catch (err) {
-      return Response.error(err, '');
+      return Response.error(err, '', 3111201);
     }
   }
 }

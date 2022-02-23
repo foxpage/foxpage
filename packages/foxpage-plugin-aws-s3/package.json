@@ -1,6 +1,6 @@
 {
-  "version": "0.0.8",
   "name": "@foxpage/foxpage-plugin-aws-s3",
+  "version":"0.3.0",
   "main": "lib/main.js",
   "types": "lib/main.d.ts",
   "license": "MIT",

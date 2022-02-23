@@ -9,14 +9,14 @@ import {
   ContentVersionString,
   NameVersion,
 } from '../../types/content-types';
-import { VersionServiceAbstract } from '../abstracts/version-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class VersionNumberService extends VersionServiceAbstract {
+export class VersionNumberService extends BaseService<ContentVersion> {
   private static _instance: VersionNumberService;
 
   constructor() {
-    super();
+    super(Model.version);
   }
 
   /**
@@ -59,6 +59,10 @@ export class VersionNumberService extends VersionServiceAbstract {
    * @returns string
    */
   getVersionFromNumber(versionNumber: number): string {
+    if (versionNumber <= 0) {
+      return '';
+    }
+
     let versionItems = [0, 0, 0];
     [10e6, 10e3, 1].forEach((item, index) => {
       const numberItem = Math.floor(versionNumber / item);

@@ -41,23 +41,23 @@ export class SetConditionVersionStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4101101);
       }
 
       const result = await this.service.version.info.setVersionDeleteStatus(params, { ctx });
 
       if (result.code === 1) {
-        return Response.warning(i18n.condition.invalidVersionId);
+        return Response.warning(i18n.condition.invalidVersionId, 2101101);
       } else if (result.code === 2) {
-        return Response.warning(i18n.condition.versionCannotBeDeleted);
+        return Response.warning(i18n.condition.versionCannotBeDeleted, 2101102);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
       const versionDetail = await this.service.version.info.getDetailById(params.id);
 
-      return Response.success(versionDetail || {});
+      return Response.success(versionDetail, 1101101);
     } catch (err) {
-      return Response.error(err, i18n.condition.setConditionStatusFailed);
+      return Response.error(err, i18n.condition.setConditionStatusFailed, 3101101);
     }
   }
 }

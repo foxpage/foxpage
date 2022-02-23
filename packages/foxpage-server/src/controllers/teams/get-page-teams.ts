@@ -34,16 +34,19 @@ export class GetTeamList extends BaseController {
       this.service.team.setPageSize(params);
       const teamPageList = await this.service.team.getPageList(params);
 
-      return Response.success({
-        pageInfo: {
-          total: teamPageList.count,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: teamPageList.count,
+            page: params.page,
+            size: params.size,
+          },
+          data: teamPageList.list,
         },
-        data: teamPageList.list,
-      });
+        1020401,
+      );
     } catch (err) {
-      return Response.error(err, i18n.team.getTeamListFailed);
+      return Response.error(err, i18n.team.getTeamListFailed, 3020401);
     }
   }
 }

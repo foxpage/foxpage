@@ -258,6 +258,7 @@
     "invalidVersionId": "Invalid Version ID",
     "versionExist": "The condition version number already exists",
     "missingFields": "The condition version details are missing required fields",
+    "invalidRelations": "Invalid content relations",
     "unEditedStatus": "The current version cannot be edited",
     "setConditionStatusFailed": "Failed to set condition delete status",
     "versionCannotBeDeleted": "The current condition version cannot be deleted",

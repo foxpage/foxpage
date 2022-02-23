@@ -46,16 +46,19 @@ export class GetPageVariableList extends BaseController {
         fileList = await this.service.file.list.getFileAssocInfo(result.list, { type: TYPE.VARIABLE });
       }
 
-      return Response.success({
-        pageInfo: {
-          total: result.count,
-          page: pageInfo.page,
-          size: pageInfo.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: result.count,
+            page: pageInfo.page,
+            size: pageInfo.size,
+          },
+          data: fileList,
         },
-        data: fileList,
-      });
+        1080201,
+      );
     } catch (err) {
-      return Response.error(err, i18n.variable.getAppPageVariableFailed);
+      return Response.error(err, i18n.variable.getAppPageVariableFailed, 3080201);
     }
   }
 }

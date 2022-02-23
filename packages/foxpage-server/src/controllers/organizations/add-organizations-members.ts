@@ -47,13 +47,13 @@ export class AddOrganizationMembers extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.organization(params.organizationId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4010101);
       }
 
       // Check if the user already exists
       const userInfo = await this.service.user.getUserDetailByAccount(params.account);
       if (userInfo.id) {
-        return Response.warning(i18n.user.exist);
+        return Response.warning(i18n.user.exist, 2010102);
       }
 
       // Create new user
@@ -78,9 +78,9 @@ export class AddOrganizationMembers extends BaseController {
 
       await this.service.org.runTransaction(ctx.transactions);
 
-      return Response.success({ id: userId, account: params.account, password: userPwd });
+      return Response.success({ id: userId, account: params.account, password: userPwd }, 1010101);
     } catch (err) {
-      return Response.error(err, i18n.org.addOrgMemberFailed);
+      return Response.error(err, i18n.org.addOrgMemberFailed, 3010101);
     }
   }
 }

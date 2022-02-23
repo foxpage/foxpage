@@ -3,7 +3,8 @@ import _ from 'lodash';
 import { all, call, delay, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
-import { clearLoadedResource, updateRequireLoadStatus } from '@/actions/builder/component-load';
+import { updateRequireLoadStatus } from '@/actions/builder/component-load';
+import { updateConditionBindDrawerVisible } from '@/actions/builder/condition';
 import * as ACTIONS from '@/actions/builder/template';
 import {
   clonePage,
@@ -15,6 +16,7 @@ import {
   updateTemplateDsl,
 } from '@/apis/builder';
 import { FileTypeEnum, VersionStatusEnum } from '@/constants/index';
+import { getBusinessI18n } from '@/pages/locale';
 import { TemplateActionType } from '@/reducers/builder/template';
 import * as utils from '@/services/builder';
 import { store } from '@/store/index';
@@ -24,6 +26,7 @@ import { VariableContent } from '@/types/application/variable';
 import {
   ComponentDirectiveType,
   ComponentPropsType,
+  ComponentSaveParams,
   ComponentSourceMapType,
   ComponentStaticSaveParams,
   ComponentStructure,
@@ -134,7 +137,7 @@ function* fetchPageRenderTree(action: TemplateActionType) {
       yield put(ACTIONS.fetchPageRenderTree(applicationId, contentId, fileType));
     }
   } else {
-    message.error('Fetch failed');
+    message.error(res.msg);
   }
   yield put(ACTIONS.updateLoadingStatus(false));
   yield put(updateRequireLoadStatus(true));
@@ -147,6 +150,9 @@ function* addVersionContent(
   successCb?: (version) => void,
   extentContentId?: string,
 ) {
+  const {
+    global: { addFailed },
+  } = getBusinessI18n();
   const { version } = store.getState().builder.template;
   const res = yield call(updatePageDsl, {
     id: version.content.id,
@@ -185,7 +191,7 @@ function* addVersionContent(
     successCb && successCb(res.data);
     yield put(ACTIONS.updateVersion(res.data));
   } else {
-    message.error('Add failed');
+    message.error(res.msg || addFailed);
   }
 }
 
@@ -301,6 +307,9 @@ function* publish(action: TemplateActionType) {
     template: { version, versionType },
     page: { contentId, fileType },
   } = store.getState().builder;
+  const {
+    global: { publishSuccess, publishFailed },
+  } = getBusinessI18n();
 
   function* afterSave() {
     const { id } = version;
@@ -312,10 +321,10 @@ function* publish(action: TemplateActionType) {
     });
     yield put(ACTIONS.updatePublishLoading(false));
     if (rs.code === 200) {
-      message.success('Publish succeed');
+      message.success(publishSuccess);
       yield put(ACTIONS.fetchPageRenderTree(applicationId, contentId, fileType));
     } else {
-      message.error(rs.msg || 'Publish failed');
+      message.error(rs.msg || publishFailed);
     }
   }
 
@@ -389,13 +398,9 @@ function* copyComponent(action: TemplateActionType) {
 }
 
 function* saveEditor(action: TemplateActionType) {
-  const { applicationId, isWrapper, folderId } = action.payload as {
-    applicationId: string;
-    folderId: string;
-    isWrapper: boolean;
-  };
+  const { applicationId, folderId, isWrapper } = action.payload as ComponentSaveParams;
   const state = store.getState().builder.template;
-  const { version, selectedWrapperComponent, selectedComponent } = state;
+  const { version, selectedComponent, selectedWrapperComponent } = state;
   const component = isWrapper ? selectedWrapperComponent : selectedComponent;
   if (!component || !component.isUpdate) {
     return;
@@ -457,6 +462,9 @@ function* saveToServer(action: TemplateActionType) {
     }
     return;
   }
+  const {
+    global: { saveSuccess, saveFailed },
+  } = getBusinessI18n();
 
   yield put(ACTIONS.updateSaveLoading(true));
   yield delay(300);
@@ -489,13 +497,13 @@ function* saveToServer(action: TemplateActionType) {
     content: savedVersion.content,
   });
   if (res.code === 200) {
-    !hideMessage && message.success('Save succeed');
+    !hideMessage && message.success(saveSuccess);
     yield put(ACTIONS.updatePageEditStatus(false));
     if (typeof successCb === 'function') {
       yield successCb();
     }
   } else {
-    !hideMessage && message.error(res.msg || 'Save failed');
+    !hideMessage && message.error(res.msg || saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -609,6 +617,7 @@ function* updateComponentCondition(actions: TemplateActionType) {
     ),
   );
   yield put(ACTIONS.pushEditorValue('directive', newDirective, selectedComponent.wrapper ? true : false));
+  yield put(updateConditionBindDrawerVisible(false));
 }
 
 function* pushComponentSource(action: TemplateActionType) {
@@ -636,25 +645,27 @@ function* pushComponentSource(action: TemplateActionType) {
 
 function* handleClonePage(action: TemplateActionType) {
   const params = action.payload as PageCloneParams;
+  const {
+    global: { cloneSuccess, cloneFailed },
+  } = getBusinessI18n();
   const { onSuccess } = params;
   yield put(ACTIONS.pushLastSteps());
   yield put(ACTIONS.clearNextSteps());
   const res = yield call(clonePage, params);
   if (res.code === 200) {
-    message.success('Clone succeed');
+    message.success(cloneSuccess);
     yield put(ACTIONS.updatePageEditStatus(false));
     if (typeof onSuccess === 'function') {
       yield onSuccess();
     }
   } else {
-    message.error(res.msg || 'Clone failed');
+    message.error(res.msg || cloneFailed);
   }
 }
 
 function* handleClearResource(action: TemplateActionType) {
   const { onSuccess } = action.payload as OptionsAction;
   yield put(ACTIONS.clearComponentResource());
-  yield put(clearLoadedResource());
   if (typeof onSuccess === 'function') {
     onSuccess();
   }

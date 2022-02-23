@@ -43,9 +43,9 @@ export class GetAppFunctionList extends BaseController {
         contentIds: params.ids || [],
       });
 
-      return Response.success(_.map(pageList, 'content'));
+      return Response.success(_.map(pageList, 'content'), 1090501);
     } catch (err) {
-      return Response.error(err, i18n.function.getAppFunctionLiveFailed);
+      return Response.error(err, i18n.function.getAppFunctionLiveFailed, 3090501);
     }
   }
 }

@@ -41,22 +41,22 @@ export class SetConditionContentStatus extends BaseController {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4100701);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidContentId);
+        return Response.warning(i18n.content.invalidContentId, 2100701);
       } else if (result.code === 2) {
-        return Response.warning(i18n.condition.contentCannotBeDeleted);
+        return Response.warning(i18n.condition.contentCannotBeDeleted, 2100702);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1100701);
     } catch (err) {
-      return Response.error(err, i18n.condition.setConditionStatusFailed);
+      return Response.error(err, i18n.condition.setConditionStatusFailed, 3100701);
     }
   }
 }

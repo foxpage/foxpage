@@ -1,17 +1,18 @@
 import _ from 'lodash';
 
-import { ContentVersion, Tag } from '@foxpage/foxpage-server-types';
+import { Content, ContentVersion, Tag } from '@foxpage/foxpage-server-types';
 import { tag } from '@foxpage/foxpage-shared';
 
+import * as Model from '../../models';
 import { AppTag, ContentTagLiveVersion, TagContentData } from '../../types/content-types';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class ContentTagService extends ContentServiceAbstract {
+export class ContentTagService extends BaseService<Content> {
   private static _instance: ContentTagService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**

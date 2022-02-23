@@ -1,14 +1,17 @@
 import _ from 'lodash';
 
+import { Content } from '@foxpage/foxpage-server-types';
+
+import * as Model from '../../models';
 import { TRecord } from '../../types/index-types';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class ResourceContentService extends ContentServiceAbstract {
+export class ResourceContentService extends BaseService<Content> {
   private static _instance: ResourceContentService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**

@@ -36,16 +36,16 @@ export class GetResourceContentList extends BaseController {
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
       if (!fileDetail || fileDetail.deleted) {
-        return Response.warning(i18n.file.invalidFileId);
+        return Response.warning(i18n.file.invalidFileId, 2121201);
       }
 
       const contentList = await this.service.content.file.getFileContentList({
         fileId: params.id,
         size: 1000,
       });
-      return Response.success(contentList);
+      return Response.success(contentList, 1121201);
     } catch (err) {
-      return Response.error(err, i18n.content.getContentListFailed);
+      return Response.error(err, i18n.content.getContentListFailed, 3121201);
     }
   }
 }

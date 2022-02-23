@@ -2,17 +2,17 @@ import { ContentStatus, ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { ContentVersionNumber, ContentVersionString, SearchLatestVersion } from '../types/content-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import versionModel from './schema/content-version';
+import { BaseModel } from './base-model';
 
 /**
  * Page content version repository related classes
  *
  * @export
  * @class VersionModel
- * @extends {BaseModelAbstract<ContentVersion>}
+ * @extends {BaseModel<ContentVersion>}
  */
-export class VersionModel extends BaseModelAbstract<ContentVersion> {
+export class VersionModel extends BaseModel<ContentVersion> {
   private static _instance: VersionModel;
 
   constructor() {

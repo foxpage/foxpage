@@ -85,9 +85,7 @@ describe('Get: /condition-searchs', () => {
   it('invalid folder id', async () => {
     params.applicationId = Data.app.id;
 
-    jest
-      .spyOn(FolderInfoService.prototype, 'getDetailById')
-      .mockResolvedValueOnce(<Folder>Data.folder.list[0]);
+    jest.spyOn(FolderInfoService.prototype, 'getDetailById').mockResolvedValueOnce(<any>null);
     const result = await varInstance.index(params);
     expect(result.code).toEqual(400);
   });

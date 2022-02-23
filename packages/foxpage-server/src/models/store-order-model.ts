@@ -1,16 +1,16 @@
 import { StoreOrder } from '@foxpage/foxpage-server-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import storeOrderModel from './schema/store-order';
+import { BaseModel } from './base-model';
 
 /**
  * Store product order data model
  *
  * @export
  * @class StoreOrderModel
- * @extends {BaseModelAbstract<StoreOrder>}
+ * @extends {BaseModel<StoreOrder>}
  */
-export class StoreOrderModel extends BaseModelAbstract<StoreOrder> {
+export class StoreOrderModel extends BaseModel<StoreOrder> {
   private static _instance: StoreOrderModel;
 
   constructor() {

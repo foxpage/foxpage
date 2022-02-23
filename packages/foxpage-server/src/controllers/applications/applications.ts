@@ -34,9 +34,9 @@ export class GetAppDetail extends BaseController {
     try {
       const appDetail = await this.service.application.getAppDetailWithFolder(params.applicationId);
 
-      return Response.success(appDetail);
+      return Response.success(appDetail, 1030201);
     } catch (err) {
-      return Response.error(err, i18n.org.getAppDetailFailed);
+      return Response.error(err, i18n.org.getAppDetailFailed, 3030201);
     }
   }
 }

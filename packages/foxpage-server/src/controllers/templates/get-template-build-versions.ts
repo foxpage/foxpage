@@ -101,9 +101,9 @@ export class GetPageBuildVersionDetail extends BaseController {
         components: componentList,
       });
 
-      return Response.success(pageBuildVersion);
+      return Response.success(pageBuildVersion, 1070501);
     } catch (err) {
-      return Response.error(err, i18n.page.getPageBuildVersionFailed);
+      return Response.error(err, i18n.page.getPageBuildVersionFailed, 3070501);
     }
   }
 }

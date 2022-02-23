@@ -37,7 +37,7 @@ export class AddUsers extends BaseController {
       // Check if the username already exists
       const userDetail = await this.service.user.getUserDetailByAccount(params.account);
       if (userDetail && userDetail.account) {
-        return Response.warning(i18n.user.exist);
+        return Response.warning(i18n.user.exist, 2060101);
       }
 
       const newUserParams = {
@@ -52,13 +52,16 @@ export class AddUsers extends BaseController {
 
       await this.service.org.runTransaction(ctx.transactions);
 
-      return Response.success({
-        account: params.account,
-        email: params.email,
-        password: newUserParams.password,
-      });
+      return Response.success(
+        {
+          account: params.account,
+          email: params.email,
+          password: newUserParams.password,
+        },
+        1060101,
+      );
     } catch (err) {
-      return Response.error(err, i18n.user.loginFailed);
+      return Response.error(err, i18n.user.loginFailed, 3060101);
     }
   }
 }

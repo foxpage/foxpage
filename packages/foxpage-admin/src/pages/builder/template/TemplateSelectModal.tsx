@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { Card, Empty, Modal, Pagination, Popover, Radio, Row, Space, Spin, Tabs } from 'antd';
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/builder/template-select';
 import { FileTypeEnum } from '@/constants/global';
 import LocalsView from '@/pages/components/business/LocalsView';
+import GlobalContext from '@/pages/GlobalContext';
 import { Template } from '@/types/builder';
 import { StoreProjectResource } from '@/types/store';
 import getImageUrlByEnv from '@/utils/get-image-url-by-env';
@@ -76,6 +77,8 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
     fetchApplicationTemplate,
     fetchStoreProjectGoods,
   } = props;
+  const { locale } = useContext(GlobalContext);
+  const { global, store } = locale.business;
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>(templateId);
   const [resourceList, setResourceList] = useState<Template[] | StoreProjectResource[]>([]);
@@ -249,10 +252,10 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
         TemplateRowContent
       ) : (
         <Tabs centered destroyInactiveTabPane defaultActiveKey="application" onChange={handleTabsChange}>
-          <TabPane tab="Application" key={ResourceTabEnum.application}>
+          <TabPane tab={global.application} key={ResourceTabEnum.application}>
             {TemplateRowContent}
           </TabPane>
-          <TabPane tab="Store" key={ResourceTabEnum.store}>
+          <TabPane tab={store.name} key={ResourceTabEnum.store}>
             {TemplateRowContent}
             {PaginationContent}
           </TabPane>

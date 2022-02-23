@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { Modal as AntdModal, Spin } from 'antd';
@@ -10,6 +10,7 @@ import { saveComponentEditorValue, updateEditorValue } from '@/actions/builder/t
 import * as ACTIONS from '@/actions/builder/variable';
 import { EditorInputEnum } from '@/constants/variable';
 import { Title } from '@/pages/components';
+import GlobalContext from '@/pages/GlobalContext';
 import { ComponentPropsType, ComponentStructure, VariableBindRefType } from '@/types/builder';
 
 import BindContext from './BindContext';
@@ -120,6 +121,8 @@ const VariableBind: React.FC<VariableBindProps> = props => {
   const { open, keys = '', type } = variableBindParams;
   const variableBindRef = useRef<VariableBindRefType>(null);
   const [value, setValue] = useState<string | ComponentPropsType>('');
+  const { locale } = useContext(GlobalContext);
+  const { global, variable } = locale.business;
 
   useEffect(() => {
     if (open) {
@@ -175,7 +178,7 @@ const VariableBind: React.FC<VariableBindProps> = props => {
     >
       <Content>
         <VariableContent>
-          <Title>Variables</Title>
+          <Title>{global.variables}</Title>
           <div className="variable-list">
             {loading && <Spin spinning={true} />}
             <ul>
@@ -194,15 +197,21 @@ const VariableBind: React.FC<VariableBindProps> = props => {
           </div>
         </VariableContent>
         <BindContent>
-          <Title>Content</Title>
+          <Title>{variable.content}</Title>
           <div className="variable-bind-content">
             <BindContext.Provider value={{ value, setValue }}>{editorContentByType}</BindContext.Provider>
 
             <div style={{ height: '50%' }}>
-              <Title>Variable Use</Title>
+              <Title>{variable.useVariableTitle}</Title>
               <ul style={{ paddingLeft: 16 }}>
-                <li>use variable(eg:{'"{{variableA}}"'})</li>
-                <li>use variable attrs(eg:{'"{{variableB:name}}"'})</li>
+                <li>
+                  {variable.useVariableTip}
+                  {'"{{variableA}}"'})
+                </li>
+                <li>
+                  {variable.useVariableAttrTip}
+                  {'"{{variableB:name}}"'})
+                </li>
               </ul>
             </div>
           </div>

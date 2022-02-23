@@ -37,16 +37,19 @@ export class GetWorkspaceRequestDetail extends BaseController {
       this.service.log.setPageSize(params);
       const dataHistory = await this.service.log.getDataHistory(params);
 
-      return Response.success({
-        pageInfo: {
-          page: params.page,
-          size: params.size,
-          total: dataHistory.count,
+      return Response.success(
+        {
+          pageInfo: {
+            page: params.page,
+            size: params.size,
+            total: dataHistory.count,
+          },
+          data: dataHistory.list,
         },
-        data: dataHistory.list,
-      });
+        1140101,
+      );
     } catch (err) {
-      return Response.error(err, i18n.page.getWorkspaceDataHistoryFailed);
+      return Response.error(err, i18n.page.getWorkspaceDataHistoryFailed, 3140101);
     }
   }
 }

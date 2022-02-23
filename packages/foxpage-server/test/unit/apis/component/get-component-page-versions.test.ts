@@ -1,5 +1,6 @@
-import { Content, File } from '@foxpage/foxpage-server-types';
 import _ from 'lodash';
+
+import { Content, File } from '@foxpage/foxpage-server-types';
 
 import { GetComponentPageVersionList } from '../../../../src/controllers/components/get-component-page-versions';
 import { ApplicationService } from '../../../../src/services/application-service';

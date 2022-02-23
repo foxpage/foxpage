@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { Input } from 'antd';
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/builder/template';
 import { updatePageTemplateSelectModalOpen } from '@/actions/builder/template-select';
 import { Field, Label, Title } from '@/components/widgets/group';
+import GlobalContext from '@/pages/GlobalContext';
 import { getPageTemplateId } from '@/services/builder';
 
 import TemplateEditor from './TemplateEditor';
@@ -31,7 +32,8 @@ const PageEditor: React.FC<Type> = props => {
   const { version, updatePageInfo, updatePageTemplateSelectModalOpen } = props;
   const { content: { schemas = [] } = {} } = version;
   const [templateId, setTemplateId] = useState<string | undefined>();
-
+  const { locale } = useContext(GlobalContext);
+  const { global, builder } = locale.business;
   useEffect(() => {
     setTemplateId(getPageTemplateId(version));
   }, [version]);
@@ -43,9 +45,9 @@ const PageEditor: React.FC<Type> = props => {
   const componentProps = schemas[0]?.props;
   return (
     <Group>
-      <Title>Page Style</Title>
+      <Title>{builder.pageStyle}</Title>
       <Field>
-        <Label>Height</Label>
+        <Label>{global.height}</Label>
         <Input
           width={120}
           defaultValue={(componentProps?.height as unknown as string) || ''}
@@ -56,7 +58,7 @@ const PageEditor: React.FC<Type> = props => {
       </Field>
 
       <Field>
-        <Label>Width</Label>
+        <Label>{global.width}</Label>
         <Input
           width={120}
           defaultValue={(componentProps?.width as unknown as string) || ''}

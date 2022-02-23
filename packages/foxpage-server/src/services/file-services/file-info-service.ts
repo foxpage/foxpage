@@ -16,14 +16,14 @@ import {
 } from '../../types/file-types';
 import { FoxCtx, TypeStatus } from '../../types/index-types';
 import { generationId, randStr } from '../../utils/tools';
-import { FileServiceAbstract } from '../abstracts/file-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class FileInfoService extends FileServiceAbstract {
+export class FileInfoService extends BaseService<File> {
   private static _instance: FileInfoService;
 
   constructor() {
-    super();
+    super(Model.file);
   }
 
   /**

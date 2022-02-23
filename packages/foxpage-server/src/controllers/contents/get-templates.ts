@@ -15,7 +15,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('template')
-export class GetContentList extends BaseController {
+export class GetTemplates extends BaseController {
   constructor() {
     super();
   }
@@ -71,15 +71,15 @@ export class GetContentList extends BaseController {
       const contentObject: Record<string, Content> = _.keyBy(contentList, 'id');
       contentVersion.forEach((version) => {
         templateList.push({
-          id: contentObject[version.contentId].id,
-          title: contentObject[version.contentId].title,
+          id: contentObject[version.contentId]?.id,
+          title: contentObject[version.contentId]?.title,
           version: version,
         });
       });
 
-      return Response.success(templateList);
+      return Response.success(templateList, 1160701);
     } catch (err) {
-      return Response.error(err, i18n.content.getTemplateListFailed);
+      return Response.error(err, i18n.content.getTemplateListFailed, 3160701);
     }
   }
 }

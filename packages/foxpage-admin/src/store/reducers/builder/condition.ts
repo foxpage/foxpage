@@ -17,6 +17,7 @@ const initialData = {
   drawerVisible: false,
   drawerType: '',
   selectCondition,
+  conditionBindDrawerOpen: false,
 };
 
 type initialDataType = typeof initialData;
@@ -45,6 +46,10 @@ const conditionReducer = (state: initialDataType = initialData, action: Conditio
         draft.drawerVisible = action.payload.status;
         draft.selectCondition = action.payload.condition || {};
         draft.drawerType = action.payload.type || '';
+        break;
+      }
+      case getType(ACTIONS.updateConditionBindDrawerVisible): {
+        draft.conditionBindDrawerOpen = action.payload.open;
         break;
       }
       default:

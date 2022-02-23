@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useLocation, useParams } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/group/project/content';
 import { fetchParentFiles } from '@/apis/group/project';
 import { FoxpageBreadcrumb } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import { ProjectContentUrlParams } from '@/types/project';
 import {
   getProjectFolder,
@@ -52,6 +53,8 @@ const ProjectContent: React.FC<ProjectContentType> = props => {
   const { fileId, folderId, applicationId, organizationId } = useParams<ProjectContentUrlParams>();
   const [folderName, setFolderName] = useState<string>(getProjectFolder()?.name || 'Project details');
   const { search } = useLocation();
+  const { locale } = useContext(GlobalContext);
+  const { global, content, store } = locale.business;
   const fromWorkspace = isFromWorkspace(search);
 
   useEffect(() => {
@@ -78,8 +81,8 @@ const ProjectContent: React.FC<ProjectContentType> = props => {
   const handleCommit = () => {
     if (fileDetail) {
       Modal.confirm({
-        title: 'Are you sure commit?',
-        content: 'This file will be sold on the store.',
+        title: store.commitTitle,
+        content: store.commitMsg,
         onOk: () => {
           commitFileToStore({
             id: fileId,
@@ -90,16 +93,16 @@ const ProjectContent: React.FC<ProjectContentType> = props => {
             },
           });
         },
-        okText: 'Yes',
-        cancelText: 'No',
+        okText: store.commitYes,
+        cancelText: store.commitNo,
       });
     }
   };
 
   const handleRevoke = () => {
     Modal.confirm({
-      title: 'Are you sure revoke?',
-      content: 'This file will be not sold on the store.',
+      title: store.revokeTitle,
+      content: store.revokeMsg,
       onOk: () => {
         offlineFileFromStore({
           id: fileId,
@@ -109,8 +112,8 @@ const ProjectContent: React.FC<ProjectContentType> = props => {
           },
         });
       },
-      okText: 'Yes',
-      cancelText: 'No',
+      okText: store.commitYes,
+      cancelText: store.commitNo,
     });
   };
 
@@ -119,7 +122,7 @@ const ProjectContent: React.FC<ProjectContentType> = props => {
     <React.Fragment>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: 'Project', link: `/#/organization/${organizationId}/${urlPrefix}` },
+          { name: global.project, link: `/#/organization/${organizationId}/${urlPrefix}` },
           {
             name: folderName,
             link: `/#/organization/${organizationId}/${urlPrefix}/${applicationId}/folder/${folderId}?from=${getUrlFromParam(
@@ -135,12 +138,12 @@ const ProjectContent: React.FC<ProjectContentType> = props => {
         {fileDetail?.online ? (
           <Button type="default" title="Revoke To Store" style={{ marginRight: 8 }} onClick={handleRevoke}>
             <ArrowDownOutlined />
-            Revoke
+            {store.revoke}
           </Button>
         ) : (
           <Button type="default" title="Commit To Store" style={{ marginRight: 8 }} onClick={handleCommit}>
             <ArrowUpOutlined />
-            Commit
+            {store.commit}
           </Button>
         )}
         <Button
@@ -149,7 +152,7 @@ const ProjectContent: React.FC<ProjectContentType> = props => {
             openDrawer(true);
           }}
         >
-          <PlusOutlined /> Add Content
+          <PlusOutlined /> {content.add}
         </Button>
       </div>
       <List />

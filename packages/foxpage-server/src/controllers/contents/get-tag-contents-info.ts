@@ -20,7 +20,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('content')
-export class GetContentTagVersions extends BaseController {
+export class GetTagContentInfo extends BaseController {
   constructor() {
     super();
   }
@@ -58,7 +58,7 @@ export class GetContentTagVersions extends BaseController {
 
       const tags = (params.tags || []) as Tag[];
       if (tags.length === 0) {
-        return Response.warning(i18n.content.tagsCannotBeEmpty);
+        return Response.warning(i18n.content.tagsCannotBeEmpty, 2160501);
       }
 
       // Get qualified content details
@@ -66,7 +66,7 @@ export class GetContentTagVersions extends BaseController {
 
       // Return empty results
       if (contentVersionList.length === 0) {
-        return Response.success([]);
+        return Response.success([], 1160501);
       }
 
       // Get content details, relation version details
@@ -104,7 +104,7 @@ export class GetContentTagVersions extends BaseController {
         const versionObject: Record<string, ContentVersion> = _.keyBy(contentRelation.versions, 'contentId');
 
         contentInfo[content.id] = { pages: [] };
-        contentRelation.contents.forEach((relation) => {
+        contentRelation.contents?.forEach((relation) => {
           const fileType = <any>(
             (contentObject[relation.id] && fileObject[contentObject[relation.id].fileId]
               ? fileObject[contentObject[relation.id].fileId].type + 's'
@@ -125,9 +125,9 @@ export class GetContentTagVersions extends BaseController {
 
         tagContentList.push({ content: content, contentInfo: contentInfo[content.id] || {} });
       });
-      return Response.success(tagContentList);
+      return Response.success(tagContentList, 1160501);
     } catch (err) {
-      return Response.error(err, i18n.content.getContentListFailed);
+      return Response.error(err, i18n.content.getContentListFailed, 3160501);
     }
   }
 }

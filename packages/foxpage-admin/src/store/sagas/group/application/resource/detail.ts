@@ -4,6 +4,7 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/resource/detail';
 import * as API from '@/apis/group/application/resource';
+import { getBusinessI18n } from '@/pages/locale';
 import { AppResourceDetailActionType } from '@/store/reducers/group/application/resource/detail';
 import {
   AppResourcesDetailsAddFileParams,
@@ -21,11 +22,13 @@ function* addResourceFile(action: AppResourceDetailActionType) {
     params: AppResourcesDetailsAddFileParams;
     options?: OptionsAction;
   };
+  const {
+    global: { saveSuccess, saveFailed },
+  } = getBusinessI18n();
   const { applicationId, curFolderId, filepath } = params || {};
   const { onSuccess } = options || {};
   if (!applicationId || !curFolderId || !filepath) {
-    message.error('Add file fail: params is not valid.');
-    console.error('[error]: Add file fail: params is not valid,', params);
+    message.error(saveFailed);
     return;
   }
   const rs = yield call(API.postResourcesContents, {
@@ -37,10 +40,10 @@ function* addResourceFile(action: AppResourceDetailActionType) {
   });
   if (rs.code === 200) {
     if (onSuccess) onSuccess();
-    message.success('Add succeed.');
+    message.success(saveSuccess);
     yield put(ACTIONS.fetchResourcesListAction({}));
   } else {
-    message.error(rs.msg || 'Add file fail...');
+    message.error(rs.msg || saveFailed);
   }
 }
 
@@ -49,11 +52,13 @@ function* updateResourceFile(action: AppResourceDetailActionType) {
     params: AppResourcesDetailsUpdateFileParams;
     options?: OptionsAction;
   };
+  const {
+    global: { updateSuccess, updateFailed },
+  } = getBusinessI18n();
   const { applicationId, fileId, filepath } = params || {};
   const { onSuccess } = options || {};
   if (!applicationId || !fileId || !filepath) {
-    message.error('Update file fail: params is not valid.');
-    console.error('[error]: Update file fail: params is not valid', params);
+    message.error(updateFailed);
     return;
   }
   const rs = yield call(API.putResourcesContents, {
@@ -65,10 +70,10 @@ function* updateResourceFile(action: AppResourceDetailActionType) {
   });
   if (rs.code === 200) {
     if (onSuccess) onSuccess();
-    message.success('Update succeed.');
+    message.success(updateSuccess);
     yield put(ACTIONS.fetchResourcesListAction({}));
   } else {
-    message.error(rs.msg || 'Add file fail...');
+    message.error(rs.msg || updateFailed);
   }
 }
 
@@ -77,11 +82,13 @@ function* addResourceFolder(action: AppResourceDetailActionType) {
     params: AppResourcesDetailsAddFolderParams;
     options?: OptionsAction;
   };
+  const {
+    global: { saveSuccess, saveFailed },
+  } = getBusinessI18n();
   const { applicationId, curFolderId, name } = params || {};
   const { onSuccess } = options || {};
   if (!applicationId || !curFolderId || !name) {
-    message.error('Add folder fail: params is not valid.');
-    console.error('[error]: Add folder fail: params is not valid', params);
+    message.error(saveFailed);
     return;
   }
   const rs = yield call(API.postResourcesFolders, {
@@ -91,10 +98,10 @@ function* addResourceFolder(action: AppResourceDetailActionType) {
   });
   if (rs.code === 200) {
     if (onSuccess) onSuccess();
-    message.success('Add succeed.');
+    message.success(saveSuccess);
     yield put(ACTIONS.fetchResourcesListAction({}));
   } else {
-    message.error(rs.msg || 'Save failed');
+    message.error(rs.msg || saveFailed);
   }
 }
 
@@ -103,11 +110,13 @@ function* updateResourceFolder(action: AppResourceDetailActionType) {
     params: AppResourcesDetailsUpdateFolderParams;
     options?: OptionsAction;
   };
+  const {
+    global: { updateSuccess, updateFailed },
+  } = getBusinessI18n();
   const { applicationId, folderId, name } = params || {};
   const { onSuccess } = options || {};
   if (!applicationId || !folderId || !name) {
-    message.error('Update folder fail: params is not valid.');
-    console.error('[error]: Update folder fail: params is not valid', params);
+    message.error(updateFailed);
     return;
   }
   const rs = yield call(API.putResourcesFolders, {
@@ -117,10 +126,10 @@ function* updateResourceFolder(action: AppResourceDetailActionType) {
   });
   if (rs.code === 200) {
     if (onSuccess) onSuccess();
-    message.success('Edit succeed.');
+    message.success(updateSuccess);
     yield put(ACTIONS.fetchResourcesListAction({}));
   } else {
-    message.error(rs.msg || 'Save failed');
+    message.error(rs.msg || updateFailed);
   }
 }
 
@@ -129,10 +138,12 @@ function* removeResources(action: AppResourceDetailActionType) {
     params: AppResourcesDetailsRemoveResourcesParams;
     options?: OptionsAction;
   };
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
   const { applicationId, selectedRowKeys = [] } = params || {};
   if (!applicationId || !selectedRowKeys || !(selectedRowKeys.length > 0)) {
-    message.error('Remove resource fail: params is not valid.');
-    console.error('[error]: Remove resource fail: params is not valid', params);
+    message.error(deleteFailed);
     return;
   }
   const rs = yield call(API.putResourcesStatus, {
@@ -141,7 +152,7 @@ function* removeResources(action: AppResourceDetailActionType) {
     status: true,
   });
   if (rs.code === 200) {
-    message.success('Remove succeed.');
+    message.success(deleteSuccess);
     yield put(
       ACTIONS.updateResourcesDetailState({
         selectedRowKeys: [],
@@ -149,7 +160,7 @@ function* removeResources(action: AppResourceDetailActionType) {
     );
     yield put(ACTIONS.fetchResourcesListAction({}));
   } else {
-    message.error(rs.msg || 'Save failed');
+    message.error(rs.msg || deleteFailed);
   }
 }
 
@@ -158,6 +169,9 @@ function* fetchResourceData(action: AppResourceDetailActionType) {
     params: AppResourcesDetailsFetchResourcesListParams;
     options?: OptionsAction;
   };
+  const {
+    global: { saveFailed },
+  } = getBusinessI18n();
   const { appId, folderPath } = params;
   const { applicationId, folderPath: _folderPath } = yield select(store => store.group.application.resource.detail);
   yield put(
@@ -196,7 +210,7 @@ function* fetchResourceData(action: AppResourceDetailActionType) {
       }),
     );
   } else {
-    message.error(rs.msg || 'Save failed');
+    message.error(rs.msg || saveFailed);
   }
 }
 
@@ -205,6 +219,9 @@ function* fetchGroupInfo(action: AppResourceDetailActionType) {
     params: AppResourcesDetailsFetchGroupInfoParams;
     options?: OptionsAction;
   };
+  const {
+    global: { saveFailed },
+  } = getBusinessI18n();
   const { applicationId, path } = params;
   const rs = yield call(API.getResourcesGroups, {
     applicationId,
@@ -218,7 +235,7 @@ function* fetchGroupInfo(action: AppResourceDetailActionType) {
       }),
     );
   } else {
-    message.error(rs.msg || 'Save failed');
+    message.error(rs.msg || saveFailed);
   }
 }
 

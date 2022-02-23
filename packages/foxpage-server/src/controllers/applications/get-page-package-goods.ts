@@ -35,16 +35,19 @@ export class GetApplicationPackageGoodsList extends BaseController {
 
       // TODO need to complete
 
-      return Response.success({
-        pageInfo: {
-          total: 0,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: 0,
+            page: params.page,
+            size: params.size,
+          },
+          data: [],
         },
-        data: [],
-      });
+        1030801,
+      );
     } catch (err) {
-      return Response.error(err, i18n.app.getPageGoodsFailed);
+      return Response.error(err, i18n.app.getPageGoodsFailed, 3030801);
     }
   }
 }

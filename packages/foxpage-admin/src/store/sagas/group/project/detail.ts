@@ -7,13 +7,16 @@ import { deleteFile } from '@/apis/group/file';
 import * as API from '@/apis/group/project';
 import { FileTypeEnum } from '@/constants/index';
 import { defaultSuffix } from '@/pages/common/constant/FileType';
+import { getBusinessI18n } from '@/pages/locale';
 import { ProjectFileActionType } from '@/reducers/group/project/detail';
 import { store } from '@/store/index';
 import { ProjectFileDeleteParams, ProjectFileSaveParams, ProjectFileSearchParams } from '@/types/project';
 
 function* handleFetchList(action: ProjectFileActionType) {
   const { page = 1, search = '', size = 10, applicationId, folderId } = action.payload as ProjectFileSearchParams;
-
+  const {
+    global: { fetchListFailed },
+  } = getBusinessI18n();
   yield put(ACTIONS.setLoading(true));
   const rs = yield call(API.getProjectFiles, {
     page,
@@ -25,23 +28,23 @@ function* handleFetchList(action: ProjectFileActionType) {
   if (rs.code === 200) {
     yield put(ACTIONS.pushFileList(rs.data.files, rs.pageInfo));
   } else {
-    message.error(rs.msg || 'Fetch list failed');
+    message.error(rs.msg || fetchListFailed);
   }
 }
 
 function* save(action: ProjectFileActionType) {
+  const {
+    global: { fetchListFailed },
+    application: { nameInvalid, typeInvalid },
+  } = getBusinessI18n();
   const { folderId, applicationId } = action.payload as ProjectFileSaveParams;
   const { editFile, pageInfo } = store.getState().group.project.detail;
   if (!editFile.type) {
-    message.warning('Please select type');
+    message.warning(typeInvalid);
     return;
   }
   if (!editFile.name) {
-    message.warning('Please input name');
-    return;
-  }
-  if (editFile.name.length < 5) {
-    message.warning('name must be longer than or equal to 5 characters');
+    message.warning(nameInvalid);
     return;
   }
 
@@ -74,7 +77,7 @@ function* save(action: ProjectFileActionType) {
       }),
     );
   } else {
-    message.error(rs.msg || 'Fetch list failed');
+    message.error(rs.msg || fetchListFailed);
   }
   yield put(ACTIONS.setSaveLoading(false));
 }
@@ -82,14 +85,16 @@ function* save(action: ProjectFileActionType) {
 function* handleDeleteFile(action: ProjectFileActionType) {
   const { id, applicationId, folderId } = action.payload as ProjectFileDeleteParams;
   const { pageInfo } = store.getState().group.project.detail;
-
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
   const rs = yield call(deleteFile, {
     id,
     applicationId,
     status: true,
   });
   if (rs.code === 200) {
-    message.success('Delete succeed');
+    message.success(deleteSuccess);
     yield put(
       ACTIONS.fetchFileList({
         ...pageInfo,
@@ -99,7 +104,7 @@ function* handleDeleteFile(action: ProjectFileActionType) {
       }),
     );
   } else {
-    message.error(rs.msg || 'Delete failed');
+    message.error(rs.msg || deleteFailed);
   }
 }
 

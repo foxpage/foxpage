@@ -1,5 +1,6 @@
-import { Content, ContentVersion, File } from '@foxpage/foxpage-server-types';
 import _ from 'lodash';
+
+import { Content, ContentVersion, File } from '@foxpage/foxpage-server-types';
 
 import { GetAppConditionScopeInfoList } from '../../../../src/controllers/conditions/get-condition-scope-infos';
 import { ContentListService } from '../../../../src/services/content-services/content-list-service';

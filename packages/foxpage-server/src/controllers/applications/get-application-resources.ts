@@ -34,9 +34,9 @@ export class GetApplicationResources extends BaseController {
     try {
       const appDetail = await this.service.application.getDetailById(params.applicationId);
 
-      return Response.success(appDetail?.resources || []);
+      return Response.success(appDetail?.resources || [], 1030401);
     } catch (err) {
-      return Response.error(err, i18n.app.getAppResourceError);
+      return Response.error(err, i18n.app.getAppResourceError, 3030401);
     }
   }
 }

@@ -42,6 +42,11 @@ export class SaveRemoteComponents extends BaseController {
     @Body() params: SaveRemotePackageReq,
   ): Promise<ResData<NewResourceDetail[]>> {
     try {
+      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4110301);
+      }
+
       let componentFileIds: string[] = [];
       params.components.map((item) => {
         item?.component?.id && componentFileIds.push(item.component.id);
@@ -171,14 +176,17 @@ export class SaveRemoteComponents extends BaseController {
 
       // Response error msg
       if (errMsg.code) {
-        return Response.warning(i18n.component.versionExist + ':' + (<string[]>errMsg.data).join(','));
+        return Response.warning(
+          i18n.component.versionExist + ':' + (<string[]>errMsg.data).join(','),
+          2110301,
+        );
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
 
-      return Response.success(i18n.component.saveRemoteComponentSuccess);
+      return Response.success(i18n.component.saveRemoteComponentSuccess, 1110301);
     } catch (err) {
-      return Response.error(err, i18n.component.saveRemoteComponentFailed);
+      return Response.error(err, i18n.component.saveRemoteComponentFailed, 3110301);
     }
   }
 }

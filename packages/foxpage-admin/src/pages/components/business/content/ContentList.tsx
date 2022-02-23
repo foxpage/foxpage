@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { DeleteOutlined, EditOutlined, LinkOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Popover, Table, Tag } from 'antd';
 
 import LocalsView from '@/components/business/LocalsView';
+import { FileTypeEnum } from '@/constants/global';
+import GlobalContext from '@/pages/GlobalContext';
 import { ContentType } from '@/types/application/content';
 import periodFormat from '@/utils/period-format';
 
@@ -21,9 +23,11 @@ interface ContentListType {
 const ContentList: React.FC<ContentListType> = props => {
   const { loading, contents, fileType, applicationId, folderId, onDelete, onEdit } = props;
   const { pathname, search } = useLocation();
+  const { locale } = useContext(GlobalContext);
+  const { global, version } = locale.business;
   const columns = [
     {
-      title: 'name',
+      title: global.nameLabel,
       dataIndex: 'title',
       render: (text: string, record: ContentType) => {
         return (
@@ -36,7 +40,7 @@ const ContentList: React.FC<ContentListType> = props => {
             >
               {text}
             </Link>
-            {fileType === 'page' && record.urls && record.urls.length > 0 && (
+            {fileType === FileTypeEnum.page && record.urls && record.urls.length > 0 && (
               <Popover
                 placement="bottom"
                 content={
@@ -62,7 +66,7 @@ const ContentList: React.FC<ContentListType> = props => {
       },
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'version',
       key: 'version',
       render: (_text: string) => {
@@ -70,7 +74,7 @@ const ContentList: React.FC<ContentListType> = props => {
       },
     },
     {
-      title: 'Live Version',
+      title: version.liveVersion,
       dataIndex: 'version',
       key: 'version',
       render: (text: string) => {
@@ -78,7 +82,7 @@ const ContentList: React.FC<ContentListType> = props => {
       },
     },
     {
-      title: 'Locale',
+      title: global.locale,
       dataIndex: 'tag',
       key: 'tag',
       render: (_text: string, record: ContentType) => {
@@ -87,7 +91,7 @@ const ContentList: React.FC<ContentListType> = props => {
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (_text: string, record: ContentType) => {
@@ -95,30 +99,30 @@ const ContentList: React.FC<ContentListType> = props => {
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       key: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
     {
-      title: 'Actions',
+      title: global.actions,
       key: 'updateTime',
       width: 120,
       render: (_text: string, record: ContentType) => {
         return (
           <React.Fragment>
-            <Button type="default" size="small" shape="circle" title="Edit" onClick={() => onEdit(record)}>
+            <Button type="default" size="small" shape="circle" title={global.edit} onClick={() => onEdit(record)}>
               <EditOutlined />
             </Button>
             <Divider type="vertical" />
             <Popconfirm
-              title={`Are you sure to delete this ${record.title}?`}
+              title={`${global.deleteMsg}${record.title}?`}
               onConfirm={() => {
                 onDelete(record);
               }}
-              okText="Yes"
-              cancelText="No"
+              okText={global.yes}
+              cancelText={global.no}
             >
               <Button size="small" shape="circle" icon={<DeleteOutlined />} />
             </Popconfirm>

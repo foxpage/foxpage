@@ -40,7 +40,7 @@ export class AddGoodsToStore extends BaseController {
       // Check permissions
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4130101);
       }
 
       // Check if the target has been added to the store
@@ -52,16 +52,16 @@ export class AddGoodsToStore extends BaseController {
 
       // online
       if (goodsDetail && goodsDetail.status === 1) {
-        return Response.warning(i18n.store.goodsExist);
+        return Response.warning(i18n.store.goodsExist, 2130101);
       }
 
       if (!fileDetail || fileDetail.deleted) {
-        return Response.warning(i18n.store.invalidTypeId);
+        return Response.warning(i18n.store.invalidTypeId, 2130102);
       }
 
       const contentLiveNumbers = _.pull(_.map(fileContentList, 'liveVersionNumber'), 0);
       if (contentLiveNumbers.length === 0) {
-        return Response.warning(i18n.store.mustHasLiveVersion);
+        return Response.warning(i18n.store.mustHasLiveVersion, 2130103);
       }
 
       // Get the live version details of the target
@@ -100,9 +100,9 @@ export class AddGoodsToStore extends BaseController {
         }),
       );
 
-      return Response.success(newGoodsDetail);
+      return Response.success(newGoodsDetail, 1130101);
     } catch (err) {
-      return Response.error(err, i18n.store.addGoodsToStoreFailed);
+      return Response.error(err, i18n.store.addGoodsToStoreFailed, 3130101);
     }
   }
 }

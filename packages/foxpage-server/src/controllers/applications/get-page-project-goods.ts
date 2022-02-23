@@ -111,16 +111,19 @@ export class GetApplicationProjectGoodsList extends BaseController {
         });
       }
 
-      return Response.success({
-        pageInfo: {
-          total: appProjectGoods.length || 0,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: appProjectGoods.length || 0,
+            page: params.page,
+            size: params.size,
+          },
+          data: appProjectGoodsList,
         },
-        data: appProjectGoodsList,
-      });
+        1030901,
+      );
     } catch (err) {
-      return Response.error(err, i18n.app.getPageGoodsFailed);
+      return Response.error(err, i18n.app.getPageGoodsFailed, 3030901);
     }
   }
 }

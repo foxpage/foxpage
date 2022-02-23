@@ -16,7 +16,7 @@ import { generationId } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
 @JsonController('resources')
-export class AddAssetContentDetail extends BaseController {
+export class UpdateResourceContentDetail extends BaseController {
   constructor() {
     super();
   }
@@ -44,7 +44,7 @@ export class AddAssetContentDetail extends BaseController {
 
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4122001);
       }
 
       // TODO Need to optimize access to content details and check the validity of the content
@@ -53,10 +53,10 @@ export class AddAssetContentDetail extends BaseController {
         this.service.content.file.getContentByFileIds([params.id]),
       ]);
 
-      const fileTitleArr = (_.last(params.content.realPath.split('/')) || '').split('.');
+      const fileTitleArr = (_.last(params.content.realPath?.split('/')) || '').split('.');
       const newFileName = fileTitleArr[0] + '.' + _.last(fileTitleArr);
-      if (!newFileName) {
-        return Response.warning(i18n.resource.invalidName);
+      if (fileTitleArr.length < 2) {
+        return Response.warning(i18n.resource.invalidName, 2122001);
       }
 
       const contentDetail: Content = contentList[0] || {};
@@ -74,7 +74,7 @@ export class AddAssetContentDetail extends BaseController {
       ]);
 
       if (checkFileDetail && checkFileDetail.id !== fileDetail.id) {
-        return Response.warning(i18n.resource.nameExist);
+        return Response.warning(i18n.resource.nameExist, 2122002);
       }
 
       const versionId: string = versionDetail ? versionDetail.id : generationId(PRE.CONTENT_VERSION);
@@ -101,9 +101,9 @@ export class AddAssetContentDetail extends BaseController {
 
       versionDetail = await this.service.version.info.getDetailById(versionId);
 
-      return Response.success(versionDetail);
+      return Response.success(versionDetail, 1122001);
     } catch (err) {
-      return Response.error(err, i18n.resource.updateAssetContentFailed);
+      return Response.error(err, i18n.resource.updateAssetContentFailed, 3122001);
     }
   }
 }

@@ -47,9 +47,9 @@ export class GetVariableBuildDetail extends BaseController {
         relations = await this.service.relation.formatRelationResponse(relationObject);
       }
 
-      return Response.success(Object.assign({ relations: relations }, contentVersion || {}));
+      return Response.success(Object.assign({ relations: relations }, contentVersion || {}), 1080401);
     } catch (err) {
-      return Response.error(err, i18n.variable.getAppVariableFailed);
+      return Response.error(err, i18n.variable.getAppVariableFailed, 3080401);
     }
   }
 }

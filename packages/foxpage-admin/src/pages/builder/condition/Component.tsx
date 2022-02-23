@@ -6,10 +6,12 @@ import { Button, Divider, Drawer, message, Popconfirm, Radio, Spin, Table } from
 import { DrawerProps } from 'antd/lib/drawer';
 import styled from 'styled-components';
 
-// import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/builder/condition';
 import { Pagination } from '@/components/common/index';
+import { ScopeEnum } from '@/constants/scope';
 import RightCloseIcon from '@/pages/builder/component/close';
+import ScopeSelect from '@/pages/components/common/ScopeSelect';
+import GlobalContext from '@/pages/GlobalContext';
 import { ConditionItem } from '@/types/application/condition';
 
 import BuilderContext from '../BuilderContext';
@@ -19,11 +21,6 @@ import EditDrawer from './EditDrawer';
 const PAGE_SIZE = 10;
 
 const TYPE = ['and', 'or'];
-
-const OPTIONS = [
-  { label: 'Project', value: 'project' },
-  { label: 'Application', value: 'application' },
-];
 
 const Toolbar = styled.div`
   display: flex;
@@ -68,12 +65,14 @@ function Component(props: IProps) {
     deleteCondition,
   } = props;
   const { container } = useContext(BuilderContext);
-  const [group, setGroup] = useState<'project' | 'application'>('project');
+  const [group, setGroup] = useState<ScopeEnum>(ScopeEnum.project);
+  const { locale } = useContext(GlobalContext);
+  const { global, condition: conditionI18n } = locale.business;
 
   useEffect(() => {
     if (applicationId) {
       const params =
-        group === 'project' && !!folderId
+        group === ScopeEnum.project && !!folderId
           ? {
               applicationId,
               folderId,
@@ -99,7 +98,7 @@ function Component(props: IProps) {
           status: true,
         });
       } else {
-        message.warning('Delete condition failed, please retry later');
+        message.warning(conditionI18n.deleteFailMsg);
       }
     },
     [applicationId, folderId, deleteCondition],
@@ -107,12 +106,12 @@ function Component(props: IProps) {
 
   const columns = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       render: (_text: string, record: ConditionItem) => {
@@ -122,13 +121,13 @@ function Component(props: IProps) {
       },
     },
     {
-      title: 'Action',
+      title: global.actions,
       dataIndex: '',
       key: '',
       width: 100,
       render: (_text: string, record: ConditionItem) => (
         <>
-          {group === 'project' ? (
+          {group === ScopeEnum.project ? (
             <>
               <Button
                 size="small"
@@ -138,9 +137,9 @@ function Component(props: IProps) {
               />
               <Divider type="vertical" />
               <Popconfirm
-                title="Are you sure to delete this condition?"
-                okText="Yes"
-                cancelText="No"
+                title={`${global.deleteMsg}${record.name}?`}
+                okText={global.yes}
+                cancelText={global.no}
                 onConfirm={() => handleConditionDelete(record.id)}
               >
                 <Button size="small" shape="circle" icon={<DeleteOutlined />} />
@@ -159,15 +158,14 @@ function Component(props: IProps) {
     },
   ];
 
-  const handleGroupChange = useCallback(e => {
-    const _value = e.target.value;
-    setGroup(_value);
+  const handleGroupChange = useCallback(value => {
+    setGroup(value);
   }, []);
 
   return (
     <>
       <Drawer
-        title="Condition"
+        title={global.condition}
         placement="left"
         mask={false}
         visible
@@ -188,15 +186,15 @@ function Component(props: IProps) {
         extra={<RightCloseIcon onClose={onClose} />}
       >
         <Toolbar>
-          <Radio.Group size="small" options={OPTIONS} optionType="button" value={group} onChange={handleGroupChange} />
-          {group === OPTIONS[0].value && (
+          <ScopeSelect scope={group} onScopeChange={handleGroupChange} />
+          {group === ScopeEnum.project && (
             <Button
               type="primary"
               size="small"
               icon={<PlusOutlined />}
               onClick={() => openDrawer(true, undefined, 'new')}
             >
-              Add Condition
+              {conditionI18n.add}
             </Button>
           )}
         </Toolbar>

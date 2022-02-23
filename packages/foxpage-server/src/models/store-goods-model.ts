@@ -4,17 +4,17 @@ import { StoreGoods } from '@foxpage/foxpage-server-types';
 
 import { StorePageParams } from '../types/store-types';
 
-import { BaseModelAbstract } from './abstracts/base-model-abstract';
 import storeGoodsModel from './schema/store-goods';
+import { BaseModel } from './base-model';
 
 /**
  * Store product data model
  *
  * @export
  * @class StoreGoodsModel
- * @extends {BaseModelAbstract<StoreGoods>}
+ * @extends {BaseModel<StoreGoods>}
  */
-export class StoreGoodsModel extends BaseModelAbstract<StoreGoods> {
+export class StoreGoodsModel extends BaseModel<StoreGoods> {
   private static _instance: StoreGoodsModel;
 
   constructor() {

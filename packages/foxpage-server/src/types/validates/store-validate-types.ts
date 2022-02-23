@@ -167,6 +167,7 @@ export class AddGoodsToStoreReq {
 
   @JSONSchema({ description: 'File ID' })
   @IsString()
+  @Length(20, 20)
   id: string;
 
   @JSONSchema({ description: 'Type' })
@@ -187,5 +188,6 @@ export class OfflineGoodsFromStoreReq {
 
   @JSONSchema({ description: 'File ID' })
   @IsString()
+  @Length(20, 20)
   id: string;
 }

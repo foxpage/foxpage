@@ -42,6 +42,10 @@ export class PublishProjectPage extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: PublishProjectPageReq): Promise<ResData<ContentVersion>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PROJECT });
+      const hasAuth = await this.service.auth.folder(params.projectId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4040701);
+      }
 
       // Get content version details
       let idVersionList: ContentVersionString[] = [];
@@ -91,6 +95,7 @@ export class PublishProjectPage extends BaseController {
         const contentFileObject = await this.service.file.list.getContentFileByIds(contentIds);
         return Response.warning(
           i18n.project.invalidPageRelations + ':' + _.map(_.toArray(contentFileObject), 'name').join(','),
+          2040701,
         );
       }
 
@@ -141,14 +146,15 @@ export class PublishProjectPage extends BaseController {
       if (_.isEmpty(releaseCodes)) {
         await this.service.content.info.runTransaction(ctx.transactions);
         const newVersionList = await this.service.version.list.getContentInfoByIdAndVersion(idVersionList);
-        return Response.success(newVersionList);
+        return Response.success(newVersionList, 1040701);
       } else {
         return Response.warning(
           i18n.project.invalidRelationDataStatus + ':' + _.toArray(releaseCodes).join(','),
+          2040702,
         );
       }
     } catch (err) {
-      return Response.error(err, i18n.project.publishProjectPageFailed);
+      return Response.error(err, i18n.project.publishProjectPageFailed, 3040701);
     }
   }
 }

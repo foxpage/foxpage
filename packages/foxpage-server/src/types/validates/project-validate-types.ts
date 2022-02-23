@@ -22,6 +22,7 @@ export class AddProjectDetailReq {
 
   @JSONSchema({ description: 'Project name' })
   @IsString()
+  @Length(0, 100)
   name: string;
 
   @JSONSchema({ description: 'Project Introduction' })
@@ -82,15 +83,18 @@ export class AddProjectPagesReq {
 export class UpdateProjectDetailReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
+  @Length(20, 20)
   applicationId: string;
 
   @JSONSchema({ description: 'Project ID' })
   @IsString()
+  @Length(20, 20)
   projectId: string;
 
   @JSONSchema({ description: 'Project name' })
   @IsString()
   @IsOptional()
+  @Length(0, 100)
   name: string;
 
   @JSONSchema({ description: 'Project Introduction' })

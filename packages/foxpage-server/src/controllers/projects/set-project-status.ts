@@ -37,16 +37,16 @@ export class SetFolderStatus extends BaseController {
 
       const hasAuth = await this.service.auth.folder(params.projectId, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4040801);
       }
 
       const folderDetail = await this.service.folder.info.getDetailById(params.projectId);
       if (!folderDetail) {
-        return Response.warning(i18n.folder.invalidFolderId);
+        return Response.warning(i18n.folder.invalidFolderId, 2040801);
       }
 
       if (folderDetail.parentFolderId === '') {
-        return Response.warning(i18n.project.cannotDeleteSystemFolders);
+        return Response.warning(i18n.project.cannotDeleteSystemFolders, 2040802);
       }
 
       // TODO Check delete precondition
@@ -73,9 +73,9 @@ export class SetFolderStatus extends BaseController {
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.projectId, type: TYPE.PROJECT });
 
-      return Response.success(newFolderDetail);
+      return Response.success(newFolderDetail, 1040801);
     } catch (err) {
-      return Response.error(err, i18n.project.setDeleteStatusFailed);
+      return Response.error(err, i18n.project.setDeleteStatusFailed, 3040801);
     }
   }
 }

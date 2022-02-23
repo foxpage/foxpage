@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useLocation, useParams } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/group/project/detail';
 import { fetchParentFiles } from '@/apis/group/project';
 import { FoxpageBreadcrumb } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import { ProjectDetailUrlParams } from '@/types/project';
 import { getProjectFolder, isFromWorkspace, PROJECT_URL_PREFIX, WORKSPACE_URL_PREFIX } from '@/utils/project/file';
 
@@ -37,6 +38,9 @@ const Main: React.FC<FileListType> = props => {
   const { search } = useLocation();
   const fromWorkspace = isFromWorkspace(search);
 
+  const { locale } = useContext(GlobalContext);
+  const { global, file } = locale.business;
+
   useEffect(() => {
     if (applicationId) {
       fetchFileList({ folderId, applicationId, page: 1, size: PAGE_SIZE });
@@ -57,7 +61,7 @@ const Main: React.FC<FileListType> = props => {
       <FoxpageBreadcrumb
         breadCrumb={[
           {
-            name: 'Project',
+            name: global.project,
             link: `/#/organization/${organizationId}/${fromWorkspace ? WORKSPACE_URL_PREFIX : PROJECT_URL_PREFIX}`,
           },
           { name: folderName },
@@ -65,7 +69,7 @@ const Main: React.FC<FileListType> = props => {
       />
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
         <Button type="primary" onClick={openDrawer}>
-          <PlusOutlined /> Add File
+          <PlusOutlined /> {file.add}
         </Button>
       </div>
       <List />

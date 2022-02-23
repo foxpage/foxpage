@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { Link, useLocation, useParams } from 'react-router-dom';
 
@@ -8,7 +8,9 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/project/content';
 import LocalsView from '@/components/business/LocalsView';
+import { FileTypeEnum } from '@/constants/index';
 import DeleteButton from '@/pages/common/DeleteButton';
+import GlobalContext from '@/pages/GlobalContext';
 import { ProjectContentType } from '@/types/application/project';
 import { ProjectContentUrlParams } from '@/types/project';
 import periodFormat from '@/utils/period-format';
@@ -31,10 +33,12 @@ const ProjectContent: React.FC<ProjectContentListType> = props => {
   const { fileId, folderId, applicationId } = useParams<ProjectContentUrlParams>();
 
   const { pathname, search } = useLocation();
+  const { locale } = useContext(GlobalContext);
+  const { global, content, version } = locale.business;
 
   const columns = [
     {
-      title: 'name',
+      title: global.nameLabel,
       dataIndex: 'title',
       render: (text: string, record: ProjectContentType) => {
         return (
@@ -47,7 +51,7 @@ const ProjectContent: React.FC<ProjectContentListType> = props => {
             >
               {text}
             </Link>
-            {fileDetail?.type === 'page' && record.urls?.length > 0 && (
+            {fileDetail?.type === FileTypeEnum.page && record.urls?.length > 0 && (
               <Popover
                 placement="bottom"
                 content={
@@ -73,15 +77,15 @@ const ProjectContent: React.FC<ProjectContentListType> = props => {
       },
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'version',
       key: 'version',
       render: () => {
-        return <Tag color="orange">content</Tag>;
+        return <Tag color="orange">{content.name}</Tag>;
       },
     },
     {
-      title: 'Live Version',
+      title: version.liveVersion,
       dataIndex: 'version',
       key: 'version',
       render: (text: string) => {
@@ -89,7 +93,7 @@ const ProjectContent: React.FC<ProjectContentListType> = props => {
       },
     },
     {
-      title: 'Locale',
+      title: global.locale,
       dataIndex: 'tag',
       key: 'tag',
       render: (_text: string, record: ProjectContentType) => {
@@ -98,7 +102,7 @@ const ProjectContent: React.FC<ProjectContentListType> = props => {
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (_text: string, record: ProjectContentType) => {
@@ -106,33 +110,45 @@ const ProjectContent: React.FC<ProjectContentListType> = props => {
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       key: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
     {
-      title: 'Actions',
+      title: global.actions,
       key: 'updateTime',
       width: 120,
       render: (_text: string, record: ProjectContentType) => {
         return (
           <React.Fragment>
-            <Button type="default" size="small" shape="circle" title="Edit" onClick={() => openDrawer(true, record)}>
+            <Button
+              type="default"
+              size="small"
+              shape="circle"
+              title={global.edit}
+              onClick={() => openDrawer(true, record)}
+            >
               <EditOutlined />
             </Button>
             <Popconfirm
-              title={`Are you sure to delete this ${record.title}?`}
+              title={`${content.deleteMessage} ${record.title}?`}
               onConfirm={() => {
                 if (fileDetail) {
                   deleteContent({ applicationId, id: record.id, fileId, fileType: fileDetail.type });
                 }
               }}
-              okText="Yes"
-              cancelText="No"
+              okText={global.yes}
+              cancelText={global.no}
             >
-              <DeleteButton type="default" size="small" shape="circle" title="Remove" style={{ marginLeft: 8 }} />
+              <DeleteButton
+                type="default"
+                size="small"
+                shape="circle"
+                title={global.remove}
+                style={{ marginLeft: 8 }}
+              />
             </Popconfirm>
           </React.Fragment>
         );

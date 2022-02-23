@@ -16,7 +16,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('resources')
-export class GetResourceDetail extends BaseController {
+export class GetResourceGroupDetail extends BaseController {
   constructor() {
     super();
   }
@@ -37,7 +37,7 @@ export class GetResourceDetail extends BaseController {
   async index(@QueryParams() params: ResourceInfoReq): Promise<ResData<FolderResourceGroup>> {
     let { id = '', path = '' } = params;
     if (!id && !path) {
-      return Response.warning(i18n.resource.nameOrPathMustPassOne);
+      return Response.warning(i18n.resource.nameOrPathMustPassOne, 2120601);
     }
 
     try {
@@ -54,11 +54,11 @@ export class GetResourceDetail extends BaseController {
             folderPath: path,
             deleted: false,
           });
-          id = folderDetail.id || '';
+          id = folderDetail?.id || '';
         }
 
         if (!parentFolderId || !id) {
-          return Response.warning(i18n.resource.invalidNameOrPath);
+          return Response.warning(i18n.resource.invalidNameOrPath, 2120602);
         }
       }
 
@@ -83,9 +83,9 @@ export class GetResourceDetail extends BaseController {
         responseData = folderDetail ? Object.assign({}, folderDetail, { group: resourceTypeDetail }) : {};
       }
 
-      return Response.success(responseData);
+      return Response.success(responseData, 1120601);
     } catch (err) {
-      return Response.error(err, i18n.resource.getResourceGroupDetailFailed);
+      return Response.error(err, i18n.resource.getResourceGroupDetailFailed, 3120601);
     }
   }
 }

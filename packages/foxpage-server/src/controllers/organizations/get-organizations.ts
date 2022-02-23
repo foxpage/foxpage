@@ -34,7 +34,7 @@ export class GetOrganizationList extends BaseController {
     try {
       const orgDetail = await this.service.org.getDetailById(params.id);
       if (!orgDetail || orgDetail.deleted) {
-        return Response.warning(i18n.org.invalidOrgId);
+        return Response.warning(i18n.org.invalidOrgId, 2010501);
       }
 
       // TODO Check if the current user is in the organization
@@ -42,9 +42,9 @@ export class GetOrganizationList extends BaseController {
       // Get information about users and organization creators under the organization
       const orgDetailWithUser = await this.service.org.replaceOrgUserInfo([orgDetail]);
 
-      return Response.success(orgDetailWithUser[0] || {});
+      return Response.success(orgDetailWithUser[0] || {}, 1010501);
     } catch (err) {
-      return Response.error(err, i18n.org.getOrgDetailFailed);
+      return Response.error(err, i18n.org.getOrgDetailFailed, 3010501);
     }
   }
 }

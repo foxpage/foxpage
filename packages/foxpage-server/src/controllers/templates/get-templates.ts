@@ -42,9 +42,9 @@ export class GetAppTemplateList extends BaseController {
         contentIds: params.ids || [],
       });
 
-      return Response.success(_.map(pageList, 'content'));
+      return Response.success(_.map(pageList, 'content'), 1070901);
     } catch (err) {
-      return Response.error(err, i18n.template.getAppTemplatesFailed);
+      return Response.error(err, i18n.template.getAppTemplatesFailed, 3070901);
     }
   }
 }

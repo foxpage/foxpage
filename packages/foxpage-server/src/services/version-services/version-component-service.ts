@@ -2,14 +2,15 @@ import _ from 'lodash';
 
 import { AppResource, ContentVersion, Resources, ResourceType } from '@foxpage/foxpage-server-types';
 
-import { VersionServiceAbstract } from '../abstracts/version-service-abstract';
+import * as Model from '../../models';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class VersionComponentService extends VersionServiceAbstract {
+export class VersionComponentService extends BaseService<ContentVersion> {
   private static _instance: VersionComponentService;
 
   constructor() {
-    super();
+    super(Model.version);
   }
 
   /**

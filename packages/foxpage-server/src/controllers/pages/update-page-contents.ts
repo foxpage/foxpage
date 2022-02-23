@@ -38,7 +38,7 @@ export class UpdatePageContentDetail extends BaseController {
 
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4051701);
       }
 
       // TODO De-duplicate tags
@@ -52,19 +52,19 @@ export class UpdatePageContentDetail extends BaseController {
       );
 
       if (result.code === 1) {
-        return Response.warning(i18n.page.invalidPageContentId);
+        return Response.warning(i18n.page.invalidPageContentId, 2051701);
       } else if (result.code === 2) {
-        return Response.warning(i18n.page.invalidIdType);
+        return Response.warning(i18n.page.invalidIdType, 2051702);
       } else if (result.code === 3) {
-        return Response.warning(i18n.page.pageNameExist);
+        return Response.warning(i18n.page.pageNameExist, 2051703);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1051701);
     } catch (err) {
-      return Response.error(err, i18n.page.updatePageContentFailed);
+      return Response.error(err, i18n.page.updatePageContentFailed, 3051701);
     }
   }
 }

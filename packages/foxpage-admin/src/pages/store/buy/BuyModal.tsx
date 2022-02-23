@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import { Modal, Select } from 'antd';
@@ -8,6 +8,7 @@ import { fetchList as fetchApplicationList } from '@/actions/group/application/l
 import * as ACTIONS from '@/actions/store/list';
 import { FileTypeEnum } from '@/constants/index';
 import { StoreBuyGoodsType } from '@/constants/store';
+import GlobalContext from '@/pages/GlobalContext';
 import { getLoginUser } from '@/utils/login-user';
 
 const { Option } = Select;
@@ -30,6 +31,8 @@ type BuyModalProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPr
 const BuyModal: React.FC<BuyModalProps> = props => {
   const { type, buyModalVisible, applicationList, buyIds, updateBuyModalVisible, fetchApplicationList, addGoods } =
     props;
+  const { locale } = useContext(GlobalContext);
+  const { application, store } = locale.business;
   const userInfo = getLoginUser();
   let selectedAppIds: string[] = [];
 
@@ -57,7 +60,7 @@ const BuyModal: React.FC<BuyModalProps> = props => {
 
   return (
     <Modal
-      title="Application Selector"
+      title={store.buyModalTitle}
       destroyOnClose
       maskClosable={false}
       visible={buyModalVisible}
@@ -67,7 +70,7 @@ const BuyModal: React.FC<BuyModalProps> = props => {
       <Select
         mode="multiple"
         style={{ width: '100%' }}
-        placeholder="select application"
+        placeholder={application.selectApplication}
         defaultValue={[]}
         onChange={handleApplicationChange}
       >

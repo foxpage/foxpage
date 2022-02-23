@@ -45,7 +45,7 @@ export class SetPageVersionPublishStatus extends BaseController {
 
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4051501);
       }
 
       // Set publishing status
@@ -55,17 +55,20 @@ export class SetPageVersionPublishStatus extends BaseController {
       });
 
       if (result.code === 1) {
-        return Response.warning(i18n.page.pageVersionHasPublished);
+        return Response.warning(i18n.page.pageVersionHasPublished, 2051501);
       } else if (result.code === 2) {
-        return Response.warning(i18n.page.invalidRelations + ':' + Object.keys(result.data).join(','));
+        return Response.warning(
+          i18n.page.invalidRelations + ':' + Object.keys(result.data).join(','),
+          2051502,
+        );
       }
 
       await this.service.version.live.runTransaction(ctx.transactions);
       const versionDetail = await this.service.version.live.getDetailById(params.id);
 
-      return Response.success(versionDetail || {});
+      return Response.success(versionDetail, 1051501);
     } catch (err) {
-      return Response.error(err, i18n.page.setPagePublishStatusFailed);
+      return Response.error(err, i18n.page.setPagePublishStatusFailed, 3051501);
     }
   }
 }

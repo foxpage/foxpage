@@ -4,7 +4,9 @@
   "npmClient": "yarn",
   "command": {
     "publish": {
-      "ignoreChanges": ["package-lock.json"],
+      "ignoreChanges": [
+        "package-lock.json"
+      ],
       "message": "chore(release): publish",
       "registry": "https://registry.npmjs.org"
     },
@@ -14,5 +16,7 @@
       "changelog": false
     }
   },
-  "packages": ["packages/*"]
+  "packages": [
+    "packages/*"
+  ]
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import { PlusOutlined } from '@ant-design/icons';
@@ -6,6 +6,7 @@ import { Button } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/project/list';
+import GlobalContext from '@/pages/GlobalContext';
 
 import EditDrawer from './drawer/EditDrawer';
 import List from './List';
@@ -26,6 +27,9 @@ type ProjectProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPro
 const Project: React.FC<ProjectProps> = props => {
   const { pageInfo = { page: 1, size: 10 }, fetchProjectList, openDrawer, clearAll } = props;
 
+  const { locale } = useContext(GlobalContext);
+  const { project } = locale.business;
+
   useEffect(() => {
     fetchProjectList({ page: pageInfo.page, size: pageInfo.size });
     return () => {
@@ -36,7 +40,7 @@ const Project: React.FC<ProjectProps> = props => {
     <React.Fragment>
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
         <Button type="primary" onClick={openDrawer}>
-          <PlusOutlined /> Add Project
+          <PlusOutlined /> {project.add}
         </Button>
       </div>
       <List />

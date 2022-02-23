@@ -5,14 +5,14 @@ import { Content } from '@foxpage/foxpage-server-types';
 import * as Model from '../../models';
 import { ContentInfo, ContentSearch, PageContentSearch } from '../../types/content-types';
 import { PageData } from '../../types/index-types';
-import { ContentServiceAbstract } from '../abstracts/content-service-abstract';
+import { BaseService } from '../base-service';
 import * as Service from '../index';
 
-export class FileContentService extends ContentServiceAbstract {
+export class FileContentService extends BaseService<Content> {
   private static _instance: FileContentService;
 
   constructor() {
-    super();
+    super(Model.content);
   }
 
   /**

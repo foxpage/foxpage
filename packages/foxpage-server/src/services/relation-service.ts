@@ -8,14 +8,14 @@ import * as Model from '../models';
 import { ContentVersionString } from '../types/content-types';
 import { generationId } from '../utils/tools';
 
-import { RelationServiceAbstract } from './abstracts/relation-service-abstract';
+import { BaseService } from './base-service';
 import * as Service from './index';
 
-export class RelationService extends RelationServiceAbstract {
+export class RelationService extends BaseService<ContentRelation> {
   private static _instance: RelationService;
 
   constructor() {
-    super();
+    super(Model.relation);
   }
 
   /**

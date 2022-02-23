@@ -38,7 +38,7 @@ export class UpdateFunctionContentDetail extends BaseController {
 
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4091201);
       }
 
       const result = await this.service.content.info.updateContentDetail(
@@ -47,19 +47,19 @@ export class UpdateFunctionContentDetail extends BaseController {
       );
 
       if (result.code === 1) {
-        return Response.warning(i18n.function.invalidContentId);
+        return Response.warning(i18n.function.invalidContentId, 2091201);
       } else if (result.code === 2) {
-        return Response.warning(i18n.function.invalidIdType);
+        return Response.warning(i18n.function.invalidIdType, 20912021);
       } else if (result.code === 3) {
-        return Response.warning(i18n.function.nameExist);
+        return Response.warning(i18n.function.nameExist, 2091203);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       const contentDetail = await this.service.content.info.getDetailById(params.id);
 
-      return Response.success(contentDetail || {});
+      return Response.success(contentDetail, 1091201);
     } catch (err) {
-      return Response.error(err, i18n.function.updateFunctionContentFailed);
+      return Response.error(err, i18n.function.updateFunctionContentFailed, 3091201);
     }
   }
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/project/list';
 import { DeleteButton } from '@/pages/common';
+import GlobalContext from '@/pages/GlobalContext';
 import { ProjectType } from '@/types/project';
 import periodFormat from '@/utils/period-format';
 
@@ -36,9 +37,12 @@ const ProjectList: React.FC<ProjectListProp> = props => {
     deleteProject,
   } = props;
 
+  const { locale } = useContext(GlobalContext);
+  const { project, global } = locale.business;
+
   const columns = [
     {
-      title: 'name',
+      title: global.nameLabel,
       dataIndex: 'name',
       render: (_text: string, record: ProjectType) => {
         return (
@@ -54,7 +58,7 @@ const ProjectList: React.FC<ProjectListProp> = props => {
       },
     },
     {
-      title: 'Application',
+      title: global.application,
       dataIndex: 'application',
       key: 'application',
       render: (_text: string, record: ProjectType) => {
@@ -66,7 +70,7 @@ const ProjectList: React.FC<ProjectListProp> = props => {
       },
     },
     {
-      title: 'Creator',
+      title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
       render: (_text: string, record: ProjectType) => {
@@ -74,20 +78,20 @@ const ProjectList: React.FC<ProjectListProp> = props => {
       },
     },
     {
-      title: 'CreateTime',
+      title: global.createTime,
       dataIndex: 'createTime',
       key: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
     {
-      title: 'Actions',
+      title: global.actions,
       key: 'updateTime',
       width: 130,
       render: (_text: string, record: ProjectType) => {
         return (
           <React.Fragment>
-            <Button type="default" size="small" shape="circle" title="build">
+            <Button type="default" size="small" shape="circle" title={global.build}>
               <Link
                 to={`/application/${record.application.id}/folder/${record.id}/builder`}
                 onClick={() => {
@@ -101,21 +105,27 @@ const ProjectList: React.FC<ProjectListProp> = props => {
               type="default"
               size="small"
               shape="circle"
-              title="Edit"
+              title={global.edit}
               onClick={() => openDrawer(true, record)}
               style={{ marginLeft: 8 }}
             >
               <EditOutlined />
             </Button>
             <Popconfirm
-              title="Are you sure to delete this project?"
+              title={project.deleteMessage}
               onConfirm={() => {
                 deleteProject(record.id, record.application.id);
               }}
-              okText="Yes"
-              cancelText="No"
+              okText={global.yes}
+              cancelText={global.no}
             >
-              <DeleteButton type="default" size="small" shape="circle" title="Remove" style={{ marginLeft: 8 }} />
+              <DeleteButton
+                type="default"
+                size="small"
+                shape="circle"
+                title={global.remove}
+                style={{ marginLeft: 8 }}
+              />
             </Popconfirm>
           </React.Fragment>
         );
@@ -131,11 +141,11 @@ const ProjectList: React.FC<ProjectListProp> = props => {
       pagination={
         pageInfo.total > pageInfo.size
           ? {
-            position: ['bottomCenter'],
-            current: pageInfo.page,
-            pageSize: pageInfo.size,
-            total: pageInfo.total,
-          }
+              position: ['bottomCenter'],
+              current: pageInfo.page,
+              pageSize: pageInfo.size,
+              total: pageInfo.total,
+            }
           : false
       }
       onChange={pagination => {

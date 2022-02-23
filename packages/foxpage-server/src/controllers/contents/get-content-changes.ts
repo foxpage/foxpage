@@ -12,7 +12,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('contents')
-export class AddContentBaseDetail extends BaseController {
+export class GetContentChanges extends BaseController {
   constructor() {
     super();
   }
@@ -38,9 +38,9 @@ export class AddContentBaseDetail extends BaseController {
       // Get all content data that has changed
       const logChanges = await this.service.log.getChangesContentList(params);
 
-      return Response.success({ contents: logChanges, timestamp: currentTimeStamp });
+      return Response.success({ contents: logChanges, timestamp: currentTimeStamp }, 1160101);
     } catch (err) {
-      return Response.error(err, i18n.content.getContentChangesFailed);
+      return Response.error(err, i18n.content.getContentChangesFailed, 3160101);
     }
   }
 }

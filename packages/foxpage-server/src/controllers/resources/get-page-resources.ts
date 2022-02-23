@@ -37,8 +37,8 @@ export class GetResourcePageList extends BaseController {
   async index(@QueryParams() params: ResourceListReq): Promise<ResData<PageData<FolderUserInfo>>> {
     this.service.folder.info.setPageSize(params);
 
-    const from: number = (params.page - 1) * params.size;
-    const to: number = from + params.size;
+    const from = (params.page - 1) * params.size;
+    const to = from + params.size;
 
     try {
       let searchParams: FolderPageSearch = {
@@ -54,16 +54,19 @@ export class GetResourcePageList extends BaseController {
         TYPE.RESOURCE as AppFolderTypes,
       );
 
-      return Response.success({
-        data: result.list,
-        pageInfo: {
-          total: result.count || 0,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          data: result.list,
+          pageInfo: {
+            total: result.count,
+            page: params.page,
+            size: params.size,
+          },
         },
-      });
+        1120801,
+      );
     } catch (err) {
-      return Response.error(err, i18n.resource.getPageResourceFailed);
+      return Response.error(err, i18n.resource.getPageResourceFailed, 3120801);
     }
   }
 }

@@ -53,16 +53,16 @@ export class AddOrganizationDetail extends BaseController {
         organizationId: newOrganization.id,
       });
 
-      // 记录日志
+      // Save logs
       // this.service.log.saveLog({
       //   action: LOG.CREATE,
       //   category: { id: newOrganization.id, type: LOG.CATEGORY_ORGANIZATION },
       //   content: { id: newOrganization.id, contentId: '', before: {}, after: orgDetail },
       // });
 
-      return Response.success(orgDetail);
+      return Response.success(orgDetail, 1010201);
     } catch (err) {
-      return Response.error(err, i18n.org.addOrgFailed);
+      return Response.error(err, i18n.org.addOrgFailed, 3010201);
     }
   }
 }

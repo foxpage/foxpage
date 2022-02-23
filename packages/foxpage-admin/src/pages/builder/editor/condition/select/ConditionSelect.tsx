@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 // import { EyeOutlined } from '@ant-design/icons';
@@ -10,7 +10,10 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/builder/condition';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Group } from '@/components/widgets';
+import { ScopeEnum } from '@/constants/index';
 import { ConditionEnum } from '@/pages/common/constant/Condition';
+import ScopeSelect from '@/pages/components/common/ScopeSelect';
+import GlobalContext from '@/pages/GlobalContext';
 import { ConditionFetchParams, ConditionItem } from '@/types/application/condition';
 
 const PAGE_SIZE = 10;
@@ -60,8 +63,11 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
     onClose,
     onChange,
   } = props;
-  const [group, setGroup] = useState<'project' | 'application'>('project');
+  const [group, setGroup] = useState<ScopeEnum>(ScopeEnum.project);
   const [selectedRows, setSelectedRows] = useState<ConditionItem[]>([]);
+
+  const { locale: i18n } = useContext(GlobalContext);
+  const { global, condition } = i18n.business;
 
   useEffect(() => {
     if (applicationId && visible) {
@@ -70,7 +76,7 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
         page: pageNum,
         size: PAGE_SIZE,
       };
-      if (group === 'project') {
+      if (group === ScopeEnum.project) {
         params.folderId = folderId;
       }
       fetchList(params);
@@ -81,9 +87,8 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
     setSelectedRows(conditions);
   }, [conditions]);
 
-  const handleGroupChange = useCallback(e => {
-    const _value = e.target.value;
-    setGroup(_value);
+  const handleGroupChange = useCallback(group => {
+    setGroup(group);
   }, []);
 
   const handleClose = () => {
@@ -93,12 +98,12 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
 
   const columns: ColumnsType<ConditionItem> = [
     {
-      title: 'Name',
+      title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Type',
+      title: global.type,
       dataIndex: 'type',
       key: 'type',
       width: 100,
@@ -124,7 +129,7 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
     <OperationDrawer
       open={visible}
       onClose={handleClose}
-      title="Select Condition"
+      title={condition.selectCondition}
       width={480}
       actions={
         <Button
@@ -140,16 +145,7 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
     >
       <Group>
         <Toolbar>
-          <Radio.Group
-            size="small"
-            options={[
-              { label: 'Project', value: 'project' },
-              { label: 'Application', value: 'application' },
-            ]}
-            optionType="button"
-            value={group}
-            onChange={handleGroupChange}
-          />
+          <ScopeSelect scope={group} onScopeChange={handleGroupChange} />
         </Toolbar>
         <Table
           columns={columns}

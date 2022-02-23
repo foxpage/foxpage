@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useMemo, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -7,19 +7,12 @@ import { RootState } from 'typesafe-actions';
 
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Group } from '@/components/widgets/group';
+import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/resource/detail';
 
 const formItemLayout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 18 },
-};
-const TypeDataMap: Record<string, any> = {
-  add: {
-    title: 'Add File',
-  },
-  edit: {
-    title: 'Edit File',
-  },
 };
 
 const mapStateToProps = (store: RootState) => ({
@@ -40,7 +33,9 @@ type ComponentsProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchTo
 const FileDrawer: React.FC<ComponentsProps> = props => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const { open, type, curFolderId, data = {}, closeDrawer, addFile, updateFile } = props;
-  const title = TypeDataMap[type]?.title || '';
+  const { locale } = useContext(GlobalContext);
+  const { global, file } = locale.business;
+  const title = file[type];
   const [form] = Form.useForm();
   const initialValuesRef = useRef<any>({});
   useMemo(() => {
@@ -110,14 +105,14 @@ const FileDrawer: React.FC<ComponentsProps> = props => {
       destroyOnClose
       actions={
         <Button type="primary" onClick={onSave}>
-          Apply
+          {global.apply}
         </Button>
       }
       afterVisibleChange={afterVisibleChange}
     >
       <Group>
         <Form {...formItemLayout} form={form}>
-          <Form.Item name="filepath" label="File Path" rules={[{ required: true }]}>
+          <Form.Item name={file.filePath} label="File Path" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
         </Form>

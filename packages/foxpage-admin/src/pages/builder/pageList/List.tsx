@@ -56,8 +56,8 @@ const PageList: React.FC<Type> = props => {
   }, []);
 
   useEffect(() => {
-    if (fileId && fileDetail?.type) {
-      fetch({ applicationId, folderId, fileId, contentId, fileType: fileDetail.type });
+    if (!fileId || fileId && fileDetail?.type) {
+      fetch({ applicationId, folderId, fileId, contentId, fileType: fileDetail?.type || FileTypeEnum.page });
     }
   }, [fileDetail]);
 

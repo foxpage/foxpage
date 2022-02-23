@@ -39,7 +39,7 @@ export class GetConditionList extends BaseController {
       if (params.folderId) {
         const folderDetail = await this.service.folder.info.getDetailById(params.folderId);
         if (!folderDetail || folderDetail.deleted || folderDetail.applicationId !== params.applicationId) {
-          return Response.warning(i18n.folder.invalidFolderId);
+          return Response.warning(i18n.folder.invalidFolderId, 2100501);
         }
       } else {
         params.folderId = await this.service.folder.info.getAppTypeFolderId({
@@ -91,16 +91,19 @@ export class GetConditionList extends BaseController {
         }
       }
 
-      return Response.success({
-        pageInfo: {
-          total: fileList.length,
-          page: params.page,
-          size: params.size,
+      return Response.success(
+        {
+          pageInfo: {
+            total: fileList.length,
+            page: params.page,
+            size: params.size,
+          },
+          data: fileVersion,
         },
-        data: fileVersion,
-      });
+        1100501,
+      );
     } catch (err) {
-      return Response.error(err, i18n.condition.getPageConditionFailed);
+      return Response.error(err, i18n.condition.getPageConditionFailed, 3100501);
     }
   }
 }

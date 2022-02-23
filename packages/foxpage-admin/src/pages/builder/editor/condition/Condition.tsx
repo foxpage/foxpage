@@ -1,16 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 
-import { DatePicker, Select, Switch } from 'antd';
+import { Button, DatePicker, Select, Switch } from 'antd';
 import moment from 'moment';
 import { RootState } from 'typesafe-actions';
 
-import { saveCondition, searchLocalTimeVariable, updateConditionVersion } from '@/actions/builder/condition';
+import * as ACTIONS from '@/actions/builder/condition';
 import { updateComponentCondition } from '@/actions/builder/template';
+import OperationDrawer from '@/components/business/OperationDrawer';
 import { Field, Group, Label, Title } from '@/components/widgets/group';
 import { eqRelations, gtQqRelations, ltEqRelations } from '@/configs/condition';
 import { FileTypeEnum } from '@/constants/global';
 import { LOCAL_TIME_VARIABLE_KEY, LOCAL_TIME_VARIABLE_NAME } from '@/constants/variable';
+import GlobalContext from '@/pages/GlobalContext';
 import {
   ConditionContentItem,
   ConditionContentSchemaChildrenItem,
@@ -41,19 +43,21 @@ const mapStateToProps = (store: RootState) => ({
   version: store.builder.template.version,
   selectedComponent: store.builder.template.selectedComponent,
   selectedWrapperComponent: store.builder.template.selectedWrapperComponent,
+  open: store.builder.condition.conditionBindDrawerOpen,
 });
 
 const mapDispatchToProps = {
-  saveCondition,
-  updateConditionVersion,
+  saveCondition: ACTIONS.saveCondition,
+  updateConditionVersion: ACTIONS.updateConditionVersion,
   updateComponentCondition,
-  searchLocalTimeVariable,
+  closeDrawer: () => ACTIONS.updateConditionBindDrawerVisible(false),
 };
 
 type ConditionEditorProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Condition: React.FC<ConditionEditorProps> = props => {
   const {
+    open,
     applicationId,
     folderId,
     locale,
@@ -63,9 +67,9 @@ const Condition: React.FC<ConditionEditorProps> = props => {
     saveCondition,
     updateConditionVersion,
     updateComponentCondition,
+    closeDrawer,
   } = props;
   const timezones = getAllTimeZone(locale);
-  const [timeConditions, setTimeConditions] = useState<ConditionItem[]>([]);
   const [conditions, setConditions] = useState<ConditionItem[]>([]);
   const [defaultTimezone, setDefaultTimezone] = useState<string>(timezones[0]?.value || '');
   const [showStartTime, setShowStartTime] = useState<moment.Moment | undefined>(undefined);
@@ -73,59 +77,62 @@ const Condition: React.FC<ConditionEditorProps> = props => {
   const [display, setDisplay] = useState<boolean>(true);
   const timeConditionsContent = useRef<string | undefined>(undefined);
 
+  const { locale: i18n } = useContext(GlobalContext);
+  const { global, condition } = i18n.business;
+
   useEffect(() => {
-    const component = selectedComponent.wrapper ? selectedWrapperComponent : selectedComponent;
-    setDefaultTimezone(timezones[0]?.value || '');
-    setShowStartTime(undefined);
-    setShowEndTime(undefined);
-    setDisplay(true);
-    if (component) {
-      const newConditions: ConditionItem[] = [];
-      const conditionRelations = version?.relations?.conditions || [];
-      const conditionDirective = component.directive?.if || [];
-      conditionRelations.forEach(conditionRelation => {
-        if (conditionDirective.find((item: string) => conditionRelation.id && item.includes(conditionRelation.id))) {
-          const relationContent = conditionRelation as ConditionContentItem;
-          const schemaItems = relationContent?.schemas[0];
-          if (!schemaItems) {
-            return;
+    if (open) {
+      const component = selectedComponent.wrapper ? selectedWrapperComponent : selectedComponent;
+      setDefaultTimezone(timezones[0]?.value || '');
+      setShowStartTime(undefined);
+      setShowEndTime(undefined);
+      setDisplay(true);
+      if (component) {
+        const newConditions: ConditionItem[] = [];
+        const conditionRelations = version?.relations?.conditions || [];
+        const conditionDirective = component.directive?.if || [];
+        conditionRelations.forEach(conditionRelation => {
+          if (conditionDirective.find((item: string) => conditionRelation.id && item.includes(conditionRelation.id))) {
+            const relationContent = conditionRelation as ConditionContentItem;
+            const schemaItems = relationContent?.schemas[0];
+            if (!schemaItems) {
+              return;
+            }
+            const conditionItem = {
+              type: FileTypeEnum.condition,
+              content: relationContent,
+              name: '',
+              id: '',
+              contentId: relationContent.id || '',
+            };
+            if (!schemaItems.name.startsWith('__')) {
+              newConditions.push(conditionItem);
+              return;
+            }
+            const childrenPropsItems = schemaItems?.children;
+            if (isTimeConditionRelation(schemaItems)) {
+              timeConditionsContent.current = relationContent.id;
+              childrenPropsItems.forEach(item => {
+                const props = item.props;
+                if (props.key === timeConditionsKey && props.operation === gtQqRelations.value) {
+                  setShowStartTime(getTimeByZone(LOCAL_TIME_ZONE, props.value));
+                  setDefaultTimezone(props.value.substr(TIME_ZONE_START_POS, 3));
+                } else if (props.key === timeConditionsKey && props.operation === ltEqRelations.value) {
+                  setShowEndTime(getTimeByZone(LOCAL_TIME_ZONE, props.value));
+                } else if (props.key === displayKey && props.operation === ltEqRelations.value) {
+                  setDisplay(props.value === displayKey);
+                }
+              });
+            }
           }
-          const conditionItem = {
-            type: FileTypeEnum.condition,
-            content: relationContent,
-            name: '',
-            id: '',
-            contentId: relationContent.id || '',
-          };
-          if (!schemaItems.name.startsWith('__')) {
-            newConditions.push(conditionItem);
-            return;
-          }
-          const childrenPropsItems = schemaItems?.children;
-          if (isTimeConditionRelation(schemaItems)) {
-            setTimeConditions([conditionItem]);
-            timeConditionsContent.current = relationContent.id;
-            childrenPropsItems.forEach(item => {
-              const props = item.props;
-              if (props.key === timeConditionsKey && props.operation === gtQqRelations.value) {
-                setShowStartTime(getTimeByZone(LOCAL_TIME_ZONE, props.value));
-                setDefaultTimezone(props.value.substr(TIME_ZONE_START_POS, 3));
-              } else if (props.key === timeConditionsKey && props.operation === ltEqRelations.value) {
-                setShowEndTime(getTimeByZone(LOCAL_TIME_ZONE, props.value));
-              } else if (props.key === displayKey && props.operation === ltEqRelations.value) {
-                setDisplay(props.value === displayKey);
-              }
-            });
-          }
-        }
-      });
-      setConditions(newConditions);
+        });
+        setConditions(newConditions);
+      }
     }
-  }, [selectedComponent, selectedWrapperComponent, version]);
+  }, [open, selectedComponent, selectedWrapperComponent, version]);
 
   const handleSelectTimezone = (value: string) => {
     setDefaultTimezone(value);
-    handleSaveCondition(value, showStartTime, showEndTime);
   };
 
   const handleChangeTime = value => {
@@ -134,24 +141,20 @@ const Condition: React.FC<ConditionEditorProps> = props => {
     const newShowEndTime = endTime ? endTime.format() : '';
     setShowStartTime(newShowStartTime);
     setShowEndTime(newShowEndTime);
-    handleSaveCondition(defaultTimezone, newShowStartTime, newShowEndTime);
   };
 
-  const handleSaveCondition = (timeZone: string, startTime?: moment.Moment, endTime?: moment.Moment) => {
-    if (!startTime || !endTime) {
+  const handleSaveCondition = () => {
+    if (!showStartTime || !showEndTime) {
+      conditions.length > 0 && updateComponentCondition(conditions);
       return;
     }
-    // if (!localTimeVariable.current || !localTimeVariable.current.id) {
-    //   message.warning(`Please Create Variable(${LOCAL_TIME_VARIABLE_NAME})`);
-    //   return;
-    // }
     const items: ConditionContentSchemaChildrenItem[] = [
       {
         type: conditionExpression,
         props: {
           key: timeConditionsKey,
           operation: gtQqRelations.value,
-          value: getTimeByZone(timeZone, startTime),
+          value: getTimeByZone(defaultTimezone, showStartTime),
         },
       },
       {
@@ -159,7 +162,7 @@ const Condition: React.FC<ConditionEditorProps> = props => {
         props: {
           key: timeConditionsKey,
           operation: ltEqRelations.value,
-          value: getTimeByZone(timeZone, endTime),
+          value: getTimeByZone(defaultTimezone, showEndTime),
         },
       },
       {
@@ -172,7 +175,7 @@ const Condition: React.FC<ConditionEditorProps> = props => {
       },
     ];
     const timeConditionsName = `__condition_${shortId(10)}`;
-    const conditionContentItem: ConditionContentItem = {
+    const timeConditionContentItem: ConditionContentItem = {
       id: timeConditionsContent.current,
       schemas: [{ type: 1, props: {}, name: timeConditionsName, children: items }],
       relation: {
@@ -183,84 +186,103 @@ const Condition: React.FC<ConditionEditorProps> = props => {
         },
       },
     };
-    const condition: ConditionNewParams = {
+    const timeCondition: ConditionNewParams = {
       applicationId,
       folderId,
       name: timeConditionsName,
       type: 'condition',
-      content: conditionContentItem,
+      content: timeConditionContentItem,
     };
     const cb = (contentId?: string) => {
-      conditionContentItem.id = contentId || timeConditionsContent.current;
+      timeConditionContentItem.id = contentId || timeConditionsContent.current;
       updateComponentCondition(
         conditions.concat([
           {
             type: FileTypeEnum.condition,
-            content: conditionContentItem,
+            content: timeConditionContentItem,
             name: '',
             id: '',
-            contentId: conditionContentItem.id || '',
+            contentId: timeConditionContentItem.id || '',
+            tags: [],
           },
         ]),
       );
     };
-    timeConditionsContent.current ? updateConditionVersion(condition, cb) : saveCondition(condition, cb, false);
+    timeConditionsContent.current ? updateConditionVersion(timeCondition, cb) : saveCondition(timeCondition, cb, false);
   };
 
   return (
-    <React.Fragment>
-      <Group>
-        <Title>General</Title>
-        <Field>
-          <Label>Time</Label>
-          <Select
-            showSearch
-            value={defaultTimezone}
-            style={{ width: 200, marginRight: 10, marginBottom: 8 }}
-            placeholder="Select a time zone"
-            onChange={handleSelectTimezone}
-            optionLabelProp="label"
-          >
-            {timezones.map(item => (
-              <Select.Option
-                key={item.key}
-                value={item.value}
-                label={item.desc}
-                title={`${item.desc}(${item.country})`}
-              >
-                {item.desc}({item.country})
-              </Select.Option>
-            ))}
-          </Select>
-          <RangePicker
-            showTime
-            style={{ marginBottom: 8 }}
-            value={
-              showStartTime && showEndTime
-                ? [moment(showStartTime, dateFormat), moment(showEndTime, dateFormat)]
-                : undefined
-            }
-            onChange={handleChangeTime}
-          />
-        </Field>
-        <Field>
-          <Label>Display</Label>
-          <Switch
-            checkedChildren="show"
-            unCheckedChildren="hide"
-            checked={display}
-            onChange={value => setDisplay(value)}
-          />
-        </Field>
-      </Group>
-      <Group>
-        <Title>Advanced</Title>
-        <Field>
-          <Label>Terms </Label>
-          <ConditionList conditions={conditions} timeConditions={timeConditions} />
-        </Field>
-      </Group>
-    </React.Fragment>
+    <OperationDrawer
+      open={open}
+      title={global.condition}
+      onClose={closeDrawer}
+      width={480}
+      destroyOnClose
+      actions={
+        <Button type="primary" onClick={handleSaveCondition}>
+          {global.apply}
+        </Button>
+      }
+    >
+      <>
+        <Group>
+          <Title>{condition.general}</Title>
+          <Field>
+            <Label>{condition.time}</Label>
+            <Select
+              showSearch
+              value={defaultTimezone}
+              style={{ width: 200, marginRight: 10, marginBottom: 8 }}
+              placeholder={condition.timezoneSelect}
+              onChange={handleSelectTimezone}
+              optionLabelProp="label"
+            >
+              {timezones.map(item => (
+                <Select.Option
+                  key={item.key}
+                  value={item.value}
+                  label={item.desc}
+                  title={`${item.desc}(${item.country})`}
+                >
+                  {item.desc}({item.country})
+                </Select.Option>
+              ))}
+            </Select>
+            <RangePicker
+              showTime
+              style={{ marginBottom: 8 }}
+              value={
+                showStartTime && showEndTime
+                  ? [moment(showStartTime, dateFormat), moment(showEndTime, dateFormat)]
+                  : undefined
+              }
+              onChange={handleChangeTime}
+            />
+          </Field>
+          <Field>
+            <Label>Display</Label>
+            <Switch
+              checkedChildren={condition.show}
+              unCheckedChildren={condition.hide}
+              checked={display}
+              onChange={value => setDisplay(value)}
+            />
+          </Field>
+        </Group>
+        <Group>
+          <Title>{condition.advanced}</Title>
+          <Field>
+            <Label>{global.terms} </Label>
+            <ConditionList
+              conditions={conditions}
+              updateComponentCondition={conditions => {
+                setConditions(conditions);
+              }}
+            />
+          </Field>
+        </Group>
+      </>
+    </OperationDrawer>
   );
 };
 

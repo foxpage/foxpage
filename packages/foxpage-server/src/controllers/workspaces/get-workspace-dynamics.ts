@@ -42,7 +42,7 @@ export class GetWorkspaceDynamicList extends BaseController {
 
       const creator = ctx.userInfo.id;
       if (!creator) {
-        return Response.warning(i18n.user.invalidUser);
+        return Response.warning(i18n.user.invalidUser, 2140201);
       }
 
       // Default time range is last 7 days
@@ -77,16 +77,19 @@ export class GetWorkspaceDynamicList extends BaseController {
         });
       }
 
-      return Response.success({
-        pageInfo: {
-          page: params.page,
-          size: params.size,
-          total: operationResult.count,
+      return Response.success(
+        {
+          pageInfo: {
+            page: params.page,
+            size: params.size,
+            total: operationResult.count,
+          },
+          data: operationResult.list,
         },
-        data: operationResult.list,
-      });
+        1140201,
+      );
     } catch (err) {
-      return Response.error(err, i18n.page.getWorkspaceDynamicListFailed);
+      return Response.error(err, i18n.page.getWorkspaceDynamicListFailed, 3140201);
     }
   }
 }

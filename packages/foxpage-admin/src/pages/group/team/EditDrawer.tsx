@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/team';
 import OperationDrawer from '@/components/business/OperationDrawer';
+import GlobalContext from '@/pages/GlobalContext';
 import { OrganizationUrlParams } from '@/types/index';
 
 const formItemLayout = {
@@ -31,11 +32,13 @@ type TeamEditDrawerType = ReturnType<typeof mapStateToProps> & typeof mapDispatc
 const Drawer: React.FC<TeamEditDrawerType> = props => {
   const { editTeam, editDrawerOpen, update, addTeam, updateTeam, closeDrawer } = props;
   const { organizationId } = useParams<OrganizationUrlParams>();
+  const { locale } = useContext(GlobalContext);
+  const { global, team } = locale.business;
 
   return (
     <OperationDrawer
       open={editDrawerOpen}
-      title={editTeam?.id ? 'Edit' : 'Add'}
+      title={editTeam?.id ? team.edit : team.add}
       onClose={closeDrawer}
       width={480}
       destroyOnClose
@@ -46,16 +49,16 @@ const Drawer: React.FC<TeamEditDrawerType> = props => {
             editTeam?.id ? updateTeam(organizationId, editTeam) : addTeam(organizationId, editTeam);
           }}
         >
-          Apply
+          {global.apply}
         </Button>
       }
     >
       {editTeam ? (
         <div style={{ padding: 12 }}>
-          <Form.Item {...formItemLayout} label="Team name">
+          <Form.Item {...formItemLayout} label={team.nameLabel}>
             <Input
               defaultValue={editTeam.name}
-              placeholder="Team name"
+              placeholder={team.nameLabel}
               onChange={e => update('name', e.target.value)}
             />
           </Form.Item>

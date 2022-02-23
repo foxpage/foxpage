@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/user';
 import OperationDrawer from '@/components/business/OperationDrawer';
+import GlobalContext from '@/pages/GlobalContext';
 import { OrganizationUrlParams } from '@/types/index';
 
 const formItemLayout = {
@@ -29,6 +30,8 @@ const Drawer: React.FC<TeamEditDrawerType> = props => {
   const { organizationId } = useParams<OrganizationUrlParams>();
   const { editDrawerOpen, addUser, updateAccountDrawerOpen } = props;
   const [account, setAccount] = useState<string>('');
+  const { locale } = useContext(GlobalContext);
+  const { global, team } = locale.business;
 
   useEffect(() => {
     setAccount('');
@@ -37,7 +40,7 @@ const Drawer: React.FC<TeamEditDrawerType> = props => {
   return (
     <OperationDrawer
       open={editDrawerOpen}
-      title="Add User"
+      title={team.addUser}
       onClose={() => {
         updateAccountDrawerOpen(false);
       }}
@@ -50,13 +53,13 @@ const Drawer: React.FC<TeamEditDrawerType> = props => {
             addUser({ account, organizationId });
           }}
         >
-          Apply
+          {global.apply}
         </Button>
       }
     >
       <div style={{ padding: 12 }}>
-        <Form.Item {...formItemLayout} label="Account">
-          <Input value={account} placeholder="Account" onChange={e => setAccount(e.target.value)} />
+        <Form.Item {...formItemLayout} label={team.account}>
+          <Input value={account} placeholder={team.account} onChange={e => setAccount(e.target.value)} />
         </Form.Item>
       </div>
     </OperationDrawer>

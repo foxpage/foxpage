@@ -41,7 +41,7 @@ export class GetResourceDetail extends BaseController {
 
       // Check id, name and get file details
       if (!id && !name) {
-        return Response.warning(i18n.resource.idOrNameMustExistOne);
+        return Response.warning(i18n.resource.idOrNameMustExistOne, 2121401);
       } else if (id) {
         folderDetail = await this.service.folder.info.getDetail({
           applicationId: params.applicationId,
@@ -55,7 +55,7 @@ export class GetResourceDetail extends BaseController {
         });
 
         if (appTypeFolderIds.size === 0) {
-          return Response.warning(i18n.resource.missingResourceFolder);
+          return Response.warning(i18n.resource.missingResourceFolder, 2121402);
         }
 
         const resourceFolderList = await this.service.folder.info.find(
@@ -90,9 +90,9 @@ export class GetResourceDetail extends BaseController {
         });
       }
 
-      return Response.success(resourceDetail);
+      return Response.success(resourceDetail, 1121401);
     } catch (err) {
-      return Response.error(err, i18n.resource.getResourceDetailFailed);
+      return Response.error(err, i18n.resource.getResourceDetailFailed, 3121401);
     }
   }
 }

@@ -321,7 +321,7 @@ export class FileVersionDetailReq {
 
   @JSONSchema({ description: 'File name' })
   @IsString()
-  @Length(5, 100)
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'File introduction' })
@@ -381,10 +381,12 @@ export class UpdateFileDetailReq {
 
   @JSONSchema({ description: 'File ID' })
   @IsString()
+  @Length(20, 20)
   id: string;
 
   @JSONSchema({ description: 'File name' })
   @IsString()
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'File introduction' })
@@ -411,6 +413,7 @@ export class UpdateTypeFileDetailReq {
 
   @JSONSchema({ description: 'File name' })
   @IsString()
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'File content version information' })
