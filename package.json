@@ -1,6 +1,6 @@
 {
   "name": "foxpage",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "bugs": {
     "url": "https://github.com/foxpage/foxpage/issues"
@@ -27,6 +27,7 @@
     "init-server:prod": "cd packages/foxpage-server && cross-env NODE_ENV=production node dist/install.js",
     "test-server": "cd packages/foxpage-server && cross-env NODE_ENV=test npm run test",
     "build-admin:prod": "cd packages/foxpage-admin && npm install && npm run build",
+    "release": "standard-version --commitAll",
     "start-admin:prod": "cd packages/foxpage-admin && node server/app-express.js",
     "commit": "git-cz",
     "lint": "eslint --cache --cache-location=.cache/eslint --ext .ts,.tsx --report-unused-disable-directives packages/",
