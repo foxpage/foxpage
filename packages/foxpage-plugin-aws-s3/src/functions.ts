@@ -49,9 +49,10 @@ export const downloadObjectContent = async (
     const getParams = { Bucket: bucketName, Key: objectName };
     const data: any = await client.send(new GetObjectCommand(getParams));
     await data.Body.pipe(fs.createWriteStream(targetName));
-    return { code: 0, objectName, data: targetName };
+
+    return { code: 0, objectName, data: targetName, dataLength: data.ContentLength };
   } catch (err) {
-    return { code: 1, objectName, data: err.message };
+    return { code: 1, objectName, data: err.message, dataLength: 0 };
   }
 };
 

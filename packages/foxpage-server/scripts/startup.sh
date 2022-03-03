@@ -21,4 +21,4 @@ cpu=1
 # cd /usr/app
 
 #Start service
-pm2-runtime start dist/app.js --name foxpage-server -i $cpu
+pm2-runtime start dist/index.js --name foxpage -i $cpu

@@ -256,7 +256,7 @@ const Main: React.FC<Props> = props => {
         title="main-view"
         name="main-view"
         id="main-view"
-        src="/environment.html"
+         src={__DEV__ ? '/environment.html' : `/${APP_CONFIG.slug}/dist/environment.html`}
         frameBorder="0"
         scrolling="yes"
         width="100%"

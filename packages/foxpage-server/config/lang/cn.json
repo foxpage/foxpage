@@ -17,7 +17,8 @@
     "resourceUnDeleted": "不能删除应用资源",
     "resourceDuplication": "应用资源名称不能重复",
     "resourceTypeUnEditable": "应用资源类型不能修改",
-    "invalidResourceIds": "无效的应用资源类型ID"
+    "invalidResourceIds": "无效的应用资源类型ID",
+    "invalidLocales": "Locale重复或者无效"
   },
   "user": {
     "namePwdError": "用户名或者密码错误",

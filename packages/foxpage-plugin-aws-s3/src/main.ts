@@ -110,12 +110,15 @@ const S3 = (): FoxpagePlugin<StorageAbstract> => {
        * @param  {string} targetName?
        * @returns Promise
        */
-      storageObjectDownload: async (objectName: string, targetName?: string): Promise<DownloadObjectRes> => {
+      storageObjectDownload: async (
+        objectName: string,
+        options?: { targetName?: string; bucketName?: string },
+      ): Promise<DownloadObjectRes> => {
         return downloadObjectContent(
           s3Client,
-          bucketName,
+          options.bucketName || bucketName,
           objectName,
-          targetName || new Date().getTime() + '',
+          options.targetName || new Date().getTime() + '',
         );
       },
 

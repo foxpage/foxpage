@@ -112,7 +112,7 @@ const FileDrawer: React.FC<ComponentsProps> = props => {
     >
       <Group>
         <Form {...formItemLayout} form={form}>
-          <Form.Item name={file.filePath} label="File Path" rules={[{ required: true }]}>
+          <Form.Item name="filepath" label={file.filePath} rules={[{ required: true }]}>
             <Input />
           </Form.Item>
         </Form>

@@ -1,6 +1,6 @@
 {
   "name": "foxpage",
-  "version": "0.3.1",
+  "version": "0.3.0",
   "private": true,
   "bugs": {
     "url": "https://github.com/foxpage/foxpage/issues"
@@ -22,12 +22,11 @@
   "scripts": {
     "boot": "yarn && lerna bootstrap",
     "start-server:dev": "cd packages/foxpage-server && cross-env NODE_ENV=debug \"ts-node\" index.ts",
-    "start-server:prod": "npm run build-server:prod && cd packages/foxpage-server && cross-env NODE_ENV=development node dist/index.js",
+    "start-server:prod": "npm run build-server:prod && cd packages/foxpage-server && cross-env NODE_ENV=development START_FROM=yarn node dist/index.js",
     "build-server:prod": "cd packages/foxpage-server && cross-env NODE_ENV=production npm run build:prod",
     "init-server:prod": "cd packages/foxpage-server && cross-env NODE_ENV=production node dist/install.js",
     "test-server": "cd packages/foxpage-server && cross-env NODE_ENV=test npm run test",
     "build-admin:prod": "cd packages/foxpage-admin && npm install && npm run build",
-    "release": "standard-version --commitAll",
     "start-admin:prod": "cd packages/foxpage-admin && node server/app-express.js",
     "commit": "git-cz",
     "lint": "eslint --cache --cache-location=.cache/eslint --ext .ts,.tsx --report-unused-disable-directives packages/",
@@ -97,7 +96,7 @@
     "lerna": "^4.0.0",
     "lint-staged": "^11.0.0",
     "prettier": "^1.19.1",
-    "standard-version": "^9.3.2",
+    "standard-version": "^9.3.0",
     "ts-node": "^8.8.1"
   },
   "engines": {

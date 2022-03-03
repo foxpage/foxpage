@@ -7,7 +7,7 @@
   "scripts": {
     "start": "npm run build:prod && cross-env NODE_ENV=development node dist/index.js",
     "dev": "cross-env NODE_ENV=debug \"ts-node\" index.ts",
-    "build:prod": "cross-env NODE_ENV=production tsc --project tsconfig.prod.json",
+    "build:prod": "tsc --project tsconfig.prod.json",
     "build": "cross-env NODE_ENV=development tsc --project tsconfig.dev.json",
     "tsoa": "tsoa swagger",
     "install-server": "node dist/install.js",
@@ -29,6 +29,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.36.0",
     "@foxpage/foxpage-plugin": "^0.1.2",
+    "@foxpage/foxpage-plugin-ares": "^0.1.2",
     "@foxpage/foxpage-plugin-aws-s3": "^0.3.0",
     "@foxpage/foxpage-plugin-unpkg": "^0.3.0",
     "@foxpage/foxpage-server-types": "^0.3.0",

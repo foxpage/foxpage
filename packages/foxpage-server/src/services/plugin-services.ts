@@ -24,7 +24,7 @@ export class PluginService {
 
   private loadPlugins(): void {
     const plugins = createPluginLoader({
-      baseDir: join(process.cwd(), '../../'),
+      baseDir: join(__dirname, process.env.START_FROM === 'yarn' ? '../../../../../' : '../../'),
       plugins: config.plugins || [],
       api: {},
       mode: 3,

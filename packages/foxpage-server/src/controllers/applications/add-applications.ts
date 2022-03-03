@@ -52,6 +52,14 @@ export class AddApplicationDetail extends BaseController {
         }
       }
 
+      // Check locale can not repeat or invalid valid
+      const checkedLocales = _.map(params.locales, (locale) => {
+        return locale.length === 5;
+      });
+      if (_.uniq(checkedLocales).length !== params.locales.length) {
+        return Response.warning(i18n.app.invalidLocales, 2030103);
+      }
+
       // Create application
       const appParams = Object.assign({ id: generationId(PRE.APP) }, params);
       this.service.application.create(appParams, { ctx });

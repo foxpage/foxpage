@@ -17,7 +17,8 @@
     "resourceUnDeleted": "Application resource cannot be deleted",
     "resourceDuplication": "Application resource name cannot be repeated",
     "resourceTypeUnEditable": "Application resource type cannot be modified",
-    "invalidResourceIds": "Invalid Application Resource Type ID"
+    "invalidResourceIds": "Invalid Application Resource Type ID",
+    "invalidLocales": "Invalid or repeat locales"
   },
   "user": {
     "namePwdError": "User name or password is wrong",
