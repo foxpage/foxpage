@@ -119,5 +119,5 @@ export function checkEmail(email: string): boolean {
  * @returns string
  */
 export function formatToPath(name: string): string {
-  return _.replace(_.trim(_.replace(_.toLower(name), /[^0-9a-z]\./g, ' ')), /\s+/g, '-');
+  return _.trim(_.toLower(name).replace(/[^0-9a-z]/g, ' ')).replace(/\s+/g, '-');
 }
