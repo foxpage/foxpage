@@ -31,7 +31,7 @@
     "@foxpage/foxpage-plugin": "^0.1.2",
     "@foxpage/foxpage-plugin-ares": "^0.1.2",
     "@foxpage/foxpage-plugin-aws-s3": "^0.3.0",
-    "@foxpage/foxpage-plugin-unpkg": "^0.3.0",
+    "@foxpage/foxpage-plugin-unpkg": "^0.3.1",
     "@foxpage/foxpage-server-types": "^0.3.0",
     "@foxpage/foxpage-shared": "^0.2.3",
     "@foxpage/foxpage-types": "^0.2.11",

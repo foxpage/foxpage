@@ -63,7 +63,7 @@ export class ResourceService {
    */
   async getResourceGroupLatestVersion(
     groupFolderId: string,
-    options?: { name?: string },
+    options?: { name?: string; packageName?: string },
   ): Promise<NewResourceDetail[]> {
     const config = await this.getGroupConfig(groupFolderId);
     const [remoteGroupResources, localeGroupResources] = await Promise.all([

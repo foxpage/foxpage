@@ -4,7 +4,7 @@ export abstract class ResourceAbstract {
 
 export interface ResourceListOptions {
   type: string;
-  name?: string;
+  packageName?: string;
   resourceConfig?: any;
   groupConfig?: any;
   appConfig?: any;

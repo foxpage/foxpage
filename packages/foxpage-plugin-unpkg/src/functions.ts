@@ -33,16 +33,15 @@ const UNPKG_HOST = 'https://www.unpkg.com/';
  * @param  {{name?:string}} options
  * @returns Promise
  */
-export const searchNpmPackage = async (options: { name?: string }): Promise<NpmRes[]> => {
-  if (!options.name) {
+export const searchNpmPackage = async (options: { packageName?: string }): Promise<NpmRes[]> => {
+  if (!options.packageName) {
     return [];
   }
 
   const { data } = await axios({
     method: 'get',
-    url: 'https://registry.npmjs.com/-/v1/search?text=' + options.name + '&size=20',
+    url: 'https://registry.npmjs.com/-/v1/search?text=' + options.packageName + '&size=20',
   });
-
   return _.map(data.objects || [], (pkg) => _.pick(pkg.package || {}, ['name', 'scope', 'version']));
 };
 

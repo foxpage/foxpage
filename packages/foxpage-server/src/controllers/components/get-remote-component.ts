@@ -58,7 +58,7 @@ export class GetRemoteComponent extends BaseController {
     try {
       // Get remote resource list
       const [resourceList, groupInfo, maxComponentVersion] = await Promise.all([
-        this.service.resource.getResourceGroupLatestVersion(params.groupId),
+        this.service.resource.getResourceGroupLatestVersion(params.groupId, { packageName: params.name }),
         this.service.folder.info.getDetailById(params.groupId),
         this.service.version.list.getMaxVersionByFileIds([params.id]),
       ]);
