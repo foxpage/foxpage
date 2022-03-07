@@ -22,7 +22,7 @@ const mapDispatchToProps = {
 
 type ProjectsProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Projects: React.FC<ProjectsProps> = props => {
+const Projects: React.FC<ProjectsProps> = (props) => {
   const { loading, pageInfo, projects, searchRecycles, clearAll } = props;
 
   const { locale } = useContext(GlobalContext);
@@ -67,13 +67,17 @@ const Projects: React.FC<ProjectsProps> = props => {
       rowKey="id"
       dataSource={projects}
       columns={columns}
-      style={{ marginTop: 44 }}
       pagination={
         pageInfo.total > pageInfo.size
-          ? { position: ['bottomCenter'], current: pageInfo.page, pageSize: pageInfo.size, total: pageInfo.total }
+          ? {
+              position: ['bottomCenter'],
+              current: pageInfo.page,
+              pageSize: pageInfo.size,
+              total: pageInfo.total,
+            }
           : false
       }
-      onChange={pagination => {
+      onChange={(pagination) => {
         searchRecycles({ page: pagination.current, size: pagination.pageSize, search: '' });
       }}
     />

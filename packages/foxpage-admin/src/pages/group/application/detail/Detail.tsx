@@ -19,6 +19,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/settings';
+import { FoxpageDetailContent } from '@/pages/common';
 import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationUrlParams } from '@/types/application';
 
@@ -64,7 +65,7 @@ const mapDispatchToProps = {
 
 type ApplicationDetailProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Detail: React.FC<ApplicationDetailProps> = props => {
+const Detail: React.FC<ApplicationDetailProps> = (props) => {
   const [selectedKeys, setSelectedKeys] = useState<Array<string>>(['files']);
   const history = useHistory();
   const location = useLocation();
@@ -83,7 +84,7 @@ const Detail: React.FC<ApplicationDetailProps> = props => {
         .replace(routeMatch.url, '')
         .replace('/', '')
         .split('/')
-        .filter(item => !!item),
+        .filter((item) => !!item),
     );
   }, [location]);
 
@@ -105,8 +106,7 @@ const Detail: React.FC<ApplicationDetailProps> = props => {
           mode="inline"
           selectedKeys={selectedKeys}
           defaultOpenKeys={['resource']}
-          theme="light"
-        >
+          theme="light">
           <Menu.Item key="dashbroad" icon={<BorderOutlined />}>
             {global.dashboard}
           </Menu.Item>
@@ -123,7 +123,7 @@ const Detail: React.FC<ApplicationDetailProps> = props => {
             {global.variables}
           </Menu.Item>
           <Menu.Item key="condition" icon={<ForkOutlined />}>
-            {global.functions}
+            {global.conditions}
           </Menu.Item>
           <Menu.Item key="resource" icon={<FileTextOutlined />}>
             {global.resources}
@@ -146,16 +146,28 @@ const Detail: React.FC<ApplicationDetailProps> = props => {
             </SubMenu> */}
         </Menu>
       </Sider>
-      <Content style={{ padding: '24px', minHeight: 280, height: '100%', overflow: 'scroll' }}>
+      <FoxpageDetailContent>
         <Switch>
           <Route
             path="/organization/:organizationId/application/:applicationId/detail/page/:fileId/content"
             component={PageContents}
           />
-          <Route path="/organization/:organizationId/application/:applicationId/detail/page" component={Pages} />
-          <Route path="/organization/:organizationId/application/:applicationId/detail/dynamics" component={Versions} />
-          <Route path="/organization/:organizationId/application/:applicationId/detail/dashbroad" component={Files} />
-          <Route path="/organization/:organizationId/application/:applicationId/detail/setting" component={Setting} />
+          <Route
+            path="/organization/:organizationId/application/:applicationId/detail/page"
+            component={Pages}
+          />
+          <Route
+            path="/organization/:organizationId/application/:applicationId/detail/dynamics"
+            component={Versions}
+          />
+          <Route
+            path="/organization/:organizationId/application/:applicationId/detail/dashbroad"
+            component={Files}
+          />
+          <Route
+            path="/organization/:organizationId/application/:applicationId/detail/setting"
+            component={Setting}
+          />
           <Route
             path="/organization/:organizationId/application/:applicationId/detail/template/:fileId/content"
             component={TemplateContents}
@@ -180,7 +192,10 @@ const Detail: React.FC<ApplicationDetailProps> = props => {
             path="/organization/:organizationId/application/:applicationId/detail/resource/:resourceRoot"
             component={ResourceDetail}
           />
-          <Route path="/organization/:organizationId/application/:applicationId/detail/resource" component={Resource} />
+          <Route
+            path="/organization/:organizationId/application/:applicationId/detail/resource"
+            component={Resource}
+          />
           <Route
             path="/organization/:organizationId/application/:applicationId/detail/packages/:fileId/detail"
             component={ComponentDetail}
@@ -196,7 +211,7 @@ const Detail: React.FC<ApplicationDetailProps> = props => {
             to={`/organization/${organizationId}/application/${applicationId}/detail/page`}
           />
         </Switch>
-      </Content>
+      </FoxpageDetailContent>
     </Layout>
   );
 };

@@ -30,7 +30,7 @@ const mapDispatchToProps = {
 
 type TeamListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Main: React.FC<TeamListType> = props => {
+const Main: React.FC<TeamListType> = (props) => {
   const {
     loading,
     list,
@@ -79,12 +79,16 @@ const Main: React.FC<TeamListType> = props => {
               size="small"
               shape="circle"
               title={team.userManagement}
-              onClick={() => updateUserManagementDrawerOpenStatus(true, record)}
-            >
+              onClick={() => updateUserManagementDrawerOpenStatus(true, record)}>
               <TeamOutlined />
             </Button>
             <Divider type="vertical" />
-            <Button type="default" size="small" shape="circle" title={global.edit} onClick={() => openDrawer(record)}>
+            <Button
+              type="default"
+              size="small"
+              shape="circle"
+              title={global.edit}
+              onClick={() => openDrawer(record)}>
               <EditOutlined />
             </Button>
             <Divider type="vertical" />
@@ -94,8 +98,7 @@ const Main: React.FC<TeamListType> = props => {
                 deleteTeam(record);
               }}
               okText={global.yes}
-              cancelText={global.no}
-            >
+              cancelText={global.no}>
               <Button size="small" shape="circle" icon={<DeleteOutlined />} />
             </Popconfirm>
           </React.Fragment>
@@ -111,9 +114,8 @@ const Main: React.FC<TeamListType> = props => {
           type="primary"
           onClick={() => {
             openDrawer();
-          }}
-        >
-          <PlusOutlined /> Add Team
+          }}>
+          <PlusOutlined /> {team.add}
         </Button>
       </div>
       <Table
@@ -126,7 +128,7 @@ const Main: React.FC<TeamListType> = props => {
             ? { current: pageInfo.page, pageSize: pageInfo.size, total: pageInfo.total }
             : false
         }
-        onChange={pagination => {
+        onChange={(pagination) => {
           fetchTeamList({ organizationId, page: pagination.current || 1, size: pagination.pageSize || 10 });
         }}
       />

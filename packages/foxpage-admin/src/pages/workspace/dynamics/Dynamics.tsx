@@ -16,9 +16,8 @@ import periodFormat from '@/utils/period-format';
 const { Step: AntdStep } = Steps;
 
 const Container = styled.div`
-  position: relative;
-  max-width: 800px;
-  margin: 44px auto 0;
+  height: 100%;
+  min-height: 680px;
 `;
 
 const Step = styled(AntdStep)`
@@ -47,7 +46,7 @@ const mapDispatchToProps = {
 
 type DynamicProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Dynamics: React.FC<DynamicProps> = props => {
+const Dynamics: React.FC<DynamicProps> = (props) => {
   const { loading, pageInfo, dynamics, searchDynamics, clearAll } = props;
 
   const { locale } = useContext(GlobalContext);
@@ -61,69 +60,61 @@ const Dynamics: React.FC<DynamicProps> = props => {
   }, []);
 
   return (
-    <Container>
-      <Steps progressDot current={dynamics.length} direction="vertical">
-        {dynamics.map((dynamic: Dynamic) => {
-          const { realMethod, name, user, applicationName, originUrl } = dynamic.content;
-          return (
-            <Step
-              key={dynamic.id}
-              title={periodFormat(dynamic.createTime, 'unknown')}
-              subTitle={
-                <>
-                  {name && (
-                    <>
-                      {realMethod === dynamicType.delete || !originUrl ? (
-                        <div>{name}</div>
-                      ) : (
-                        <Link to={originUrl.replace('/#', '')}>{name}</Link>
-                      )}
+    <Spin spinning={loading}>
+      <Container>
+        <Steps progressDot current={dynamics.length} direction="vertical">
+          {dynamics.map((dynamic: Dynamic) => {
+            const { realMethod, name, user, applicationName, originUrl } = dynamic.content;
+            return (
+              <Step
+                key={dynamic.id}
+                title={periodFormat(dynamic.createTime, 'unknown')}
+                subTitle={
+                  <>
+                    {name && (
+                      <>
+                        {realMethod === dynamicType.delete || !originUrl ? (
+                          <div>{name}</div>
+                        ) : (
+                          <Link to={originUrl.replace('/#', '')}>{name}</Link>
+                        )}
+                        <div>
+                          {global.user}：{user}
+                        </div>
+                      </>
+                    )}
+                  </>
+                }
+                description={
+                  <>
+                    {applicationName && (
                       <div>
-                        {global.user}：{user}
+                        {global.application}：{applicationName}
                       </div>
-                    </>
-                  )}
-                </>
-              }
-              description={
-                <>
-                  {applicationName && (
-                    <div>
-                      {global.application}：{applicationName}
-                    </div>
-                  )}
+                    )}
 
-                  <div>
-                    {global.type}：<Tag color={suffixTagColor[realMethod]}>{global[dynamicType[realMethod]]}</Tag>
-                  </div>
-                </>
-              }
-            />
-          );
-        })}
-      </Steps>
-      <Pagination
-        style={{ textAlign: 'center' }}
-        current={pageInfo.page}
-        total={pageInfo.total}
-        pageSize={pageInfo.size}
-        hideOnSinglePage
-        onChange={(page, pageSize) => {
-          searchDynamics({ page, size: pageSize, search: '' });
-        }}
-      />
-      {loading && (
-        <Spin
-          style={{
-            padding: 48,
-            position: 'absolute',
-            left: '50%',
-            top: 0,
+                    <div>
+                      {global.type}：
+                      <Tag color={suffixTagColor[realMethod]}>{global[dynamicType[realMethod]]}</Tag>
+                    </div>
+                  </>
+                }
+              />
+            );
+          })}
+        </Steps>
+        <Pagination
+          style={{ textAlign: 'center' }}
+          current={pageInfo.page}
+          total={pageInfo.total}
+          pageSize={pageInfo.size}
+          hideOnSinglePage
+          onChange={(page, pageSize) => {
+            searchDynamics({ page, size: pageSize, search: '' });
           }}
-          spinning={true}
         />
-      )}
-    </Container>
+      </Container>
+    </Spin>
   );
 };
 

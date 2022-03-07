@@ -24,7 +24,7 @@ const mapDispatchToProps = {
 
 type ProjectProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Project: React.FC<ProjectProps> = props => {
+const Project: React.FC<ProjectProps> = (props) => {
   const { pageInfo = { page: 1, size: 10 }, fetchProjectList, openDrawer, clearAll } = props;
 
   const { locale } = useContext(GlobalContext);

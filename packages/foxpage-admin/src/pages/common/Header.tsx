@@ -19,6 +19,7 @@ const StyledLink = styled(Link)`
   color: #fff;
   text-decoration: none;
   user-select: none;
+  display: contents;
 `;
 
 const Logo = styled.div`
@@ -63,6 +64,9 @@ const NavLinkContent = styled(NavLink)`
 const User = styled.div`
   position: absolute;
   right: 16px;
+  height: 48px;
+  display: flex;
+  align-items: center;
 `;
 
 const UserName = styled.div`
@@ -88,8 +92,9 @@ const LocaleItem = styled.div`
   margin-right: 24px;
   color: #000000d9;
   border: 1px solid #d9d9d9;
-  line-height: 20px;
-  padding: 2px 12px;
+  line-height: 16px;
+  font-size: 12px;
+  padding: 2px 4px;
   border-radius: 4px;
   transition: all 0.3s;
   &:hover {
@@ -124,10 +129,12 @@ const FoxpageHeader = () => {
         backgroundColor: '#Fff',
         display: 'flex',
         boxShadow: 'rgb(100 100 100 / 20%) 0px 2px 3px 0px',
-        zIndex: 100,
+        zIndex: 500,
         padding: 0,
-      }}
-    >
+        height: 48,
+        position: 'fixed',
+        width: '100%',
+      }}>
       <Logo key="foxpage-logo">
         <StyledLink to={`/organization/${organizationId}/projects`}>
           <img
@@ -143,9 +150,12 @@ const FoxpageHeader = () => {
       <MainNav>
         <NavItem>
           <NavLinkContent
-            activeStyle={{ color: '#212121 !important', textDecoration: 'none !important', fontWeight: 'bold' }}
-            to={`/organization/${organizationId}/projects`}
-          >
+            activeStyle={{
+              color: '#212121 !important',
+              textDecoration: 'none !important',
+              fontWeight: 'bold',
+            }}
+            to={`/organization/${organizationId}/projects`}>
             {organization.name}
           </NavLinkContent>
         </NavItem>
@@ -159,15 +169,20 @@ const FoxpageHeader = () => {
         </NavItem> */}
         <NavItem>
           <NavLinkContent
-            activeStyle={{ color: '#212121 !important', textDecoration: 'none !important', fontWeight: 'bold' }}
-            to="/store"
-          >
+            activeStyle={{
+              color: '#212121 !important',
+              textDecoration: 'none !important',
+              fontWeight: 'bold',
+            }}
+            to="/store">
             {store.name}
           </NavLinkContent>
         </NavItem>
       </MainNav>
       <User>
-        <LocaleItem onClick={handleLocaleChange}>{locale.locale === ZH_CN_STRING ? 'English' : '简体中文'}</LocaleItem>
+        <LocaleItem onClick={handleLocaleChange}>
+          {locale.locale === ZH_CN_STRING ? 'English' : '简体中文'}
+        </LocaleItem>
         <Avatar size={28} icon={<UserOutlined />} />
         <Dropdown
           trigger={['click']}
@@ -178,8 +193,7 @@ const FoxpageHeader = () => {
                 {login.loginOut}
               </Menu.Item>
             </Menu>
-          }
-        >
+          }>
           <UserName>
             <span className="user-account">{userInfo?.account}</span>
             <DownOutlined />

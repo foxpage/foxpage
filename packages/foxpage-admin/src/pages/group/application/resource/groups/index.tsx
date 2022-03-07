@@ -37,6 +37,7 @@ const GroupCard = styled(Card)`
   display: inline-block;
   width: 100%;
   text-align: center;
+  background-color: #fafafa;
   :hover .foxpage-group-card-operate {
     display: block;
   }
@@ -126,7 +127,10 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
     <div>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: applicationI18n.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          {
+            name: applicationI18n.applicationList,
+            link: `/#/organization/${organizationId}/application/list`,
+          },
           { name: resource.resourceGroup },
         ]}
       />
@@ -142,15 +146,15 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
           </LoadingBox>
         ) : groupList && groupList.length > 0 ? (
           <Row gutter={[16, 16]}>
-            {groupList.map(group => {
-              const resourceId = group.tags?.find?.(item => item.type === FileTagType.ResourceGroup)?.resourceId;
-              const resource = application?.resources?.find(item => item.id === resourceId);
+            {groupList.map((group) => {
+              const resourceId = group.tags?.find?.((item) => item.type === FileTagType.ResourceGroup)
+                ?.resourceId;
+              const resource = application?.resources?.find((item) => item.id === resourceId);
               const ribbonText = resource?.name;
               return (
                 <Col {...ColAutoSpan} key={group.id}>
                   <Link
-                    to={`/organization/${organizationId}/application/${applicationId}/detail/resource/${group.folderPath}`}
-                  >
+                    to={`/organization/${organizationId}/application/${applicationId}/detail/resource/${group.folderPath}`}>
                     <Badge.Ribbon text={ribbonText || 'No Type'} color={ribbonText ? '' : 'red'}>
                       <GroupCard hoverable>
                         <OperateGroup className="foxpage-group-card-operate">
@@ -160,7 +164,7 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
                             shape="circle"
                             icon={<EditOutlined />}
                             style={{ marginRight: 4 }}
-                            onClick={e => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
                               editGroup(group);
@@ -171,7 +175,7 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
                             size="small"
                             shape="circle"
                             icon={<DeleteOutlined />}
-                            onClick={e => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
                               onDeleteGroup(group.id);

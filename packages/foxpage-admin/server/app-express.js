@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 
 
 // health check
-app.get(`/${slug}/healthcheck`, (req, res) => {
+app.get(`${slug}/healthcheck`, (req, res) => {
   res.send('OK');
 });
 
@@ -47,13 +47,13 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 
-app.get(`/${slug}/`, (req, res) => {
+app.get(`${slug}/`, (req, res) => {
   const data = fs.readFileSync(`${__dirname}/../dist/index.html`, 'utf8');
   res.send(data.replace('{{APP_CONFIG}}', JSON.stringify(config[ENV])));
 });
 
 // static file serve
-app.use(`/${slug}/dist`, express.static(path.join(__dirname, '../dist')));
+app.use(`${slug}/dist`, express.static(path.join(__dirname, '../dist')));
 
 
 // start up

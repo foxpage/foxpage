@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 
 import { EyeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Card, Checkbox, Col, Empty, Layout, Pagination, Row, Spin, Tabs } from 'antd';
+import { Card, Checkbox, Col, Empty, Pagination, Row, Spin, Tabs } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -16,15 +16,21 @@ import BuyModal from './buy/BuyModal';
 import PreviewModal from './preview/PreviewModal';
 import SelectTool from './SelectTool';
 
-const { Content } = Layout;
 const { TabPane } = Tabs;
 const { Meta } = Card;
 
-const StyledLayout = styled(Layout)`
-  height: 100%;
+const StyledLayout = styled.div`
+  background-color: #fff;
   max-width: 1136px;
   margin: 0 auto;
-  width: 100%;
+  margin-top: 24px;
+  min-height: 680px;
+`;
+
+const Content = styled.div`
+  padding: 24px;
+  max-width: 1136px;
+  margin: 0 auto;
 `;
 
 const FileName = styled.div`
@@ -60,7 +66,7 @@ const mapDispatchToProps = {
 
 type StoreResourceProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Store: React.FC<StoreResourceProps> = props => {
+const Store: React.FC<StoreResourceProps> = (props) => {
   const {
     loading,
     pageInfo,
@@ -91,7 +97,7 @@ const Store: React.FC<StoreResourceProps> = props => {
     };
   }, []);
 
-  const handleTabsChange = data => {
+  const handleTabsChange = (data) => {
     updateSelectedAppIds([]);
     updateSearchText('');
     updateType(data);
@@ -107,7 +113,10 @@ const Store: React.FC<StoreResourceProps> = props => {
   const handleBuyClick = (e, item) => {
     e.preventDefault();
     e.stopPropagation();
-    updateBuyModalVisible(true, type === FileTypeEnum.package ? [item.id] : item.files.map(item => item.id));
+    updateBuyModalVisible(
+      true,
+      type === FileTypeEnum.package ? [item.id] : item.files.map((item) => item.id),
+    );
   };
 
   const PageContent = useMemo(() => {
@@ -115,13 +124,13 @@ const Store: React.FC<StoreResourceProps> = props => {
     const resource = isPageOrTemplate ? projectResourceList : packageResourceList;
     return (
       <Spin spinning={loading}>
-        <Row gutter={16} style={{ minHeight: 24, paddingBottom: 24 }}>
+        <Row gutter={16} style={{ minHeight: 24, paddingBottom: 24, marginLeft: 4, marginRight: 4 }}>
           {resource?.length > 0 &&
-            resource.map(resource => {
+            resource.map((resource) => {
               const actions = [
                 <Checkbox checked={resource.checked} />,
                 <ShoppingCartOutlined
-                  onClick={e => {
+                  onClick={(e) => {
                     handleBuyClick(e, resource);
                   }}
                 />,
@@ -131,7 +140,7 @@ const Store: React.FC<StoreResourceProps> = props => {
                   1,
                   0,
                   <EyeOutlined
-                    onClick={e => {
+                    onClick={(e) => {
                       handleClickView(e, resource);
                     }}
                   />,
@@ -147,18 +156,22 @@ const Store: React.FC<StoreResourceProps> = props => {
                         : updatePackageResourceItemChecked(resource.id);
                     }}
                     cover={
-                      isPageOrTemplate ? <img alt="example" src={getImageUrlByEnv('/images/placeholder.png')} /> : null
+                      isPageOrTemplate ? (
+                        <img alt="example" src={getImageUrlByEnv('/images/placeholder.png')} />
+                      ) : null
                     }
                     actions={actions}
                     style={{ marginBottom: 12 }}
                     hoverable
-                    bordered
-                  >
-                    <Meta title={resource.name} description={`${global.application}: ${resource.application.name}`} />
+                    bordered>
+                    <Meta
+                      title={resource.name}
+                      description={`${global.application}: ${resource.application.name}`}
+                    />
                     {isPageOrTemplate && (
                       <FileName>
                         {file.name}:
-                        {resource.files.map(item => {
+                        {resource.files.map((item) => {
                           return <span style={{ marginLeft: 6 }}>{item.name}</span>;
                         })}
                       </FileName>
@@ -202,8 +215,13 @@ const Store: React.FC<StoreResourceProps> = props => {
 
   return (
     <StyledLayout>
-      <Content style={{ padding: '24px', minHeight: 280 }}>
-        <Tabs centered size="large" destroyInactiveTabPane defaultActiveKey="page" onChange={handleTabsChange}>
+      <Content>
+        <Tabs
+          centered
+          size="large"
+          destroyInactiveTabPane
+          defaultActiveKey="page"
+          onChange={handleTabsChange}>
           <TabPane tab={file.page} key={FileTypeEnum.page}>
             {PaneContent}
           </TabPane>

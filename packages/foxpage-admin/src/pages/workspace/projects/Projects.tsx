@@ -30,7 +30,7 @@ const mapDispatchToProps = {
 
 type ProjectsProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Projects: React.FC<ProjectsProps> = props => {
+const Projects: React.FC<ProjectsProps> = (props) => {
   const { loading, pageInfo, projects, searchMyProjects, clearAll, openDrawer } = props;
 
   const { organizationId } = useParams<OrganizationUrlParams>();
@@ -53,13 +53,13 @@ const Projects: React.FC<ProjectsProps> = props => {
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ marginBottom: 12, marginRight: 8, display: 'flex', justifyContent: 'flex-end' }}>
         <Button type="primary" onClick={openDrawer}>
           <PlusOutlined /> {project.add}
         </Button>
       </div>
       <Row gutter={16} style={{ minHeight: 24, paddingBottom: 24, maxWidth: 1136, margin: '0 auto' }}>
-        {projects.map(project => {
+        {projects.map((project) => {
           return (
             <Col span={6} key={project.id}>
               <Card
@@ -73,9 +73,11 @@ const Projects: React.FC<ProjectsProps> = props => {
                 cover={<img alt="example" src={getImageUrlByEnv('/images/placeholder.png')} />}
                 style={{ marginBottom: 12 }}
                 hoverable
-                bordered
-              >
-                <Meta title={project.name} description={`${global.application}: ${project.application.name}`} />
+                bordered>
+                <Meta
+                  title={project.name}
+                  description={`${global.application}: ${project.application.name}`}
+                />
               </Card>
             </Col>
           );

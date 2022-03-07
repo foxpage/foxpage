@@ -15,6 +15,7 @@ import styled from 'styled-components';
 
 import { getLoginUser } from '@/utils/login-user';
 
+import { FoxpageDetailContent } from '../common';
 import GlobalContext from '../GlobalContext';
 import Dynamics from '../workspace/dynamics';
 import Projects from '../workspace/projects';
@@ -65,7 +66,7 @@ const Group = () => {
         .replace(routeMatch.url, '')
         .replace('/', '')
         .split('/')
-        .filter(item => !!item),
+        .filter((item) => !!item),
     );
   }, [location]);
 
@@ -112,7 +113,7 @@ const Group = () => {
           {/* <OrganizationName>Manifests</OrganizationName> */}
         </Menu>
       </Sider>
-      <Content style={{ padding: 24, minHeight: 280, height: '100%', overflow: 'scroll' }}>
+      <FoxpageDetailContent>
         <Switch>
           <Route
             path="/organization/:organizationId/projects/:applicationId/folder/:folderId/file/:fileId/content"
@@ -144,7 +145,7 @@ const Group = () => {
           />
           <Redirect from="/organization" to={`/organization/${organizationId}/projects`} />
         </Switch>
-      </Content>
+      </FoxpageDetailContent>
     </Layout>
   );
 };

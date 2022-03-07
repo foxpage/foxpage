@@ -3,7 +3,8 @@ const getImageUrlByEnv = (link: string) => {
     return '';
   }
 
-  return __DEV__ ? `${link}` : `/${APP_CONFIG.slug}/dist${link}`;
+  // @ts-ignore
+  return __DEV__ ? `${link}` : `${APP_CONFIG.slug}/dist${link}`;
 };
 
 export default getImageUrlByEnv;

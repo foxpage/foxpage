@@ -46,7 +46,7 @@ const iconStyle = {
   cursor: 'pointer',
 };
 
-const cloneApplication = application => {
+const cloneApplication = (application) => {
   return Object.assign({}, application);
 };
 
@@ -65,7 +65,7 @@ const mapDispatchToProps = {
 
 type SettingType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Main: React.FC<SettingType> = props => {
+const Main: React.FC<SettingType> = (props) => {
   const { applicationId, organizationId } = useParams<ContentUrlParams>();
   const { locale } = useContext(GlobalContext);
   const { global, setting, resource: resourceI18n, application: applicationI18n } = locale.business;
@@ -120,7 +120,7 @@ const Main: React.FC<SettingType> = props => {
       if (locale) {
         const array = locale.split('-');
         if (array.length === 2) {
-          const exist = newRegion.find(item => item.name === array[1]);
+          const exist = newRegion.find((item) => item.name === array[1]);
           if (exist) {
             exist.languages.push(array[0]);
           } else {
@@ -212,15 +212,18 @@ const Main: React.FC<SettingType> = props => {
     <React.Fragment>
       <FoxpageBreadcrumb
         breadCrumb={[
-          { name: applicationI18n.applicationList, link: `/#/organization/${organizationId}/application/list` },
+          {
+            name: applicationI18n.applicationList,
+            link: `/#/organization/${organizationId}/application/list`,
+          },
           { name: global.setting },
         ]}
       />
-      <Spin tip="Loading" spinning={loading}>
+      <Spin spinning={loading}>
         <div style={{ marginTop: 12 }}>
           <Row>
             <Col span={6}>
-              <Title level={3} type="secondary" style={{ textAlign: 'right' }}>
+              <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
                 {setting.basicInfo}
               </Title>
             </Col>
@@ -232,7 +235,7 @@ const Main: React.FC<SettingType> = props => {
             <Col span={10}>
               <Input
                 value={editApplication?.name}
-                onChange={e => {
+                onChange={(e) => {
                   handleUpdate('name', e.target.value);
                 }}
               />
@@ -245,7 +248,7 @@ const Main: React.FC<SettingType> = props => {
             <Col span={10}>
               <Input
                 value={editApplication?.intro}
-                onChange={e => {
+                onChange={(e) => {
                   handleUpdate('intro', e.target.value);
                 }}
               />
@@ -253,7 +256,7 @@ const Main: React.FC<SettingType> = props => {
           </Row>
           <Row>
             <Col span={6}>
-              <Title level={3} type="secondary" style={{ textAlign: 'right' }}>
+              <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
                 {setting.accessControl}
               </Title>
             </Col>
@@ -266,7 +269,7 @@ const Main: React.FC<SettingType> = props => {
             <Col span={10}>
               <Input
                 value={editApplication?.host?.length ? editApplication?.host[0] : ''}
-                onChange={e => {
+                onChange={(e) => {
                   handleUpdate('host', [e.target.value]);
                 }}
               />
@@ -279,7 +282,7 @@ const Main: React.FC<SettingType> = props => {
             <Col span={10}>
               <Input
                 value={editApplication?.slug}
-                onChange={e => {
+                onChange={(e) => {
                   handleUpdate('slug', e.target.value);
                 }}
               />
@@ -287,7 +290,7 @@ const Main: React.FC<SettingType> = props => {
           </Row>
           <Row>
             <Col span={6}>
-              <Title level={3} type="secondary" style={{ textAlign: 'right' }}>
+              <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
                 {global.locale}
               </Title>
             </Col>
@@ -295,19 +298,18 @@ const Main: React.FC<SettingType> = props => {
           <Row>
             <Col span={18} offset={6}>
               {editApplication?.localeObjects?.map((locale, index) => {
-                const languages = region.find(item => item.name === locale.region)?.languages;
+                const languages = region.find((item) => item.name === locale.region)?.languages;
                 return (
                   <Row key={`${locale.region}${locale.language}`}>
-                    <Col span={24}>
+                    <Col span={25}>
                       <span style={{ marginRight: 12 }}>{setting.region}</span>
                       <Select
                         value={locale.region}
                         style={{ width: 120 }}
-                        onChange={val => {
+                        onChange={(val) => {
                           handleUpdateLocale(index, { region: val, language: locale.language });
-                        }}
-                      >
-                        {region.map(item => (
+                        }}>
+                        {region.map((item) => (
                           <Option key={item.name} value={item.name}>
                             {item.name}
                           </Option>
@@ -317,11 +319,10 @@ const Main: React.FC<SettingType> = props => {
                       <Select
                         style={{ width: 120 }}
                         value={locale.language}
-                        onChange={val => {
+                        onChange={(val) => {
                           handleUpdateLocale(index, { region: locale.region, language: val });
-                        }}
-                      >
-                        {languages?.map(item => (
+                        }}>
+                        {languages?.map((item) => (
                           <Option key={item} value={item}>
                             {item}
                           </Option>
@@ -345,7 +346,10 @@ const Main: React.FC<SettingType> = props => {
               })}
             </Col>
             <Col span={10} offset={6}>
-              <Button type="dashed" onClick={() => handleAddLocale(editApplication?.localeObjects?.length || 0)} block>
+              <Button
+                type="dashed"
+                onClick={() => handleAddLocale(editApplication?.localeObjects?.length || 0)}
+                block>
                 <PlusOutlined style={{ marginRight: 8, cursor: 'pointer' }} />
                 {applicationI18n.addLocale}
               </Button>
@@ -353,7 +357,7 @@ const Main: React.FC<SettingType> = props => {
           </Row>
           <Row>
             <Col span={6}>
-              <Title level={3} type="secondary" style={{ textAlign: 'right' }}>
+              <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
                 {setting.resource}
               </Title>
             </Col>
@@ -367,7 +371,7 @@ const Main: React.FC<SettingType> = props => {
                     <Input
                       value={resource.name}
                       style={{ width: 200 }}
-                      onChange={e => {
+                      onChange={(e) => {
                         handleUpdateResource(index, 'name', e.target.value);
                       }}
                     />
@@ -375,11 +379,10 @@ const Main: React.FC<SettingType> = props => {
                     <Select
                       style={{ width: 200 }}
                       value={resource.type}
-                      onChange={val => {
+                      onChange={(val) => {
                         handleUpdateResource(index, 'type', val);
-                      }}
-                    >
-                      {ResourceTypeArray?.map(item => (
+                      }}>
+                      {ResourceTypeArray?.map((item) => (
                         <Option key={item.type} value={item.type}>
                           {resourceI18n[item.label]}
                         </Option>
@@ -390,7 +393,7 @@ const Main: React.FC<SettingType> = props => {
                     <Input
                       value={resource.detail.host}
                       style={{ width: 200 }}
-                      onChange={e => {
+                      onChange={(e) => {
                         handleUpdateResource(index, 'detail', {
                           host: e.target.value,
                           downloadHost: resource.detail.downloadHost,
@@ -401,7 +404,7 @@ const Main: React.FC<SettingType> = props => {
                     <Input
                       value={resource.detail.downloadHost}
                       style={{ width: 200 }}
-                      onChange={e => {
+                      onChange={(e) => {
                         handleUpdateResource(index, 'detail', {
                           downloadHost: e.target.value,
                           host: resource.detail.host,
@@ -426,7 +429,10 @@ const Main: React.FC<SettingType> = props => {
               })}
             </Col>
             <Col span={10} offset={6}>
-              <Button type="dashed" onClick={() => handleAddResource(editApplication?.resources?.length || 0)} block>
+              <Button
+                type="dashed"
+                onClick={() => handleAddResource(editApplication?.resources?.length || 0)}
+                block>
                 <PlusOutlined style={{ marginRight: 8, cursor: 'pointer' }} />
                 {applicationI18n.addResource}
               </Button>

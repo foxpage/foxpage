@@ -20,7 +20,8 @@
     "packages/*"
   ],
   "scripts": {
-    "boot": "yarn && lerna bootstrap",
+    "build": "lerna run build",
+    "boot": "yarn && lerna bootstrap && yarn build",
     "start-server:dev": "cd packages/foxpage-server && cross-env NODE_ENV=debug \"ts-node\" index.ts",
     "start-server:prod": "npm run build-server:prod && cd packages/foxpage-server && cross-env NODE_ENV=development START_FROM=yarn node dist/index.js",
     "build-server:prod": "cd packages/foxpage-server && cross-env NODE_ENV=production npm run build:prod",
@@ -100,7 +101,6 @@
     "ts-node": "^8.8.1"
   },
   "engines": {
-    "node": ">=14.15.1 <=16.x.x",
     "npm": ">=6.14.x"
   }
 }

@@ -3,10 +3,12 @@ const getLinkByEnv = (link: string) => {
     return '';
   }
 
+  // @ts-ignore
   if (__DEV__) {
     return link.includes('#') ? `${link}` : `/#${link}`;
   }
-  return link.includes('#') ? `/${APP_CONFIG.slug}${link}` : `/${APP_CONFIG.slug}/#${link}`;
+  // @ts-ignore
+  return link.includes('#') ? `${APP_CONFIG.slug}${link}` : `${APP_CONFIG.slug}/#${link}`;
 };
 
 export default getLinkByEnv;

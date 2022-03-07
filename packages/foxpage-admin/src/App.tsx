@@ -13,6 +13,4 @@ const App = () => (
   </Provider>
 );
 
-// export default withRoot(App);
-
 export default App;

@@ -108,6 +108,8 @@ dist
 package-lock.json
 *.lock
 dist/
+lib/
+
 /.npmrc
 /lerna-log.json
 /yarn-error.json
@@ -116,9 +118,6 @@ dist/
 /packages/foxpage-server/src/third-parties/login/trip-login.ts
 /packages/foxpage-server/static/swagger/swagger.json
 /packages/foxpage-server.npmrc
-/packages/foxpage-plugin-aws-s3/lib/*
-/packages/foxpage-plugin-ares/lib
-/packages/foxpage-plugin-unpkg/lib
 /packages/foxpage-server/src/controllers/users/keys.ts
 /packages/foxpage-server/src/controllers/users/generate-keys.ts
 /.VSCodeCounter
