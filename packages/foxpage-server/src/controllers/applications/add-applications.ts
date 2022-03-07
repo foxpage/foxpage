@@ -53,10 +53,11 @@ export class AddApplicationDetail extends BaseController {
       }
 
       // Check locale can not repeat or invalid valid
-      const checkedLocales = _.map(params.locales, (locale) => {
-        return locale.length === 5;
+      let checkedLocales: string[] = [];
+      _.map(params.locales || [], (locale) => {
+        locale.length === 5 && checkedLocales.push(locale);
       });
-      if (_.uniq(checkedLocales).length !== params.locales.length) {
+      if (_.uniq(checkedLocales).length !== (params.locales || []).length) {
         return Response.warning(i18n.app.invalidLocales, 2030103);
       }
 
