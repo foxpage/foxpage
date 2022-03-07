@@ -34,7 +34,9 @@ import {
   UPDATE_EDITOR_VALUE,
   UPDATE_SELECT_COMPONENT_LABEL,
   UPDATE_WRAPPER_PROPS,
- viewModelHeight, viewModelWidth } from './constant';
+  viewModelHeight,
+  viewModelWidth,
+} from './constant';
 
 interface IProps {
   containerStyle?: CSSProperties;
@@ -74,7 +76,7 @@ const mapDispatchToProps = {
 
 type Props = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
 
-const Main: React.FC<Props> = props => {
+const Main: React.FC<Props> = (props) => {
   const {
     zoom = 1,
     applicationId,
@@ -106,7 +108,7 @@ const Main: React.FC<Props> = props => {
   } = props;
   const [frameWindow, setFrameWindow] = useState<Window | undefined>();
   const { locale } = useContext(GlobalContext);
-  const messageListener = event => {
+  const messageListener = (event) => {
     const { data } = event;
     const { type } = data;
     switch (type) {
@@ -115,7 +117,7 @@ const Main: React.FC<Props> = props => {
         if (noResourceComponentName.length > 0) {
           Modal.warning({
             title: 'Please add these component to your application',
-            content: noResourceComponentName.map(name => <p>{name}</p>),
+            content: noResourceComponentName.map((name) => <p>{name}</p>),
           });
         }
         updateLoadingStatus(false);
@@ -235,7 +237,7 @@ const Main: React.FC<Props> = props => {
     }
   }, [frameWindow, locale]);
 
-  const handleFrameLoad = event => {
+  const handleFrameLoad = (event) => {
     const iframeWindow = event.target.contentWindow;
     setFrameWindow(iframeWindow);
   };
@@ -256,7 +258,8 @@ const Main: React.FC<Props> = props => {
         title="main-view"
         name="main-view"
         id="main-view"
-         src={__DEV__ ? '/environment.html' : `/${APP_CONFIG.slug}/dist/environment.html`}
+        // @ts-ignore
+        src={__DEV__ ? '/environment.html' : `${APP_CONFIG.slug}/dist/environment.html`}
         frameBorder="0"
         scrolling="yes"
         width="100%"
