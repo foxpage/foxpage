@@ -10,14 +10,14 @@ try {
     // check server has init
     const [orgList, userList] = await Promise.all([Service.org.getList({}), Service.user.getList({})]);
     if (orgList.length > 0 || userList.length > 0) {
-      throw new Error('System has installed, please check to empty database and retry');
+      console.error('System has installed, please check to empty database and retry');
+    } else {
+      const result = await setupSql();
+
+      console.log(
+        `Init server success, default user account is ${result.accountPwd}, password is ${result.accountPwd}`,
+      );
     }
-
-    const result = await setupSql();
-
-    console.log(
-      `Init server success, default user account is ${result.accountPwd}, password is ${result.accountPwd}`,
-    );
 
     process.exit(0);
   };

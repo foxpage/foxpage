@@ -11,7 +11,7 @@ export default {
     '/users/register',
     '/healthcheck',
   ], // Skip to verify the interface of the token
-  mongodb: mongoConfig || 'mongodb://127.0.0.1:45201/test?retryWrites=false', // Database connection string
+  mongodb: mongoConfig || 'mongodb://127.0.0.1:27017/test?retryWrites=false', // Database connection string
   locale: 'en', // Current language
   plugins: ['@foxpage/foxpage-plugin-unpkg'],
   allLocales: ['en-US', 'zh-HK', 'en-HK', 'ko-KR', 'ja-JP'], // Supported locales
