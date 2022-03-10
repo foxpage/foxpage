@@ -121,3 +121,4 @@ lib/
 /packages/foxpage-server/src/controllers/users/keys.ts
 /packages/foxpage-server/src/controllers/users/generate-keys.ts
 /.VSCodeCounter
+/packages/foxpage-plugin-aws-s3

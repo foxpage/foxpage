@@ -14,7 +14,7 @@ export abstract class StorageAbstract {
   ): Promise<any>;
   abstract storageObjectDownload(
     objectKey: string,
-    options?: { targetKey?: string; bucketName: string },
+    options?: { targetName?: string; bucketName: string },
   ): Promise<DownloadObjectRes>;
   abstract storageObjectDelete(objectKey: string): Promise<any>;
   abstract storageObjectContent(objectKey: string): Promise<any>;
@@ -26,6 +26,7 @@ export abstract class StorageAbstract {
   ): Promise<Record<string, number | string | Buffer | string[]>>;
   abstract storageZipFolders(source: string, target: string): Promise<Record<string, any>>;
   abstract storageZipFileContent(target: string): Buffer;
+  abstract storageCopyObject(options: StorageCopyOptions): Promise<any>;
 }
 
 export interface StorageListOptions {
@@ -46,4 +47,11 @@ export interface DownloadObjectRes {
   objectName: string;
   data: string;
   dataLength?: number;
+}
+
+export interface StorageCopyOptions {
+  sourceBucket?: string;
+  sourceKey: string;
+  targetBucket: string;
+  targetKey: string;
 }
