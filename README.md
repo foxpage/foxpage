@@ -9,7 +9,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/node-%3E%3D14.15.1-brightgreen" alt="Node Version" />
-  <img src="https://img.shields.io/badge/typescript-%3E%3D4.3.0-brightgreen" alt="Typescript Version" />
+  <img src="https://badgen.net/badge/typescript/%3E=4.3.0" alt="Typescript Version" />
   <img src="https://img.shields.io/badge/yarn-1.22.5-blue" alt="Yarn Version" />
   <img src="https://img.shields.io/badge/npm-%3E%3D6.14.x-blue" alt="NPM Version" />
 </p>
