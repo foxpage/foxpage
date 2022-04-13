@@ -37,7 +37,7 @@ export class SetPageVersionStatus extends BaseController {
 
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.PAGE });
-      const hasAuth = await this.service.auth.version(params.id, { ctx });
+      const hasAuth = await this.service.auth.version(params.id, { ctx, mask: 4 });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051601);
       }

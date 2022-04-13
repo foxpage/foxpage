@@ -45,6 +45,11 @@ export class AddProjectDetail extends BaseController {
     }
 
     try {
+      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4040203);
+      }
+
       const folderDetail: Folder = Object.assign(_.omit(params, 'path'), {
         id: generationId(PRE.FOLDER),
         parentFolderId: '',

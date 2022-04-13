@@ -35,7 +35,7 @@ export class SetVariableLiveVersions extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentLiveReq): Promise<ResData<Content>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.VARIABLE });
-      const hasAuth = await this.service.auth.content(params.id, { ctx });
+      const hasAuth = await this.service.auth.content(params.id, { ctx, mask: 8 });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4080901);
       }

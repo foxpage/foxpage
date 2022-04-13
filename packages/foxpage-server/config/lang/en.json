@@ -20,6 +20,16 @@
     "invalidResourceIds": "Invalid Application Resource Type ID",
     "invalidLocales": "Invalid or repeat locales"
   },
+  "auth": {
+    "addAuthorizeDetailSuccess": "Create user authorized success",
+    "addAuthorizedFailed": "Create user authorized failed",
+    "updateAuthorizeDetailSuccess": "Update user authorized success",
+    "updateAuthorizedFailed": "Update user authorized failed",
+    "invalidAuthIds": "Invalid authorize ids",
+    "setAuthorizeStatusSuccess": "Set authorize delete status success",
+    "setAuthorizeStatusFailed": "Set authorize delete status failed",
+    "updateOneTypeTargetAuth": "The authorization of only one piece of data can be updated at a time"
+  },
   "user": {
     "namePwdError": "User name or password is wrong",
     "loginFailed": "User login failed",
@@ -612,6 +622,10 @@
     "offlineGoodsFromStore": "Offline GoodsFromStore",
     "getStorages": "Get a list of storage objects",
     "downloadStorageObjects": "Download Storage Objects",
-    "organizeUploadObjectToStorage": "Upload objects to storage"
+    "organizeUploadObjectToStorage": "Upload objects to storage",
+    "addAuthorizeDetail": "Add target user to the type data",
+    "updateAuthorizeDetail": "Update the type data authorize data",
+    "setAuthorizeStatus": "Set the target authorize delete status to the type data",
+    "getAuthorizeList": "Get the type data authorize list"
   }
 }

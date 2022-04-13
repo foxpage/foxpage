@@ -1,4 +1,5 @@
 import { ApplicationModel } from './application-model';
+import { AuthorizeModel } from './authorize-model';
 import { ContentModel } from './content-model';
 import { RelationModel } from './content-relation-model';
 import { FileModel } from './file-model';
@@ -12,6 +13,7 @@ import { UserModel } from './user-model';
 import { VersionModel } from './version-model';
 
 const application: ApplicationModel = ApplicationModel.getInstance();
+const auth: AuthorizeModel = AuthorizeModel.getInstance();
 const user: UserModel = UserModel.getInstance();
 const folder: FolderModel = FolderModel.getInstance();
 const file: FileModel = FileModel.getInstance();
@@ -26,6 +28,7 @@ const storeOrder: StoreOrderModel = StoreOrderModel.getInstance();
 
 export {
   application,
+  auth,
   content,
   file,
   folder,

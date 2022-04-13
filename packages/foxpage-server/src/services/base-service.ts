@@ -166,6 +166,19 @@ export class BaseService<T> {
   }
 
   /**
+   * batch update detail by ids
+   * @param ids
+   * @param data
+   * @returns
+   */
+  async batchUpdateDetail(ids: string[], data: Partial<T>): Promise<any> {
+    return this.model.updateDetail(
+      { id: { $in: ids } } as mongoose.FilterQuery<{}>,
+      Object.assign({ updateTime: new DateTime() }, data) as mongoose.UpdateQuery<T>,
+    );
+  }
+
+  /**
    * Set data deletion status
    * @param  {string} id
    * @param  {boolean} status

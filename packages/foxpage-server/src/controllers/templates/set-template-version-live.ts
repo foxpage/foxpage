@@ -36,7 +36,7 @@ export class SetTemplateLiveVersions extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.TEMPLATE });
 
-      const hasAuth = await this.service.auth.content(params.id, { ctx });
+      const hasAuth = await this.service.auth.content(params.id, { ctx, mask: 8 });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4071301);
       }

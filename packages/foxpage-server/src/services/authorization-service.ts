@@ -1,11 +1,19 @@
 import { FoxCtx } from 'src/types/index-types';
 
+import { Authorize } from '@foxpage/foxpage-server-types';
+
+import { TYPE } from '../../config/constant';
+import * as Model from '../models';
 import * as Service from '../services';
 
-export class AuthService {
+import { BaseService } from './base-service';
+
+export class AuthService extends BaseService<Authorize> {
   private static _instance: AuthService;
 
-  constructor() {}
+  constructor() {
+    super(Model.auth);
+  }
 
   /**
    * Single instance
@@ -22,10 +30,20 @@ export class AuthService {
    * @param  {string} user
    * @returns Promise
    */
-  async application(applicationId: string, options: { ctx: FoxCtx }): Promise<boolean> {
-    const appDetail = await Service.application.getDetailById(applicationId);
+  async application(applicationId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+    const [appDetail, hasAuth] = await Promise.all([
+      Service.application.getDetailById(applicationId),
+      this.getTargetTypeAuth(
+        { type: TYPE.APPLICATION, typeId: applicationId, targetId: options.ctx.userInfo.id },
+        options.mask,
+      ),
+    ]);
 
-    return appDetail?.creator === options.ctx.userInfo?.id;
+    if (appDetail?.creator === options.ctx.userInfo?.id || hasAuth) {
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -34,10 +52,16 @@ export class AuthService {
    * @param  {string} user
    * @returns Promise
    */
-  async organization(organizationId: string, options: { ctx: FoxCtx }): Promise<boolean> {
-    const orgDetail = await Service.org.getDetailById(organizationId);
+  async organization(organizationId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+    const [orgDetail, hasAuth] = await Promise.all([
+      Service.org.getDetailById(organizationId),
+      this.getTargetTypeAuth(
+        { type: TYPE.ORGANIZATION, typeId: organizationId, targetId: options.ctx.userInfo.id },
+        options.mask,
+      ),
+    ]);
 
-    return orgDetail?.creator === options.ctx.userInfo?.id;
+    return orgDetail?.creator === options.ctx.userInfo?.id || hasAuth;
   }
 
   /**
@@ -46,31 +70,39 @@ export class AuthService {
    * @param  {string} user
    * @returns Promise
    */
-  async team(teamId: string, options: { ctx: FoxCtx }): Promise<boolean> {
-    const teamDetail = await Service.team.getDetailById(teamId);
+  async team(teamId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+    const [teamDetail, hasAuth] = await Promise.all([
+      Service.team.getDetailById(teamId),
+      this.getTargetTypeAuth(
+        { type: TYPE.TEAM, typeId: teamId, targetId: options.ctx.userInfo.id },
+        options.mask,
+      ),
+    ]);
 
-    return teamDetail?.creator === options.ctx.userInfo?.id;
+    return teamDetail?.creator === options.ctx.userInfo?.id || hasAuth;
   }
 
   /**
    * Check whether the specified user has permission to operate the specified folder.
-   * Get the owner of the folder (project or system folder) where the file is located,
-   * and compare it with the current user.
+   *
+   * current only consider the folder is a project
    * @param  {string} applicationId
    * @param  {string} user
    * @returns Promise
    */
-  async folder(folderId: string, options: { ctx: FoxCtx }): Promise<boolean> {
+  async folder(folderId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const user = options.ctx.userInfo.id;
 
-    const [folderDetail, isAppOwner] = await Promise.all([
+    const [folderDetail, hasAppAuth, hasAuth] = await Promise.all([
       Service.folder.info.getDetailById(folderId),
       this.application(options.ctx.logAttr.applicationId || '', options),
+      this.getTargetTypeAuth(
+        { type: TYPE.FOLDER, typeId: folderId, targetId: options.ctx.userInfo.id },
+        options.mask,
+      ),
     ]);
 
-    const folderParentCreator = await this.getDataFolderOwner(folderId);
-
-    return folderDetail?.creator === user || folderParentCreator === user || isAppOwner;
+    return folderDetail?.creator === user || hasAppAuth || hasAuth;
   }
 
   /**
@@ -81,17 +113,24 @@ export class AuthService {
    * @param  {string} user
    * @returns Promise
    */
-  async file(fileId: string, options: { ctx: FoxCtx }): Promise<boolean> {
+  async file(fileId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const user = options.ctx.userInfo.id;
+    !options?.mask && options.mask === 2;
 
-    const [fileDetail, isAppOwner] = await Promise.all([
+    const [fileDetail, hasAppAuth, hasAuth] = await Promise.all([
       Service.file.info.getDetailById(fileId),
       this.application(options.ctx.logAttr.applicationId || '', options),
+      this.getTargetTypeAuth(
+        { type: TYPE.FILE, typeId: fileId, targetId: options.ctx.userInfo.id },
+        options.mask,
+      ),
     ]);
 
-    const folderCreator = await this.getDataFolderOwner(fileDetail?.folderId || '');
+    if (fileDetail?.creator === user || hasAppAuth || hasAuth) {
+      return true;
+    }
 
-    return fileDetail?.creator === user || folderCreator === user || isAppOwner;
+    return fileDetail?.folderId ? this.folder(fileDetail.folderId, options) : false;
   }
 
   /**
@@ -102,17 +141,23 @@ export class AuthService {
    * @param  {string} user
    * @returns Promise
    */
-  async content(contentId: string, options: { ctx: FoxCtx }): Promise<boolean> {
+  async content(contentId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const user = options.ctx.userInfo.id;
-    const [contentDetail, isAppOwner] = await Promise.all([
+
+    const [contentDetail, hasAppAuth, hasAuth] = await Promise.all([
       Service.content.info.getDetailById(contentId),
       this.application(options.ctx.logAttr.applicationId || '', options),
+      this.getTargetTypeAuth(
+        { type: TYPE.CONTENT, typeId: contentId, targetId: options.ctx.userInfo.id },
+        options.mask,
+      ),
     ]);
 
-    const fileDetail = await Service.file.info.getDetailById(contentDetail?.fileId || '');
-    const folderCreator = await this.getDataFolderOwner(fileDetail?.folderId || '');
+    if (contentDetail?.creator === user || hasAppAuth || hasAuth) {
+      return true;
+    }
 
-    return contentDetail?.creator === user || folderCreator === user || isAppOwner;
+    return contentDetail?.fileId ? this.file(contentDetail.fileId, options) : false;
   }
 
   /**
@@ -123,34 +168,55 @@ export class AuthService {
    * @param  {string} user
    * @returns Promise
    */
-  async version(versionId: string, options: { ctx: FoxCtx }): Promise<boolean> {
+  async version(versionId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const user = options.ctx.userInfo.id;
-    const [versionDetail, isAppOwner] = await Promise.all([
+
+    const [versionDetail, hasAppAuth, hasAuth] = await Promise.all([
       Service.version.info.getDetailById(versionId),
       this.application(options.ctx.logAttr.applicationId || '', options),
+      this.getTargetTypeAuth(
+        { type: TYPE.VERSION, typeId: versionId, targetId: options.ctx.userInfo.id },
+        options.mask,
+      ),
     ]);
 
-    const contentDetail = await Service.content.info.getDetailById(versionDetail?.contentId || '');
-    const fileDetail = await Service.file.info.getDetailById(contentDetail?.fileId || '');
-    const folderCreator = await this.getDataFolderOwner(fileDetail?.folderId || '');
+    if (versionDetail?.creator === user || hasAppAuth || hasAuth) {
+      return true;
+    }
 
-    return versionDetail?.creator === user || folderCreator === user || isAppOwner;
+    return versionDetail?.contentId ? this.content(versionDetail.contentId, options) : false;
   }
 
   /**
-   * Get the owner of the folder (project/system folder) where the specified data is located
-   * If the returned result folder is greater than 1, the second folder is the project/resource,
-   *  otherwise it is the system folder.
-   * Currently there are only projects, resources are created in folders,
-   * and others are created in the system folder by default.
-   * @param  {string} folderId
-   * @returns Promise
+   * check the target type id's auth,
+   * current only check the allow auth setting
+   * @param params
+   * @param mask
+   * @returns
    */
-  async getDataFolderOwner(folderId: string): Promise<string> {
-    if (folderId) {
-      const allFolders = await Service.folder.list.getAllParentsRecursive([folderId]);
-      return allFolders?.[folderId]?.[1]?.creator || '';
+  async getTargetTypeAuth(
+    params: { type: string; typeId: string; targetId: string },
+    mask: number = 2,
+  ): Promise<boolean> {
+    const authDetail = await this.getDetail(params);
+    return authDetail?.deleted === false && (authDetail?.mask & mask) === mask;
+  }
+
+  /**
+   * Check whether the specified user has authorization rights to the specified data
+   *
+   * @param {{ type: string; typeId: string }} params
+   * @param {{ ctx: FoxCtx; mask?: number }} options
+   * @returns {Promise<boolean>}
+   * @memberof AuthService
+   */
+  async checkTypeIdAuthorize(
+    params: { type: string; typeId: string },
+    options: { ctx: FoxCtx; mask?: number },
+  ): Promise<boolean> {
+    if (params.type === TYPE.APPLICATION) {
+      return this.application(params.typeId, options);
     }
-    return '';
+    return false;
   }
 }

@@ -43,7 +43,7 @@ export class UpdateTeamDetail extends BaseController {
       }
 
       // Permission check
-      const hasAuth = await this.service.auth.team(params.teamId, { ctx });
+      const hasAuth = await this.service.auth.team(params.teamId, { ctx, mask: 8 });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4020601);
       }

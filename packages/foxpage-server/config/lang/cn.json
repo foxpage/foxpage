@@ -20,6 +20,16 @@
     "invalidResourceIds": "无效的应用资源类型ID",
     "invalidLocales": "Locale重复或者无效"
   },
+  "auth": {
+    "addAuthorizeDetailSuccess": "创建用户授权成功",
+    "addAuthorizedFailed": "创建用户授权失败",
+    "updateAuthorizeDetailSuccess": "更新用户授权成功",
+    "updateAuthorizedFailed": "更新用户授权失败",
+    "invalidAuthIds": "无效的授权ID",
+    "setAuthorizeStatusSuccess": "设置授权状态成功",
+    "setAuthorizeStatusFailed": "设置授权状态失败",
+    "updateOneTypeTargetAuth": "每次只能更新一条数据的授权"
+  },
   "user": {
     "namePwdError": "用户名或者密码错误",
     "loginFailed": "用户登录失败",
@@ -612,6 +622,10 @@
     "offlineGoodsFromStore": "将商品从商店下架",
     "getStorages": "获取存储对象列表",
     "downloadStorageObjects": "下载存储对象",
-    "organizeUploadObjectToStorage": "上传对象到存储服务器"
+    "organizeUploadObjectToStorage": "上传对象到存储服务器",
+    "addAuthorizeDetail": "给指定数据添加授权数据",
+    "updateAuthorizeDetail": "更新指定数据的授权数据",
+    "setAuthorizeStatus": "设置指定数据的授权状态",
+    "getAuthorizeList": "获取指定数据的授权数据"
   }
 }

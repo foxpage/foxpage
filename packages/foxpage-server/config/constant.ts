@@ -1,5 +1,6 @@
 export const PRE = {
   APP: 'appl',
+  AUTH: 'auth',
   CONTENT: 'cont',
   CONTENT_VERSION: 'cver',
   FILE: 'file',

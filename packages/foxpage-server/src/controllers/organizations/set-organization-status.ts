@@ -47,7 +47,7 @@ export class SetOrganizationStatus extends BaseController {
       }
 
       // Permission check
-      const hasAuth = await this.service.auth.organization(params.organizationId, { ctx });
+      const hasAuth = await this.service.auth.organization(params.organizationId, { ctx, mask: 4 });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4010701);
       }

@@ -35,7 +35,7 @@ export class SetFolderStatus extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.PROJECT });
 
-      const hasAuth = await this.service.auth.folder(params.projectId, { ctx });
+      const hasAuth = await this.service.auth.folder(params.projectId, { ctx, mask: 4 });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4040801);
       }

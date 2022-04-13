@@ -54,6 +54,14 @@ export interface Application extends CommonFields {
   setting?: AppSetting;
 }
 
+export interface Authorize extends CommonFields {
+  type: string;
+  typeId: string;
+  targetId: string;
+  mask: number;
+  allow: boolean;
+}
+
 export interface SchemaDirective {
   tpl?: string;
   if?: string;
