@@ -6,6 +6,7 @@ import * as Model from '../../models';
 import {
   FileContentInfo,
   FileFolderChildren,
+  FileFolderContentInfoChildren,
   FileFolderInfo,
   FileInfo,
   FileListSearch,
@@ -160,7 +161,7 @@ export class FolderListService extends BaseService<Folder> {
     hasContent?: boolean;
     fileTypes?: string[];
     deleted?: boolean;
-  }): Promise<Record<string, FileFolderChildren>> {
+  }): Promise<Record<string, FileFolderContentInfoChildren>> {
     let { folderIds = [], depth = 1, hasContent = false, fileTypes = [], deleted = false } = params;
 
     const getFileParams: any = { folderId: { $in: folderIds }, deleted };

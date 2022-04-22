@@ -76,6 +76,8 @@ export class GetPageContentList extends BaseController {
             urls = [hostPath];
           }
         }
+        content.isBase = _.remove(content.tags, (tag) => !_.isNil(tag.isBase))[0]?.isBase || false;
+        content.extendId = _.remove(content.tags, (tag) => !_.isNil(tag.extendId))[0]?.extendId || '';
         contentListWithUrls.push(Object.assign({}, content, { urls: _.clone(urls) }));
       });
 

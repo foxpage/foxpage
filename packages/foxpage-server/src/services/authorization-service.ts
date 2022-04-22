@@ -199,7 +199,9 @@ export class AuthService extends BaseService<Authorize> {
     mask: number = 2,
   ): Promise<boolean> {
     const authDetail = await this.getDetail(params);
-    return authDetail?.deleted === false && (authDetail?.mask & mask) === mask;
+    return (
+      authDetail?.deleted === false && ((authDetail?.mask & 1) === 1 || (authDetail?.mask & mask) === mask)
+    );
   }
 
   /**

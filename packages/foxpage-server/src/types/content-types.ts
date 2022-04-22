@@ -16,7 +16,12 @@ import {
 import { Creator, Search } from './index-types';
 
 export type SearchContentExist = Pick<Content, 'title' | 'fileId'>;
-export type ContentInfo = Exclude<Content, 'creator'> & { version?: string; creator: Creator };
+export type ContentInfo = Exclude<Content, 'creator'> & {
+  version?: string;
+  creator: Creator | string;
+  isBase?: boolean;
+  extendId?: string;
+};
 export type ContentVersionInfo = Exclude<ContentVersion, 'creator'> & { creator: Creator };
 export type ContentVersionNumber = Pick<ContentVersion, 'contentId' | 'versionNumber'>;
 export type ContentVersionString = Pick<ContentVersion, 'contentId' | 'version'>;

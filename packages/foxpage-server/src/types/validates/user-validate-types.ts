@@ -1,7 +1,18 @@
-import { IsEmail, IsNotEmpty, IsObject, IsOptional, IsString, Length, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  Length,
+  ValidateNested,
+} from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 
-import { ResponseBase } from './index-validate-types';
+import { ResponseBase, ResponsePageBase } from './index-validate-types';
 
 export class UserBase {
   @JSONSchema({ description: 'User ID' })
@@ -145,4 +156,44 @@ export class UpdateUserPassword {
   @IsNotEmpty()
   @Length(5, 50)
   newPassword: string;
+}
+
+export class GetPageUserListReq {
+  @JSONSchema({ description: 'user name search' })
+  @IsString()
+  @IsOptional()
+  search: string;
+
+  @JSONSchema({ description: 'Page number' })
+  @IsNumber()
+  @IsOptional()
+  page: number;
+
+  @JSONSchema({ description: 'Page size' })
+  @IsNumber()
+  @IsOptional()
+  size: number;
+}
+
+export class UserInfo {
+  @JSONSchema({ description: 'User Id' })
+  @IsString()
+  @Length(15)
+  id: string;
+
+  @JSONSchema({ description: 'User name' })
+  @IsString()
+  @Length(1, 45)
+  name: string;
+
+  @JSONSchema({ description: 'User type, register/sso' })
+  @IsNumber()
+  type: number;
+}
+
+export class UserInfoRes extends ResponsePageBase {
+  @ValidateNested({ each: true })
+  @IsArray()
+  @Type(() => UserInfo)
+  data: Array<UserInfo>;
 }

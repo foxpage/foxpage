@@ -1,7 +1,6 @@
 import {
   AppFolderTypes,
   AppResource,
-  Content,
   ContentVersion,
   File,
   FileTypes,
@@ -10,6 +9,7 @@ import {
 } from '@foxpage/foxpage-server-types';
 
 import { AppBaseInfo } from './app-types';
+import { ContentInfo } from './content-types';
 import { Creator, FoxCtx } from './index-types';
 
 export type FolderInfo = Exclude<Folder, 'creator' | 'applicationId'> & { creator: Creator } & {
@@ -26,8 +26,9 @@ export type AppFolderType = { applicationId: string; type: AppFolderTypes };
 export type AppsFolderType = { applicationIds: string[]; type: AppFolderTypes };
 export type FolderChildren = Folder & { children: FileFolderChildren };
 export type FileFolderChildren = { folders: FolderChildren[]; files: File[] };
+export type FileFolderContentInfoChildren = { folders: FolderChildren[]; files: FileContentInfo[] };
 export type FileContent = File & { content?: any; contentId?: string };
-export type FileContentInfo = File & { contents?: Content[] };
+export type FileContentInfo = File & { contents?: ContentInfo[] };
 export type FileFolderContentChildren = { folders: FolderChildren[]; files: FileContent[] };
 export type FolderResourceGroup = Folder & { groups: AppResource };
 export type FileAssoc = FileUserInfo & {

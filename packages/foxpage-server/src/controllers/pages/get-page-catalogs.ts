@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import _ from 'lodash';
 import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -54,6 +55,11 @@ export class GetPageCatalogList extends BaseController {
         page: 1,
         size: 500,
         type: TYPE.PAGE as FileTypes,
+      });
+
+      result.list.forEach((content) => {
+        content.isBase = _.remove(content.tags, (tag) => !_.isNil(tag.isBase))[0]?.isBase || false;
+        content.extendId = _.remove(content.tags, (tag) => !_.isNil(tag.extendId))[0]?.extendId || '';
       });
 
       return Response.success(result.list, 1050601);

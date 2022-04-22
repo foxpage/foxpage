@@ -31,8 +31,6 @@ export class UpdateAuthorizeDetail extends BaseController {
   @ResponseSchema(AuthDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: SetAuthStatusReq): Promise<ResData<any>> {
     try {
-      console.log(ctx);
-
       if (!params.ids || params.ids.length === 0) {
         return Response.warning(i18n.auth.invalidAuthIds, 2180301);
       }

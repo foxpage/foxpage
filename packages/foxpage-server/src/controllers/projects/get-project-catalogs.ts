@@ -49,7 +49,21 @@ export class GetProjectCatalog extends BaseController {
         fileTypes: [TYPE.TEMPLATE, TYPE.PAGE],
       });
 
-      return Response.success(folderFiles[params.id], 1040501);
+      if (folderFiles[params.id] && folderFiles[params.id].files.length > 0) {
+        folderFiles[params.id].files.forEach((file) => {
+          if (file.contents && file.contents.length > 0) {
+            file.contents.forEach((content) => {
+              content.isBase = _.remove(content.tags, (tag) => !_.isNil(tag.isBase))[0]?.isBase || false;
+              content.extendId = _.remove(content.tags, (tag) => !_.isNil(tag.extendId))[0]?.extendId || '';
+            });
+          }
+        });
+      }
+
+      return Response.success(
+        Object.assign({}, _.pick(projectDetail, ['id', 'name']), folderFiles[params.id]),
+        1040501,
+      );
     } catch (err) {
       return Response.error(err, i18n.project.getProjectCatalogFailed, 3040501);
     }

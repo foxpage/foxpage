@@ -8,7 +8,7 @@ import * as appConfig from '../../app.config';
 import { LOG, PRE } from '../../config/constant';
 import * as Model from '../models';
 import thirdPartyLogin from '../third-parties/login';
-import { Creator, FoxCtx } from '../types/index-types';
+import { Creator, FoxCtx, Search } from '../types/index-types';
 import { LoginParams, NewUser, RegisterParams, UserAccountInfo } from '../types/user-types';
 import { generationId } from '../utils/tools';
 
@@ -192,5 +192,25 @@ export class UserService extends BaseService<User> {
     });
 
     return newDataList;
+  }
+
+  /**
+   * Get user page list
+   * @param params
+   * @returns
+   */
+  async getPageList(params: Search): Promise<{ count: number; list: Partial<User>[] }> {
+    const filter: any = { deleted: params.deleted || false };
+    if (params.search) {
+      filter['account'] = { $regex: new RegExp(params.search, 'i') };
+    }
+    const [count, list] = await Promise.all([
+      Model.user.getCountDocuments(filter),
+      Model.user.getList(Object.assign({ page: params.page, size: params.size }, filter)),
+    ]);
+
+    const userList = _.map(list, (user) => _.omit(user, 'password'));
+
+    return { count, list: userList };
   }
 }

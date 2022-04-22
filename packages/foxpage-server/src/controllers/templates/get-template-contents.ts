@@ -48,6 +48,11 @@ export class GetTemplateContentList extends BaseController {
       };
       const contentList = await this.service.content.file.getFileContentList(contentParams);
 
+      contentList.forEach((content) => {
+        content.isBase = _.remove(content.tags, (tag) => !_.isNil(tag.isBase))[0]?.isBase || false;
+        content.extendId = _.remove(content.tags, (tag) => !_.isNil(tag.extendId))[0]?.extendId || '';
+      });
+
       return Response.success(contentList, 1070801);
     } catch (err) {
       return Response.error(err, i18n.template.getTemplateContentListFailed, 3070801);
