@@ -184,7 +184,7 @@ export class UserInfo {
   @JSONSchema({ description: 'User name' })
   @IsString()
   @Length(1, 45)
-  name: string;
+  account: string;
 
   @JSONSchema({ description: 'User type, register/sso' })
   @IsNumber()

@@ -32,7 +32,7 @@ export class GetPageUserDetail extends BaseController {
   async index(@QueryParams() params: GetPageUserListReq): Promise<ResData<UserAccountInfo[]>> {
     try {
       const pageSize = this.service.user.setPageSize(params);
-      const orgCountList = await this.service.user.getPageList({
+      const userCountList = await this.service.user.getPageList({
         deleted: false,
         search: params.search,
         page: pageSize.page,
@@ -41,8 +41,8 @@ export class GetPageUserDetail extends BaseController {
 
       return Response.success(
         {
-          pageInfo: { page: params.page, size: params.size, total: orgCountList.count },
-          data: orgCountList.list,
+          pageInfo: { page: params.page, size: params.size, total: userCountList.count },
+          data: _.map(userCountList.list, (user) => _.pick(user, ['id', 'account', 'type'])),
         },
         1060701,
       );
