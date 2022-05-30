@@ -34,7 +34,7 @@ const mapDispatchToProps = {
 
 type DslProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Dsl: React.FC<DslProps> = props => {
+const Dsl: React.FC<DslProps> = (props) => {
   const { open, loading, dsl, contentId, applicationId, fetchDsl, updateDslModalOpen } = props;
 
   useEffect(() => {
@@ -48,11 +48,17 @@ const Dsl: React.FC<DslProps> = props => {
   };
 
   return (
-    <StyledModal title="DSL" visible={open} width={1048} onOk={onCancel} style={{ height: '70%' }} onCancel={onCancel}>
+    <StyledModal
+      title="DSL"
+      visible={open}
+      width={1048}
+      onOk={onCancel}
+      style={{ height: '70%' }}
+      onCancel={onCancel}>
       {loading ? (
-        <Spin spinning={loading}></Spin>
+        <Spin spinning={loading} />
       ) : (
-        <JSONEditor jsonData={dsl || {}} refreshFlag={dsl} readOnly options={{ mode: 'code' }}></JSONEditor>
+        <JSONEditor jsonData={dsl || {}} refreshFlag={dsl} readOnly options={{ mode: 'code' }} />
       )}
     </StyledModal>
   );

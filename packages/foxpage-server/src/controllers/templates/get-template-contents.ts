@@ -31,7 +31,7 @@ export class GetTemplateContentList extends BaseController {
     operationId: 'get-template-content-list',
   })
   @ResponseSchema(ContentDetailRes)
-  async index(@QueryParams() params: ContentListReq): Promise<ResData<ContentInfo[]>> {
+  async index (@QueryParams() params: ContentListReq): Promise<ResData<ContentInfo[]>> {
     try {
       // Check file deleted status
       const fileDetail = await this.service.file.info.getDetailById(params.fileId);

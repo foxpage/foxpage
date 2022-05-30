@@ -29,7 +29,7 @@ export class SaveRemoteResourceList extends BaseController {
     operationId: 'save-batch-resources',
   })
   @ResponseSchema(FileListRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: SaveResourceListReq): Promise<ResData<any[]>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: SaveResourceListReq): Promise<ResData<any[]>> {
     try {
       // Check permission
       const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
@@ -55,7 +55,7 @@ export class SaveRemoteResourceList extends BaseController {
       }
 
       // Add resource version
-      this.service.resource.saveResources(params.resources, {
+      const idMaps = this.service.resource.saveResources(params.resources, {
         ctx,
         applicationId: params.applicationId,
         folderId: params.id,
@@ -63,7 +63,7 @@ export class SaveRemoteResourceList extends BaseController {
 
       await this.service.folder.info.runTransaction(ctx.transactions);
 
-      return Response.success(i18n.resource.saveResourcesSuccess, 1120501);
+      return Response.success(idMaps, 1120501);
     } catch (err) {
       return Response.error(err, i18n.resource.saveResourcesFailed, 3120501);
     }

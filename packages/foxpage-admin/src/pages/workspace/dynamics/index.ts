@@ -1,3 +1,3 @@
-import Dynamics from './Dynamics';
+import Dynamics from './Main';
 
 export default Dynamics;

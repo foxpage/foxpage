@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 
-import { ResponseBase } from './index-validate-types';
+import { ContentIdVersion, PagingReq, ResponseBase, ResponsePageBase } from './index-validate-types';
 
 export class AppComponentsReq {
   @JSONSchema({ description: 'Application ID' })
@@ -397,6 +397,10 @@ export class RemoteComponentContent {
   @JSONSchema({ description: 'Component content resource' })
   @IsObject()
   resource: any;
+
+  @JSONSchema({ description: 'Component content schema' })
+  @IsObject()
+  schema: any;
 }
 
 export class RemoteComponent {
@@ -437,7 +441,71 @@ export class SaveRemotePackageReq {
   components: Array<BatchComponentResource>;
 }
 
+export class BatchEditorResource {
+  @JSONSchema({ description: 'Editor name' })
+  @IsString()
+  name: string;
+
+  @JSONSchema({ description: 'Editor resource group id' })
+  @IsString()
+  groupId: string;
+
+  @JSONSchema({ description: 'Remote component detail' })
+  @ValidateNested()
+  @Type(() => RemoteComponent)
+  component: RemoteComponent;
+}
+
+export class SaveEditorPackageReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'package editor list' })
+  @ValidateNested({ each: true })
+  components: Array<BatchEditorResource>;
+}
+
 export class RemotePackageRes extends ResponseBase {
   @ValidateNested({ each: true })
   data: BatchComponentResource;
+}
+
+export class RemotePagePackageReq extends PagingReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'Resource group ID' })
+  @IsString()
+  @Length(20, 20)
+  groupId: string;
+
+  @JSONSchema({ description: 'Resource group name' })
+  @IsString()
+  @IsOptional()
+  groupName: string;
+
+  @JSONSchema({ description: 'component name' })
+  @IsString()
+  @IsOptional()
+  name: string;
+}
+
+export class RemotePagePackageRes extends ResponsePageBase {
+  @ValidateNested({ each: true })
+  data: Array<BatchComponentResource>;
+}
+
+export class BatchLiveReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @ValidateNested({ each: true })
+  @IsArray()
+  idVersions: ContentIdVersion[]
 }

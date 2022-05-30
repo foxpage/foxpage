@@ -4,7 +4,11 @@ import {
   ComponentRemote,
   ComponentRemoteSaveParams,
   ComponentRemotesFetchParams,
+  EditorBatchPublishParams,
+  EditorComponentSaveParams,
   PackageType,
+  RemoteComponentFetchParams,
+  RemoteComponentItem,
 } from '@/types/application';
 import { ComponentMetaType } from '@/types/builder';
 import { BaseResponse, PaginationReqParams, ResponseBody } from '@/types/common';
@@ -166,9 +170,31 @@ export const searchComponentRemotes = (params: ComponentRemotesFetchParams): Pro
     });
   });
 
+export const fetchRemoteComponents = (params: RemoteComponentFetchParams): Promise<ResponseBody<RemoteComponentItem[]>> =>
+  new Promise(resolve => {
+    FoxpageApi.get('/components/remote-searchs', params, rs => {
+      resolve(rs);
+    });
+  });
+
+
 export const saveComponentRemote = (params: ComponentRemoteSaveParams): Promise<BaseResponse<ComponentRemote[]>> =>
   new Promise(resolve => {
     FoxpageApi.post('/components/batch', params, rs => {
+      resolve(rs);
+    });
+  });
+
+export const saveEditors = (params: EditorComponentSaveParams): Promise<BaseResponse<ComponentRemote[]>> =>
+  new Promise(resolve => {
+    FoxpageApi.post('/components/editor-batch', params, rs => {
+      resolve(rs);
+    });
+  });
+
+export const batchPublishEditors = (params: EditorBatchPublishParams): Promise<BaseResponse> =>
+  new Promise(resolve => {
+    FoxpageApi.put('/components/batch-live-versions', params, rs => {
       resolve(rs);
     });
   });

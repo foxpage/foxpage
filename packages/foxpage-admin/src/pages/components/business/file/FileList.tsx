@@ -1,8 +1,7 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Divider, Popconfirm, Table, Tag } from 'antd';
+import { Table, Tag } from 'antd';
 
 import { suffixTagColor } from '@/pages/common/constant/FileType';
 import GlobalContext from '@/pages/GlobalContext';
@@ -22,9 +21,18 @@ interface FileListProps {
   onPageInfoChange: (page?: number, size?: number) => void;
 }
 
-const FileList: React.FC<FileListProps> = props => {
-  const { loading, organizationId, applicationId, fileType, list, pageInfo, onEdit, onDelete, onPageInfoChange } =
-    props;
+const FileList: React.FC<FileListProps> = (props) => {
+  const {
+    loading,
+    organizationId,
+    applicationId,
+    fileType,
+    list,
+    pageInfo,
+    // onEdit,
+    // onDelete,
+    onPageInfoChange,
+  } = props;
   const { locale } = useContext(GlobalContext);
   const { global, folder, file } = locale.business;
 
@@ -36,11 +44,10 @@ const FileList: React.FC<FileListProps> = props => {
         return (
           <>
             <Link
-              to={`/organization/${organizationId}/application/${applicationId}/detail/${fileType}/${record.id}/content/?folderId=${record.folderId}`}
-            >
+              to={`/organization/${organizationId}/application/${applicationId}/detail/${fileType}/${record.id}/content/?folderId=${record.folderId}`}>
               {text}
             </Link>
-            {record.tags?.find(item => item.copyFrom) && (
+            {record.tags?.find((item) => item.copyFrom) && (
               <Tag color={suffixTagColor.refer} style={{ marginLeft: 4 }}>
                 refer
               </Tag>
@@ -77,51 +84,51 @@ const FileList: React.FC<FileListProps> = props => {
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
-    {
-      title: global.actions,
-      key: 'updateTime',
-      width: 130,
-      render: (_text: string, record: FileType) => {
-        return (
-          // /application/:applicationId/folder/:folderId/file/:fileId/builder
-          <React.Fragment>
-            {/* <Button type="default" size="small" shape="circle" title="build">
-              <Link
-                to="1"
-                // to={`/application/${applicationId}/folder/${folderId}/file/${record.id}/builder`}
-                onClick={() => {
-                  localStorage.foxpage_project_file = JSON.stringify(record);
-                }}
-              >
-                <BuildOutlined />
-              </Link>
-            </Button> */}
-            <Button
-              type="default"
-              size="small"
-              shape="circle"
-              title={global.edit}
-              onClick={() => {
-                onEdit(record);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <Divider type="vertical" />
-            <Popconfirm
-              title={`${global.deleteMsg}${record.name}?`}
-              onConfirm={() => {
-                onDelete(record);
-              }}
-              okText={global.yes}
-              cancelText={global.no}
-            >
-              <Button size="small" shape="circle" icon={<DeleteOutlined />} />
-            </Popconfirm>
-          </React.Fragment>
-        );
-      },
-    },
+    // {
+    //   title: global.actions,
+    //   key: 'updateTime',
+    //   width: 130,
+    //   render: (_text: string, record: FileType) => {
+    //     return (
+    //       // /application/:applicationId/folder/:folderId/file/:fileId/builder
+    //       <React.Fragment>
+    //         {/* <Button type="default" size="small" shape="circle" title="build">
+    //           <Link
+    //             to="1"
+    //             // to={`/application/${applicationId}/folder/${folderId}/file/${record.id}/builder`}
+    //             onClick={() => {
+    //               localStorage.foxpage_project_file = JSON.stringify(record);
+    //             }}
+    //           >
+    //             <BuildOutlined />
+    //           </Link>
+    //         </Button> */}
+    //         <Button
+    //           type="default"
+    //           size="small"
+    //           shape="circle"
+    //           title={global.edit}
+    //           onClick={() => {
+    //             onEdit(record);
+    //           }}
+    //         >
+    //           <EditOutlined />
+    //         </Button>
+    //         <Divider type="vertical" />
+    //         <Popconfirm
+    //           title={`${global.deleteMsg}${record.name}?`}
+    //           onConfirm={() => {
+    //             onDelete(record);
+    //           }}
+    //           okText={global.yes}
+    //           cancelText={global.no}
+    //         >
+    //           <Button size="small" shape="circle" icon={<DeleteOutlined />} />
+    //         </Popconfirm>
+    //       </React.Fragment>
+    //     );
+    //   },
+    // },
   ];
 
   return (
@@ -132,10 +139,15 @@ const FileList: React.FC<FileListProps> = props => {
       loading={loading}
       pagination={
         pageInfo.total > pageInfo.size
-          ? { position: ['bottomCenter'], current: pageInfo.page, pageSize: pageInfo.size, total: pageInfo.total }
+          ? {
+              position: ['bottomCenter'],
+              current: pageInfo.page,
+              pageSize: pageInfo.size,
+              total: pageInfo.total,
+            }
           : false
       }
-      onChange={pagination => {
+      onChange={(pagination) => {
         onPageInfoChange(pagination.current, pagination.pageSize);
       }}
     />

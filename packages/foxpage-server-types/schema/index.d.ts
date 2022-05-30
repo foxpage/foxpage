@@ -126,6 +126,7 @@ export interface DSL {
   schemas: DslSchemas[];
   relation: Record<string, DslRelation>;
   version?: string;
+  extension?: Record<string, string>;
 }
 
 export interface ComponentDSL {

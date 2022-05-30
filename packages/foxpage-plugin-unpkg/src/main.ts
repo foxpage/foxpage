@@ -44,6 +44,13 @@ const Unpkg = (): FoxpagePlugin<ResourceAbstract> => {
 
         return groupResources;
       },
+      resourceRemoteUrl (options: ResourceListOptions): Record<string, any> {
+        return {
+          type: PLUGIN_NAME,
+          url: 'https://registry.npmjs.com/-/v1/search?text=' +
+            _.trim((options.groupConfig?.resourceScope || options.packageName))
+        };
+      }
     },
     options: {},
   };

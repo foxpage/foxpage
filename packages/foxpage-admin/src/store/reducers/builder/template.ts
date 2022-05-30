@@ -9,10 +9,16 @@ import {
   ComponentStructure,
   DndInfoType,
   DslType,
+  ExtensionData,
+  MockContent,
   RelationsType,
   Template,
 } from '@/types/builder';
 import shortId from '@/utils/short-id';
+
+export type TemplateActionType = ActionType<typeof ACTIONS | typeof listACTIONS>;
+type initialDataType = typeof initialState;
+type StructureRecord = Record<string, ComponentStructure>;
 
 const allRelations: RelationsType = {};
 const componentList: ComponentStructure[] = [];
@@ -25,11 +31,31 @@ const version: DslType = {
   components: [],
   content: { id: '', schemas: [], relation: {} },
   relations: allRelations,
+  mock: {} as MockContent,
 };
-const initComponent: ComponentStructure = { id: '', label: '', name: '', props: {} } as ComponentStructure;
+const initComponent: ComponentStructure = {
+  id: '',
+  label: '',
+  name: '',
+  props: {},
+  mock: {},
+} as ComponentStructure;
 const dndInfo: DndInfoType = {} as DndInfoType;
 const componentEditorValue = { directive: { tpl: undefined } };
 const componentSourceMap: ComponentSourceMapType = {} as ComponentSourceMapType;
+// extend data: for record the base content & current content
+const extensionData = {} as ExtensionData;
+//mock
+const mocks: MockContent[] = [];
+const mockVersion: DslType = {
+  id: '',
+  contentId: '',
+  components: [],
+  content: { id: '', schemas: [], relation: {} },
+  relations: allRelations,
+  mock: {} as MockContent,
+};
+const mockComponentList: ComponentStructure[] = [];
 
 const initialState = {
   version,
@@ -58,13 +84,29 @@ const initialState = {
   nextSteps: dslList,
   saveLoading: false,
   publishLoading: false,
+  extensionData,
+  mocks,
+  mockVersion,
+  mockComponentList,
+  mockParsedComponentList: mockComponentList,
+  mockParsedRenderStructure: mockComponentList,
 };
 
-export type TemplateActionType = ActionType<typeof ACTIONS | typeof listACTIONS>;
-type initialDataType = typeof initialState;
+/**
+ * tree to record by id
+ * @param schemas
+ */
+function treeToRecord(schemas: ComponentStructure[], record: StructureRecord) {
+  schemas.forEach((item) => {
+    record[item.id] = item;
+    if (item.children?.length > 0) {
+      treeToRecord(item.children, record);
+    }
+  });
+}
 
 const templateReducer = (state: initialDataType = initialState, action: TemplateActionType) =>
-  produce(state, draft => {
+  produce(state, (draft) => {
     switch (action.type) {
       case getType(ACTIONS.pushTemplateData): {
         const {
@@ -76,6 +118,10 @@ const templateReducer = (state: initialDataType = initialState, action: Template
           parsedRenderStructure,
           parsedComponentList,
           templates,
+          mockVersion,
+          mockComponentList,
+          mockParsedComponentList,
+          mockParsedRenderStructure,
         } = action.payload.data;
         const oldComponentSourceMap = state.componentSourceMap;
         const oldVersionType: string = state.versionType;
@@ -91,31 +137,48 @@ const templateReducer = (state: initialDataType = initialState, action: Template
         if (componentSourceMap) {
           draft.componentSourceMap = { ...oldComponentSourceMap, ...componentSourceMap };
         }
+        // mock
+        if (mockVersion) draft.mockVersion = mockVersion;
+        if (mockComponentList) draft.mockComponentList = mockComponentList;
+        if (mockParsedComponentList) draft.mockParsedComponentList = mockParsedComponentList;
+        if (mockParsedRenderStructure) draft.mockParsedRenderStructure = mockParsedRenderStructure;
+        break;
+      }
+
+      case getType(ACTIONS.pushExtensionData): {
+        const { baseContent, curContent } = action.payload || {};
+        const baseStructureRecord: StructureRecord = {};
+        const curStructureRecord: StructureRecord = {};
+        treeToRecord(baseContent?.content?.schemas || [], baseStructureRecord);
+        treeToRecord(curContent?.content?.schemas || [], curStructureRecord);
+        draft.extensionData = { baseContent, curContent, baseStructureRecord, curStructureRecord };
         break;
       }
 
       case getType(ACTIONS.updateContentRelation): {
-        const { relation } = action.payload;
-        const version = state.version;
-        const newVersion = _.cloneDeep(version);
-        newVersion.content.relation = relation;
+        const { relation, type = '' } = action.payload;
+        const newVersion = _.cloneDeep(state.version);
+        newVersion.content.relation = Object.assign({}, newVersion.content.relation, relation);
         draft.version = newVersion;
+
+        if (type === 'mock') {
+          const newMockVersion = _.cloneDeep(state.mockVersion);
+          newMockVersion.content.relation = relation;
+          draft.mockVersion = newMockVersion;
+        }
         break;
       }
 
       case getType(ACTIONS.updateVersionRelations): {
-        const { relations } = action.payload;
+        const { relations, type = '' } = action.payload;
         const { variables = [], functions = [], conditions = [] } = relations;
-        const version = state.version;
+        const version = type === 'mock' ? state.mockVersion : state.version;
         const newVersion = _.cloneDeep(version);
-        const {
-          variables: oldVariables = [],
-          functions: oldFunctions = [],
-          conditions: oldConditions = [],
-        } = newVersion?.relations;
+        const { variables: oldVariables = [], functions: oldFunctions = [], conditions: oldConditions = [] } =
+          newVersion?.relations || {};
 
-        variables.forEach(variable => {
-          const index = oldVariables.findIndex(item => item.id === variable.id);
+        variables.forEach((variable) => {
+          const index = oldVariables.findIndex((item) => item.id === variable.id);
           if (index < 0) {
             oldVariables.push(variable);
           } else {
@@ -123,8 +186,8 @@ const templateReducer = (state: initialDataType = initialState, action: Template
           }
         });
 
-        functions.forEach(func => {
-          const index = oldFunctions.findIndex(item => item.id === func.id);
+        functions.forEach((func) => {
+          const index = oldFunctions.findIndex((item) => item.id === func.id);
           if (index < 0) {
             oldFunctions.push(func);
           } else {
@@ -132,19 +195,26 @@ const templateReducer = (state: initialDataType = initialState, action: Template
           }
         });
 
-        conditions.forEach(condition => {
-          const index = oldConditions.findIndex(item => item.id === condition.id);
+        conditions.forEach((condition) => {
+          const index = oldConditions.findIndex((item) => item.id === condition.id);
           if (index < 0) {
             oldConditions.push(condition);
           } else {
             oldConditions.splice(index, 1, condition);
           }
         });
+        if (!newVersion.relations) {
+          newVersion.relations = {};
+        }
         newVersion.relations.variables = oldVariables;
         newVersion.relations.functions = oldFunctions;
         newVersion.relations.conditions = oldConditions;
 
-        draft.version = newVersion;
+        if (type === 'mock') {
+          draft.mockVersion = newVersion;
+        } else {
+          draft.version = newVersion;
+        }
         break;
       }
 
@@ -152,14 +222,14 @@ const templateReducer = (state: initialDataType = initialState, action: Template
         const { data } = action.payload;
         const oldComponentSourceMap = state.componentSourceMap;
         const newMap: ComponentSourceMapType = {} as ComponentSourceMapType;
-        data.forEach(component => {
+        data.forEach((component) => {
           if (component.name) {
             newMap[component.name] = component;
             newMap[`${component.name}@${component.version}`] = component;
           }
           const components = component?.components || [];
           if (components.length > 0) {
-            component.components?.forEach(item => {
+            component.components?.forEach((item) => {
               if (item.name) {
                 newMap[item.name] = item;
                 newMap[`${item.name}@${item.version}`] = item;
@@ -192,21 +262,39 @@ const templateReducer = (state: initialDataType = initialState, action: Template
 
       case getType(ACTIONS.setSelectedComponent): {
         const { id } = action.payload;
-        const componentList = state.componentList || [];
-        const parsedComponentList = state.parsedComponentList || [];
+        const { componentList = [], parsedComponentList = [], mocks } = state;
         const selectedComponent = _.cloneDeep(
-          componentList.find(item => item.id === id) || parsedComponentList.find(item => item.id === id),
+          componentList.find((item) => item.id === id) || parsedComponentList.find((item) => item.id === id),
         );
+
+        // get component mock data
+        let selectedComponentMockData: any = {};
+        mocks.forEach((item) => {
+          const schemas = item.schemas;
+          schemas &&
+            schemas.forEach((schema) => {
+              if (schema.id === id) {
+                selectedComponentMockData = schema.props;
+              }
+            });
+        });
+
+        const newSelectedComponent = selectedComponent
+          ? {
+              ...selectedComponent,
+              mock: selectedComponentMockData,
+            }
+          : initComponent;
         const wrapperId = selectedComponent ? selectedComponent.wrapper : undefined;
         const selectedWrapperComponent = wrapperId
           ? _.cloneDeep(
-              componentList.find(item => item.id === wrapperId) ||
-                parsedComponentList.find(item => item.id === wrapperId),
+              componentList.find((item) => item.id === wrapperId) ||
+                parsedComponentList.find((item) => item.id === wrapperId),
             )
           : undefined;
         draft.componentEditorValue = componentEditorValue;
         draft.selectedComponentId = id && selectedComponent ? id : '';
-        draft.selectedComponent = selectedComponent || initComponent;
+        draft.selectedComponent = newSelectedComponent;
         draft.selectedWrapperComponent = selectedWrapperComponent || initComponent;
         break;
       }
@@ -402,6 +490,12 @@ const templateReducer = (state: initialDataType = initialState, action: Template
 
       case getType(ACTIONS.clearComponentResource): {
         draft.parsedComponentList = [];
+        draft.mockParsedComponentList = [];
+        break;
+      }
+
+      case getType(ACTIONS.pushMocks): {
+        draft.mocks = action.payload.mocks;
         break;
       }
 

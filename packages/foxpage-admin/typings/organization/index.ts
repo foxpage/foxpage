@@ -1,3 +1,5 @@
+import { ResponseBody } from '@/types/index';
+
 export interface OrganizationUser {
   joinTime?: string;
   userId: string;

@@ -1,6 +1,6 @@
 import { GetComponentSearchsProps } from '@/apis/group/application/packages';
 import { ComponentMetaType } from '@/types/builder';
-import { FileTag } from '@/types/tag';
+import { FileTag } from '@/types/common';
 import { Creator } from '@/types/user';
 
 export * from './detail';
@@ -17,6 +17,9 @@ export interface AppComponentType {
   type: string;
   createTime: string;
   updateTime: string;
+  base?: string;
+  release?: string;
+  online?: boolean;
   tags: Array<FileTag>;
 }
 
@@ -73,24 +76,18 @@ export interface AppComponentVersionType {
   };
 }
 
+export interface EntryContent {
+  contentId: string;
+  path: string;
+};
+
 export interface ComponentVersionResource {
   entry: {
-    browser?: {
-      contentId: string;
-      path: string;
-    };
-    node?: {
-      contentId: string;
-      path: string;
-    };
-    debug?: {
-      contentId: string;
-      path: string;
-    };
-    css?: {
-      contentId: string;
-      path: string;
-    };
+    browser?: EntryContent;
+    node?: EntryContent;
+    debug?: EntryContent;
+    css?: EntryContent;
+    editor?: EntryContent;
   },
   'editor-entry': { id: string; name: string; }[];
   dependencies: { id: string; name: string; }[];

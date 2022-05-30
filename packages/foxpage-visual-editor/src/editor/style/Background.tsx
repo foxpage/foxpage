@@ -12,7 +12,7 @@ import { BackgroundType } from './index.d';
 
 const { Option } = Select;
 
-const Background: React.FC<BackgroundType> = props => {
+const Background: React.FC<BackgroundType> = (props) => {
   const {
     backgroundColor,
     backgroundImage,
@@ -36,15 +36,15 @@ const Background: React.FC<BackgroundType> = props => {
           <EditContext.Provider
             value={{
               componentProps: { backgroundColor },
-              propChange: (_prop: string, val: string) => {
+              propChange: (_prop: string, val: any) => {
                 onChange('backgroundColor', val);
               },
               applyState: () => {
                 onApplyState('backgroundColor', backgroundColor as string);
               },
               propsChange: () => {},
-            }}
-          >
+              onBindVariable: () => {},
+            }}>
             <ColorPicker propKey="backgroundColor" hideVariableBtn={true} style={colorPickerStyle} />
           </EditContext.Provider>
         </Col>
@@ -88,8 +88,7 @@ const Background: React.FC<BackgroundType> = props => {
                 onChange={(value: any) => {
                   onChange('backgroundSize', value);
                   onApplyState('backgroundSize', value);
-                }}
-              >
+                }}>
                 <Option value="default">{foxpageI18n.backgroundSizeDefault}</Option>
                 <Option value="contain">{foxpageI18n.backgroundSizeContain}</Option>
                 <Option value="cover">{foxpageI18n.backgroundSizeCover}</Option>
@@ -110,8 +109,7 @@ const Background: React.FC<BackgroundType> = props => {
                 onChange={(value: any) => {
                   onChange('backgroundRepeat', value);
                   onApplyState('backgroundRepeat', value);
-                }}
-              >
+                }}>
                 <Option value="repeat">{foxpageI18n.backgroundRepeatDefault}</Option>
                 <Option value="repeat-x">{foxpageI18n.backgroundRepeatX}</Option>
                 <Option value="repeat-y">{foxpageI18n.backgroundRepeatY}</Option>

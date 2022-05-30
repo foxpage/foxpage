@@ -1,37 +1,38 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/list';
 import GlobalContext from '@/pages/GlobalContext';
 import { Application } from '@/types/application';
-import { OrganizationUrlParams } from '@/types/index';
 import periodFormat from '@/utils/period-format';
 
-const mapDispatchToProps = {
-  updateDrawerVisible: ACTIONS.updateDrawerVisible,
-  fetchList: ACTIONS.fetchList,
-};
-
 const mapStateToProps = (state: RootState) => ({
+  organizationId: state.system.organizationId,
   list: state.group.application.list.list,
-  pageInfo: state.group.application.list.pageInfo,
   fetching: state.group.application.list.fetching,
 });
+
+const mapDispatchToProps = {
+  fetchList: ACTIONS.fetchList,
+  updateDrawerVisible: ACTIONS.updateDrawerVisible,
+  openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
+};
+
 type ApplicationListProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const ListView = (props: ApplicationListProps) => {
-  const { fetching, list, pageInfo, updateDrawerVisible, fetchList } = props;
-  const { organizationId } = useParams<OrganizationUrlParams>();
+  const { organizationId, fetching, list, fetchList, updateDrawerVisible, openAuthDrawer } = props;
 
+  // get multi-language
   const { locale } = useContext(GlobalContext);
   const { global } = locale.business;
 
-  const handleEdit = app => {
+  const handleEdit = (app) => {
     updateDrawerVisible(true, app);
   };
 
@@ -58,21 +59,31 @@ const ListView = (props: ApplicationListProps) => {
     },
     {
       title: global.actions,
-      dataIndex: 'updateTime',
-      width: 80,
+      dataIndex: '',
+      width: 100,
       render: (_text: string, record: Application) => {
         return (
-          <Button
-            type="default"
-            size="small"
-            shape="circle"
-            title={global.edit}
-            onClick={() => {
-              handleEdit(record);
-            }}
-          >
-            <EditOutlined />
-          </Button>
+          <>
+            <Button
+              type="default"
+              size="small"
+              shape="circle"
+              title={global.edit}
+              onClick={() => {
+                handleEdit(record);
+              }}>
+              <EditOutlined />
+            </Button>
+            <Button
+              type="default"
+              size="small"
+              shape="circle"
+              title={global.userPermission}
+              onClick={() => openAuthDrawer(true, record)}
+              style={{ marginLeft: 8 }}>
+              <UserOutlined />
+            </Button>
+          </>
         );
       },
     },
@@ -85,13 +96,15 @@ const ListView = (props: ApplicationListProps) => {
         dataSource={list}
         columns={columns}
         loading={fetching}
-        pagination={
-          pageInfo?.total > pageInfo?.size
-            ? { current: pageInfo.page, pageSize: pageInfo.size, total: pageInfo.total }
-            : false
-        }
-        onChange={pagination => {
-          fetchList({ page: pagination.current, search: '', size: pagination.pageSize, organizationId });
+        pagination={false}
+        onChange={(pagination) => {
+          fetchList({
+            page: pagination.current,
+            search: '',
+            size: pagination.pageSize,
+            organizationId,
+            type: 'user',
+          });
         }}
       />
     </React.Fragment>

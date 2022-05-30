@@ -27,6 +27,7 @@ export const TYPE = {
   CONTENT: 'content',
   VERSION: 'version',
   TEAM: 'team',
+  USER: 'user',
 
   COMPONENT: 'component',
   CONDITION: 'condition',
@@ -41,6 +42,7 @@ export const TYPE = {
   RESOURCE: 'resource',
   TEMPLATE: 'template',
   VARIABLE: 'variable',
+  MOCK: 'mock',
 
   GOODS: 'goods',
 };

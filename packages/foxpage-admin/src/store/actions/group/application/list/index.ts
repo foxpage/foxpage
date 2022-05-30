@@ -1,28 +1,36 @@
 import { createAction } from 'typesafe-actions';
 
-import { Application, ApplicationFetchParams, ApplicationFetchResponse } from '@/types/index';
-
-// TODO: will remove
-export const FETCH_LIST = 'APPLICATION_LIST__FETCH_LIST';
-export const FETCH_LIST_SUCCEED = 'APPLICATION_LIST__FETCH_LIST_SUCCEED';
-export const SET_PAGE_NO = 'APPLICATION_LIST__SET_PAGE_NO';
-export const OPEN_UP_INSERT_DRAWER = 'APPLICATION_LIST__OPEN_UP_INSERT_DRAWER';
-export const CLOSE_UP_INSERT_DRAWER = 'APPLICATION_LIST__CLOSE_UP_INSERT_DRAWER';
-export const SAVE_APP = 'APPLICATION_LIST__SAVE_APP';
-export const UPDATE_VALUE = 'APPLICATION_LIST__UPDATE_VALUE';
+import {
+  Application,
+  ApplicationFetchParams,
+  ApplicationFetchResponse,
+  AuthorizeAddParams,
+  AuthorizeDeleteParams,
+  AuthorizeListFetchParams,
+  AuthorizeListItem,
+  AuthorizeUserFetchParams,
+  User,
+} from '@/types/index';
 
 export const clearAll = createAction('APPLICATION_LIST__CLEAR_ALL', () => ({}))();
 
-export const updateFetching = createAction('APPLICATION_LIST__UPDATE_FETCHING', (status: boolean) => ({ status }))();
-export const updateSaving = createAction('APPLICATION_LIST__UPDATE_SAVING', (status: boolean) => ({ status }))();
+export const updateFetching = createAction('APPLICATION_LIST__UPDATE_FETCHING', (status: boolean) => ({
+  status,
+}))();
+export const updateSaving = createAction('APPLICATION_LIST__UPDATE_SAVING', (status: boolean) => ({
+  status,
+}))();
 
 export const fetchList = createAction('APPLICATION_LIST__FETCH_LIST', (params: ApplicationFetchParams) => ({
   params,
 }))();
 
-export const pushAppList = createAction('APPLICATION_LIST__FETCH_LIST_SUCCEED', (result: ApplicationFetchResponse) => ({
-  result,
-}))();
+export const pushAppList = createAction(
+  'APPLICATION_LIST__FETCH_LIST_SUCCEED',
+  (result: ApplicationFetchResponse) => ({
+    result,
+  }),
+)();
 
 export const changePageNum = createAction('APPLICATION_LIST__CHANGE_PAGE_NUM', (pageNo: number) => ({
   pageNo,
@@ -46,4 +54,57 @@ export const updateApp = createAction('APPLICATION_LIST__UPDATE_APP', (key: stri
 export const updateValue = createAction('APPLICATION_LIST__UPDATE_VALUE', (key: string, value: unknown) => ({
   key,
   value,
+}))();
+
+// authorize
+export const fetchAuthList = createAction(
+  'APPLICATION_LIST__FETCH_AUTH_LIST',
+  (params: AuthorizeListFetchParams) => ({ params }),
+)();
+
+export const pushAuthList = createAction('APPLICATION_LIST__PUSH_AUTH_LIST', (list: AuthorizeListItem[]) => ({
+  list,
+}))();
+
+export const updateAuthListLoading = createAction(
+  'APPLICATION_LIST__UPDATE_AUTH_LIST_LOADING',
+  (status: boolean) => ({
+    status,
+  }),
+)();
+
+export const updateAuthDrawerVisible = createAction(
+  'APPLICATION_LIST__UPDATE_AUTH_DRAWER_VISIBLE',
+  (visible = false, editApp?: Partial<Application>) => ({
+    visible,
+    editApp,
+  }),
+)();
+
+export const authAddUser = createAction(
+  'APPLICATION_LIST__AUTH_ADD_USER',
+  (params: AuthorizeAddParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const authDeleteUser = createAction(
+  'APPLICATION_LIST__AUTH_DELETE_USER',
+  (params: AuthorizeDeleteParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const fetchUserList = createAction(
+  'APPLICATION_LIST___FETCH_USER_LIST',
+  (params: AuthorizeUserFetchParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const pushUserList = createAction('APPLICATION_LIST___PUSH_USER_LIST', (list: User[]) => ({
+  list,
 }))();

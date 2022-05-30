@@ -1,12 +1,14 @@
 import { message } from 'antd';
 import _ from 'lodash';
 
-import { parsePage } from '@foxpage/foxpage-js-sdk';
+import { parsePage, parsePageInServer } from '@foxpage/foxpage-js-sdk';
 import { Page, RelationInfo, RenderAppInfo } from '@foxpage/foxpage-types';
 
-import { searchVariable } from '@/apis/group/application/variable/index';
+import { searchVariable } from '@/apis/group/application/variable';
 import { REACT_COMPONENT_TYPE, WRAPPER_COMPONENT_NAME } from '@/constants/build';
+import { BLANK_NODE } from '@/pages/builder/constant';
 import { getBusinessI18n } from '@/pages/locale';
+import { Application } from '@/types/application';
 import { ConditionContentItem } from '@/types/application/condition';
 import { FuncContentItem } from '@/types/application/function';
 import VariableType, { VariableContent } from '@/types/application/variable';
@@ -18,18 +20,29 @@ import {
   DslContent,
   DslError,
   DslType,
+  Extension,
   RelationType,
 } from '@/types/builder';
 import shortId from '@/utils/short-id';
 
 const tplReplaceReg = /\{|}|/g;
 
+export const generateNodeId = () => {
+  return `stru_${shortId(15)}`;
+};
+
 const generateCopyComponent = (tree: Array<ComponentStructure>, parentId: string) => {
   tree.forEach((treeItem: ComponentStructure, _index: number) => {
-    const id = `stru_${shortId(15)}`;
+    const id = generateNodeId();
     treeItem.id = id;
     treeItem.parentId = parentId;
     treeItem.wrapper = treeItem.wrapper ? parentId : undefined;
+    if (!treeItem.extension) {
+      treeItem.extension = {};
+    }
+    treeItem.extension.parentId = parentId;
+    // delete extendId
+    delete treeItem.extension?.extendId;
     if (treeItem.children && treeItem.children.length > 0) {
       generateCopyComponent(treeItem.children, id);
     }
@@ -47,7 +60,11 @@ const getRenderStructure = (list: Array<ComponentStructure>, parentId?: string) 
   });
 };
 
-const generateComponentList = (list: Array<ComponentStructure>, tree: Array<ComponentStructure>, parentId?: string) => {
+const generateComponentList = (
+  list: Array<ComponentStructure>,
+  tree: Array<ComponentStructure>,
+  parentId?: string,
+) => {
   tree?.forEach((treeItem: ComponentStructure, index: number) => {
     treeItem.position = index;
     treeItem.parentId = parentId;
@@ -60,44 +77,73 @@ const generateComponentList = (list: Array<ComponentStructure>, tree: Array<Comp
   });
 };
 
+/**
+ * generate the extension data
+ * @param parentId parent ID
+ * @param sort position
+ * @param extendId extend id
+ * @returns extension data
+ */
+const extensionCreator = (parentId?: string, sort?: number, extendId?: string) => {
+  const extension: Extension = {};
+  if (parentId || parentId === '') {
+    extension.parentId = parentId;
+  }
+  if (sort) {
+    extension.sort = sort;
+  }
+  if (extendId) {
+    extension.extendId = extendId;
+  }
+  return extension;
+};
+
+export type StructureNodeInitOptions = Partial<
+  Pick<
+    ComponentStructure,
+    'label' | 'parentId' | 'position' | 'props' | 'relation' | 'children' | 'useStyleEditor'
+  >
+>;
+
+/**
+ * structure node creator
+ * @param id node id
+ * @param name node name
+ * @param options options
+ * @returns new node
+ */
+const initStructureNode = (id: string, name: string, options: StructureNodeInitOptions = {}) => {
+  return {
+    id,
+    label: options.label || name,
+    name,
+    type: REACT_COMPONENT_TYPE,
+    props: options.props || {},
+    parentId: options.parentId || '',
+    wrapper: options.useStyleEditor ? options.parentId || '' : '',
+    children: options.children || [],
+    relation: options.relation || {},
+    extension: extensionCreator(options.parentId, options.position),
+  } as ComponentStructure;
+};
+
 const newWrapperComponent = (
   registeredComponent: ComponentType[],
   componentName: string,
   parentId?: string,
 ): ComponentStructure => {
   const component = registeredComponent.find((item: any) => item.name === componentName) || {};
+  const componentId = generateNodeId();
   if (component.useStyleEditor) {
-    const wrapperId = `stru_${shortId(15)}`;
-    const componentId = `stru_${shortId(15)}`;
-    return {
-      id: wrapperId,
-      label: WRAPPER_COMPONENT_NAME,
-      name: WRAPPER_COMPONENT_NAME,
+    const wrapperId = generateNodeId();
+    const child = initStructureNode(componentId, componentName, { parentId: wrapperId });
+    return initStructureNode(wrapperId, WRAPPER_COMPONENT_NAME, {
       parentId,
-      type: REACT_COMPONENT_TYPE,
-      children: [
-        {
-          id: componentId,
-          label: componentName,
-          name: componentName,
-          type: REACT_COMPONENT_TYPE,
-          props: {},
-          parentId: wrapperId,
-          wrapper: wrapperId,
-          children: [],
-          relation: {},
-        },
-      ],
-    };
+      children: [child],
+      useStyleEditor: true,
+    });
   } else {
-    return {
-      id: `stru_${shortId(15)}`,
-      label: componentName,
-      name: componentName,
-      parentId,
-      children: [],
-      type: REACT_COMPONENT_TYPE,
-    };
+    return initStructureNode(componentId, componentName, { parentId });
   }
 };
 
@@ -134,7 +180,9 @@ const addDsl = (
   for (let i = 0; i < tree.length; i++) {
     const treeItem = tree[i];
     if (tree[i].id === parentId && treeItem.children) {
-      treeItem.children.splice(position, 0, dsl);
+      // append at last
+      const pos = position === -1 ? treeItem.children.length : position;
+      treeItem.children.splice(pos, 0, dsl);
       return;
     } else if (treeItem.children && treeItem.children.length > 0) {
       addDsl(dsl, treeItem.children, position, versionType, parentId);
@@ -187,6 +235,11 @@ const updateDsl = (version: DslType, params: ComponentStaticSaveParams, versionT
       const deleteItem = deleteDsl(params.content, version.content.schemas);
       if (deleteItem) {
         deleteItem.parentId = params.parentId;
+        // deal extension parentId
+        if (!deleteItem.extension) {
+          deleteItem.extension = {};
+        }
+        deleteItem.extension.parentId = params.parentId;
         addDsl(deleteItem, version.content.schemas, params.position || 0, versionType, params.parentId);
       } else {
         console.log(params.content, version);
@@ -198,16 +251,17 @@ const updateDsl = (version: DslType, params: ComponentStaticSaveParams, versionT
 };
 
 const mergeDsl = async (
-  applicationId: string,
+  application: Application,
   page: DslContent,
   templates: ComponentStructure[],
   variables: VariableType[],
   conditions: ConditionContentItem[],
   functions: FuncContentItem[],
+  locale: string,
 ) => {
   const appInfo = {
-    appId: applicationId,
-    slug: '/',
+    appId: application.id,
+    slug: application.slug,
     configs: {},
   } as RenderAppInfo;
   const relationInfo = {
@@ -216,9 +270,39 @@ const mergeDsl = async (
     conditions, // Condition[]
     functions, //FPFunction[]
   };
-  console.log(relationInfo, page);
-  // TODO 类型声明文件后期三端统一
-  return parsePage(page as Page, { appInfo, relationInfo: relationInfo as unknown as RelationInfo });
+
+  const {
+    builder: { parsePageFailed },
+  } = getBusinessI18n();
+
+  try {
+    const host = application.host[0] || '';
+    if (!host) {
+      throw new Error('no host');
+    }
+    // TODO 类型声明文件后期三端统一
+    const result = (await parsePageInServer(page as Page, {
+      host: `${host}/${application.slug}`,
+      appInfo,
+      relationInfo: (relationInfo as unknown) as RelationInfo,
+      locale,
+    })) as Record<string, any>;
+    if (result.status === 200) {
+      if (result.data.status) {
+        return { page: { ...page, schemas: result.data.result.parsedPage } };
+      } else {
+        message.error(parsePageFailed);
+        console.error(result.data.result);
+        return { page: { ...page, schemas: [] } };
+      }
+    }
+    return {};
+  } catch (e) {
+    return parsePage(page as Page, {
+      appInfo,
+      relationInfo: (relationInfo as unknown) as RelationInfo,
+    }) as unknown as { result: { parsedPage: DslContent }; status: boolean };
+  }
 };
 
 const setComponentSource = (component: ComponentStructure, componentSourceMap: ComponentSourceMapType) => {
@@ -241,14 +325,25 @@ const setSourceToDsl = (
   componentSourceMap: ComponentSourceMapType,
   pageComponentList: ComponentStructure[],
 ) => {
-  dsl?.forEach((component: any) => {
+  dsl?.forEach((component: ComponentStructure) => {
     setComponentSource(component, componentSourceMap);
-    if (!pageComponentList?.find(item => item.id === component.id)) {
+    if (!pageComponentList?.find((item) => item.id === component.id)) {
       component.belongTemplate = true;
     }
 
     if (component.children && component.children.length > 0) {
       setSourceToDsl(component.children, componentSourceMap, pageComponentList);
+    }
+  });
+};
+
+const setWrapperToDsl = (dsl: ComponentStructure[]) => {
+  dsl?.forEach((component: ComponentStructure) => {
+    if (component.name === WRAPPER_COMPONENT_NAME && component?.children?.length > 0) {
+      component.children[0].wrapper = component.id;
+    }
+    if (component.children && component.children.length > 0) {
+      setWrapperToDsl(component.children);
     }
   });
 };
@@ -263,7 +358,9 @@ const getRelationFromProps = (propsString: string): RelationType => {
     return {};
   } else {
     const relation: RelationType = {};
-    const variablePaths = matchArray.map((item: string) => item.replaceAll(/\{\{/g, '')).filter(item => !!item);
+    const variablePaths = matchArray
+      .map((item: string) => item.replaceAll(/\{\{/g, ''))
+      .filter((item) => !!item);
 
     variablePaths.forEach((path: string) => {
       const array = path.split(':');
@@ -280,15 +377,16 @@ const updateRelation = (oldRelation: RelationType, relation: RelationType) => {
 };
 
 const deleteDslSource = (dsl: ComponentStructure[]) => {
-  dsl.forEach(component => {
+  dsl.forEach((component) => {
     delete component.meta;
     delete component.resource;
     delete component.schema;
     delete component.belongTemplate;
     delete component.position;
     delete component.parentId;
-    // TODO 处理没有type的历史数据。完事之后删掉这段代码
-    component.type === REACT_COMPONENT_TYPE;
+    delete component.useStyleEditor;
+    delete component.enableChildren;
+    delete component.wrapper;
     if (component.children && component.children.length > 0) {
       deleteDslSource(component.children);
     }
@@ -331,7 +429,9 @@ const searchVariableRelation = async (params: {
     const searchRes = await searchVariable({ applicationId, id: folderId, names: variableSearches });
     if (searchRes.data && searchRes.code === 200) {
       for (const item in relation) {
-        const relationItem = searchRes.data.find((variable: VariableType) => relation[item].name === variable.name);
+        const relationItem = searchRes.data.find(
+          (variable: VariableType) => relation[item].name === variable.name,
+        );
         if (relationItem) {
           result.variables.push(relationItem.content);
           const itemRelations = relationItem.relations;
@@ -360,14 +460,11 @@ const searchVariableRelation = async (params: {
 };
 
 const getPageTemplateId = (version: DslType) => {
-  const schemas = version?.content?.schemas;
-  if (schemas?.length === 0) {
+  const { schemas, relation } = version?.content || {};
+  if (!schemas || schemas.length === 0 || !relation) {
     return undefined;
   }
-  const relation = version.content.relation;
-  if (!relation) {
-    return undefined;
-  }
+
   const tpl = (schemas[0]?.directive?.tpl as string) || '';
   return relation[tpl.replace(tplReplaceReg, '')]?.id;
 };
@@ -382,7 +479,7 @@ const getComponentTemplateId = (component: ComponentStructure, relation: Relatio
 
 const getDslErrors = (dsl: ComponentStructure[], relation: RelationType) => {
   let error: DslError = {};
-  dsl.forEach(component => {
+  dsl.forEach((component) => {
     const componentRelation: RelationType = getRelationFromProps(JSON.stringify(component.props || {}));
     if (componentRelation) {
       for (const relationItem in componentRelation) {
@@ -406,8 +503,41 @@ const getDslErrors = (dsl: ComponentStructure[], relation: RelationType) => {
   return error;
 };
 
+/**
+ * ignore the structure node
+ * @param dsl
+ * @param options
+ */
+const filterNode = <T extends ComponentStructure>(dsl: T[], condition?: (item: T) => boolean) => {
+  function doFilter(list: T[]) {
+    const result: T[] = [];
+    list.forEach((item) => {
+      const status = condition ? condition(item) : false;
+      if (status) {
+        let childList: T[] = [];
+        if (item.children?.length) {
+          childList = doFilter(item.children as T[]);
+        }
+        result.push(Object.assign({}, item, { children: childList }));
+      }
+    });
+    return result;
+  }
+  return doFilter(dsl);
+};
+
+/**
+ * ignore blank node
+ * @param dsl
+ * @returns
+ */
+const ignoreNodeByBlankNode = (dsl: ComponentStructure[]) => {
+  return filterNode(dsl, (node: ComponentStructure) => node.name !== BLANK_NODE);
+};
+
 export {
   deleteDslSource,
+  filterNode,
   generateComponentList,
   generateCopyComponent,
   getComponentTemplateId,
@@ -416,11 +546,13 @@ export {
   getPosition,
   getRelationFromProps,
   getRenderStructure,
+  ignoreNodeByBlankNode,
   mergeDsl,
   newWrapperComponent,
   searchVariableRelation,
   setComponentSource,
   setSourceToDsl,
+  setWrapperToDsl,
   updateDsl,
   updateRelation,
 };

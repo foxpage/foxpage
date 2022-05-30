@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { useParams } from 'react-router-dom';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Modal, Popconfirm, Table } from 'antd';
@@ -8,7 +7,6 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/user';
 import GlobalContext from '@/pages/GlobalContext';
-import { OrganizationUrlParams } from '@/types/application';
 import periodFormat from '@/utils/period-format';
 
 import AddAccountDrawer from './AddAccountDrawer';
@@ -16,6 +14,7 @@ import AddAccountDrawer from './AddAccountDrawer';
 const PAGE_SIZE = 10000;
 
 const mapStateToProps = (store: RootState) => ({
+  organizationId: store.system.organizationId,
   loading: store.group.user.fetching,
   users: store.group.user.users,
   addedUsers: store.group.user.addedUsers,
@@ -31,15 +30,25 @@ const mapDispatchToProps = {
 
 type UserListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const User: React.FC<UserListType> = props => {
-  const { loading, users, addedUsers, updateAccountDrawerOpen, fetchUsers, deleteUser, updateAddedUserInfo } = props;
+const User: React.FC<UserListType> = (props) => {
+  const {
+    organizationId,
+    loading,
+    users,
+    addedUsers,
+    updateAccountDrawerOpen,
+    fetchUsers,
+    deleteUser,
+    updateAddedUserInfo,
+  } = props;
+
+  // multi-language
   const { locale } = useContext(GlobalContext);
   const { global, team, login } = locale.business;
-  const { organizationId } = useParams<OrganizationUrlParams>();
 
   useEffect(() => {
     fetchUsers({ organizationId, page: 1, size: PAGE_SIZE });
-  }, []);
+  }, [fetchUsers, organizationId]);
 
   useEffect(() => {
     if (addedUsers && addedUsers.account && addedUsers.password) {
@@ -69,8 +78,7 @@ const User: React.FC<UserListType> = props => {
           type="primary"
           onClick={() => {
             updateAccountDrawerOpen(true);
-          }}
-        >
+          }}>
           <PlusOutlined /> {team.addUser}
         </Button>
       </div>
@@ -104,8 +112,7 @@ const User: React.FC<UserListType> = props => {
                     deleteUser({ organizationId, userIds: [user.userId] });
                   }}
                   okText={global.yes}
-                  cancelText={global.no}
-                >
+                  cancelText={global.no}>
                   <Button size="small" shape="circle" icon={<DeleteOutlined />} />
                 </Popconfirm>
               );

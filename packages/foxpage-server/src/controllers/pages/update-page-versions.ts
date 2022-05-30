@@ -35,7 +35,7 @@ export class UpdatePageVersionDetail extends BaseController {
     operationId: 'update-page-version-detail',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
@@ -54,9 +54,17 @@ export class UpdatePageVersionDetail extends BaseController {
         }
       }
 
-      const result: Record<string, any> = await this.service.version.info.updateVersionDetail(params, {
-        ctx,
-      });
+      const mockId = params.content?.extension?.mockId || '';
+      params.content = <any>_.omit(params.content || {}, ['extension']);
+      let result: Record<string, any> = {};
+      [result] = await Promise.all([
+        this.service.version.info.updateVersionDetail(params, { ctx }),
+        this.service.content.tag.updateExtensionTag(
+          params.id,
+          { mockId },
+          { ctx }
+        ),
+      ]);
 
       if (result.code !== 0) {
         if (result.code === 1) {
@@ -66,7 +74,7 @@ export class UpdatePageVersionDetail extends BaseController {
         } else if (result.code === 3) {
           return Response.warning(i18n.page.versionExist, 2051906);
         } else if (result.code === 4) {
-          return Response.warning(i18n.page.missingFields + result.data.join(','), 2051907);
+          return Response.warning(i18n.page.missingFields + ': ' + result.data.join(','), 2051907);
         }
       }
 

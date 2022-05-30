@@ -1,5 +1,5 @@
 import { BaseResponse } from '@/types/common';
-import { FileTag, PaginationReqParams, ProjectFileType } from '@/types/index';
+import { FileTag, PaginationReqParams, ProjectFileType, ResponseBody } from '@/types/index';
 
 export interface ProjectFileSearchParams extends PaginationReqParams {
   applicationId: string;

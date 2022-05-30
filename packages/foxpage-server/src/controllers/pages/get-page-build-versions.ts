@@ -4,10 +4,9 @@ import _ from 'lodash';
 import { Ctx, Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { Component, ContentVersion } from '@foxpage/foxpage-server-types';
+import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { ComponentContentInfo } from '../../types/component-types';
 import { PageBuildVersion } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { PageBuildVersionReq, PageBuildVersionRes } from '../../types/validates/page-validate-types';
@@ -45,83 +44,51 @@ export class GetPageBuildVersionDetail extends BaseController {
     operationId: 'get-page-build-version',
   })
   @ResponseSchema(PageBuildVersionRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @QueryParams() params: PageBuildVersionReq,
   ): Promise<ResData<PageBuildVersion>> {
     try {
       // Get the latest version of the page
-      const versionDetail = await this.service.version.info.getMaxContentVersionDetail(params.id, {
-        ctx,
-        createNew: true,
-      });
+      const versionDetail = await this.service.version.info.getMaxContentVersionDetail(
+        params.id,
+        { ctx, createNew: true }
+      );
 
       // Get the live information of the template that the page depends on
       const templateVersion: Partial<ContentVersion> = await this.service.version.info.getTemplateDetailFromPage(
         params.applicationId,
         versionDetail,
-        { isLive: false },
       );
 
-      // Get the components of the page/template
-      const versionSchemas = versionDetail?.content?.schemas || [];
-      const templateSchemas = templateVersion?.content?.schemas || [];
-      const componentDetailList: Component[][] = await Promise.all([
-        this.service.content.component.getComponentsFromDSL(params.applicationId, versionSchemas),
-        this.service.content.component.getComponentsFromDSL(params.applicationId, templateSchemas),
+      const [versionInfo, templateVersionInfo] = await Promise.all([
+        this.service.version.info.getPageVersionInfo(versionDetail, { applicationId: params.applicationId }),
+        this.service.version.info.getPageVersionInfo(templateVersion as ContentVersion, { applicationId: params.applicationId, isLive: true }),
       ]);
-      let componentList = _.flatten(componentDetailList);
-
-      // Get the editor component of the component and the dependent components
-      const editorComponentList = await this.service.content.component.getEditorDetailFromComponent(
-        params.applicationId,
-        componentList,
-      );
-      componentList = componentList.concat(editorComponentList);
-      const idVersionList = this.service.component.getEditorAndDependenceFromComponent(componentList);
-      const dependencies = await this.service.component.getComponentDetailByIdVersion(idVersionList);
-      componentList = componentList.concat(_.map(dependencies, (depend) => depend?.content || {}));
-      const componentIds = this.service.content.component.getComponentResourceIds(componentList);
-
-      // Through the page details, get all the relation information details of the page
-      const versionRelations = {
-        [versionDetail.contentId]: versionDetail,
-        [templateVersion?.contentId || '']: templateVersion as ContentVersion,
-      };
-
-      const [resourceObject, relationObject, componentFileObject, contentAllParents] = await Promise.all([
-        this.service.content.resource.getResourceContentByIds(componentIds),
-        this.service.version.relation.getVersionRelations(versionRelations, false),
-        this.service.file.list.getContentFileByIds(_.map(componentList, 'id')),
-        this.service.content.list.getContentAllParents(componentIds),
-      ]);
-
-      const appResource = await this.service.application.getAppResourceFromContent(contentAllParents);
-      const contentResource = this.service.content.info.getContentResourceTypeInfo(
-        appResource,
-        contentAllParents,
-      );
-
-      // Add the resource to the component, add the editor-entry and the name of the dependencies in the component
-      componentList = this.service.component.addNameToEditorAndDepends(
-        componentList as ComponentContentInfo[],
-        componentFileObject,
-      );
-      componentList = this.service.content.component.replaceComponentResourceIdWithContent(
-        componentList,
-        resourceObject,
-        contentResource,
-      );
-
-      // Encapsulate the returned relation list into {templates:[],variables:[]...} format
-      const relations = await this.service.relation.formatRelationResponse(relationObject);
 
       await this.service.version.info.runTransaction(ctx.transactions);
 
+      // add mock and extension to template
+      if (versionInfo.relations.templates && versionInfo.relations.templates[0]) {
+        versionInfo.relations.templates[0] = _.merge(
+          {},
+          versionInfo.relations.templates[0],
+          templateVersionInfo.mockObject[versionInfo.relations.templates[0].id] || {}
+        );
+      }
+
       // Splicing return result
+      versionDetail.content.extension = versionInfo.mockObject[params.id]?.extension || {};
+      const mockRelations = versionInfo.mockObject[params.id]?.relations || {};
+      const mockTemplateRelations = templateVersionInfo.mockObject[templateVersion.contentId as string]?.relations || {};
+      versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockRelations);
+      versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockTemplateRelations);
+
+
       const pageBuildVersion: PageBuildVersion = Object.assign({}, versionDetail, {
-        relations: relations || {},
-        components: componentList,
+        relations: versionInfo.relations || {},
+        mock: versionInfo.mockObject[params.id]?.mock || {},
+        components: _.concat(versionInfo.componentList, templateVersionInfo.componentList),
       });
 
       return Response.success(pageBuildVersion, 1050401);

@@ -1,19 +1,30 @@
 import React, { CSSProperties, useEffect, useState } from 'react';
 
-import { Layout } from 'antd';
 import styled from 'styled-components';
 
 import { FoxpageComponentType } from '@foxpage/foxpage-js-sdk';
 
-import zhCN from './i18n/zh-cn';
+import {
+  ComponentAddParams,
+  ComponentSourceMapType,
+  ComponentStructure,
+  Drop,
+  FoxpageI18n,
+} from '@/types/component';
+
+import DropContext from './dnd/DropContext';
+import zhCN from './i18n/language/zh-cn.json';
 import CalibrationLine from './label/CalibrationLine';
-import HoveredLabel from './label/HoveredLabel';
+// import HoveredLabel from './label/HoveredLabel';
 import SelectedLabel from './label/SelectedLabel';
-import { getComponentList, loadComponent } from './utils/component-load';
+import ComponentDrawer from './toolbar/components/Drawer';
+import { ComponentFocus } from './ComponentFocus';
 import {
   ADD_COMPONENT,
+  CHANGE_COMPONENT_LIST_DRAWER,
   COPY_COMPONENT,
   DELETE_COMPONENT,
+  INIT_DATA,
   LOAD_FINISH,
   OPEN_CONDITION_BIND,
   OPEN_VARIABLE_BIND,
@@ -24,6 +35,7 @@ import {
   SET_COMPONENT_STRUCTURE,
   SET_CONTAINER_STYLE,
   SET_FOXPAGE_LOCALE,
+  SET_MOCK_DATA,
   SET_SELECT_COMPONENT,
   SET_VIEWER_CONTAINER_STYLE,
   SET_ZOOM,
@@ -33,80 +45,41 @@ import {
 import Editor from './editor';
 import { FileTypeEnum } from './enum';
 import i18n from './i18n';
-import {
-  ComponentAddParams,
-  ComponentSourceMapType,
-  ComponentStructure,
-  Drop,
-  FoxpageI18n,
-  OffsetType,
-} from './interface';
 import Page from './page';
+import { postMsg } from './post-message';
+import { getComponentList, loadComponent } from './utils';
 import ViewerContext from './viewerContext';
 
 import './common.css';
 
-const { Sider, Content } = Layout;
-
-const StyledLayout = styled(Layout)`
+const StyledLayout = styled.div`
   display: flex;
-  -webkit-box-pack: justify;
-  justify-content: space-between;
-  -webkit-box-align: center;
-  align-items: center;
-  padding: 0;
-  background: rgb(255, 255, 255);
   height: 100%;
-  margin-right: 300px;
 `;
 
-const StyledSlider = styled(Sider)`
-  display: flex;
-  border-left: 1px solid rgb(219, 219, 219);
-  border-right: 1px solid rgb(219, 219, 219);
+const StyledSlider = styled.div`
+  flex: 0 0 300px;
   background: rgb(255, 255, 255);
-  height: 100%;
-  padding: 0;
-  width: 100%;
-  align-items: flex-start;
-  z-index: 1;
-  position: absolute;
-  right: 0;
-  .ant-layout-sider-children {
-    width: 100%;
-  }
-  .ant-layout-sider-trigger {
-    display: none;
-  }
-`;
-
-const StyledContent = styled(Content)`
-  height: 100%;
-  position: relative;
-  background-color: rgb(245, 245, 245);
-  padding: 12px 0;
 `;
 
 const Container = styled.div`
-  height: 100%;
-  margin: 0 auto;
-  overflow-y: auto;
-`;
-
-const ScrollContainer = styled.div`
-  height: 100%;
   position: relative;
-  margin: 0 auto;
+  overflow: auto;
+  flex-grow: 1;
+  padding: 20px;
 `;
 
 const ViewContainer = styled.div`
-  overflow: auto;
   margin: 0 auto;
-  max-height: 100%;
-  height: 100%;
+  max-width: 1160px;
+  transition: all 0.3s ease 0s;
+  user-select: none;
+  background-color: #ffffff;
+  box-shadow: rgba(0, 0, 0, 0.05) 0 0 6px 2px;
 `;
 
 const Viewer = () => {
+  const [updateTime, setUpdateTime] = useState(0);
   const [zoom, setZoom] = useState<number>(1);
   const [foxpageI18n, setFoxpageI18n] = useState<FoxpageI18n>(zhCN);
   const [containerStyle, setContainerStyle] = useState<CSSProperties>({});
@@ -116,22 +89,70 @@ const Viewer = () => {
   const [componentList, setComponentList] = useState<ComponentStructure[]>([]);
   const [selectedComponent, setSelectedComponent] = useState<ComponentStructure | undefined>();
   const [selectedWrapperComponent, setSelectedWrapperComponent] = useState<ComponentStructure | undefined>();
-  const [hoveredComponent, setHoveredComponent] = useState<ComponentStructure | undefined>();
+  // const [hoveredComponent, setHoveredComponent] = useState<ComponentStructure | undefined>();
   const [loadedComponent, setLoadedComponent] = useState<Record<string, FoxpageComponentType>>({});
   const [calibrationLineState, setCalibrationLineState] = useState<{
     visible: boolean;
     dndParams?: Drop;
-    offSet: { scrollX: number; scrollY: number };
-  }>({ visible: false, offSet: { scrollX: 0, scrollY: 0 } });
+  }>({ visible: false });
+  const [componentDrawerStatus, setComponentDrawerStatus] = useState(false);
+  const [allComponents, setAllComponents] = useState();
+  const [locale, setLocale] = useState('');
+  const [mockModeEnable, setMockModeEnable] = useState(false);
+  const defaultHeight = document.getElementById('foxpage-visual-main')?.getBoundingClientRect()?.height || 0;
+  // disable a link jump timeinterval
+  let disableALinkInterval: any = null;
+
+  const handleUpdateTime = () => {
+    setTimeout(() => {
+      setUpdateTime(new Date().getTime());
+    }, 300);
+  };
+
+  useEffect(() => {
+    if (!disableALinkInterval) {
+      const node = document.getElementById('foxpage-visual-main')?.ownerDocument;
+      if (!node) {
+        return;
+      }
+      disableALinkInterval = setInterval(() => {
+        const aList = [...Array.from(node?.getElementsByTagName('a'))];
+        aList.forEach((item) => {
+          item.onclick = function stop() {
+            return false;
+          };
+        });
+      }, 1000);
+    }
+    return function() {
+      clearInterval(disableALinkInterval);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.cookie = `foxpage_builder_locale=${locale}; expires=${new Date(
+      new Date().getTime() + 24 * 60 * 60 * 1000,
+    )}`;
+  }, [locale]);
 
   const messageListener = (event: MessageEvent) => {
     const { data } = event;
     const { type } = data;
     switch (type) {
+      case INIT_DATA: {
+        setLocale(data.locale);
+        setAllComponents(data.allComponents);
+        break;
+      }
       case REQUIRE_LOAD_COMPONENT:
         const { requireLoad, componentSource, renderStructure, fileType } = data;
+        setLocale(data.locale);
         setFileType(fileType);
-        load(requireLoad, componentSource, renderStructure);
+        load(renderStructure, {
+          requireLoad,
+          componentSource,
+          locale: data.locale,
+        });
         break;
       case SET_COMPONENT_STRUCTURE:
         setComponentList(getComponentList(data.renderStructure));
@@ -145,15 +166,26 @@ const Viewer = () => {
         setContainerStyle(data.containerStyle);
         break;
       case SET_ZOOM:
+        handleUpdateTime();
         setZoom(data.zoom);
         break;
       case SET_VIEWER_CONTAINER_STYLE:
+        handleUpdateTime();
         setViewerContainerStyle(data.style);
         break;
       case SET_FOXPAGE_LOCALE:
+        // portal i18n
+        handleUpdateTime();
         setFoxpageI18n(i18n[data.locale]);
         break;
-
+      case CHANGE_COMPONENT_LIST_DRAWER: {
+        setComponentDrawerStatus(data.status);
+        break;
+      }
+      case SET_MOCK_DATA: {
+        setMockModeEnable(data.enable);
+        break;
+      }
       default:
         break;
     }
@@ -161,86 +193,112 @@ const Viewer = () => {
 
   useEffect(() => {
     window.addEventListener('message', messageListener, false);
+    window.addEventListener('resize', handleUpdateTime);
     return () => {
       window.removeEventListener('message', messageListener);
+      window.removeEventListener('resize', handleUpdateTime);
     };
   }, []);
 
   const load = async (
-    requireLoad: boolean,
-    componentSource: ComponentSourceMapType,
     structure: ComponentStructure[],
+    opt: {
+      requireLoad: boolean;
+      componentSource: ComponentSourceMapType;
+      locale?: string;
+    },
   ) => {
-    if (requireLoad && structure.length > 0 && Object.keys(componentSource).length > 0) {
+    if (opt.requireLoad && structure.length > 0) {
       const { loadedComponent, noResourceComponentName, componentList } = await loadComponent(
         structure,
-        componentSource,
+        opt.componentSource,
       );
       setLoadedComponent(loadedComponent);
       setComponentList(componentList);
       postMessage(LOAD_FINISH, { noResourceComponentName });
+      return;
     }
+    postMessage(LOAD_FINISH, { noResourceComponentName: [] });
   };
 
   const postMessage = (type: string, data: Record<string, unknown>) => {
-    window.parent.postMessage({
-      ...data,
-      type,
-    });
+    postMsg(type, data);
+  };
+
+  const handleComponentDrawerClose = () => {
+    postMessage(CHANGE_COMPONENT_LIST_DRAWER, { status: false });
   };
 
   return (
     <ViewerContext.Provider value={{ loadedComponent, componentList, zoom, containerStyle, foxpageI18n }}>
       <StyledLayout>
-        <StyledContent>
-          <ViewContainer style={viewerContainerStyle}>
-            <Container style={containerStyle}>
-              <ScrollContainer style={{ transform: `scale(${zoom})`, transformOrigin: zoom > 1 ? '0 0' : '50% 50%' }}>
+        {componentDrawerStatus && (
+          <ComponentDrawer allComponent={allComponents} onClose={handleComponentDrawerClose} />
+        )}
+
+        <Container id="foxpage-visual-main">
+          <ViewContainer
+            style={{
+              ...viewerContainerStyle,
+              height: 'auto',
+              transform: `scale(${zoom})`,
+              transformOrigin: zoom > 1 ? '0 0' : '50% 50%',
+            }}>
+            <DropContext
+              showPlaceholder={(visible: boolean, dndParams: Drop) => {
+                setCalibrationLineState({ visible, dndParams });
+              }}
+              addComponent={(params: ComponentAddParams) => {
+                postMessage(ADD_COMPONENT, { ...params, addType: params.type });
+              }}>
+              <div
+                style={{
+                  ...containerStyle,
+                  minHeight: defaultHeight > 0 ? defaultHeight - 50 : 'auto',
+                }}
+                id="foxpage-scroll-container">
+                <ComponentFocus selectId={selectedComponent?.id || ''} />
                 <Page
                   loadedComponents={loadedComponent}
                   renderStructure={componentStructure}
                   onClick={(id: string) => {
                     postMessage(SELECT_COMPONENT, { id });
                   }}
-                  showPlaceholder={(visible: boolean, dndParams: Drop, offSet: OffsetType) => {
-                    setCalibrationLineState({ visible, dndParams, offSet });
-                  }}
-                  addComponent={(params: ComponentAddParams) => {
-                    postMessage(ADD_COMPONENT, { ...params, addType: params.type });
-                  }}
-                  onMouseOverComponentChange={(component?: ComponentStructure) => {
-                    setHoveredComponent(component);
-                  }}
-                  onDoubleClick={() => {
-                    postMessage(SELECT_CONTENT, {});
-                  }}
+                  // onMouseOverComponentChange={(component?: ComponentStructure) => {
+                  //   setHoveredComponent(component);
+                  // }}
                 />
-                <SelectedLabel
-                  selectedComponent={selectedComponent}
-                  copyComponent={(id: string) => {
-                    postMessage(COPY_COMPONENT, { id });
-                  }}
-                  deleteComponent={(id: string) => {
-                    postMessage(DELETE_COMPONENT, { id });
-                  }}
-                  openConditionBind={() => {
-                    console.log('OPEN_CONDITION_BIND');
-                    postMessage(OPEN_CONDITION_BIND, {});
-                  }}
-                />
-                <CalibrationLine {...calibrationLineState} />
-                <HoveredLabel hoveredComponent={hoveredComponent} />
-              </ScrollContainer>
-            </Container>
+              </div>
+            </DropContext>
           </ViewContainer>
-        </StyledContent>
+          <SelectedLabel
+            key={updateTime}
+            zoom={zoom}
+            selectedComponent={selectedComponent}
+            copyComponent={(id: string) => {
+              postMessage(COPY_COMPONENT, { id });
+            }}
+            deleteComponent={(id: string) => {
+              postMessage(DELETE_COMPONENT, { id });
+            }}
+            openConditionBind={() => {
+              postMessage(OPEN_CONDITION_BIND, {});
+            }}
+            jumpToTemplate={() => {
+              postMessage(SELECT_CONTENT, {});
+            }}
+          />
+          <CalibrationLine {...calibrationLineState} zoom={zoom} />
+          {/* <HoveredLabel hoveredComponent={hoveredComponent} /> */}
+        </Container>
 
-        <StyledSlider width={300}>
+        <StyledSlider>
           <Editor
             fileType={fileType}
             selectedComponent={selectedComponent}
             selectedWrapperComponent={selectedWrapperComponent}
             loadedComponent={loadedComponent}
+            mockModeEnable={mockModeEnable}
             setVariableBindModalVisibleStatus={(keys, opt) => {
               postMessage(OPEN_VARIABLE_BIND, { keys, opt });
             }}

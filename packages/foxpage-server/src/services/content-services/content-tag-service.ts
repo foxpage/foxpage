@@ -5,6 +5,7 @@ import { tag } from '@foxpage/foxpage-shared';
 
 import * as Model from '../../models';
 import { AppTag, ContentTagLiveVersion, TagContentData } from '../../types/content-types';
+import { FoxCtx } from '../../types/index-types';
 import { BaseService } from '../base-service';
 import * as Service from '../index';
 
@@ -19,7 +20,7 @@ export class ContentTagService extends BaseService<Content> {
    * Single instance
    * @returns ContentTagService
    */
-  public static getInstance(): ContentTagService {
+  public static getInstance (): ContentTagService {
     this._instance || (this._instance = new ContentTagService());
     return this._instance;
   }
@@ -29,7 +30,7 @@ export class ContentTagService extends BaseService<Content> {
    * @param  {AppTag} params
    * @returns {SDKTagContentData} Promise
    */
-  async getAppContentByTags(params: AppTag): Promise<TagContentData[]> {
+  async getAppContentByTags (params: AppTag): Promise<TagContentData[]> {
     const fileDetail = await Service.file.info.getFileDetailByPathname(params.applicationId, params.pathname);
 
     if (_.isEmpty(fileDetail)) {
@@ -63,7 +64,7 @@ export class ContentTagService extends BaseService<Content> {
    * @param  {AppTag} params
    * @returns {ContentTagLiveVersion[]} Promise
    */
-  async getAppContentLiveInfoByTags(fileId: string, tags: Tag[]): Promise<ContentTagLiveVersion> {
+  async getAppContentLiveInfoByTags (fileId: string, tags: Tag[]): Promise<ContentTagLiveVersion> {
     // Get all content under file
     let contentList = await Service.content.file.getContentByFileIds([fileId]);
 
@@ -74,5 +75,31 @@ export class ContentTagService extends BaseService<Content> {
     const matchTag = <any>tag.matchContent(<any[]>contentList, tags);
 
     return matchTag || {};
+  }
+
+  /**
+   * update content tag, if exist, update it, or add tag
+   * @param contentId 
+   * @param tag 
+   * @param options 
+   */
+  async updateExtensionTag (contentId: string, tags: Record<string, any>, options: { ctx: FoxCtx }): Promise<void> {
+    const contentDetail = await this.getDetailById(contentId);
+    const contentTags = contentDetail.tags || [];
+    const tagKeys = _.keys(tags);
+    contentTags.forEach(tag => {
+      tagKeys.forEach(key => {
+        if (tag[key] !== undefined) {
+          tag[key] = tags[key];
+          tags = _.omit(tags, [key]);
+        }
+      });
+    });
+
+    if (!_.isEmpty(tags)) {
+      contentTags.push(tags);
+    }
+
+    options.ctx.transactions.push(this.updateDetailQuery(contentId, { tags: contentTags }));
   }
 }

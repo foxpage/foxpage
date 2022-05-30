@@ -33,7 +33,7 @@ export class GetAppPageLiveInfoList extends BaseController {
     operationId: 'get-page-live-version-info-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @Body() params: AppContentVersionReq,
   ): Promise<ResData<PageContentRelations[]>> {
@@ -51,8 +51,17 @@ export class GetAppPageLiveInfoList extends BaseController {
       }
 
       // Get the live details of the specified contentIds and the relation details
-      const contentVersionList = await this.service.version.live.getContentAndRelationVersion(
-        validContentIds,
+      const contentVersionList = await this.service.version.live.getContentAndRelationVersion(validContentIds);
+
+      let templateIds: string[] = [];
+      contentVersionList.forEach(version => {
+        if (version.relations && version.relations.templates && version.relations.templates[0]) {
+          templateIds.push(version.relations.templates[0].id);
+        }
+      });
+
+      const contentMockObject = await this.service.content.mock.getMockLiveVersions(
+        _.concat(validContentIds, templateIds)
       );
 
       let dependMissing: string[] = [];
@@ -67,7 +76,26 @@ export class GetAppPageLiveInfoList extends BaseController {
         if (content.recursiveItem) {
           recursiveItem.push(content.recursiveItem);
         }
-        contentAndRelation.push(_.pick(content, ['content', 'relations']));
+
+        if (content.relations?.templates?.[0]) {
+          content.relations.templates[0] = _.merge(
+            {},
+            content.relations.templates[0],
+            contentMockObject[content.relations.templates[0].id] || {}
+          );
+        }
+
+        const mockRelations = contentMockObject[content.id]?.relations || {};
+        content.relations = this.service.version.relation.moveMockRelations(content.relations, mockRelations);
+
+        contentAndRelation.push(Object.assign(
+          {},
+          _.pick(content, ['content', 'relations']),
+          {
+            mock: contentMockObject[content.id]?.mock || {},
+            extension: contentMockObject[content.id]?.extension || {},
+          }
+        ));
       });
 
       if (dependMissing.length > 0) {

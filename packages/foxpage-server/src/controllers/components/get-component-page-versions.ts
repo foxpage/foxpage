@@ -32,7 +32,7 @@ export class GetComponentPageVersionList extends BaseController {
     operationId: 'get-component-page-version-list',
   })
   @ResponseSchema(FileListRes)
-  async index(
+  async index (
     @QueryParams() params: AppComponentVersionListReq,
   ): Promise<ResData<PageData<ContentVersionWithLive>>> {
     try {

@@ -6,5 +6,5 @@ export const getApplication = () => {
 };
 
 export const setApplication = (application: Application) => {
-  localStorage.foxpage_application = JSON.stringify(application || {});
+  localStorage['foxpage_application'] = JSON.stringify(application || {});
 };

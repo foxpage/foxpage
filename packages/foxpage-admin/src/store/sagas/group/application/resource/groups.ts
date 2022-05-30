@@ -11,7 +11,9 @@ import {
   AppResourcesGroupsDeleteResourcesGroupParams,
   AppResourcesGroupsFetchResourcesGroupsParams,
   AppResourcesGroupsSaveResourcesGroupParams,
+  BaseResponse,
   OptionsAction,
+  ResourceUrlFetchParams,
 } from '@/types/index';
 
 function* saveResourceGroup(action: AppResourceGroupsActionType) {
@@ -112,10 +114,21 @@ function* fetchResourceGroups(action: AppResourceGroupsActionType) {
   );
 }
 
+function* handleGetResourceUrl(action: AppResourceGroupsActionType) {
+  const params = action.payload as ResourceUrlFetchParams;
+  const rs: BaseResponse = yield call(API.getResourceUrl, params);
+  if (rs.code === 200) {
+    yield put(ACTIONS.pushResourceUrl(rs.msg as string || ''));
+  } else {
+    yield put(ACTIONS.pushResourceUrl(''));
+  }
+}
+
 function* watch() {
   yield takeLatest(getType(ACTIONS.saveResourcesGroupAction), saveResourceGroup);
   yield takeLatest(getType(ACTIONS.deleteResourcesGroupAction), deleteResourceGroup);
   yield takeLatest(getType(ACTIONS.fetchResourcesGroupsAction), fetchResourceGroups);
+  yield takeLatest(getType(ACTIONS.getResourceUrl), handleGetResourceUrl);
 }
 
 export default function* rootSaga() {

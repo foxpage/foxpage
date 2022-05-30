@@ -4,4 +4,5 @@ export interface VariableBindParams {
   open: boolean;
   type: EditorInputEnum;
   keys: string;
+  mock: boolean;
 }

@@ -194,7 +194,13 @@ export class AddOrgMembersReq {
   @JSONSchema({ description: 'Organization member name' })
   @IsString()
   @Length(1, 100)
+  @IsOptional()
   account: string;
+
+  @JSONSchema({ description: 'Organization member id' })
+  @IsString()
+  @IsOptional()
+  userId: string;
 }
 
 export class DeleteOrgMembersReq {

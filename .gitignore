@@ -41,6 +41,9 @@ build/Release
 node_modules/
 jspm_packages/
 
+# IDE/Editor data
+.idea
+
 # TypeScript v1 declaration files
 # typings/
 
@@ -121,4 +124,3 @@ lib/
 /packages/foxpage-server/src/controllers/users/keys.ts
 /packages/foxpage-server/src/controllers/users/generate-keys.ts
 /.VSCodeCounter
-/packages/foxpage-plugin-aws-s3

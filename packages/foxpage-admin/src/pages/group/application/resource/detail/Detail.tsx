@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import { ResourceTypeArray } from '@/constants/resource';
-import { FoxpageBreadcrumb } from '@/pages/common';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '@/pages/common';
 import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/resource/detail';
 
@@ -28,6 +28,7 @@ const UrlInfoItem = styled.div`
 `;
 
 const mapStateToProps = (store: RootState) => ({
+  organizationId: store.system.organizationId,
   groupInfo: store.group.application.resource.detail.groupInfo,
 });
 
@@ -38,9 +39,16 @@ const mapDispatchToProps = {
 
 type ComponentsProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const ResourceDetail: React.FC<ComponentsProps> = ({ groupInfo = {}, updateBaseState, fetchGroupInfo }) => {
-  const { applicationId, organizationId, resourceRoot } =
-    useParams<{ applicationId: string; organizationId: string; resourceRoot: string }>();
+const ResourceDetail: React.FC<ComponentsProps> = ({
+  groupInfo = {},
+  updateBaseState,
+  fetchGroupInfo,
+  organizationId,
+}) => {
+  const { applicationId, resourceRoot } = useParams<{
+    applicationId: string;
+    resourceRoot: string;
+  }>();
   const { folderPath, relativePathBreadCrumb = [] } = useRelativePathData();
   const { locale } = useContext(GlobalContext);
   const { global, resource, application: applicationI18n } = locale.business;
@@ -57,53 +65,60 @@ const ResourceDetail: React.FC<ComponentsProps> = ({ groupInfo = {}, updateBaseS
     });
   }, [resourceRoot, applicationId]);
   return (
-    <div>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          { name: applicationI18n.applicationList, link: `/#/organization/${organizationId}/application/list` },
-          {
-            name: resource.resourceGroup,
-            link: `/#/organization/${organizationId}/application/${applicationId}/detail/resource`,
-          },
-          ...relativePathBreadCrumb,
-        ]}
-      />
-      <div style={{ marginTop: 12, display: 'flex' }}>
-        <Card style={{ width: 250, padding: 38, textAlign: 'center', display: 'inline-block' }}>
-          <div>{groupInfo.name || ''}</div>
-        </Card>
-        <UrlInfo>
-          <UrlInfoItem>
-            <strong>{resource.groupName}:</strong>
-            <span>{groupInfo.name || ''}</span>
-          </UrlInfoItem>
-          <UrlInfoItem>
-            <strong>{resource.groupInfo}:</strong>
-            <span>{groupInfo.intro || ''}</span>
-          </UrlInfoItem>
-          <UrlInfoItem>
-            <strong>{resource.groupType}:</strong>
-            <span>
+    <>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              { name: applicationI18n.applicationList, link: '/#/workspace/application' },
               {
-                resource[
-                  ResourceTypeArray.find(item => item.type === groupInfo.group?.type)?.label ||
-                    ResourceTypeArray[0].label
-                ]
-              }
-            </span>
-          </UrlInfoItem>
-          <UrlInfoItem>
-            <strong>{global.host}:</strong>
-            <span>{groupInfo.group?.detail?.host}</span>
-          </UrlInfoItem>
-        </UrlInfo>
-      </div>
-      <Divider />
-      <ToolBar />
-      <List />
+                name: resource.resourceGroup,
+                link: `/#/organization/${organizationId}/application/${applicationId}/detail/resource`,
+              },
+              ...relativePathBreadCrumb,
+            ]}
+          />
+        }>
+        <>
+          <div style={{ display: 'flex' }}>
+            <Card style={{ width: 250, padding: 38, textAlign: 'center', display: 'inline-block' }}>
+              <div>{groupInfo.name || ''}</div>
+            </Card>
+            <UrlInfo>
+              <UrlInfoItem>
+                <strong>{resource.groupName}:</strong>
+                <span>{groupInfo.name || ''}</span>
+              </UrlInfoItem>
+              <UrlInfoItem>
+                <strong>{resource.groupInfo}:</strong>
+                <span>{groupInfo.intro || ''}</span>
+              </UrlInfoItem>
+              <UrlInfoItem>
+                <strong>{resource.groupType}:</strong>
+                <span>
+                  {
+                    resource[
+                      ResourceTypeArray.find((item) => item.type === groupInfo.group?.type)?.label ||
+                        ResourceTypeArray[0].label
+                    ]
+                  }
+                </span>
+              </UrlInfoItem>
+              <UrlInfoItem>
+                <strong>{global.host}:</strong>
+                <span>{groupInfo.group?.detail?.host}</span>
+              </UrlInfoItem>
+            </UrlInfo>
+          </div>
+          <Divider />
+          <ToolBar />
+          <List />
+        </>
+      </FoxpageDetailContent>
+
       <FolderDrawer />
       <FileDrawer />
-    </div>
+    </>
   );
 };
 

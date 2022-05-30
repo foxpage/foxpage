@@ -6,6 +6,7 @@ import {
   AppResourcesGroupsFetchResourcesGroupsParams,
   AppResourcesGroupsSaveResourcesGroupParams,
   OptionsAction,
+  ResourceUrlFetchParams,
 } from '@/types/index';
 
 // state
@@ -42,3 +43,7 @@ export const deleteResourcesGroupAction = createAction(
   'ORG_APP_RESOURCES_GROUPS__DELETE_GROUP',
   (params: AppResourcesGroupsDeleteResourcesGroupParams, options?: OptionsAction) => ({ params, options }),
 )();
+
+
+export const getResourceUrl = createAction('ORG_APP_RESOURCES_GROUPS__GET_RESOURCE_URL', (params: ResourceUrlFetchParams) => ({ ...params }))();
+export const pushResourceUrl = createAction('ORG_APP_RESOURCES_GROUPS__PUSH_RESOURCE_URL', (url: string) => ({ url }))();

@@ -31,7 +31,7 @@ export class FolderListService extends BaseService<Folder> {
    * Single instance
    * @returns ContentInfoService
    */
-  public static getInstance(): FolderListService {
+  public static getInstance (): FolderListService {
     this._instance || (this._instance = new FolderListService());
     return this._instance;
   }
@@ -43,7 +43,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {string} parentFolderId
    * @returns {Folder[]} Promise
    */
-  async getAppFolderList(applicationId: string, parentFolderId: string): Promise<Folder[]> {
+  async getAppFolderList (applicationId: string, parentFolderId: string): Promise<Folder[]> {
     return Model.folder.find({ applicationId: applicationId, parentFolderId, deleted: false });
   }
 
@@ -53,7 +53,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {string[]} folderIds
    * @returns Promise
    */
-  async getAllParentsRecursive(folderIds: string[]): Promise<Record<string, Folder[]>> {
+  async getAllParentsRecursive (folderIds: string[]): Promise<Record<string, Folder[]>> {
     if (folderIds.length === 0) {
       return {};
     }
@@ -85,7 +85,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {string} folderId
    * @returns FileInfo
    */
-  async getPageChildrenList(
+  async getPageChildrenList (
     params: FileListSearch,
     fileTypes: string[] = [],
   ): Promise<{ count: number; data: FileFolderInfo }> {
@@ -155,7 +155,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {string[]} fileTypes? Get files of the specified type
    * @returns Promise
    */
-  async getAllChildrenRecursive(params: {
+  async getAllChildrenRecursive (params: {
     folderIds: string[];
     depth?: number;
     hasContent?: boolean;
@@ -216,7 +216,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {FolderChildrenSearch} params
    * @returns {FolderInfo} Promise
    */
-  async getFolderChildrenList(params: FolderChildrenSearch): Promise<PageData<FolderInfo>> {
+  async getFolderChildrenList (params: FolderChildrenSearch): Promise<PageData<FolderInfo>> {
     let folderPageInfo: PageData<FolderInfo> = { list: [], count: 0 };
     if (!params.parentFolderIds || params.parentFolderIds.length === 0) {
       return folderPageInfo;
@@ -224,6 +224,7 @@ export class FolderListService extends BaseService<Folder> {
 
     const searchParams: FolderChildrenSearch = {
       parentFolderIds: params.parentFolderIds || [],
+      userIds: params.userIds || [],
       page: params.page || 1,
       size: params.size || 10,
       search: params.search || '',
@@ -261,7 +262,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {AppFolderTypes} type
    * @returns Promise
    */
-  async getFolderPageList(params: FolderPageSearch, type: AppFolderTypes): Promise<PageData<FolderUserInfo>> {
+  async getFolderPageList (params: FolderPageSearch, type: AppFolderTypes): Promise<PageData<FolderUserInfo>> {
     if (!params.parentFolderId) {
       const appTypeFolderIds = await Service.folder.info.getAppDefaultFolderIds({
         applicationIds: [params.applicationId],
@@ -290,7 +291,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {FileFolderChildren} folderChildren
    * @returns Promise
    */
-  async getIdsFromFolderChildren(folderChildren: FileFolderChildren): Promise<Record<string, any[]>> {
+  async getIdsFromFolderChildren (folderChildren: FileFolderChildren): Promise<Record<string, any[]>> {
     let contents: Content[] = [];
     let versions: ContentVersion[] = [];
     const children = this.getIdsFromFolderRecursive(folderChildren);
@@ -312,7 +313,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {FileFolderChildren} folderChildren
    * @returns string
    */
-  getIdsFromFolderRecursive(folderChildren: FileFolderChildren): { files: File[]; folders: Folder[] } {
+  getIdsFromFolderRecursive (folderChildren: FileFolderChildren): { files: File[]; folders: Folder[] } {
     let files: File[] = [];
     let folders: Folder[] = [];
 
@@ -341,7 +342,13 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {WorkspaceFolderSearch} params
    * @returns Promise
    */
-  async getWorkspaceFolderList(params: WorkspaceFolderSearch): Promise<PageData<FolderInfo>> {
+  async getWorkspaceFolderList (params: WorkspaceFolderSearch): Promise<PageData<FolderInfo>> {
+    const appList = await Service.application.find({
+      organizationId: params.organizationId,
+      deleted: false
+    });
+    params.applicationIds = _.map(appList, 'id');
+
     const [folderList, folderCount] = await Promise.all([
       Model.folder.getWorkspaceFolderList(params),
       Model.folder.getWorkspaceFolderCount(params),
@@ -374,7 +381,7 @@ export class FolderListService extends BaseService<Folder> {
    * @param  {any[]} aggregate
    * @returns Promise
    */
-  async folderAggregate(aggregate: any[]): Promise<any> {
+  async folderAggregate (aggregate: any[]): Promise<any> {
     return this.model.aggregate(aggregate);
   }
 }

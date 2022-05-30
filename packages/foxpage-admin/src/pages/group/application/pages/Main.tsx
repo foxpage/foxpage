@@ -12,9 +12,10 @@ import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationUrlParams } from '@/types/application';
 import { FileType } from '@/types/application/file';
 
-import { FoxpageBreadcrumb } from '../../../common';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '../../../common';
 
 const mapStateToProps = (store: RootState) => ({
+  organizationId: store.system.organizationId,
   loading: store.group.application.pages.list.loading,
   list: store.group.application.pages.list.list,
   pageInfo: store.group.application.pages.list.pageInfo,
@@ -29,9 +30,9 @@ const mapDispatchToProps = {
 
 type PageListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Main: React.FC<PageListType> = props => {
-  const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
-  const { loading, list, pageInfo, fetchPageList, clearAll, deletePage, updatePage } = props;
+const Main: React.FC<PageListType> = (props) => {
+  const { applicationId } = useParams<ApplicationUrlParams>();
+  const { organizationId, loading, list, pageInfo, fetchPageList, clearAll, deletePage, updatePage } = props;
   const [editFile, setEditFile] = useState<FileType | undefined>();
   const { locale } = useContext(GlobalContext);
   const { application, file } = locale.business;
@@ -77,13 +78,15 @@ const Main: React.FC<PageListType> = props => {
 
   return (
     <React.Fragment>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
-          { name: file.page },
-        ]}
-      />
-      <div style={{ marginTop: 12 }}>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              { name: application.applicationList, link: '/#/workspace/application' },
+              { name: file.page },
+            ]}
+          />
+        }>
         <FileList
           loading={loading}
           pageInfo={pageInfo}
@@ -92,15 +95,14 @@ const Main: React.FC<PageListType> = props => {
           organizationId={organizationId}
           fileType={FileTypeEnum.page}
           onDelete={handleDelete}
-          onEdit={record => {
+          onEdit={(record) => {
             setEditFile(record);
           }}
           onPageInfoChange={(page, size) => {
             fetchPageList({ applicationId, page, size });
           }}
         />
-      </div>
-
+      </FoxpageDetailContent>
       <FileEditDrawer
         open={!!editFile}
         file={editFile}

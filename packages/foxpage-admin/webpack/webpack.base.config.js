@@ -1,18 +1,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const webpack = require('webpack');
 const path = require('path');
-const pkg = require('../package.json');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
   context: path.resolve(__dirname),
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env': {
-        OVERLOOK_APP_VERSION: JSON.stringify(pkg.version),
-      },
-    }),
-  ],
   output: {
     publicPath: '/page/dist/',
     filename: 'main.bundle.js',
@@ -35,11 +27,6 @@ module.exports = {
   },
   module: {
     rules: [
-      {
-        test: /\.worker.js$/i,
-        exclude: /node_modules/,
-        use: ['worker-loader'],
-      },
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,

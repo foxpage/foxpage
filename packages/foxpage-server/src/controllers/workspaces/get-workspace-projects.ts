@@ -32,17 +32,17 @@ export class GetWorkspaceProjectPageList extends BaseController {
     operationId: 'get-workspace-project-list',
   })
   @ResponseSchema(ProjectListRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @QueryParams() params: WorkspaceProjectListReq,
   ): Promise<ResData<PageData<FolderInfo>>> {
     try {
-      this.service.folder.info.setPageSize(params);
-
       const creator = ctx.userInfo.id;
       if (!creator) {
         return Response.warning(i18n.user.invalidUser, 2140301);
       }
+
+      this.service.folder.info.setPageSize(params);
 
       const folderInfoList = await this.service.folder.list.getWorkspaceFolderList(
         Object.assign({ creator, types: [TYPE.PROJECT_FOLDER] }, params),

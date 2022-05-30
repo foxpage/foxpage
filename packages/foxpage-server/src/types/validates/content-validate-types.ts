@@ -32,6 +32,17 @@ export class AddContentReq {
   @Length(1, 100)
   title: string;
 
+  @JSONSchema({ description: 'Page Content base tag' })
+  @IsBoolean()
+  @IsOptional()
+  isBase: boolean;
+
+  @JSONSchema({ description: 'Page Content extend tag' })
+  @IsString()
+  @Length(20, 20)
+  @IsOptional()
+  extendId: string;
+
   @JSONSchema({ description: 'Page label' })
   @ValidateNested({ each: true })
   @IsArray()
@@ -54,6 +65,16 @@ export class UpdateContentReq {
   @IsString()
   @IsOptional()
   title: string;
+
+  @JSONSchema({ description: 'Page Content base tag' })
+  @IsBoolean()
+  @IsOptional()
+  isBase: boolean;
+
+  @JSONSchema({ description: 'Page Content extend tag' })
+  @IsString()
+  @IsOptional()
+  extendId: string;
 
   @JSONSchema({ description: 'Page label' })
   @ValidateNested({ each: true })
@@ -306,6 +327,11 @@ export class ContentSchemaRelation {
   @IsObject()
   @IsOptional()
   relation: Record<string, any>;
+
+  @JSONSchema({ description: 'Version extension' })
+  @IsObject()
+  @IsOptional()
+  extension: Record<string, any>;
 }
 
 export class ContentVersionUpdateReq {
@@ -534,6 +560,7 @@ export class TagContentVersionReq {
   @JSONSchema({ description: 'Content Tags' })
   @IsArray()
   @ValidateNested()
+  @IsOptional()
   tags: Record<string, any>[];
 }
 

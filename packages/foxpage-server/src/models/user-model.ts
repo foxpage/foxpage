@@ -1,4 +1,4 @@
-import { User } from '@foxpage/foxpage-server-types';
+import { User, UserRegisterType } from '@foxpage/foxpage-server-types';
 
 import { NewUser } from '../types/user-types';
 
@@ -35,8 +35,8 @@ export class UserModel extends BaseModel<User> {
    * @param  {string} account
    * @returns {User} Promise
    */
-  async getUserByAccount(account: string): Promise<User> {
-    return (await this.userModel.findOne({ account })) as User;
+  async getUserByAccount(account: string, registerType: UserRegisterType = 1): Promise<User> {
+    return (await this.userModel.findOne({ account, registerType })) as User;
   }
 
   /**

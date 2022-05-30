@@ -108,13 +108,23 @@ export class UpdateProjectDetailReq {
   path: string;
 }
 
-export class ProjectDetailRes extends FolderDetailRes {}
+export class ProjectDetailRes extends FolderDetailRes { }
 
 export class ProjectListReq {
   @JSONSchema({ description: 'Organization ID' })
   @IsString()
   @Length(20, 20)
   organizationId: string;
+
+  @JSONSchema({ description: 'Project type, user, team, organization, default is organization' })
+  @IsString()
+  @IsOptional()
+  type: string;
+
+  @JSONSchema({ description: 'Target type project, if type is team, then typeId is team id' })
+  @IsString()
+  @IsOptional()
+  typeId: string;
 
   @JSONSchema({ description: 'Application ID' })
   @IsString()
@@ -266,6 +276,11 @@ export class ProjectDeleteReq {
 }
 
 export class WorkspaceProjectListReq {
+  @JSONSchema({ description: 'Organization id' })
+  @IsString()
+  @Length(20, 20)
+  organizationId: string;
+
   @JSONSchema({ description: 'Filter fields, currently only filter by organization name' })
   @IsString()
   @IsOptional()

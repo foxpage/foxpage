@@ -14,7 +14,7 @@ const logger = createLogger('server');
 
 @Middleware({ type: 'before' })
 export class LoggerMiddleware implements KoaMiddlewareInterface {
-  async use(ctx: FoxCtx, next: (err?: any) => Promise<any>): Promise<any> {
+  async use (ctx: FoxCtx, next: (err?: any) => Promise<any>): Promise<any> {
     const params = !_.isEmpty(ctx.request.body) ? ctx.request.body : ctx.request.query;
     ctx.operations = [];
     ctx.transactions = [];
@@ -63,10 +63,11 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
       ctx.log.response = ctx.body;
       ctx.log.tooks = ctx.log.responseTime - ctx.log.requestTime;
 
+      (<any>ctx.body).code === RESPONSE_LEVEL.SUCCESS && Service.log.saveChangeLogs(ctx);
+
       // Save log to db
       if (config.env !== 'test' && ctx.request.url !== '/healthcheck') {
         try {
-          (<any>ctx.body).code === RESPONSE_LEVEL.SUCCESS && Service.log.saveChangeLogs(ctx);
           let categoryType: string = ctx.logAttr.applicationId ? LOG.CATEGORY_APPLICATION : '';
           !categoryType && ctx.logAttr.organizationId && (categoryType = LOG.CATEGORY_ORGANIZATION);
           Service.log.saveRequest({ category: categoryType, content: ctx.log }, { ctx });
@@ -81,8 +82,8 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
           (<any>ctx.body).code === RESPONSE_LEVEL.SUCCESS
             ? LOGGER_LEVEL.INFO
             : (<any>ctx.body).code < RESPONSE_LEVEL.ERROR
-            ? LOGGER_LEVEL.WARN
-            : LOGGER_LEVEL.ERROR;
+              ? LOGGER_LEVEL.WARN
+              : LOGGER_LEVEL.ERROR;
         logger.log(logLevel, (<any>ctx.body).msg || '', [
           ctx.request.method,
           ctx.request.path,

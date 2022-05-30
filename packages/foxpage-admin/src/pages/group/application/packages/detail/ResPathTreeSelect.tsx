@@ -25,7 +25,7 @@ const ResPathTreeSelect: React.FC<ResPathTreeSelectProps> = ({
   applicationId,
   value,
   disabled,
-  onChange = () => {},
+  onChange = () => { },
 }) => {
   const [treeData, setTreeData] = useState<TreeNodeType[]>([]);
   const [treeValue, setTreeValue] = useState<{ value: string; label: string } | undefined>(value);
@@ -52,10 +52,15 @@ const ResPathTreeSelect: React.FC<ResPathTreeSelectProps> = ({
     })();
   }, [applicationId]);
   useEffect(() => {
-    if (treeValue?.value !== value?.value) {
-      setTreeValue(value);
+    if (value && treeValue?.value !== value?.value) {
+      if (treeData.find(data => data.value === value.value)) {
+        setTreeValue(value);
+      } else {
+        setTreeValue({ ...value, value: value.label });
+      }
     }
-  }, [value]);
+  }, [value, treeData]);
+
   const handleChange = (selectValue: { value: string; label: string }) => {
     setTreeValue(selectValue);
     onChange(selectValue);

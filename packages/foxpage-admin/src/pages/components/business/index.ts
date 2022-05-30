@@ -1,3 +1,4 @@
+export * from './authorize';
 export * from './JsonEditor';
 export * from './LocaleTag';
 export * from './LocalsView';

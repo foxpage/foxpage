@@ -2,6 +2,7 @@ import { CSSProperties } from 'react';
 
 export const SYSTEM_PAGE = 'system.page';
 export const ROOT_CONTAINER = 'root-container';
+export const INIT_DATA = 'init_data';
 export const REQUIRE_LOAD_COMPONENT = 'require_load_component';
 export const SET_COMPONENT_STRUCTURE = 'set_component_structure';
 export const SELECT_COMPONENT = 'select_component';
@@ -22,6 +23,11 @@ export const SET_ZOOM = 'set_zoom';
 export const OPEN_VARIABLE_BIND = 'open_variable_bind';
 export const OPEN_CONDITION_BIND = 'open_condition_bind';
 export const SET_FOXPAGE_LOCALE = 'set_foxpage_locale';
+export const CHANGE_COMPONENT_LIST_DRAWER = 'change_component_list_drawer';
+export const UPDATE_MOCK_VALUE = 'update_mock_value';
+export const SET_MOCK_DATA = 'set_mock_data';
+
+export const BLANK_NODE = 'system.inherit-blank-node'; // blank node
 
 export const viewModelWidth = {
   PC: '100%',

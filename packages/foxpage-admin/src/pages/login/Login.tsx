@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/login';
+import * as SYS_ACTIONS from '@/actions/system';
 import Logo from '@/components/common/Logo';
 import { UserLoginResult } from '@/types/user';
 import { setLoginUser } from '@/utils/login-user';
@@ -21,7 +22,7 @@ const Container = styled.div`
 
 const FormContainer = styled.div`
   width: 300px;
-  margin: 0px auto;
+  margin: 0 auto;
   background: rgb(255, 255, 255);
   padding: 18px;
   border: 1px solid rgb(217, 217, 217);
@@ -34,12 +35,13 @@ const mapStateToProps = (store: RootState) => ({
 
 const mapDispatchToProps = {
   login: ACTIONS.login,
+  updateOrganizationId: SYS_ACTIONS.updateOrganizationId,
 };
 
 type LoadingType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Login: React.FC<LoadingType> = props => {
-  const { loading, login } = props;
+const Login: React.FC<LoadingType> = (props) => {
+  const { loading, login, updateOrganizationId } = props;
   const [form] = Form.useForm();
   const [, forceUpdate] = useState({});
   const history = useHistory();
@@ -48,7 +50,7 @@ const Login: React.FC<LoadingType> = props => {
     forceUpdate({});
   }, []);
 
-  const onFinish = values => {
+  const onFinish = (values) => {
     login({
       ...values,
       onSuccess: (user: UserLoginResult) => {
@@ -59,12 +61,15 @@ const Login: React.FC<LoadingType> = props => {
         }
         message.success('Login succeed!');
         setLoginUser({
-          organizationId,
           token: user.token,
+          organizationId,
           userInfo: user?.userInfo,
         });
 
-        history.push(`/organization/${organizationId}/project`);
+        // push organization id to store
+        updateOrganizationId(organizationId);
+
+        history.push('/workspace');
       },
     });
   };
@@ -77,30 +82,32 @@ const Login: React.FC<LoadingType> = props => {
             className="login-form"
             form={form}
             initialValues={{ remember: true }}
-            onFinish={onFinish}
-          >
+            onFinish={onFinish}>
             <Logo />
             <Form.Item name="account" rules={[{ required: true, message: 'Please input your Account!' }]}>
               <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Account" />
             </Form.Item>
             <Form.Item name="password" rules={[{ required: true, message: 'Please input your Password!' }]}>
-              <Input prefix={<LockOutlined className="site-form-item-icon" />} type="password" placeholder="Password" />
+              <Input
+                prefix={<LockOutlined className="site-form-item-icon" />}
+                type="password"
+                placeholder="Password"
+              />
             </Form.Item>
             <Form.Item>
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>
-
-              {/* <a className="login-form-forgot" href="" style={{ float: 'right' }}>
-              Forgot password
-            </a> */}
             </Form.Item>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" className="login-form-button" style={{ width: '100%' }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="login-form-button"
+                style={{ width: '100%' }}>
                 Log in
               </Button>
-              {/* <Link to="/register">register now!</Link> */}
             </Form.Item>
           </Form>
         </FormContainer>

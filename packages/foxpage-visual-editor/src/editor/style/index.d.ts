@@ -75,4 +75,4 @@ interface FlexType extends CommonType {
 
 interface StyleType extends DisplayType, FontType {}
 
-export { DisplayType, BoxType, FontType, PositionType, StyleType, BackgroundType, BorderType, ShadowType, FlexType };
+export { BackgroundType, BorderType, BoxType, DisplayType, FlexType,FontType, PositionType, ShadowType, StyleType };

@@ -11,7 +11,11 @@ interface ProjectContentType {
   tags: ProjectContentTag[];
   creator: Creator;
   fold?: boolean;
-  urls: string[],
+  urls: string[];
+  isBase?: boolean;
+  version?: string;
+  extendId?: string;
+  type?: string;
 }
 
 export { ProjectContentTag, ProjectContentType };

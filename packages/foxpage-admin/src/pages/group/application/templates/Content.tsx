@@ -12,7 +12,7 @@ import { FileTypeEnum } from '@/constants/index';
 import GlobalContext from '@/pages/GlobalContext';
 import { ContentType, ContentUrlParams } from '@/types/application/content';
 
-import { FoxpageBreadcrumb } from '../../../common';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '../../../common';
 
 const mapStateToProps = (store: RootState) => ({
   loading: store.group.application.templates.content.loading,
@@ -30,7 +30,7 @@ const mapDispatchToProps = {
 
 type PageListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Main: React.FC<PageListType> = props => {
+const Main: React.FC<PageListType> = (props) => {
   const { applicationId, organizationId, fileId } = useParams<ContentUrlParams>();
   const {
     loading,
@@ -100,17 +100,19 @@ const Main: React.FC<PageListType> = props => {
 
   return (
     <React.Fragment>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
-          {
-            name: file.template,
-            link: `/#/organization/${organizationId}/application/${applicationId}/detail/template`,
-          },
-          { name: global.contents },
-        ]}
-      />
-      <div style={{ marginTop: 12 }}>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              { name: application.applicationList, link: '/#/workspace/application' },
+              {
+                name: file.template,
+                link: `/#/organization/${organizationId}/application/${applicationId}/detail/template`,
+              },
+              { name: global.contents },
+            ]}
+          />
+        }>
         <ContentList
           applicationId={applicationId}
           folderId={folderId || ''}
@@ -120,7 +122,7 @@ const Main: React.FC<PageListType> = props => {
           onDelete={handleDelete}
           onEdit={handleOpenEditDrawer}
         />
-      </div>
+      </FoxpageDetailContent>
 
       <ContentEditDrawer
         open={!!editContent}

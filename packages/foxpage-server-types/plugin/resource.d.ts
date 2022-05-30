@@ -1,5 +1,6 @@
 export abstract class ResourceAbstract {
-  abstract resourceList(options: ResourceListOptions): Promise<IndexContent>;
+  abstract resourceList (options: ResourceListOptions): Promise<IndexContent>;
+  abstract resourceRemoteUrl (options: ResourceListOptions): Record<string, string>;
 }
 
 export interface ResourceListOptions {
@@ -8,6 +9,7 @@ export interface ResourceListOptions {
   resourceConfig?: any;
   groupConfig?: any;
   appConfig?: any;
+  proxy?: string;
 }
 
 export interface IndexContent {

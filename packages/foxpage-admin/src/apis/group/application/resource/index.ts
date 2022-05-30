@@ -1,6 +1,6 @@
 import JsonStableStringify from 'json-stable-stringify';
 
-import { AppResourceGroupType, SaveResourcesGroupsRequestParams } from '@/types/application/resources';
+import { AppResourceGroupType, RemoteResourceSavedRes, RemoteResourceSaveParams, ResourceUrlFetchedRes, ResourceUrlFetchParams, SaveResourcesGroupsRequestParams } from '@/types/application/resources';
 import { BaseResponse } from '@/types/common';
 import FoxpageApi from '@/utils/foxpage-api-sdk';
 
@@ -197,6 +197,21 @@ export const clearResourcesCache = () => {
 export const editGroup = (params: SaveResourcesGroupsRequestParams): Promise<BaseResponse> =>
   new Promise(resolve => {
     FoxpageApi.put('/resources/group', params, (rs: BaseResponse) => {
+      resolve(rs);
+    });
+  });
+
+
+export const saveResourceBatch = (params: RemoteResourceSaveParams): Promise<RemoteResourceSavedRes> =>
+  new Promise(resolve => {
+    FoxpageApi.post('/resources/batch', params, (rs: RemoteResourceSavedRes) => {
+      resolve(rs);
+    });
+  });
+
+export const getResourceUrl = (params: ResourceUrlFetchParams): Promise<ResourceUrlFetchedRes> =>
+  new Promise(resolve => {
+    FoxpageApi.get('/resources/remote-url', params, (rs: ResourceUrlFetchedRes) => {
       resolve(rs);
     });
   });

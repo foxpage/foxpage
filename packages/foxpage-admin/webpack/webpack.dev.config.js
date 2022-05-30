@@ -5,6 +5,7 @@ const { merge } = require('webpack-merge');
 const path = require('path');
 const webpackBaseConfig = require('./webpack.base.config');
 const configProfile = require('../config.profile');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const PORT = 3002;
@@ -53,7 +54,15 @@ module.exports = merge(webpackBaseConfig, {
       APP_CONFIG: JSON.stringify(configProfile.dev),
       __DEV__: true,
       __PORT__: PORT,
+      'process.env': {
+        NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+      },
     }),
-    // new BundleAnalyzerPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        // for local test
+        { from: '../../foxpage-visual-editor/dist/main.bundle.js', to:'foxpage-visual-editor.js' },
+      ]
+    }),
   ],
 });

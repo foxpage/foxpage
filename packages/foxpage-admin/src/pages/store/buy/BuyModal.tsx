@@ -9,11 +9,14 @@ import * as ACTIONS from '@/actions/store/list';
 import { FileTypeEnum } from '@/constants/index';
 import { StoreBuyGoodsType } from '@/constants/store';
 import GlobalContext from '@/pages/GlobalContext';
-import { getLoginUser } from '@/utils/login-user';
 
 const { Option } = Select;
 
+const PAGE_NUMBER = 1;
+const PAGE_SIZE = 9999;
+
 const mapStateToProps = (store: RootState) => ({
+  organizationId: store.system.organizationId,
   buyModalVisible: store.store.list.buyModalVisible,
   applicationList: store.group.application.list.list,
   buyIds: store.store.list.buyIds,
@@ -28,25 +31,32 @@ const mapDispatchToProps = {
 
 type BuyModalProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const BuyModal: React.FC<BuyModalProps> = props => {
-  const { type, buyModalVisible, applicationList, buyIds, updateBuyModalVisible, fetchApplicationList, addGoods } =
-    props;
+const BuyModal: React.FC<BuyModalProps> = (props) => {
+  const {
+    organizationId,
+    type,
+    buyModalVisible,
+    applicationList,
+    buyIds,
+    updateBuyModalVisible,
+    fetchApplicationList,
+    addGoods,
+  } = props;
   const { locale } = useContext(GlobalContext);
   const { application, store } = locale.business;
-  const userInfo = getLoginUser();
   let selectedAppIds: string[] = [];
 
   useEffect(() => {
-    if (buyModalVisible && userInfo) {
-      fetchApplicationList({ organizationId: userInfo?.organizationId });
+    if (buyModalVisible) {
+      fetchApplicationList({ organizationId, page: PAGE_NUMBER, size: PAGE_SIZE });
     }
-  }, [buyModalVisible]);
+  }, [buyModalVisible, fetchApplicationList, organizationId]);
 
   const handleClose = () => {
     updateBuyModalVisible(false);
   };
 
-  const handleApplicationChange = value => {
+  const handleApplicationChange = (value) => {
     selectedAppIds = value;
   };
 
@@ -65,16 +75,14 @@ const BuyModal: React.FC<BuyModalProps> = props => {
       maskClosable={false}
       visible={buyModalVisible}
       onCancel={handleClose}
-      onOk={handleOnOk}
-    >
+      onOk={handleOnOk}>
       <Select
         mode="multiple"
         style={{ width: '100%' }}
         placeholder={application.selectApplication}
         defaultValue={[]}
-        onChange={handleApplicationChange}
-      >
-        {applicationList?.map(application => (
+        onChange={handleApplicationChange}>
+        {applicationList?.map((application) => (
           <Option key={application.id} value={application.id}>
             {application.name}
           </Option>

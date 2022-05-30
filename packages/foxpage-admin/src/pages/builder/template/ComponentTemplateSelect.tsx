@@ -31,7 +31,7 @@ const mapDispatchToProps = {
 
 type ComponentTemplateSelectType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const ComponentTemplateSelect: React.FC<ComponentTemplateSelectType> = props => {
+const ComponentTemplateSelect: React.FC<ComponentTemplateSelectType> = (props) => {
   const {
     applicationId,
     selectedComponent,
@@ -72,6 +72,7 @@ const ComponentTemplateSelect: React.FC<ComponentTemplateSelectType> = props => 
         type: 'update',
         parentId: component.parentId,
         content: component,
+        requireLoad: false,
       });
       updateContentRelation(
         updateRelation(version.content.relation, { [relationKey]: { id: templateId, type: 'template' } }),

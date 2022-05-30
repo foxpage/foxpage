@@ -17,7 +17,6 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = {
-  fetchList: ACTIONS.fetchList,
   clearAll: ACTIONS.clearAll,
   changePageNum: ACTIONS.changePageNum,
   saveApp: ACTIONS.saveApp,
@@ -28,15 +27,18 @@ type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const EditPanel = (props: IProps) => {
   const { editApp = {}, update } = props;
+
+  // multi-language
   const { locale } = useContext(GlobalContext);
   const { application } = locale.business;
+
   return (
     <div style={{ padding: 12 }}>
       <Form.Item {...formItemLayout} label={application.nameLabel}>
         <Input
-          defaultValue={editApp.name}
+          value={editApp?.name}
           placeholder={application.nameLabel}
-          onChange={e => update('name', e.target.value)}
+          onChange={(e) => update('name', e.target.value)}
         />
       </Form.Item>
     </div>

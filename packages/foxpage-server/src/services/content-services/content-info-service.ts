@@ -22,7 +22,7 @@ export class ContentInfoService extends BaseService<Content> {
    * Single instance
    * @returns ContentInfoService
    */
-  public static getInstance(): ContentInfoService {
+  public static getInstance (): ContentInfoService {
     this._instance || (this._instance = new ContentInfoService());
     return this._instance;
   }
@@ -33,7 +33,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Partial<Content>} params
    * @returns Content
    */
-  create(params: Partial<Content>, options: { ctx: FoxCtx }): Content {
+  create (params: Partial<Content>, options: { ctx: FoxCtx }): Content {
     const contentDetail: Content = {
       id: params.id || generationId(PRE.CONTENT),
       title: _.trim(params?.title) || '',
@@ -65,7 +65,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {any} content?
    * @returns Content
    */
-  addContentDetail(
+  addContentDetail (
     params: Partial<Content>,
     options: { ctx: FoxCtx; type: FileTypes; content?: any },
   ): Content {
@@ -85,7 +85,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {UpdateTypeContent} params
    * @returns Promise
    */
-  async updateContentDetail(
+  async updateContentDetail (
     params: UpdateTypeContent,
     options: { ctx: FoxCtx },
   ): Promise<Record<string, number>> {
@@ -145,7 +145,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateContentItem(id: string, params: Partial<Content>, options: { ctx: FoxCtx; fileId?: string }): void {
+  updateContentItem (id: string, params: Partial<Content>, options: { ctx: FoxCtx; fileId?: string }): void {
     options.ctx.transactions.push(Model.content.updateDetailQuery(id, params));
     options.ctx.operations.push(
       ...Service.log.addLogItem(LOG.UPDATE, Object.assign({ id }, params), { fileId: options?.fileId }),
@@ -157,7 +157,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {string} contentId
    * @returns Promise
    */
-  async setContentDeleteStatus(
+  async setContentDeleteStatus (
     params: TypeStatus,
     options: { ctx: FoxCtx },
   ): Promise<Record<string, number>> {
@@ -197,7 +197,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Content[]} contentList
    * @returns void
    */
-  batchSetContentDeleteStatus(contentList: Content[], options: { ctx: FoxCtx; status?: boolean }): void {
+  batchSetContentDeleteStatus (contentList: Content[], options: { ctx: FoxCtx; status?: boolean }): void {
     const status = options.status === false ? false : true;
     options.ctx.transactions.push(this.setDeleteStatus(_.map(contentList, 'id'), status));
     options.ctx.operations.push(...Service.log.addLogItem(LOG.CONTENT_REMOVE, contentList));
@@ -210,7 +210,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {} FolderFileContent[]>
    * @returns Record
    */
-  getContentResourceTypeInfo(
+  getContentResourceTypeInfo (
     appResource: AppResource[],
     contentParentObject: Record<string, FolderFileContent[]>,
   ): Record<string, AppResource> {
@@ -243,7 +243,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {} string>}
    * @returns Record
    */
-  copyContent(
+  copyContent (
     sourceContentInfo: Content,
     sourceContentVersion: DSL,
     options: {
@@ -285,5 +285,19 @@ export class ContentInfoService extends BaseService<Content> {
     );
 
     return options.relations;
+  }
+
+  /**
+   * get content extension from detail,eg extendId, mockId
+   * @param contentDetail
+   * @returns
+   */
+  getContentExtension (contentDetail: Content, extensionName: string[] = ['extendId']) {
+    let extendInfo: Record<string, any> = {};
+    (contentDetail?.tags || []).forEach(tag => {
+      extendInfo = _.merge(extendInfo, _.pick(tag, extensionName));
+    });
+
+    return extendInfo;
   }
 }

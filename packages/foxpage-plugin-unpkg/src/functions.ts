@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as _ from 'lodash';
+import * as ProxyAgent from 'proxy-agent';
 
 import { IndexContentPkg } from '@foxpage/foxpage-server-types';
 
@@ -33,15 +34,30 @@ const UNPKG_HOST = 'https://www.unpkg.com/';
  * @param  {{name?:string}} options
  * @returns Promise
  */
-export const searchNpmPackage = async (options: { packageName?: string }): Promise<NpmRes[]> => {
-  if (!options.packageName) {
+export const searchNpmPackage = async (options: {
+  packageName?: string,
+  groupConfig?: Record<string, string>,
+  proxy?: string
+}): Promise<NpmRes[]> => {
+  if (!options.packageName || !options.groupConfig?.resourceScope) {
     return [];
   }
 
-  const { data } = await axios({
+  let proxyConfig: any = {};
+  if (options.proxy) {
+    const proxyAgent = new ProxyAgent(options.proxy);
+    proxyConfig = {
+      httpAgent: proxyAgent,
+      httpsAgent: proxyAgent,
+    };
+  }
+
+  const { data } = await axios(Object.assign({
     method: 'get',
-    url: 'https://registry.npmjs.com/-/v1/search?text=' + options.packageName + '&size=20',
-  });
+    url: 'https://registry.npmjs.com/-/v1/search?text=' +
+      _.trim((options.groupConfig?.resourceScope || options.packageName))
+      + '&size=500',
+  }, proxyConfig));
   return _.map(data.objects || [], (pkg) => _.pick(pkg.package || {}, ['name', 'scope', 'version']));
 };
 

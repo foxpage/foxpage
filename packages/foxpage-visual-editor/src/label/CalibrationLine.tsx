@@ -1,22 +1,20 @@
 import React from 'react';
 
-import { Drop, OffsetType } from '../interface';
+import { Drop } from '@/types/component';
 
 interface PropType {
   dndParams?: Drop;
-  offSet: OffsetType;
   visible: boolean;
+  zoom?: number;
 }
 
-const CalibrationLine: React.FC<PropType> = props => {
-  const {
-    visible,
-    dndParams,
-    offSet: { scrollY, scrollX },
-  } = props;
+const CalibrationLine: React.FC<PropType> = (props) => {
+  const { visible, dndParams } = props;
+
   if (!dndParams) {
     return null;
   }
+
   const { componentNode, parentNode, pos = 'before' } = dndParams;
 
   let rect: { top?: number; left?: number; width?: number; height?: number } = {};
@@ -31,9 +29,14 @@ const CalibrationLine: React.FC<PropType> = props => {
 
   const { top = 0, left = 0, width = 0, height = 0 } = rect;
 
-  const marginTop = -16;
-  let calcTop = top + scrollY;
-  const calcLeft = left + scrollX - 12;
+  // get root element && position info
+  const rootEle = window.document.getElementById('foxpage-visual-main');
+
+  const marginTop = -4;
+  // get top & left value
+  let calcTop = top + (rootEle?.scrollTop || 0);
+  const calcLeft = left + (rootEle?.scrollLeft || 0);
+
   const calcWidth = width;
   if (pos === 'after') {
     calcTop += height;
@@ -45,17 +48,16 @@ const CalibrationLine: React.FC<PropType> = props => {
         position: 'absolute',
         boxSizing: 'border-box',
         transition: 'top .2s,left .2s,width .2s,height .2s',
+        display: visible ? 'block' : 'none',
         top: calcTop,
         left: calcLeft,
-        display: visible ? 'block' : 'none',
         width: calcWidth,
         borderColor: 'transparent #56e056',
         borderWidth: '3px 3px',
         borderStyle: 'solid',
         pointerEvents: 'none',
         marginTop,
-      }}
-    >
+      }}>
       <div
         style={{
           background: '#56e056',

@@ -15,7 +15,7 @@ if (process.env.NODE_ENV) {
   env = process.env.NODE_ENV;
 }
 
-const config: { [key: string]: any } = configProfile[(envList[env] || envList.dev) as ConfigProfile];
+const config: { [key: string]: any } = configProfile[(envList[env] || envList.development) as ConfigProfile];
 
 let port: number = config.port || 50000;
 if (process.env.PORT) {

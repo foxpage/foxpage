@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 const Root = styled.div`
   text-align: center;
-  padding: 30px 0;
+  /* padding: 30px 0; */
 `;
 
 interface PaginationProps extends AntdPaginationProps {
@@ -13,14 +13,14 @@ interface PaginationProps extends AntdPaginationProps {
   pageSize: number;
 }
 
-const Pagination: React.FC<PaginationProps> = props => {
-  const { total, pageSize } = props;
+const Pagination: React.FC<PaginationProps> = (props) => {
+  const { total, pageSize, style = {} } = props;
 
   return (
     <React.Fragment>
       {total && total / pageSize > 1 ? (
         <Root>
-          <AntPagination {...props} />
+          <AntPagination {...props} style={{ padding: '30px 0', ...style }} />
         </Root>
       ) : null}
     </React.Fragment>

@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 import { getComponentsEditVersions } from '@/apis/group/application/packages';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import { Group, Title } from '@/components/widgets/group';
+import { StoreBuyGoodsType } from '@/constants/store';
 import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/packages/detail';
 import { AppComponentEditVersionType } from '@/types/application';
@@ -22,6 +23,7 @@ const mapStateToProps = (store: RootState) => ({
   type: store.group.application.packages.detail.versionDrawer?.type,
   packageType: store.group.application.packages.detail.componentInfo?.type,
   data: store.group.application.packages.detail.versionDrawer?.data,
+  fileDetail: store.group.application.packages.detail.fileDetail,
 });
 
 const mapDispatchToProps = {
@@ -40,6 +42,7 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
   closeDrawer,
   addVersion,
   editVersion,
+  fileDetail,
 }) => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const initialValuesRef = useRef<Promise<AppComponentEditVersionType | undefined> | undefined>();
@@ -47,6 +50,9 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
   const [form] = Form.useForm();
   const { locale } = useContext(GlobalContext);
   const { global, version } = locale.business;
+  const isComponent = fileDetail?.type === 'component';
+  const isRefer = !!fileDetail?.tags?.find((item) => item.type === StoreBuyGoodsType.reference);
+
   const disableState = useMemo(() => {
     return type === 'view';
   }, [type]);
@@ -59,7 +65,7 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
         initialValuesRef.current = getComponentsEditVersions({
           applicationId,
           id: versionId,
-        }).then(rs => {
+        }).then((rs) => {
           const { code, msg, data } = rs;
           if (code !== 200) {
             message.error(msg);
@@ -71,13 +77,14 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
       }
     }
   }, [type, data]);
-  const afterVisibleChange = useCallback(visiable => {
+  const afterVisibleChange = useCallback((visiable) => {
     if (visiable) {
-      initialValuesRef.current?.then(data => {
+      initialValuesRef.current?.then((data) => {
         if (data) {
           versionDetailRef.current = data;
           const { content, version } = data;
-          const { meta = {}, schema, resource, useStyleEditor, enableChildren, changelog = '' } = content || {};
+          const { meta = {}, schema, resource, useStyleEditor, enableChildren, changelog = '' } =
+            content || {};
           const { entry, 'editor-entry': editorEntry, dependencies = [] } = resource || {};
           const { browser, node, debug, css } = entry || {};
           const initForm = {
@@ -104,9 +111,12 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
   }, []);
 
   const onSave = () => {
+    if (isRefer) {
+      return;
+    }
     form
       .validateFields()
-      .then(values => {
+      .then((values) => {
         const params = transformFormToParams(values);
         if (type === 'add') {
           addVersion(
@@ -133,7 +143,7 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
           );
         }
       })
-      .catch(info => {
+      .catch((info) => {
         console.warn('Validate Failed:', info);
       });
   };
@@ -147,12 +157,11 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
       destroyOnClose
       canExpend
       actions={
-        <Button type="primary" onClick={onSave}>
+        <Button type="primary" onClick={onSave} disabled={isRefer}>
           {global.apply}
         </Button>
       }
-      afterVisibleChange={afterVisibleChange}
-    >
+      afterVisibleChange={afterVisibleChange}>
       <Form layout="vertical" form={form}>
         <Group>
           <Form.Item
@@ -175,8 +184,7 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
                   return Promise.resolve('');
                 },
               },
-            ]}
-          >
+            ]}>
             <Input placeholder="Version" disabled={disableState} style={{ width: '200px' }} />
           </Form.Item>
         </Group>
@@ -185,49 +193,68 @@ const VersionEditDrawer: React.FC<VersionEditDrawerProps> = ({
           <Form.Item name="browser" label="Browser" rules={[{ required: true }]}>
             <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
           </Form.Item>
-          <Form.Item name="node" label="Node">
-            <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
-          </Form.Item>
-          <Form.Item name="debug" label="Debug">
-            <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
-          </Form.Item>
-          <Form.Item name="css" label="Css">
-            <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
-          </Form.Item>
+          {isComponent && (
+            <>
+              <Form.Item name="node" label="Node">
+                <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
+              </Form.Item>
+              <Form.Item name="debug" label="Debug">
+                <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
+              </Form.Item>
+              <Form.Item name="css" label="Css">
+                <ResPathTreeSelect applicationId={applicationId} disabled={disableState} />
+              </Form.Item>
+            </>
+          )}
         </Group>
-        <Group>
-          <Form.Item name="editor" label="Editor">
-            <PackageSelect applicationId={applicationId} packageType="editor" ignoreContentIds={[contentId]} />
-          </Form.Item>
-          <Form.Item name="useStyleEditor" label={version.useStyleEditor} valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </Group>
-        <Group>
-          <Title>{version.dependency}</Title>
-          <Form.Item name="dependencies" label="">
-            <PackageSelect
-              applicationId={applicationId}
-              packageType="component,library"
-              mode="multiple"
-              disabled={disableState}
-              ignoreContentIds={[contentId]}
-            />
-          </Form.Item>
-        </Group>
+
+        {isComponent && (
+          <Group>
+            <Form.Item name="editor" label="Editor">
+              <PackageSelect
+                applicationId={applicationId}
+                packageType="editor"
+                ignoreContentIds={[contentId]}
+                disabled={isRefer}
+              />
+            </Form.Item>
+            <Form.Item name="useStyleEditor" label={version.useStyleEditor} valuePropName="checked">
+              <Switch disabled={isRefer} />
+            </Form.Item>
+          </Group>
+        )}
+
+        {isComponent && (
+          <Group>
+            <Title>{version.dependency}</Title>
+            <Form.Item name="dependencies" label="">
+              <PackageSelect
+                applicationId={applicationId}
+                packageType="component,library"
+                mode="multiple"
+                disabled={disableState}
+                ignoreContentIds={[contentId]}
+              />
+            </Form.Item>
+          </Group>
+        )}
+
         <Group>
           <Title>{version.config}</Title>
-          <Form.Item name="enableChildren" label={version.enableChildren} valuePropName="checked">
-            <Switch />
-          </Form.Item>
+          {isComponent && (
+            <Form.Item name="enableChildren" label={version.enableChildren} valuePropName="checked">
+              <Switch disabled={isRefer} />
+            </Form.Item>
+          )}
+
           <Form.Item name="meta" label="Meta">
-            <JsonEditorFormItem />
+            <JsonEditorFormItem disabled={isRefer} />
           </Form.Item>
           <Form.Item name="schema" label="Schema">
-            <JsonEditorFormItem />
+            <JsonEditorFormItem disabled={isRefer} />
           </Form.Item>
           <Form.Item name="changelog" label={version.changelog}>
-            <Input.TextArea />
+            <Input.TextArea disabled={isRefer} />
           </Form.Item>
         </Group>
       </Form>
@@ -246,7 +273,7 @@ const parseValueForTreeSelect = (data?: { contentId: string; path: string }) => 
     path,
   };
 };
-const transformFormToParams = formValues => {
+const transformFormToParams = (formValues) => {
   const {
     version,
     browser,
@@ -262,7 +289,7 @@ const transformFormToParams = formValues => {
     changelog = '',
   } = formValues || {};
   const editorEntry = [editor]
-    .map(item => {
+    .map((item) => {
       if (item?.value) {
         return {
           id: item.value as string,
@@ -272,7 +299,7 @@ const transformFormToParams = formValues => {
     })
     .filter(Boolean) as { id: string }[];
   const dep = dependencies
-    .map(item => {
+    .map((item) => {
       if (item?.value) {
         return {
           id: item.value as string,

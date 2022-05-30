@@ -21,11 +21,12 @@ export default {
     '/functions/lives',
     '/conditions/lives',
     '/variables/lives',
+    '/mocks/lives',
     '/pages/live-infos',
     '/pages/draft-infos',
     '/files',
   ], // Skip to verify the interface of the token
-  mongodb: mongoConfig || 'mongodb://127.0.0.1:45201/test?retryWrites=false', // Database connection string
+  mongodb: mongoConfig || 'mongodb://127.0.0.1:45201/foxpage?retryWrites=false', // Database connection string
   locale: 'en', // Current language
   plugins: ['@foxpage/foxpage-plugin-unpkg'],
   allLocales: [

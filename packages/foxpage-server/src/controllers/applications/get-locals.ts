@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import _ from 'lodash';
 import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -28,10 +29,10 @@ export class GetApplicationLocales extends BaseController {
     operationId: 'get-application-locales',
   })
   @ResponseSchema(AppLocalesRes)
-  async index(@QueryParams() params: AppLocalesReq): Promise<ResData<string[]>> {
+  async index (@QueryParams() params: AppLocalesReq): Promise<ResData<string[]>> {
     try {
       console.log(params);
-      return Response.success(config?.allLocales || [], 1030601);
+      return Response.success(_.uniq(config?.allLocales || []), 1030601);
     } catch (err) {
       return Response.error(err, i18n.app.getLocalesError, 3030601);
     }

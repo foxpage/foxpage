@@ -20,7 +20,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * Single instance
    * @returns VersionLiveService
    */
-  public static getInstance(): VersionLiveService {
+  public static getInstance (): VersionLiveService {
     this._instance || (this._instance = new VersionLiveService());
     return this._instance;
   }
@@ -30,7 +30,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * @param  {AppTypeContent} params
    * @returns {ContentVersion[]} Promise
    */
-  async getContentLiveDetails(params: AppTypeContent): Promise<ContentVersion[]> {
+  async getContentLiveDetails (params: AppTypeContent): Promise<ContentVersion[]> {
     const contentIds = params.contentIds || [];
     if (contentIds.length === 0) {
       return [];
@@ -52,7 +52,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * @param  {boolean} liveRelation, Mark whether to publish and set the relation associated with the version of live
    * @returns Promise
    */
-  async setVersionPublishStatus(
+  async setVersionPublishStatus (
     params: VersionPublish,
     options: { ctx: FoxCtx; liveRelation?: boolean },
   ): Promise<Record<string, any>> {
@@ -86,6 +86,10 @@ export class VersionLiveService extends BaseService<ContentVersion> {
         false,
       );
       const relationIds = _.keys(relations);
+      const contentMock = Service.content.info.getContentExtension(contentDetail, ['mockId']);
+      if (!!contentMock.mockId) {
+        relationIds.push(contentMock.mockId);
+      }
 
       const relationsLatestVersion = await Service.version.list.getContentMaxVersionDetail(
         relationIds,
@@ -130,7 +134,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * @param  {string[]} versionIds
    * @returns void
    */
-  bulkSetVersionStatus(versionIds: string[], status: ContentStatus): any {
+  bulkSetVersionStatus (versionIds: string[], status: ContentStatus): any {
     if (versionIds.length > 0) {
       return Model.version.batchUpdateDetailQuery({ id: { $in: versionIds } }, { status } as any);
     }
@@ -143,7 +147,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * @param  {boolean=false} isBuild Whether to take the live version
    * @returns string
    */
-  async getContentAndRelationVersion(
+  async getContentAndRelationVersion (
     contentIds: string[],
     isBuild: boolean = false,
   ): Promise<PageContentRelationInfos[]> {

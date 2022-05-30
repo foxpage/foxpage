@@ -55,7 +55,7 @@ export class UpdateResourceDetailReq {
   folderId: string;
 }
 
-export class ResourceFolderDetailRes extends FolderDetailRes {}
+export class ResourceFolderDetailRes extends FolderDetailRes { }
 
 export class ResourceGroupListReq {
   @JSONSchema({ description: 'Application ID' })
@@ -368,4 +368,21 @@ export class UpdateResourceConfigReq {
   @IsString()
   @IsOptional()
   intro: string;
+}
+
+export class ResourceRemoteURLReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'Resource Group ID' })
+  @IsString()
+  @Length(20, 20)
+  id: string;
+
+  @JSONSchema({ description: 'Resource Group scope' })
+  @IsString()
+  @IsOptional()
+  resourceScope: string;
 }

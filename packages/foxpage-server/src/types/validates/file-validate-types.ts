@@ -26,7 +26,7 @@ export class FolderDetail {
   @JSONSchema({ description: 'Folder name' })
   @IsString()
   @IsOptional()
-  @Length(5, 100)
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'Introduction to Folder' })
@@ -73,7 +73,7 @@ export class FileDetail {
   @JSONSchema({ description: 'File name' })
   @IsString()
   @IsOptional()
-  @Length(5, 100)
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'File introduction' })
@@ -243,7 +243,7 @@ export class FileBreadcrumbRes extends ResponseBase {
 export class FolderDetailReq {
   @JSONSchema({ description: 'Folder name' })
   @IsString()
-  @Length(5, 100)
+  @Length(1, 100)
   name: string;
 
   @JSONSchema({ description: 'Introduction to Folder' })
@@ -552,4 +552,11 @@ export class GetFileParentReq {
   @JSONSchema({ description: 'Target data ID' })
   @IsString()
   id: string;
+}
+
+export class AddMockReq extends FileVersionDetailReq {
+  @JSONSchema({ description: 'Binding content ID' })
+  @IsString()
+  @Length(20, 20)
+  contentId?: string;
 }

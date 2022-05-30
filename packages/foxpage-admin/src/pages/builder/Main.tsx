@@ -1,26 +1,23 @@
 import React from 'react';
 
-import { Layout } from 'antd';
 import styled from 'styled-components';
 
+import Header from './header/Header';
 import Builder from './Builder';
-import Header from './Header';
 
-const { Content } = Layout;
-
-const StyledContent = styled(Content)`
-  height: calc(100% - 64px);
+const StyledContent = styled.div`
+  height: calc(100% - 52px);
   background: rgb(255, 255, 255);
 `;
 
 const Index = () => {
   return (
-    <Layout style={{ height: '100%', overflow: 'hidden' }}>
+    <div style={{ height: '100%' }}>
       <Header />
       <StyledContent>
         <Builder />
       </StyledContent>
-    </Layout>
+    </div>
   );
 };
 

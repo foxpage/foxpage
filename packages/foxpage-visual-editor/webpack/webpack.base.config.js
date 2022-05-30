@@ -1,6 +1,4 @@
-const webpack = require('webpack');
 const path = require('path');
-const pkg = require('../package.json');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
@@ -8,7 +6,7 @@ module.exports = {
   output: {
     publicPath: '/dist/',
     filename: 'main.bundle.js',
-    chunkFilename: '[name].[contenthash:8].js',
+    // chunkFilename: '[name].[contenthash:8].js',
     path: path.resolve(__dirname, '../dist'),
   },
   resolve: {
@@ -26,20 +24,18 @@ module.exports = {
     ],
   },
   module: {
-    rules: [{
-        test: /\.worker.js$/i,
-        exclude: /node_modules/,
-        use: ['worker-loader'],
-      },
+    rules: [
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: [{
-          loader: 'babel-loader',
-          options: {
-            configFile: path.resolve(__dirname, '../babel.config.js'),
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              configFile: path.resolve(__dirname, '../babel.config.js'),
+            },
           },
-        }, ],
+        ],
       },
       {
         test: /\.md$/,
@@ -125,4 +121,8 @@ module.exports = {
       },
     ],
   },
+  // externals: {
+  //   'react': 'React',
+  //   'react-dom': 'ReactDOM',
+  // }
 };

@@ -1,9 +1,18 @@
 import React, { ReactChild } from 'react';
 
-import { Layout } from 'antd';
 import styled from 'styled-components';
 
-const { Content } = Layout;
+const Content = styled.div`
+  padding: ${(props: { withoutBreadcrumb?: boolean }) =>
+    props.withoutBreadcrumb ? '0 24px 24px 24px' : '24px'};
+  height: 100%;
+  overflow: hidden auto;
+  width: 100%;
+`;
+
+const Breadcrumb = styled.div`
+  padding: 12px 0;
+`;
 
 const Container = styled.div`
   background-color: #fff;
@@ -14,12 +23,15 @@ const Container = styled.div`
 `;
 
 interface LayoutProps {
+  breadcrumb?: ReactChild;
   children?: ReactChild;
 }
+
 const FoxpageDetailContent: React.FC<LayoutProps> = (props) => {
-  const { children } = props;
+  const { breadcrumb, children } = props;
   return (
-    <Content style={{ padding: '24px', minHeight: 280, height: '100%', overflow: 'scroll' }}>
+    <Content withoutBreadcrumb={!!breadcrumb}>
+      {breadcrumb && <Breadcrumb>{breadcrumb}</Breadcrumb>}
       <Container>{children}</Container>
     </Content>
   );

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 
-import { DeleteOutlined, EditOutlined, FileOutlined, FolderOpenOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, FileTextOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { Button, Modal } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import { RootState } from 'typesafe-actions';
@@ -62,7 +62,7 @@ const List: React.FC<ComponentsProps> = ({
       width: 40,
       render: (__type: string) => (
         <span>
-          {__type === 'file' && <FileOutlined />}
+          {__type === 'file' && <FileTextOutlined />}
           {__type === 'folder' && <FolderOpenOutlined />}
         </span>
       ),

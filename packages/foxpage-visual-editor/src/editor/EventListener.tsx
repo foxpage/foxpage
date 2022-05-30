@@ -5,8 +5,9 @@ import _ from 'lodash';
 import { EditContext } from '@foxpage/foxpage-component-editor-context';
 import * as widgets from '@foxpage/foxpage-component-editor-widgets';
 
+import { ComponentPropsType, ComponentStructure } from '@/types/component';
+
 import { Listeners } from '../components/listeners';
-import { ComponentStructure } from '../interface';
 import ViewerContext from '../viewerContext';
 
 interface EventListenerProps {
@@ -15,7 +16,7 @@ interface EventListenerProps {
   saveComponent: (isWrapper: boolean) => void;
 }
 
-const EventListener: React.FC<EventListenerProps> = props => {
+const EventListener: React.FC<EventListenerProps> = (props) => {
   const { selectedComponent, saveComponent, updateEditorValue } = props;
   const { loadedComponent, componentList, foxpageI18n } = useContext(ViewerContext);
 
@@ -24,7 +25,7 @@ const EventListener: React.FC<EventListenerProps> = props => {
       const componentProps = _.cloneDeep(selectedComponent.props) || {};
       const keyPath: string[] = keys.split('.');
       const key = keyPath.pop() as string;
-      const props = keyPath.reduce((a, c) => {
+      const props = keyPath.reduce((a: string | ComponentPropsType, c: string) => {
         if (typeof a[c] !== 'undefined') return a[c];
         a[c] = {};
         return a[c];
@@ -42,14 +43,14 @@ const EventListener: React.FC<EventListenerProps> = props => {
 
   const newComponentList = useMemo(() => {
     return componentList
-      .filter(component => {
+      .filter((component) => {
         const isWrapper =
           component.children && component.children.length > 0 && component.children[0].wrapper
             ? component.children[0].wrapper === component.id
             : false;
         return !isWrapper;
       })
-      .map(component => {
+      .map((component) => {
         const editorEntry = component.resource?.['editor-entry'];
         const editor = editorEntry && editorEntry.length > 0 ? editorEntry[0] : undefined;
         if (editor) {
@@ -92,7 +93,7 @@ const EventListener: React.FC<EventListenerProps> = props => {
   return (
     <React.Fragment>
       {listeners.length > 0 ? (
-        <EditContext.Provider value={editorParams}>
+        <EditContext.Provider value={editorParams as any}>
           <Listeners propKey={listeners} />
         </EditContext.Provider>
       ) : (

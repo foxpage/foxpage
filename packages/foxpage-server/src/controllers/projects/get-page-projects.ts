@@ -25,6 +25,8 @@ export class GetProjectPageList extends BaseController {
    * if the applicationId is passed, get the project under the application
    * 1. Get all applications under the organization
    * 2, Get all the folders (Projects) under the application in reverse order by folder creation time
+   * 
+   * filter project data by type (user|team|organization app)
    * @param  {ProjectListReq} params
    * @param  {Header} headers
    * @returns {FolderInfo}
@@ -37,7 +39,7 @@ export class GetProjectPageList extends BaseController {
     operationId: 'get-page-project-list',
   })
   @ResponseSchema(ProjectListRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @QueryParams() params: ProjectListReq,
   ): Promise<ResData<PageData<FolderInfo>>> {
@@ -57,6 +59,21 @@ export class GetProjectPageList extends BaseController {
         appIds = _.map(appList, 'id');
       }
 
+      let userIds: string[] = [];
+      if (params.type === TYPE.TEAM) {
+        // get teams users
+        const teamProjectParams = Object.assign(
+          params.typeId ? { id: params.typeId } : {}, { 'members.userId': ctx.userInfo.id },
+        );
+        const teamList = await this.service.team.find(teamProjectParams);
+        teamList.forEach(team => {
+          userIds.push(..._.map(_.filter(team?.members || [], member => member.status), 'userId'));
+        });
+        userIds.length === 0 ? (userIds = [ctx.userInfo.id]) : (userIds = _.uniq(userIds));
+      } else if (params.type === TYPE.USER) {
+        userIds = [ctx.userInfo.id];
+      }
+
       // Get the id of the specified default folder under the application
       const folderIds = await this.service.folder.info.getAppDefaultFolderIds({
         applicationIds: appIds,
@@ -66,7 +83,7 @@ export class GetProjectPageList extends BaseController {
       let orgFolderData: PageData<FolderInfo> = { list: [], count: 0 };
       if (folderIds.size > 0) {
         orgFolderData = await this.service.folder.list.getFolderChildrenList(
-          Object.assign(_.pick(params, ['page', 'size', 'search']), { parentFolderIds: [...folderIds] }),
+          Object.assign(_.pick(params, ['page', 'size', 'search']), { userIds, parentFolderIds: [...folderIds] }),
         );
       }
       return Response.success(

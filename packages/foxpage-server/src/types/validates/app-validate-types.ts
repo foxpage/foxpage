@@ -25,7 +25,7 @@ export class AppDetail {
 
   @JSONSchema({ description: 'Application name' })
   @IsString()
-  @Length(5, 50)
+  @Length(1, 50)
   name: string;
 
   @JSONSchema({ description: 'Application introduction' })
@@ -124,6 +124,11 @@ export class AppListReq {
   @Length(20, 20)
   organizationId: string;
 
+  @JSONSchema({ description: 'App type, user, organization, default is organization' })
+  @IsString()
+  @IsOptional()
+  type: string;
+
   @JSONSchema({ description: 'Filter fields, currently only filtered by application name' })
   @IsString()
   @IsOptional()
@@ -214,7 +219,7 @@ export class AppInfo {
   @JSONSchema({ description: 'Application Name' })
   @IsString()
   @IsNotEmpty()
-  @Length(5, 50)
+  @Length(1, 50)
   name: string;
 }
 

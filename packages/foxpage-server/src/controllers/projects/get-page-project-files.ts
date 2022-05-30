@@ -32,7 +32,7 @@ export class GetProjectFileList extends BaseController {
     operationId: 'get-page-project-files',
   })
   @ResponseSchema(FileFolderListRes)
-  async index(@QueryParams() params: FileListReq): Promise<ResData<FileFolderInfo>> {
+  async index (@QueryParams() params: FileListReq): Promise<ResData<FileFolderInfo>> {
     try {
       // Check if the folder is deleted
       const folderDetail = await this.service.folder.info.getDetailById(params.id);
@@ -47,6 +47,14 @@ export class GetProjectFileList extends BaseController {
         data: FileFolderInfo;
       } = await this.service.folder.list.getPageChildrenList(params, [TYPE.TEMPLATE, TYPE.PAGE]);
 
+      const fileIds = _.map(childrenList.data?.files || [], 'id');
+      const fileContents = await this.service.content.list.find({ fileId: { $in: fileIds }, deleted: false });
+      const existContentFileIds = _.map(fileContents, 'fileId');
+
+      (childrenList.data?.files || []).forEach(file => {
+        file.hasContent = existContentFileIds.indexOf(file.id) !== -1;
+      });
+
       return Response.success(
         {
           pageInfo: {
@@ -54,7 +62,7 @@ export class GetProjectFileList extends BaseController {
             size: params.size,
             total: childrenList.count,
           },
-          data: childrenList.data || [],
+          data: childrenList.data || {},
         },
         1040301,
       );

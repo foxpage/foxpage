@@ -29,7 +29,7 @@ export class UpdateAuthorizeDetail extends BaseController {
     operationId: 'update-authorize-detail',
   })
   @ResponseSchema(AuthDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateAuthReq): Promise<ResData<any>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: UpdateAuthReq): Promise<ResData<any>> {
     try {
       if (!params.ids || params.ids.length === 0) {
         return Response.warning(i18n.auth.invalidAuthIds, 2180201);
@@ -55,7 +55,7 @@ export class UpdateAuthorizeDetail extends BaseController {
 
       await this.service.auth.batchUpdateDetail(
         params.ids,
-        Object.assign({ creator: ctx.userInfo.id }, _.pick(params, ['mask', 'allow'])),
+        Object.assign({ creator: ctx.userInfo.id, deleted: false }, _.pick(params, ['mask', 'allow'])),
       );
 
       return Response.success(i18n.auth.updateAuthorizeDetailSuccess, 1180201);

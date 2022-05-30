@@ -37,6 +37,9 @@ module.exports = merge(webpackBaseConfig, {
     }),
     new webpack.DefinePlugin({
       __DEV__: false,
+      'process.env': {
+        NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+      },
     }),
   ],
 });

@@ -1,9 +1,9 @@
-import enI18n from './en';
-import zhCNI18n from './zh-cn';
+import en from './language/en.json';
+import zhCN from './language/zh-cn.json';
 
 const i18n = {
-  'zh-cn': zhCNI18n,
-  en: enI18n,
+  'zh-cn': zhCN,
+  en: en,
 };
 
 export default i18n;

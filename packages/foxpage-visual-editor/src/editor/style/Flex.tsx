@@ -1,14 +1,12 @@
 import React from 'react';
 
-import { Input, InputNumber, Radio, Select, Tooltip } from 'antd';
+import { Input, InputNumber, Tooltip } from 'antd';
 
-import { Col, RadioButton, Row } from './Common';
+import { Col, Row } from './Common';
 import { FlexType } from './index.d';
 
-const { Option } = Select;
-
-const Flex: React.FC<FlexType> = props => {
-  const { flex, flexBasis, flexShrink, flexGrow, onChange = (key: string, val: string) => {} } = props;
+const Flex: React.FC<FlexType> = (props) => {
+  const { flexBasis, flexShrink, flexGrow, onChange } = props;
   return (
     <React.Fragment>
       <Row>
@@ -21,7 +19,7 @@ const Flex: React.FC<FlexType> = props => {
             value={flexBasis?.replace('px', '')}
             placeholder="size"
             onChange={(e: any) => {
-              onChange('flexBasis', `${e.target.value}px`);
+              if (typeof onChange === 'function') onChange('flexBasis', `${e.target.value}px`);
             }}
           />
         </Col>
@@ -35,7 +33,7 @@ const Flex: React.FC<FlexType> = props => {
             style={{ width: '100%' }}
             value={flexShrink}
             onChange={(value: string) => {
-              onChange('flexShrink', value);
+              if (typeof onChange === 'function') onChange('flexShrink', value);
             }}
           />
         </Col>
@@ -49,7 +47,7 @@ const Flex: React.FC<FlexType> = props => {
             style={{ width: '100%' }}
             value={flexGrow}
             onChange={(value: string) => {
-              onChange('flexGrow', value);
+              if (typeof onChange === 'function') onChange('flexGrow', value);
             }}
           />
         </Col>

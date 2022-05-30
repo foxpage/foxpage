@@ -24,6 +24,7 @@ const variableBindParams: VariableBindParams = {
   open: false,
   keys: '',
   type: EditorInputEnum.Text,
+  mock: false,
 };
 const initialState = {
   pageInfo,
@@ -39,7 +40,7 @@ export type VariableActionType = ActionType<typeof ACTIONS | typeof clearAll>;
 type StateType = typeof initialState;
 
 const reducer = (state: StateType = initialState, action: VariableActionType) =>
-  produce(state, draft => {
+  produce(state, (draft) => {
     switch (action.type) {
       case getType(ACTIONS.clearAll): {
         Object.assign(draft, { ...initialState });
@@ -69,8 +70,7 @@ const reducer = (state: StateType = initialState, action: VariableActionType) =>
       case getType(ACTIONS.updateEditVariableValue): {
         const { key, value } = action.payload;
         const editVariable = state.editVariable;
-        const newEditVariable = Object.assign({}, editVariable, { [key]: value });
-        draft.editVariable = newEditVariable;
+        draft.editVariable = Object.assign({}, editVariable, { [key]: value });
         break;
       }
 
@@ -121,8 +121,8 @@ const reducer = (state: StateType = initialState, action: VariableActionType) =>
           newEditVariable.relations = { functions: [], variables: [] };
         }
         const { functions: oldFunctions = [] } = newEditVariable.relations;
-        functions.forEach(func => {
-          if (!oldFunctions.find(item => item.id === func.id)) {
+        functions.forEach((func) => {
+          if (!oldFunctions.find((item) => item.id === func.id)) {
             oldFunctions.push(func);
           }
         });
@@ -133,8 +133,8 @@ const reducer = (state: StateType = initialState, action: VariableActionType) =>
       }
 
       case getType(ACTIONS.setVariableBindModalVisibleStatus): {
-        const { open, type, keys } = action.payload;
-        draft.variableBindParams = { open, type, keys };
+        const { open, type, keys, mock } = action.payload;
+        draft.variableBindParams = { open, type, keys, mock };
         break;
       }
 

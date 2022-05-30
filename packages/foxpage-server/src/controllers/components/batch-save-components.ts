@@ -4,10 +4,10 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { Content } from '@foxpage/foxpage-server-types';
+import { AppFolderTypes, Content, File, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TAG } from '../../../config/constant';
+import { TAG, TYPE } from '../../../config/constant';
 import { NewResourceDetail } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { SaveRemotePackageReq } from '../../types/validates/component-validate-types';
@@ -37,7 +37,7 @@ export class SaveRemoteComponents extends BaseController {
     operationId: 'save-remote-component-list',
   })
   @ResponseSchema(ResponseBase)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @Body() params: SaveRemotePackageReq,
   ): Promise<ResData<NewResourceDetail[]>> {
@@ -52,10 +52,18 @@ export class SaveRemoteComponents extends BaseController {
         item?.component?.id && componentFileIds.push(item.component.id);
       });
 
+      let appTypeId: string = '';
       let fileContentObject: Record<string, Content> = {};
-      if (componentFileIds.length > 0) {
-        fileContentObject = await this.service.content.list.getContentObjectByFileIds(componentFileIds);
-      }
+      let componentFileList: File[] = [];
+      [appTypeId, fileContentObject, componentFileList] = await Promise.all([
+        this.service.folder.info.getAppTypeFolderId({
+          applicationId: params.applicationId,
+          type: TYPE.COMPONENT as AppFolderTypes
+        }),
+        this.service.content.list.getContentObjectByFileIds(componentFileIds),
+        this.service.file.list.getDetailByIds(componentFileIds),
+      ]);
+      const componentFileObject = _.keyBy(_.filter(componentFileList, { deleted: false }), 'id');
 
       let errMsg: Record<string, number | string | string[]> = {};
       for (const item of params.components) {
@@ -63,6 +71,28 @@ export class SaveRemoteComponents extends BaseController {
           id: item.resource.groupId,
           applicationId: params.applicationId,
         });
+
+        // create file if not exist
+        if (!item?.component?.id || componentFileObject[item.component.id]?.deleted !== false) {
+          const componentDetail = await this.service.file.info.getDetail({
+            folderId: appTypeId,
+            name: item.resource.name,
+            deleted: false,
+          });
+
+          if (!componentDetail || _.isEmpty(componentDetail)) {
+            const fileDetail = this.service.file.info.create({
+              applicationId: params.applicationId || '',
+              name: _.trim(item.resource.name) || '',
+              folderId: appTypeId,
+              type: TYPE.COMPONENT as FileTypes,
+            }, { ctx });
+
+            item.component.id = fileDetail.id;
+          } else {
+            item.component.id = componentDetail.id;
+          }
+        }
 
         const entries = item.component.content?.resource?.entry || {};
         let editorEntry = item.component.content?.resource?.['editor-entry'][0] || {};
@@ -86,7 +116,7 @@ export class SaveRemoteComponents extends BaseController {
             }
           }
 
-          if (editorEntry.path) {
+          if (!editorEntry.id && editorEntry.path) {
             editorEntry.id = _.get(
               contentIdMap[item.resource.resourceName],
               _.drop(<string[]>editorEntry.path.split('/'), 3),
@@ -107,14 +137,19 @@ export class SaveRemoteComponents extends BaseController {
             if (checkResult.contentPath?.[item.resource.id]?.[_.replace(itemPath, pathPre, '')]) {
               entries[entryItem] =
                 checkResult.contentPath[item.resource.id][_.replace(itemPath, pathPre, '')];
+            } else {
+              entries[entryItem] = await this.service.resource.getContentIdByPath(item.resource.groupId, _.drop(itemPath.split('/')));
             }
           }
 
-          if (editorEntry.path) {
+          if (!editorEntry.id && editorEntry.path) {
             if (checkResult.contentPath?.[item.resource.id]?.[_.replace(editorEntry.path, pathPre, '')]) {
               editorEntry.id =
                 checkResult.contentPath[item.resource.id][_.replace(editorEntry.path, pathPre, '')];
+            } else {
+              editorEntry.id = await this.service.resource.getContentIdByPath(item.resource.groupId, _.drop(editorEntry.path.split('/')))
             }
+
             delete editorEntry.contentId;
             delete editorEntry.path;
           }
@@ -160,6 +195,10 @@ export class SaveRemoteComponents extends BaseController {
           ctx.transactions.push(
             this.service.file.info.updateDetailQuery(item.component.id, { tags: fileTags }),
           );
+        }
+
+        if (item.component.content.schema) {
+          item.component.content.schema = JSON.stringify(item.component.content.schema);
         }
 
         // Add component new version

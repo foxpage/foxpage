@@ -41,6 +41,11 @@ export type NameVersionContent = NameVersion & { content: DSL };
 export type NameVersionPackage = NameVersion & { package?: ComponentDSL };
 export type FolderFileContent = Folder | File | Content;
 
+export interface VersionNumber {
+  version: string;
+  versionNumber: number;
+}
+
 export interface SearchLatestVersion {
   contentId: string;
   deleted?: boolean;
@@ -143,6 +148,7 @@ export interface VersionPublish {
 export interface PageContentRelations {
   content: DSL;
   relations: Record<string, DSL[]>;
+  mock?: Record<string, any>;
 }
 
 export interface PageContentRelationInfos extends PageContentRelations {
@@ -194,4 +200,9 @@ export interface VersionCheckResult {
   code: number;
   data: DSL;
   msg?: string;
+}
+
+export interface VersionWithMock extends DSL {
+  mocks?: Record<string, DSL>;
+  extension?: Record<string, string>;
 }

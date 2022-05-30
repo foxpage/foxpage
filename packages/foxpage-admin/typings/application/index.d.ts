@@ -1,6 +1,7 @@
 import { PaginationReqParams, ResponseBody } from '../common';
 import { Creator } from '../user';
 
+export * from './file';
 export * from './packages';
 export * from './resources';
 export * from './settings';
@@ -12,7 +13,7 @@ export interface ApplicationResourceType {
   detail: {
     host: string;
     downloadHost: string;
-  }
+  };
 }
 
 export interface Application {
@@ -27,7 +28,7 @@ export interface Application {
   updateTime: string;
   creator: Creator;
   deleted: boolean;
-  resources: ApplicationResourceType[],
+  resources: ApplicationResourceType[];
 }
 export interface ApplicationUpdateType {
   applicationId: string;
@@ -36,7 +37,7 @@ export interface ApplicationUpdateType {
   slug: string;
   host: string[];
   locales: string[];
-  resources: ApplicationResourceType[],
+  resources: ApplicationResourceType[];
 }
 
 export interface OrganizationUrlParams {
@@ -57,8 +58,8 @@ export interface FileUrlParams extends FolderUrlParams {
 
 export interface ApplicationFetchParams extends PaginationReqParams {
   organizationId: string;
+  type?: string;
 }
-
 
 export interface ApplicationFetchResponse extends ResponseBody {
   data?: Application[];

@@ -5,7 +5,11 @@ import styled from 'styled-components';
 
 import getLinkByEnv from '../../utils/get-link-by-env';
 
-const Container = styled.div``;
+const Container = styled.div`
+  ol {
+    padding-left: 0;
+  }
+`;
 
 const FoxpageBreadcrumb = (props: any) => {
   const { breadCrumb } = props;

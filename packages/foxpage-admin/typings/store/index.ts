@@ -1,6 +1,6 @@
 import { FileTypeEnum } from '@/constants/index';
 import { StoreBuyGoodsType } from '@/constants/store';
-import { OptionsAction, PaginationInfo, PaginationReqParams } from '@/types/index';
+import { OptionsAction, PaginationInfo, PaginationReqParams, ResponseBody } from '@/types/index';
 import { Creator } from '@/types/user';
 
 import { ProjectContentType } from '../application/project';

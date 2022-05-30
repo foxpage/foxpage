@@ -21,7 +21,7 @@ export class SetPageFileStatus extends BaseController {
   }
 
   /**
-   * set page delete status
+   * 设置页面文件的删除状态
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
@@ -38,7 +38,7 @@ export class SetPageFileStatus extends BaseController {
 
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.PAGE });
-      const hasAuth = await this.service.auth.file(params.id, { ctx, mask: 4 });
+      const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051201);
       }

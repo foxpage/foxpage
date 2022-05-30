@@ -13,7 +13,7 @@ const cryptokey: { publicKey: string; privateKey: string } = JSON.parse(keyStrin
  * @param  {Buffer} password
  * @returns string
  */
-export function decryptPwd(password: Buffer): string {
+export function decryptPwd (password: Buffer): string {
   const decryptPwd: string = privateDecrypt(
     { key: cryptokey.privateKey, passphrase: '' },
     Buffer.from(password),
@@ -41,7 +41,7 @@ export function decryptPwd(password: Buffer): string {
  * @param  {string} pre
  * @returns string
  */
-export function generationId(pre: string): string {
+export function generationId (pre: string): string {
   return [pre, randStr(15)].join('_');
 }
 
@@ -49,7 +49,7 @@ export function generationId(pre: string): string {
  * Generate random string
  * @param  {} number=2
  */
-export function randStr(number: number = 2): string {
+export function randStr (number: number = 2): string {
   let str = '';
   for (let i = 0; i < number; i++) {
     const pos = Math.round(Math.random() * (idStrings.length - 1));
@@ -64,7 +64,7 @@ export function randStr(number: number = 2): string {
  * @param  {any[]} sourceData
  * @returns any
  */
-export function prettifyId(sourceData: any[]): any[] {
+export function prettifyId (sourceData: any[]): any[] {
   if (sourceData.length > 0) {
     sourceData.map((cell) => {
       for (const item in cell) {
@@ -87,7 +87,7 @@ export function prettifyId(sourceData: any[]): any[] {
  * @param  {string} name
  * @returns boolean
  */
-export function checkName(name: string): boolean {
+export function checkName (name: string): boolean {
   const illegalStr: number = name.search(/[^0-9a-zA-Z\-\_\/\@ ]/);
   return illegalStr === -1;
 }
@@ -97,7 +97,7 @@ export function checkName(name: string): boolean {
  * @param  {string} name
  * @returns boolean
  */
-export function checkResourceName(name: string): boolean {
+export function checkResourceName (name: string): boolean {
   const illegalStr: number = name.search(/[^0-9a-zA-Z\-\_\/\@\. ]/);
   return illegalStr === -1;
 }
@@ -107,7 +107,7 @@ export function checkResourceName(name: string): boolean {
  * @param  {string} email
  * @returns boolean
  */
-export function checkEmail(email: string): boolean {
+export function checkEmail (email: string): boolean {
   const reg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
   return reg.test(email);
 }
@@ -118,6 +118,17 @@ export function checkEmail(email: string): boolean {
  * @param  {string} name
  * @returns string
  */
-export function formatToPath(name: string): string {
+export function formatToPath (name: string): string {
   return _.trim(_.toLower(name).replace(/[^0-9a-z]/g, ' ')).replace(/\s+/g, '-');
+}
+
+/**
+ * merge page url from host, slug and path
+ * @param host 
+ * @param path 
+ * @param slug 
+ * @returns 
+ */
+export function mergeUrl (host: string, path: string, slug?: string): string {
+  return _.trimEnd(host, '/') + '/' + _.trim(slug, '/') + '/' + _.trimStart(path, '/');
 }

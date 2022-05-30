@@ -34,14 +34,25 @@ export class AddTemplateContentDetail extends BaseController {
   @ResponseSchema(ContentBaseDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: AddContentReq): Promise<ResData<Content>> {
     try {
+      !params.tags && (params.tags = []);
       const contentParams: Partial<Content> = {
         title: params.title,
         fileId: params.fileId,
-        tags: params.tags || [],
+        tags: params.tags,
       };
+
+      // add special field to tag
+      if (params.isBase) {
+        params.tags.push({ isBase: params.isBase });
+      }
+
+      if (params.extendId) {
+        params.tags.push({ extendId: params.extendId });
+      }
 
       const contentDetail = this.service.content.info.addContentDetail(contentParams, {
         ctx,
+        content: { relation: {}, schemas: [] },
         type: TYPE.TEMPLATE as FileTypes,
       });
 

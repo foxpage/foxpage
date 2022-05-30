@@ -16,9 +16,11 @@ interface StateType {
   fileId: string;
   applicationId: string;
   contentId: string;
+  mockId: string;
   fileType: string;
   loading: boolean;
   locale: string;
+  project: string;
 }
 const initialState = {
   pageList: [],
@@ -26,17 +28,27 @@ const initialState = {
   fileId: '',
   applicationId: '',
   contentId: '',
+  mockId: '',
   fileType: '',
   loading: false,
   locale: '',
+  project: '',
 };
 
 const reducer = (state: StateType = initialState, action: PageActionType) =>
-  produce(state, draft => {
+  produce(state, (draft) => {
     switch (action.type) {
       case getType(ACTIONS.pushPageList): {
         const { data } = action.payload;
-        draft.pageList = data;
+        const { files, name } = data || {};
+        draft.pageList =
+          (files &&
+            files.map((item) => ({
+              ...item,
+              fold: true,
+            }))) ||
+          [];
+        draft.project = name || '';
         break;
       }
 
@@ -49,8 +61,8 @@ const reducer = (state: StateType = initialState, action: PageActionType) =>
         draft.applicationId = applicationId;
         draft.folderId = folderId || oldFolderId;
         draft.fileId = fileId || OldFileId;
-        draft.contentId = contentId;
-        draft.fileType = fileType;
+        draft.contentId = contentId || '';
+        draft.fileType = fileType || '';
         break;
       }
 
@@ -70,12 +82,12 @@ const reducer = (state: StateType = initialState, action: PageActionType) =>
         const { id, fold } = action.payload;
         const pageList = state.pageList;
         const newPageList: PageContentType[] = _.cloneDeep(pageList);
-        newPageList.forEach(item => {
+        newPageList.forEach((item) => {
           if (item.id === id) {
             item.fold = fold;
           }
           if (item.contents && item.contents.length > 0) {
-            item.contents.forEach(subItem => {
+            item.contents.forEach((subItem) => {
               if (subItem.id === id) {
                 subItem.fold = fold;
               }

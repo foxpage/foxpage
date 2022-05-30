@@ -1,9 +1,7 @@
 import { ComponentMetaType, ComponentStructure, DslOperateType } from '@/types/builder';
 import { BaseResponse } from '@/types/common';
 
-export interface ComponentSourceMapType {
-  [name: string]: ComponentType;
-}
+export type ComponentSourceMapType = Record<string, ComponentType>;
 
 export interface ComponentResource {
   host: string;

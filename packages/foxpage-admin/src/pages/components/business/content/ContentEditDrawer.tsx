@@ -24,13 +24,13 @@ interface ContentEditType {
   onSave: (content: ContentType) => void;
 }
 
-const ContentEditDrawer: React.FC<ContentEditType> = props => {
+const ContentEditDrawer: React.FC<ContentEditType> = (props) => {
   const { open, content, locales = [], onClose, onSave } = props;
   const [editContent, setEditContent] = useState<ContentType>(content as ContentType);
   const [localesTag, setLocalesTag] = useState<TagType[]>([]);
   const [queryTag, setQueryTag] = useState<TagType>({});
   const { locale } = useContext(GlobalContext);
-  const { global, content: contentI18n, file } = locale.business;
+  const { global, content: contentI18n } = locale.business;
 
   useEffect(() => {
     if (content) {
@@ -40,8 +40,8 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
 
   useEffect(() => {
     if (editContent?.tags) {
-      setLocalesTag(editContent.tags.filter(item => item.locale) || []);
-      setQueryTag(editContent.tags.find(item => item.query) || {});
+      setLocalesTag(editContent.tags.filter((item) => item.locale) || []);
+      setQueryTag(editContent.tags.find((item) => item.query) || {});
     }
   }, [editContent]);
 
@@ -52,7 +52,7 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
   };
 
   const handleLocaleClick = (locale: string) => {
-    const selectedIndex = localesTag.findIndex(item => item.locale === locale);
+    const selectedIndex = localesTag.findIndex((item) => item.locale === locale);
     const newLocalesTag: TagType[] = [];
     Object.assign(newLocalesTag, localesTag);
     if (selectedIndex > -1) {
@@ -87,12 +87,10 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
           type="primary"
           onClick={() => {
             onSave(editContent);
-          }}
-        >
+          }}>
           {global.add}
         </Button>
-      }
-    >
+      }>
       {editContent ? (
         <Group>
           <Field>
@@ -100,14 +98,14 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
             <Input
               value={editContent.title}
               placeholder={contentI18n.nameLabel}
-              onChange={e => update('title', e.target.value)}
+              onChange={(e) => update('title', e.target.value)}
             />
           </Field>
           <Field>
             <Label>{global.locale}</Label>
             <LocaleSelect>
               {locales.map((locale: string) => {
-                const selected = localesTag.find(item => item.locale === locale);
+                const selected = localesTag.find((item) => item.locale === locale);
                 return (
                   <Tag
                     key={locale}
@@ -115,8 +113,7 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
                       handleLocaleClick(locale);
                     }}
                     color={selected ? 'green' : 'blue'}
-                    style={{ width: 70, textAlign: 'center', cursor: 'pointer' }}
-                  >
+                    style={{ width: 70, textAlign: 'center', cursor: 'pointer' }}>
                     {selected && <CheckOutlined />}
                     {locale}
                   </Tag>
@@ -128,17 +125,17 @@ const ContentEditDrawer: React.FC<ContentEditType> = props => {
             <Label>{contentI18n.query}</Label>
             <JSONEditor
               jsonData={queryTag.query || {}}
-              onChangeJSON={json => {
+              onChangeJSON={(json) => {
                 handleQueryTagChange(json);
               }}
               onError={() => {
                 handleQueryTagChange();
               }}
-            ></JSONEditor>
+            />
           </Field>
         </Group>
       ) : (
-        <div></div>
+        <div />
       )}
     </OperationDrawer>
   );

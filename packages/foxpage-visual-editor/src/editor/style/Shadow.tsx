@@ -10,7 +10,7 @@ import viewerContext from '../../viewerContext';
 import { Col, colorPickerStyle, Label, RadioButton, Row } from './Common';
 import { ShadowType } from './index.d';
 
-const Shadow: React.FC<ShadowType> = props => {
+const Shadow: React.FC<ShadowType> = (props) => {
   const {
     boxShadow,
     onChange = (_key: string, _val: string) => {},
@@ -70,14 +70,17 @@ const Shadow: React.FC<ShadowType> = props => {
             onChange={(e: any) => {
               onChange(
                 'boxShadow',
-                `${e.target.value === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
+                `${
+                  e.target.value === 'inset' ? 'inset ' : ''
+                }${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
               );
               onApplyState(
                 'boxShadow',
-                `${e.target.value === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
+                `${
+                  e.target.value === 'inset' ? 'inset ' : ''
+                }${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
               );
-            }}
-          >
+            }}>
             <RadioButton value="" style={{ width: '50%' }}>
               <span>{foxpageI18n.shadowTypeOutset}</span>
             </RadioButton>
@@ -96,7 +99,7 @@ const Shadow: React.FC<ShadowType> = props => {
           <EditContext.Provider
             value={{
               componentProps: { color },
-              propChange: (_prop: string, val: string) => {
+              propChange: (_prop: string, val: any) => {
                 onChange(
                   'boxShadow',
                   `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${speed}px ${val}`,
@@ -105,12 +108,14 @@ const Shadow: React.FC<ShadowType> = props => {
               applyState: () => {
                 onApplyState(
                   'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
+                  `${
+                    type === 'inset' ? 'inset ' : ''
+                  }${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
                 );
               },
               propsChange: () => {},
-            }}
-          >
+              onBindVariable: () => {},
+            }}>
             <ColorPicker propKey="color" hideVariableBtn={true} style={colorPickerStyle} />
           </EditContext.Provider>
         </Col>
@@ -131,7 +136,9 @@ const Shadow: React.FC<ShadowType> = props => {
               onBlur={(e: any) => {
                 onApplyState(
                   'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${e.target.value}px ${offsetY}px ${blur}px ${speed}px ${color}`,
+                  `${type === 'inset' ? 'inset ' : ''}${
+                    e.target.value
+                  }px ${offsetY}px ${blur}px ${speed}px ${color}`,
                 );
               }}
             />
@@ -152,7 +159,9 @@ const Shadow: React.FC<ShadowType> = props => {
               onBlur={(e: any) => {
                 onApplyState(
                   'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${e.target.value}px ${blur}px ${speed}px ${color}`,
+                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${
+                    e.target.value
+                  }px ${blur}px ${speed}px ${color}`,
                 );
               }}
             />
@@ -168,7 +177,9 @@ const Shadow: React.FC<ShadowType> = props => {
               onChange={(value: number) => {
                 onChange(
                   'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${value}px ${speed}px ${color}`,
+                  `${
+                    type === 'inset' ? 'inset ' : ''
+                  }${offsetX}px ${offsetY}px ${value}px ${speed}px ${color}`,
                 );
               }}
               onBlur={(e: any) => {
@@ -191,13 +202,17 @@ const Shadow: React.FC<ShadowType> = props => {
               onChange={(value: number) => {
                 onChange(
                   'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${value}px ${color}`,
+                  `${
+                    type === 'inset' ? 'inset ' : ''
+                  }${offsetX}px ${offsetY}px ${blur}px ${value}px ${color}`,
                 );
               }}
               onBlur={(e: any) => {
                 onApplyState(
                   'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${e.target.value}px ${color}`,
+                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${
+                    e.target.value
+                  }px ${color}`,
                 );
               }}
             />

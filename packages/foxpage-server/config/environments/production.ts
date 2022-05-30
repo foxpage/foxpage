@@ -21,11 +21,12 @@ export default {
     '/functions/lives',
     '/conditions/lives',
     '/variables/lives',
+    '/mocks/lives',
     '/pages/live-infos',
     '/pages/draft-infos',
     '/files',
   ],
-  mongodb: mongoConfig || 'mongodb://127.0.0.1:27017/test?retryWrites=false',
+  mongodb: mongoConfig || 'mongodb://127.0.0.1:27017/foxpage?retryWrites=false',
   plugins: ['@foxpage/foxpage-plugin-unpkg'],
   allLocales: [
     'en-US',

@@ -36,17 +36,23 @@ export class UpdatePageContentDetail extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
 
-      const hasAuth = await this.service.auth.content(params.id, { ctx });
+      const [hasAuth, sourceContentDetail] = await Promise.all([
+        this.service.auth.content(params.id, { ctx }),
+        this.service.content.info.getDetailById(params.id),
+      ]);
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051701);
       }
 
       // TODO De-duplicate tags
+      _.remove(sourceContentDetail.tags, (tag) => {
+        return _.isNil(tag.isBase) || _.isNil(tag.extendId);
+      });
 
-      const result: Record<
-        string,
-        number | Content
-      > = await this.service.content.info.updateContentDetail(
+      params.isBase && params.tags.push({ isBase: params.isBase });
+      params.extendId && params.tags.push({ extendId: params.extendId });
+
+      const result: Record<string, number | Content> = await this.service.content.info.updateContentDetail(
         Object.assign({}, params, { type: TYPE.PAGE as FileTypes }),
         { ctx },
       );

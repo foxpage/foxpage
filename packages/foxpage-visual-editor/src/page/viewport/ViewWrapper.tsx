@@ -1,51 +1,39 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 
-import { FoxpageComponentType } from '@foxpage/foxpage-js-sdk';
-
-import { ComponentStructure } from '@/types/builder';
+import { ComponentStructure } from '@/types/component';
 
 import BlankNode from './BlankNode';
-import WithErrorCath from './WithErrorCatch';
+import WithHook, { ExtendInfo } from './WithHook';
 
-interface ViewWrapper {
+interface ViewWrapper extends Required<Pick<ExtendInfo, 'loadedComponents' | 'isWrapper'>> {
   component: ComponentStructure;
-  isWrapper: boolean;
   childes?: Array<ReactNode>;
-  loadedComponents: Record<string, FoxpageComponentType>;
   onClick: (id: string) => void;
   onMouseOverComponentChange: (component?: ComponentStructure) => void;
-  onDoubleClick: (component?: ComponentStructure) => void;
 }
-const ViewWrapper: React.FC<ViewWrapper> = props => {
-  const {
-    component,
-    isWrapper,
-    loadedComponents = {},
-    childes = [],
-    onClick,
-    onMouseOverComponentChange,
-    onDoubleClick,
-  } = props;
+
+const ViewWrapper: React.FC<ViewWrapper> = (props) => {
+  const { component, childes = [], onClick, onMouseOverComponentChange, ...rest } = props;
   const { id, name, meta, enableChildren } = component;
-  const [node, setNode] = useState<ReactNode>();
+
   const [hovered, setHovered] = useState<boolean>(false);
 
-  const core = loadedComponents[component.name];
-
-  const handleMouseOver = e => {
+  const handleMouseOver = (e) => {
     setHovered(true);
-    onMouseOverComponentChange(component);
     e.stopPropagation();
   };
 
-  const handleMouseOut = e => {
+  const handleMouseOut = (e) => {
     setHovered(false);
-    onMouseOverComponentChange();
     e.stopPropagation();
   };
 
-  const handleDoubleClick = e => {
-    onDoubleClick(component);
+  const handleClick = (e) => {
+    if (rest.isWrapper && component.children && component.children.length > 0) {
+      onClick(component.children[0].id);
+    } else {
+      onClick(component.id);
+    }
     e.stopPropagation();
   };
 
@@ -57,41 +45,28 @@ const ViewWrapper: React.FC<ViewWrapper> = props => {
     'data-node-wrapper': component.wrapper,
     'data-node-drag-in': enableChildren,
     className: hovered ? 'hovered' : '',
-    onClick: e => {
-      if (isWrapper && component.children && component.children.length > 0) {
-        onClick(component.children[0].id);
-      } else {
-        onClick(component.id);
-      }
-      e.stopPropagation();
-    },
+    onClick: handleClick,
     onMouseOver: !component.wrapper ? handleMouseOver : undefined,
     onMouseOut: !component.wrapper ? handleMouseOut : undefined,
-    onDoubleClick: handleDoubleClick,
   };
 
-  useEffect(() => {
-    if (core) {
-      setNode(
-        React.createElement(
-          meta?.notRender ? BlankNode : core,
-          { ...component.props, ...(isWrapper ? decoratorInfo : {}) },
-          childes,
-        ),
-      );
-    }
-  }, [component.props, childes, hovered]);
+  if (typeof meta === 'object' && meta?.notRender) {
+    return <BlankNode>{childes}</BlankNode>;
+  }
 
-  if (meta?.decorated || isWrapper || meta?.notRender) {
-    return (
-      <React.Fragment>
-        {node && <WithErrorCath componentId={id} componentName={name} componentType={name} componentNode={node} />}
-      </React.Fragment>
-    );
+  const extendData: ExtendInfo = {
+    // fresh: hovered,
+    decoratorInfo,
+    childList: childes,
+    ...rest,
+  };
+
+  if (typeof meta === 'object' && (meta?.decorated || rest.isWrapper || meta?.notRender)) {
+    return <WithHook component={component} extendData={extendData} />;
   }
   return (
     <div {...decoratorInfo}>
-      {node && <WithErrorCath componentId={id} componentName={name} componentType={name} componentNode={node} />}
+      <WithHook component={component} extendData={extendData} />
     </div>
   );
 };

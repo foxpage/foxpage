@@ -35,7 +35,7 @@ export class UpdateTemplateVersionDetail extends BaseController {
     operationId: 'update-template-version-detail',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
     try {
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
@@ -53,7 +53,17 @@ export class UpdateTemplateVersionDetail extends BaseController {
         }
       }
 
-      const result = await this.service.version.info.updateVersionDetail(params, { ctx });
+      const mockId = params.content?.extension?.mockId || '';
+      params.content = <any>_.omit(params.content || {}, ['extension']);
+      let result: Record<string, any> = {};
+      [result] = await Promise.all([
+        this.service.version.info.updateVersionDetail(params, { ctx }),
+        this.service.content.tag.updateExtensionTag(
+          params.id,
+          { mockId },
+          { ctx }
+        ),
+      ]);
 
       if (result.code === 1) {
         return Response.warning(i18n.template.invalidVersionId, 2071804);
@@ -62,11 +72,11 @@ export class UpdateTemplateVersionDetail extends BaseController {
       } else if (result.code === 3) {
         return Response.warning(i18n.template.versionExist, 2071806);
       } else if (result.code === 4) {
-        return Response.warning(i18n.template.missingFields + (<string[]>result.data).join(','), 2071807);
+        return Response.warning(i18n.template.missingFields + ':' + (<string[]>result.data).join(','), 2071807);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
-      const versionDetail = await this.service.version.info.getDetailById(params.id);
+      const versionDetail = await this.service.version.info.getDetailById(result.data as string);
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: <string>result.data, type: TYPE.TEMPLATE });
 

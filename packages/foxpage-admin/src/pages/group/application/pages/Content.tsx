@@ -12,9 +12,10 @@ import { FileTypeEnum } from '@/constants/index';
 import GlobalContext from '@/pages/GlobalContext';
 import { ContentType, ContentUrlParams } from '@/types/application/content';
 
-import { FoxpageBreadcrumb } from '../../../common';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '../../../common';
 
 const mapStateToProps = (store: RootState) => ({
+  organizationId: store.system.organizationId,
   loading: store.group.application.pages.content.loading,
   list: store.group.application.pages.content.list,
   locales: store.group.application.settings.application?.locales,
@@ -30,9 +31,10 @@ const mapDispatchToProps = {
 
 type PageListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Main: React.FC<PageListType> = props => {
-  const { applicationId, organizationId, fileId } = useParams<ContentUrlParams>();
+const Main: React.FC<PageListType> = (props) => {
+  const { applicationId, fileId } = useParams<ContentUrlParams>();
   const {
+    organizationId,
     loading,
     list,
     locales = [],
@@ -99,15 +101,20 @@ const Main: React.FC<PageListType> = props => {
   );
 
   return (
-    <React.Fragment>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
-          { name: file.page, link: `/#/organization/${organizationId}/application/${applicationId}/detail/page` },
-          { name: global.contents },
-        ]}
-      />
-      <div style={{ marginTop: 12 }}>
+    <>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              { name: application.applicationList, link: '/#/workspace/application' },
+              {
+                name: file.page,
+                link: `/#/organization/${organizationId}/application/${applicationId}/detail/page`,
+              },
+              { name: global.contents },
+            ]}
+          />
+        }>
         <ContentList
           applicationId={applicationId}
           folderId={folderId || ''}
@@ -117,8 +124,7 @@ const Main: React.FC<PageListType> = props => {
           onDelete={handleDelete}
           onEdit={handleOpenEditDrawer}
         />
-      </div>
-
+      </FoxpageDetailContent>
       <ContentEditDrawer
         open={!!editContent}
         content={editContent}
@@ -128,7 +134,7 @@ const Main: React.FC<PageListType> = props => {
           setEditContent(undefined);
         }}
       />
-    </React.Fragment>
+    </>
   );
 };
 

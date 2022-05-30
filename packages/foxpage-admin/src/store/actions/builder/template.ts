@@ -9,6 +9,7 @@ import {
   ComponentStructure,
   DndInfoType,
   DslType,
+  MockContent,
   PageCloneParams,
   RelationsType,
   RelationType,
@@ -21,7 +22,7 @@ export const fetchPageRenderTree = createAction(
 )();
 
 export const pushTemplateData = createAction(
-  'BUILDER_TEMPLATE__FETCH_RENDER_TREE_SUCCESS',
+  'BUILDER_TEMPLATE__PUSH_RENDER_DATA',
   (data: {
     versionType: string;
     componentList: ComponentStructure[];
@@ -31,14 +32,26 @@ export const pushTemplateData = createAction(
     parsedRenderStructure: ComponentStructure[];
     parsedComponentList: ComponentStructure[];
     templates: DslType[];
+    mockVersion: DslType;
+    mockComponentList?: ComponentStructure[];
+    mockParsedComponentList?: ComponentStructure[];
+    mockParsedRenderStructure?: ComponentStructure[];
   }) => ({
     data,
   }),
 )();
 
-export const setSelectedComponent = createAction('BUILDER_TEMPLATE__SET_SELECTED_COMPONENT', (id?: string) => ({
-  id,
-}))();
+export const pushExtensionData = createAction(
+  'BUILDER_TEMPLATE__PUSH_EXTENSION_DATA',
+  (data?: { baseContent: DslType; curContent: DslType }) => data,
+)();
+
+export const setSelectedComponent = createAction(
+  'BUILDER_TEMPLATE__SET_SELECTED_COMPONENT',
+  (id?: string) => ({
+    id,
+  }),
+)();
 
 export const updateVersion = createAction('BUILDER_TEMPLATE__UPDATE_VERSION', (version: DslType) => ({
   version,
@@ -46,7 +59,13 @@ export const updateVersion = createAction('BUILDER_TEMPLATE__UPDATE_VERSION', (v
 
 export const insertComponent = createAction(
   'BUILDER_TEMPLATE__INSERT_COMPONENT',
-  (applicationId: string, componentId: string, position: number, desc: ComponentStructure, parentId: string) => ({
+  (
+    applicationId: string,
+    componentId: string,
+    position: number,
+    desc: ComponentStructure,
+    parentId: string,
+  ) => ({
     componentId,
     position,
     desc,
@@ -81,6 +100,14 @@ export const saveComponent = createAction(
 
 export const deleteComponent = createAction(
   'BUILDER_TEMPLATE__DELETE_COMPONENT',
+  (applicationId: string, componentId: string) => ({
+    applicationId,
+    componentId,
+  }),
+)();
+
+export const rollbackComponent = createAction(
+  'BUILDER_TEMPLATE__ROLL_BACK_COMPONENT',
   (applicationId: string, componentId: string) => ({
     applicationId,
     componentId,
@@ -143,9 +170,12 @@ export const mergeComponentSourceMap = createAction(
   }),
 )();
 
-export const pushComponentSource = createAction('BUILDER_TEMPLATE__PUSH_COMPONENT_SOURCE', (names: string[]) => ({
-  names,
-}))();
+export const pushComponentSource = createAction(
+  'BUILDER_TEMPLATE__PUSH_COMPONENT_SOURCE',
+  (names: string[]) => ({
+    names,
+  }),
+)();
 
 export const clearAll = createAction('BUILDER_TEMPLATE__CLEAR_ALL', () => ({}))();
 
@@ -153,10 +183,6 @@ export const updatePreviewModalVisible = createAction(
   'BUILDER_TEMPLATE__UPDATE_PREVIEW_MODAL_VISIBLE',
   (value = false) => ({ value }),
 )();
-
-export const fetchSsrHtml = createAction('BUILDER_TEMPLATE__FETCH_SSR_HTML', (applicationId: string) => ({
-  applicationId,
-}))();
 
 export const pushSsrHtml = createAction('BUILDER_TEMPLATE__FETCH_FETCH_SSR_HTML_SUCCESS', (data: string) => ({
   data,
@@ -174,9 +200,12 @@ export const updatePageBasicInfo = createAction(
   }),
 )();
 
-export const updatePageEditStatus = createAction('BUILDER_TEMPLATE__UPDATE_EDIT_STATUS', (value: boolean) => ({
-  value,
-}))();
+export const updatePageEditStatus = createAction(
+  'BUILDER_TEMPLATE__UPDATE_EDIT_STATUS',
+  (value: boolean) => ({
+    value,
+  }),
+)();
 
 export const saveToServer = createAction(
   'BUILDER_TEMPLATE__SAVE_TO_SERVER',
@@ -228,15 +257,17 @@ export const updateWrapperProps = createAction(
 
 export const updateContentRelation = createAction(
   'BUILDER_TEMPLATE__UPDATE_CONTENT_RELATION',
-  (relation: RelationType) => ({
+  (relation: RelationType, type?: string) => ({
     relation,
+    type,
   }),
 )();
 
 export const updateVersionRelations = createAction(
   'BUILDER_TEMPLATE__UPDATE_VERSION_RELATIONS',
-  (relations: RelationsType) => ({
+  (relations: RelationsType, type?: string) => ({
     relations,
+    type,
   }),
 )();
 
@@ -255,13 +286,19 @@ export const updateComponentCondition = createAction(
   }),
 )();
 
-export const updateSaveLoading = createAction('BUILDER_TEMPLATE__UPDATE_SAVE_LOADING', (loading: boolean) => ({
-  loading,
-}))();
+export const updateSaveLoading = createAction(
+  'BUILDER_TEMPLATE__UPDATE_SAVE_LOADING',
+  (loading: boolean) => ({
+    loading,
+  }),
+)();
 
-export const updatePublishLoading = createAction('BUILDER_TEMPLATE__UPDATE_PUBLISH_LOADING', (loading: boolean) => ({
-  loading,
-}))();
+export const updatePublishLoading = createAction(
+  'BUILDER_TEMPLATE__UPDATE_PUBLISH_LOADING',
+  (loading: boolean) => ({
+    loading,
+  }),
+)();
 
 export const clonePage = createAction('BUILDER_TEMPLATE__CLONE_PAGE', (params: PageCloneParams) => ({
   ...params,
@@ -271,4 +308,18 @@ export const clearResource = createAction('BUILDER_TEMPLATE__CLEAR_RESOURCE', (p
   ...params,
 }))();
 
-export const clearComponentResource = createAction('BUILDER_TEMPLATE__CLEAR_COMPONENT_RESOURCE', () => ({}))();
+export const clearComponentResource = createAction(
+  'BUILDER_TEMPLATE__CLEAR_COMPONENT_RESOURCE',
+  () => ({}),
+)();
+
+// mock
+export const pushMocks = createAction('BUILDER_TEMPLATE__PUSH_MOCKS', (mocks: MockContent[]) => ({
+  mocks,
+}))();
+
+export const localeChange = createAction('BUILDER_TEMPLATE__LOCALE_CHANGE', (applicationId: string, locale: string) => ({
+  applicationId,
+  locale,
+}))();
+

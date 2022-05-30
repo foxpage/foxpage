@@ -10,7 +10,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/settings';
 import { ResourceTypeArray } from '@/constants/resource';
-import { FoxpageBreadcrumb } from '@/pages/common';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '@/pages/common';
 import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationEditType, RegionType } from '@/types/application';
 import { ContentUrlParams } from '@/types/application/content';
@@ -66,7 +66,7 @@ const mapDispatchToProps = {
 type SettingType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Main: React.FC<SettingType> = (props) => {
-  const { applicationId, organizationId } = useParams<ContentUrlParams>();
+  const { applicationId } = useParams<ContentUrlParams>();
   const { locale } = useContext(GlobalContext);
   const { global, setting, resource: resourceI18n, application: applicationI18n } = locale.business;
   const {
@@ -80,6 +80,9 @@ const Main: React.FC<SettingType> = (props) => {
   } = props;
   const [region, setRegion] = useState<Array<RegionType>>([]);
   const [editApplication, setEditApplication] = useState<ApplicationEditType | undefined>();
+  const host = editApplication?.host?.length ? editApplication?.host[0] : '';
+  const slug = editApplication?.slug || '';
+  const hostSlug = host && slug ? `${host}/${slug}` : '';
 
   useEffect(() => {
     return () => {
@@ -210,17 +213,19 @@ const Main: React.FC<SettingType> = (props) => {
 
   return (
     <React.Fragment>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          {
-            name: applicationI18n.applicationList,
-            link: `/#/organization/${organizationId}/application/list`,
-          },
-          { name: global.setting },
-        ]}
-      />
-      <Spin spinning={loading}>
-        <div style={{ marginTop: 12 }}>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              {
+                name: applicationI18n.applicationList,
+                link: '/#/workspace/application',
+              },
+              { name: global.setting },
+            ]}
+          />
+        }>
+        <Spin spinning={loading}>
           <Row>
             <Col span={6}>
               <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
@@ -322,8 +327,16 @@ const Main: React.FC<SettingType> = (props) => {
                         onChange={(val) => {
                           handleUpdateLocale(index, { region: locale.region, language: val });
                         }}>
-                        {languages?.map((item) => (
-                          <Option key={item} value={item}>
+                        {languages?.map((item, index) => (
+                          <Option
+                            disabled={editApplication.localeObjects.find(
+                              (localeItem, localeIndex) =>
+                                localeItem.language === item &&
+                                locale.region === localeItem.region &&
+                                localeIndex !== index,
+                            )}
+                            key={item}
+                            value={item}>
                             {item}
                           </Option>
                         ))}
@@ -438,7 +451,29 @@ const Main: React.FC<SettingType> = (props) => {
               </Button>
             </Col>
           </Row>
-
+          <Row>
+            <Col span={6}>
+              <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
+                {setting.other}
+              </Title>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={18} offset={6}>
+              <Row style={{ display: 'block' }}>
+                <ResourceLabel style={{ margin: '0 0 0 0' }}>{setting.editor}</ResourceLabel>
+                {hostSlug ? `${hostSlug}/_foxpage/visual-editor.html` : '-'}
+              </Row>
+              <Row style={{ display: 'block' }}>
+                <ResourceLabel style={{ margin: '0 0 0 0' }}>{setting.preview}</ResourceLabel>
+                {hostSlug ? `${hostSlug}/_foxpage/preview` : '-'}
+              </Row>
+              <Row style={{ display: 'block' }}>
+                <ResourceLabel style={{ margin: '0 0 0 0' }}>{setting.debugger}</ResourceLabel>
+                {hostSlug ? `${hostSlug}/_foxpage/debug` : '-'}
+              </Row>
+            </Col>
+          </Row>
           <Row>
             <Col span={10} offset={6}>
               <Button type="primary" onClick={() => handleSave()} block>
@@ -446,8 +481,8 @@ const Main: React.FC<SettingType> = (props) => {
               </Button>
             </Col>
           </Row>
-        </div>
-      </Spin>
+        </Spin>
+      </FoxpageDetailContent>
     </React.Fragment>
   );
 };

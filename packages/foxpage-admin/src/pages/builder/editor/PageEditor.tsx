@@ -14,12 +14,13 @@ import { getPageTemplateId } from '@/services/builder';
 import TemplateEditor from './TemplateEditor';
 
 const Group = styled.div`
-  background: #fafafa;
+  background: #ffffff;
   padding: 12px 16px;
 `;
 
 const mapStateToProps = (store: RootState) => ({
   version: store.builder.template.version,
+  baseContent: store.builder.template.extensionData.baseContent,
 });
 
 const mapDispatchToProps = {
@@ -28,8 +29,8 @@ const mapDispatchToProps = {
 };
 
 type Type = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
-const PageEditor: React.FC<Type> = props => {
-  const { version, updatePageInfo, updatePageTemplateSelectModalOpen } = props;
+const PageEditor: React.FC<Type> = (props) => {
+  const { version, baseContent, updatePageInfo, updatePageTemplateSelectModalOpen } = props;
   const { content: { schemas = [] } = {} } = version;
   const [templateId, setTemplateId] = useState<string | undefined>();
   const { locale } = useContext(GlobalContext);
@@ -50,8 +51,8 @@ const PageEditor: React.FC<Type> = props => {
         <Label>{global.height}</Label>
         <Input
           width={120}
-          defaultValue={(componentProps?.height as unknown as string) || ''}
-          onBlur={e => {
+          defaultValue={((componentProps?.height as unknown) as string) || ''}
+          onBlur={(e) => {
             updatePageInfo('height', e.target.value);
           }}
         />
@@ -61,16 +62,17 @@ const PageEditor: React.FC<Type> = props => {
         <Label>{global.width}</Label>
         <Input
           width={120}
-          defaultValue={(componentProps?.width as unknown as string) || ''}
+          defaultValue={((componentProps?.width as unknown) as string) || ''}
           maxLength={30}
           placeholder="Label"
-          onBlur={e => {
+          onBlur={(e) => {
             updatePageInfo('width', e.target.value);
           }}
         />
       </Field>
       <TemplateEditor
         templateId={templateId}
+        disabled={!!baseContent}
         onSelect={() => {
           updatePageTemplateSelectModalOpen(true);
         }}

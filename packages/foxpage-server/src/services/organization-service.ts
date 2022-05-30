@@ -20,9 +20,19 @@ export class OrgService extends BaseService<Organization> {
    * Single instance
    * @returns OrgService
    */
-  public static getInstance(): OrgService {
+  public static getInstance (): OrgService {
     this._instance || (this._instance = new OrgService());
     return this._instance;
+  }
+
+  /**
+   * Get user organization list
+   * @param userId 
+   * @returns 
+   */
+  async getUserOrg (userId: string): Promise<any> {
+    const orgList = await this.find({ 'members.userId': userId, 'members.status': true });
+    return _.map(orgList, org => _.pick(org, ['id', 'name']));
   }
 
   /**
@@ -30,7 +40,7 @@ export class OrgService extends BaseService<Organization> {
    * @param  {Search} params
    * @returns {PageList<OrgInfo>} Promise
    */
-  async getPageList(params: Search): Promise<PageList<OrgInfo>> {
+  async getPageList (params: Search): Promise<PageList<OrgInfo>> {
     Service.application.setPageSize(params);
 
     const [orgList, orgCount] = await Promise.all([
@@ -53,7 +63,7 @@ export class OrgService extends BaseService<Organization> {
    * @param  {Organization[]} orgList
    * @returns {OrgInfo[]} Promise
    */
-  async replaceOrgUserInfo(orgList: Organization[]): Promise<OrgInfo[]> {
+  async replaceOrgUserInfo (orgList: Organization[]): Promise<OrgInfo[]> {
     if (orgList.length === 0) {
       return [];
     }
@@ -89,7 +99,7 @@ export class OrgService extends BaseService<Organization> {
    * @param  {string} id
    * @returns {Member[]} Promise
    */
-  async getMembersById(id: string): Promise<Member[]> {
+  async getMembersById (id: string): Promise<Member[]> {
     const orgDetail = await this.getDetailById(id);
 
     return orgDetail && orgDetail.members ? orgDetail.members : [];
@@ -100,9 +110,29 @@ export class OrgService extends BaseService<Organization> {
    * @param  {string} userId
    * @returns Promise
    */
-  async getUserOrgById(userId: string): Promise<OrgBaseInfo> {
-    const orgInfo = await this.find({ 'members.userId': userId, 'members.status': true });
-    return _.pick(orgInfo[0] || {}, ['id', 'name']);
+  async getUserOrgById (userId: string): Promise<OrgBaseInfo> {
+    const orgList = await this.getUserOrg(userId);
+    return orgList[0] || {};
+  }
+
+  /**
+   * Check user info in org members
+   * @param organizationId 
+   * @param userId 
+   * @returns 
+   */
+  async checkUserIdInOrg (organizationId: string, userId: string): Promise<Partial<Member>> {
+    let orgMember: Partial<Member> = {};
+    const orgDetail = await this.getDetailById(organizationId);
+    if (orgDetail && !orgDetail.deleted) {
+      orgDetail.members?.map(member => {
+        if (member.userId === userId) {
+          orgMember = member;
+        }
+      });
+    }
+
+    return orgMember;
   }
 
   /**
@@ -110,15 +140,9 @@ export class OrgService extends BaseService<Organization> {
    * @param  {string} organizationId
    * @returns Promise
    */
-  async checkUserInOrg(organizationId: string, userId: string): Promise<boolean> {
-    let userInOrg = false;
-    const orgDetail = await this.getDetailById(organizationId);
-    if (orgDetail && !orgDetail.deleted) {
-      const orgUserIds: string[] = _.map(_.filter(orgDetail.members, { status: true }), 'userId');
-      userInOrg = orgUserIds.indexOf(userId) !== -1;
-    }
-
-    return userInOrg;
+  async checkUserInOrg (organizationId: string, userId: string): Promise<boolean> {
+    const memberUser = await this.checkUserIdInOrg(organizationId, userId);
+    return memberUser.status === true;
   }
 
   /**
@@ -126,7 +150,7 @@ export class OrgService extends BaseService<Organization> {
    * @param  {string} organizationId
    * @returns Promise
    */
-  async checkOrgValid(organizationId: string): Promise<boolean> {
+  async checkOrgValid (organizationId: string): Promise<boolean> {
     const orgDetail = await this.getDetailById(organizationId);
     return orgDetail && orgDetail.deleted === false;
   }
@@ -137,7 +161,7 @@ export class OrgService extends BaseService<Organization> {
    * @param  {string[]} userIds
    * @returns Member
    */
-  addNewMembers(organizationId: string, userIds: string[], options: { ctx: FoxCtx }): Member[] {
+  addNewMembers (organizationId: string, userIds: string[], options: { ctx: FoxCtx }): Member[] {
     const members: Member[] = userIds.map((userId) => {
       return { userId, status: true, joinTime: new Date() };
     });
@@ -157,7 +181,7 @@ export class OrgService extends BaseService<Organization> {
    * @param  {string[]} userIds
    * @param  {boolean} status
    */
-  updateMembersStatus(
+  updateMembersStatus (
     organizationId: string,
     userIds: string[],
     status: boolean,

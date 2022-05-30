@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import { ControlOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ControlOutlined, CopyOutlined, DeleteOutlined, SelectOutlined } from '@ant-design/icons';
 import { Popconfirm } from 'antd';
 import styled from 'styled-components';
 
+import { ComponentStructure, RectType } from '@/types/component';
+
 import { UPDATE_SELECT_COMPONENT_LABEL } from '../constant';
-import { ComponentStructure, RectType } from '../interface';
 import viewerContext from '../viewerContext';
 
 const Box = styled.div`
@@ -27,8 +28,9 @@ const Button = styled.button`
   text-align: center;
   line-height: 15px;
   border: none;
-  border-radius: 0px;
-  padding: 0px;
+  border-radius: 0;
+  outline: none;
+  padding: 0;
   transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
   cursor: pointer;
   &:hover {
@@ -43,49 +45,78 @@ const ToolBar = styled.div`
   pointer-events: auto;
 `;
 
-const BUTTON_WIDTH = 52;
+const Label = styled.span`
+  background-color: rgb(24, 144, 255);
+  position: absolute;
+  pointer-events: auto;
+  left: 0;
+  line-height: 20px;
+  color: #fff;
+  padding: 0 4px;
+`;
+
+const TOOLBAR_HEIGHT = 20;
 
 interface SelectedLabelProps {
+  zoom?: number;
   selectedComponent?: ComponentStructure;
   copyComponent: (id: string) => void;
   deleteComponent: (id: string) => void;
   openConditionBind: () => void;
+  jumpToTemplate: () => void;
 }
 
-const SelectedLabel: React.FC<SelectedLabelProps> = props => {
-  const { selectedComponent, deleteComponent, copyComponent, openConditionBind } = props;
+const getMainEl = () => document.getElementById('foxpage-visual-main');
+
+const SelectedLabel: React.FC<SelectedLabelProps> = (props) => {
+  const {
+    zoom = 1,
+    selectedComponent,
+    deleteComponent,
+    copyComponent,
+    openConditionBind,
+    jumpToTemplate,
+  } = props;
   const [labelStyle, setLabelStyle] = useState<RectType | null>(null);
   const { foxpageI18n } = useContext(viewerContext);
+  const [scrollXY, setScrollXY] = useState({ scrollTop: 0, scrollLeft: 0 });
 
   const messageListener = (event: MessageEvent) => {
     const { data } = event;
     const { type } = data;
     switch (type) {
       case UPDATE_SELECT_COMPONENT_LABEL:
-        const selectedEle = selectedComponent?.id ? window.document.getElementById(selectedComponent.id) : null;
+        const selectedEle = selectedComponent?.id
+          ? window.document.getElementById(selectedComponent.id)
+          : null;
         setTimeout(() => {
           setRect(selectedEle);
-        });
+        }, 300);
         break;
       default:
         break;
     }
   };
 
+  const handleScroll = () => {
+    const mainEl = getMainEl();
+    setScrollXY({ scrollTop: mainEl?.scrollTop || 0, scrollLeft: mainEl?.scrollLeft || 0 });
+  };
+
   useEffect(() => {
     const selectedEle = selectedComponent?.id ? window.document.getElementById(selectedComponent.id) : null;
     if (selectedEle) {
       setTimeout(() => {
-        setRect(selectedEle, () => {
-          selectedEle.scrollIntoView();
-        });
+        setRect(selectedEle);
       });
     } else {
       setLabelStyle(null);
     }
     window.addEventListener('message', messageListener, false);
+    getMainEl()?.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('message', messageListener);
+      getMainEl()?.removeEventListener('scroll', handleScroll);
     };
   }, [selectedComponent]);
 
@@ -95,31 +126,51 @@ const SelectedLabel: React.FC<SelectedLabelProps> = props => {
     }
     const wrapper = ele.getAttribute('data-node-wrapper');
     const wrapperELe = wrapper ? window.document.getElementById(wrapper) : null;
+
+    // get select element && position info
     const selectEleRect = wrapperELe ? wrapperELe.getBoundingClientRect() : ele.getBoundingClientRect();
     const finalEle = wrapperELe || ele;
+
+    // get root element && position info
+    const rootEle = window.document.getElementById('foxpage-visual-main');
+    // get top & left value
+    const top = selectEleRect.top + (rootEle?.scrollTop || 0);
+    const left = selectEleRect.left + (rootEle?.scrollLeft || 0);
+
     setLabelStyle({
-      top: finalEle.offsetTop,
-      height: finalEle.offsetHeight,
-      left: finalEle.offsetLeft,
-      width: finalEle.offsetWidth,
+      top: top,
+      left: left,
+      height: finalEle.offsetHeight * zoom,
+      width: finalEle.offsetWidth * zoom,
     });
+
     if (selectEleRect.top < 0 || (selectEleRect.bottom && selectEleRect.bottom > window.innerHeight)) {
       callBack && callBack();
     }
   };
 
+  const { scrollTop } = scrollXY;
+  const { top = 0, height = 0 } = labelStyle || {};
+
+  // 0 is relative position
+  let smartTop = 0 - TOOLBAR_HEIGHT;
+  if (scrollTop + TOOLBAR_HEIGHT > top) {
+    smartTop = scrollTop - top;
+  }
+  if (scrollTop > top + height) {
+    smartTop = height;
+  }
+
   return (
     <React.Fragment>
       {labelStyle && labelStyle.width > 0 && (
-        <Box style={{ ...labelStyle }}>
-          {selectedComponent && !selectedComponent.belongTemplate && (
+        <Box style={{ ...labelStyle, height: (labelStyle.height || 0) + 1 }}>
+          <Label style={{ top: smartTop }}>{selectedComponent?.label || selectedComponent?.name}</Label>
+          {selectedComponent && !selectedComponent.belongTemplate ? (
             <ToolBar
               style={{
-                top: labelStyle.top > 20 ? -20 : 'auto',
-                bottom: labelStyle.top > 20 ? 'auto' : -20,
-                right: labelStyle.width < BUTTON_WIDTH ? labelStyle.width - BUTTON_WIDTH - 3 : 0,
-              }}
-            >
+                top: smartTop,
+              }}>
               <Button onClick={openConditionBind}>
                 <ControlOutlined />
               </Button>
@@ -129,8 +180,7 @@ const SelectedLabel: React.FC<SelectedLabelProps> = props => {
                   copyComponent(selectedComponent.wrapper || selectedComponent.id);
                 }}
                 okText={foxpageI18n.yes}
-                cancelText={foxpageI18n.no}
-              >
+                cancelText={foxpageI18n.no}>
                 <Button>
                   <CopyOutlined />
                 </Button>
@@ -142,10 +192,26 @@ const SelectedLabel: React.FC<SelectedLabelProps> = props => {
                   deleteComponent(selectedComponent.wrapper || selectedComponent.id);
                 }}
                 okText={foxpageI18n.yes}
-                cancelText={foxpageI18n.no}
-              >
+                cancelText={foxpageI18n.no}>
                 <Button>
                   <DeleteOutlined />
+                </Button>
+              </Popconfirm>
+            </ToolBar>
+          ) : (
+            <ToolBar
+              style={{
+                top: smartTop,
+              }}>
+              <Popconfirm
+                title={foxpageI18n.editTemplateComponentTip}
+                onConfirm={() => {
+                  jumpToTemplate();
+                }}
+                okText={foxpageI18n.yes}
+                cancelText={foxpageI18n.no}>
+                <Button>
+                  <SelectOutlined />
                 </Button>
               </Popconfirm>
             </ToolBar>

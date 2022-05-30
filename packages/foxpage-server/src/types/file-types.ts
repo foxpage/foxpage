@@ -17,6 +17,7 @@ export type FolderInfo = Exclude<Folder, 'creator' | 'applicationId'> & { creato
 };
 export type FileInfo = Exclude<File, 'creator' | 'applicationId'> & { creator: Creator } & {
   application: AppBaseInfo;
+  hasContent?: boolean;
 };
 export type FileFolderInfo = { folders: FolderInfo[]; files: FileInfo[] };
 export type FolderUserInfo = Exclude<Folder, 'creator'> & { creator: Creator };
@@ -88,6 +89,8 @@ export interface FolderPageSearch {
 export interface WorkspaceFolderSearch {
   creator: string;
   types: string[];
+  organizationId?: string;
+  applicationIds?: string[],
   deleted?: boolean;
   sort?: Record<string, number>;
   search?: string;
@@ -124,6 +127,7 @@ export interface AppFolderSearch {
 
 export interface FolderChildrenSearch {
   parentFolderIds: string[];
+  userIds?: string[],
   search?: string;
   page?: number;
   size?: number;

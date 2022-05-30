@@ -2,17 +2,20 @@ import produce from 'immer';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/list';
-import { Application, PaginationInfo } from '@/types/index';
+import { Application, AuthorizeListItem, PaginationInfo, User } from '@/types/index';
 
 export type ApplicationActionType = ActionType<typeof ACTIONS>;
 
 const list: Application[] = [];
 const pageInfo: PaginationInfo = {
-  page: 0,
+  page: 1,
   size: 10,
   total: 0,
 };
 const editApp: Partial<Application> = {};
+const authList: AuthorizeListItem[] = [];
+const userList: User[] = [];
+
 const initialData = {
   fetching: false,
   saving: false,
@@ -20,12 +23,16 @@ const initialData = {
   pageInfo,
   editDrawerVisible: false,
   editApp,
+  authListDrawerVisible: false,
+  authListLoading: false,
+  authList,
+  userList,
 };
 
 type initialDataType = typeof initialData;
 
 const homeReducer = (state: initialDataType = initialData, action: ApplicationActionType) =>
-  produce(state, draft => {
+  produce(state, (draft) => {
     switch (action.type) {
       case getType(ACTIONS.clearAll): {
         Object.assign(draft, { ...initialData });
@@ -62,6 +69,24 @@ const homeReducer = (state: initialDataType = initialData, action: ApplicationAc
       case getType(ACTIONS.updateDrawerVisible): {
         draft.editDrawerVisible = action.payload.visible;
         draft.editApp = action.payload.app || {};
+        break;
+      }
+      case getType(ACTIONS.pushAuthList): {
+        draft.authList = action.payload.list;
+        break;
+      }
+      case getType(ACTIONS.updateAuthListLoading): {
+        draft.authListLoading = action.payload.status;
+        break;
+      }
+      case getType(ACTIONS.updateAuthDrawerVisible): {
+        const { visible = false, editApp = {} as Partial<Application> } = action.payload;
+        draft.authListDrawerVisible = visible;
+        draft.editApp = editApp;
+        break;
+      }
+      case getType(ACTIONS.pushUserList): {
+        draft.userList = action.payload.list;
         break;
       }
       default:

@@ -44,6 +44,7 @@ export class AddAuthorizeDetail extends BaseController {
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4180101);
       }
+
       // check exist data
       const existTargets = await this.service.auth.find({
         type: params.type,
@@ -75,7 +76,11 @@ export class AddAuthorizeDetail extends BaseController {
       if (authTargetIds.length > 0) {
         ctx.transactions.push(
           this.service.auth.batchUpdateDetailQuery({ id: { $in: _.map(existTargets, 'id') } }, {
-            $set: { mask: params.mask || 0, allow: !_.isNil(params.allow) ? params.allow : true },
+            $set: {
+              mask: params.mask || 0,
+              allow: !_.isNil(params.allow) ? params.allow : true,
+              deleted: false,
+            },
           } as any),
         );
       }

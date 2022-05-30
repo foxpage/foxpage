@@ -33,7 +33,7 @@ export class GetAppTemplateBuildInfoList extends BaseController {
     operationId: 'get-template-build-version-info-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @Body() params: AppContentVersionReq,
   ): Promise<ResData<PageContentRelations[]>> {
@@ -44,6 +44,7 @@ export class GetAppTemplateBuildInfoList extends BaseController {
       }
 
       const contentFileObject = await this.service.file.list.getContentFileByIds(params.ids);
+
       const validContentIds: string[] = [];
       for (const contentId in contentFileObject) {
         if (contentFileObject[contentId].applicationId === params.applicationId) {
@@ -57,6 +58,19 @@ export class GetAppTemplateBuildInfoList extends BaseController {
         true, // Get build version details
       );
 
+      let templateIds: string[] = [];
+      contentVersionList.forEach(content => {
+        if (content.relations?.templates && content.relations.templates.length > 0) {
+          templateIds.push(content.relations.templates[0].id);
+        }
+      });
+
+      // get mock build content and template live version
+      const [mockObject, templateMockObject] = await Promise.all([
+        this.service.content.mock.getMockBuildVersions(params.ids),
+        this.service.content.mock.getMockLiveVersions(templateIds),
+      ]);
+
       let dependMissing: string[] = [];
       let recursiveItem: string[] = [];
       let contentAndRelation: PageContentRelations[] = [];
@@ -66,10 +80,22 @@ export class GetAppTemplateBuildInfoList extends BaseController {
         if (content.dependMissing && content.dependMissing.length > 0) {
           dependMissing.concat(content.dependMissing);
         }
+
         if (content.recursiveItem) {
           recursiveItem.push(content.recursiveItem);
         }
-        contentAndRelation.push(_.pick(content, ['content', 'relations']));
+
+        if (content.relations?.templates && content.relations.templates.length > 0) {
+          const templateId = content.relations.templates[0].id;
+          (<any>content.relations.templates[0]).extension = templateMockObject[templateId]?.extension || {};
+          (<any>content.relations.templates[0]).mock = templateMockObject[templateId]?.mock || {};
+        }
+
+        contentAndRelation.push({
+          content: _.merge({}, content.content || {}, { extension: mockObject[content.id]?.extension || {} }),
+          relations: content.relations || {},
+          mock: mockObject[content.id]?.mock || {},
+        });
       });
 
       if (dependMissing.length > 0) {

@@ -8,7 +8,7 @@ import { ContentVersion, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD, TYPE } from '../../../config/constant';
-import { PageContentData } from '../../types/content-types';
+import { PageContentData, VersionWithMock } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
@@ -33,7 +33,7 @@ export class GetPageLivesList extends BaseController {
     operationId: 'get-page-live-version-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<PageContentData[]>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<PageContentData[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
       const pageList: ContentVersion[] = await this.service.content.live.getContentLiveDetails({
@@ -42,7 +42,25 @@ export class GetPageLivesList extends BaseController {
         contentIds: params.ids || [],
       });
 
-      return Response.success(_.map(pageList, 'content'), 1051001);
+      const contentIds = _.map(pageList, 'contentId');
+      const mockObject = await this.service.content.mock.getMockLiveVersions(contentIds);
+
+      let pageVersions: VersionWithMock[] = [];
+      pageList.forEach(item => {
+        const mockRelations = mockObject[item.contentId]?.relations || {};
+        item.content.relations = this.service.version.relation.moveMockRelations(item.content.relations, mockRelations);
+
+        pageVersions.push(Object.assign(
+          {},
+          item.content || {},
+          {
+            mock: mockObject[item.contentId]?.mock || {},
+            extension: mockObject[item.contentId]?.extension || {},
+          }
+        ));
+      });
+
+      return Response.success(pageVersions, 1051001);
     } catch (err) {
       return Response.error(err, i18n.condition.getAppPageFailed, 3051001);
     }

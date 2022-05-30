@@ -1,6 +1,4 @@
-const {
-  merge
-} = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const webpack = require('webpack');
 const webpackBaseConfig = require('./webpack.base.config');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
@@ -12,10 +10,12 @@ module.exports = merge(webpackBaseConfig, {
   },
 
   module: {
-    rules: [{
-      test: /\.(jpg|gif|png)$/,
-      loader: 'file-loader',
-    }, ],
+    rules: [
+      {
+        test: /\.(jpg|gif|png)$/,
+        loader: 'file-loader',
+      },
+    ],
   },
 
   plugins: [
@@ -25,6 +25,11 @@ module.exports = merge(webpackBaseConfig, {
         output: {
           comments: false,
         },
+      },
+    }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify(process.env.NODE_ENV),
       },
     }),
   ],

@@ -4,13 +4,13 @@ import { Redirect, Route, Switch, useHistory, useLocation, useParams, useRouteMa
 
 import {
   BookOutlined,
-  BorderOutlined,
   BranchesOutlined,
+  ContainerOutlined,
+  ControlOutlined,
+  DashboardOutlined,
   FileOutlined,
   FileTextOutlined,
-  ForkOutlined,
   FunctionOutlined,
-  LayoutOutlined,
   SettingOutlined,
   SlidersOutlined,
 } from '@ant-design/icons';
@@ -19,7 +19,6 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/group/application/settings';
-import { FoxpageDetailContent } from '@/pages/common';
 import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationUrlParams } from '@/types/application';
 
@@ -53,9 +52,10 @@ const AppName = styled.div`
   text-overflow: ellipsis;
 `;
 
-const { Content, Sider } = Layout;
+const { Sider } = Layout;
 
 const mapStateToProps = (store: RootState) => ({
+  organizationId: store.system.organizationId,
   application: store.group.application.settings.application,
 });
 
@@ -70,8 +70,8 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
   const history = useHistory();
   const location = useLocation();
   const routeMatch = useRouteMatch();
-  const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
-  const { application, getAppDetail } = props;
+  const { applicationId } = useParams<ApplicationUrlParams>();
+  const { application, getAppDetail, organizationId } = props;
   const { locale } = useContext(GlobalContext);
   const { global, file } = locale.business;
   useEffect(() => {
@@ -107,13 +107,13 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
           selectedKeys={selectedKeys}
           defaultOpenKeys={['resource']}
           theme="light">
-          <Menu.Item key="dashbroad" icon={<BorderOutlined />}>
+          <Menu.Item key="dashbroad" icon={<DashboardOutlined />}>
             {global.dashboard}
           </Menu.Item>
-          <Menu.Item key="page" icon={<FileOutlined />}>
+          <Menu.Item key="page" icon={<FileTextOutlined />}>
             {file.page}
           </Menu.Item>
-          <Menu.Item key="template" icon={<LayoutOutlined />}>
+          <Menu.Item key="template" icon={<FileOutlined />}>
             {file.template}
           </Menu.Item>
           <Menu.Item key="function" icon={<FunctionOutlined />}>
@@ -122,10 +122,10 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
           <Menu.Item key="variable" icon={<SlidersOutlined />}>
             {global.variables}
           </Menu.Item>
-          <Menu.Item key="condition" icon={<ForkOutlined />}>
+          <Menu.Item key="condition" icon={<ControlOutlined />}>
             {global.conditions}
           </Menu.Item>
-          <Menu.Item key="resource" icon={<FileTextOutlined />}>
+          <Menu.Item key="resource" icon={<ContainerOutlined />}>
             {global.resources}
           </Menu.Item>
           <Menu.Item key="packages" icon={<BookOutlined />}>
@@ -146,72 +146,70 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
             </SubMenu> */}
         </Menu>
       </Sider>
-      <FoxpageDetailContent>
-        <Switch>
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/page/:fileId/content"
-            component={PageContents}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/page"
-            component={Pages}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/dynamics"
-            component={Versions}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/dashbroad"
-            component={Files}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/setting"
-            component={Setting}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/template/:fileId/content"
-            component={TemplateContents}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/template"
-            component={Templates}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/function"
-            component={Functions}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/variable"
-            component={Variables}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/condition"
-            component={Conditions}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/resource/:resourceRoot"
-            component={ResourceDetail}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/resource"
-            component={Resource}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/packages/:fileId/detail"
-            component={ComponentDetail}
-          />
-          <Route
-            path="/organization/:organizationId/application/:applicationId/detail/packages"
-            component={Component}
-          />
-          {/* <Route path="/organization/application/detail/:applicationId/resource/conditions" component={Conditions} />
+      <Switch>
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/page/:fileId/content"
+          component={PageContents}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/page"
+          component={Pages}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/dynamics"
+          component={Versions}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/dashbroad"
+          component={Files}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/setting"
+          component={Setting}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/template/:fileId/content"
+          component={TemplateContents}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/template"
+          component={Templates}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/function"
+          component={Functions}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/variable"
+          component={Variables}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/condition"
+          component={Conditions}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/resource/:resourceRoot"
+          component={ResourceDetail}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/resource"
+          component={Resource}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/packages/:fileId/detail"
+          component={ComponentDetail}
+        />
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/packages"
+          component={Component}
+        />
+        {/* <Route path="/organization/application/detail/:applicationId/resource/conditions" component={Conditions} />
             <Route path="/organization/application/detail/:applicationId/resource/variables" component={Variables} /> */}
-          <Redirect
-            from={`/organization/${organizationId}/application/${applicationId}/detail`}
-            to={`/organization/${organizationId}/application/${applicationId}/detail/page`}
-          />
-        </Switch>
-      </FoxpageDetailContent>
+        <Redirect
+          from={`/organization/${organizationId}/application/${applicationId}/detail`}
+          to={`/organization/${organizationId}/application/${applicationId}/detail/page`}
+        />
+      </Switch>
     </Layout>
   );
 };

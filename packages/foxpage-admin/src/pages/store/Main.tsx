@@ -8,6 +8,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/store/list';
 import { FileTypeEnum } from '@/constants/index';
+import { Content, StyledLayout } from '@/pages/components';
 import getImageUrlByEnv from '@/utils/get-image-url-by-env';
 
 import GlobalContext from '../GlobalContext';
@@ -19,26 +20,16 @@ import SelectTool from './SelectTool';
 const { TabPane } = Tabs;
 const { Meta } = Card;
 
-const StyledLayout = styled.div`
-  background-color: #fff;
-  max-width: 1136px;
-  margin: 0 auto;
-  margin-top: 24px;
-  min-height: 680px;
-`;
-
-const Content = styled.div`
-  padding: 24px;
-  max-width: 1136px;
-  margin: 0 auto;
-`;
-
 const FileName = styled.div`
   margin-top: 12px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   display: block;
+`;
+
+const PaginationWrapper = styled.div`
+  text-align: center;
 `;
 
 const mapStateToProps = (store: RootState) => ({
@@ -122,6 +113,7 @@ const Store: React.FC<StoreResourceProps> = (props) => {
   const PageContent = useMemo(() => {
     const isPageOrTemplate = type === FileTypeEnum.page || type === FileTypeEnum.template;
     const resource = isPageOrTemplate ? projectResourceList : packageResourceList;
+
     return (
       <Spin spinning={loading}>
         <Row gutter={16} style={{ minHeight: 24, paddingBottom: 24, marginLeft: 4, marginRight: 4 }}>
@@ -172,7 +164,11 @@ const Store: React.FC<StoreResourceProps> = (props) => {
                       <FileName>
                         {file.name}:
                         {resource.files.map((item) => {
-                          return <span style={{ marginLeft: 6 }}>{item.name}</span>;
+                          return (
+                            <span key={item.id} style={{ marginLeft: 6 }}>
+                              {item.name}
+                            </span>
+                          );
                         })}
                       </FileName>
                     )}
@@ -193,22 +189,24 @@ const Store: React.FC<StoreResourceProps> = (props) => {
       <React.Fragment>
         <SelectTool type={type} />
         {PageContent}
-        <Pagination
-          showQuickJumper
-          hideOnSinglePage
-          current={pageInfo.page}
-          size={pageInfo.size}
-          total={pageInfo.total}
-          onChange={(page, pageSize) => {
-            fetchStoreResources({
-              page,
-              size: pageSize,
-              search: searchText,
-              appIds: selectedAppIds,
-              type,
-            });
-          }}
-        />
+        <PaginationWrapper>
+          <Pagination
+            showQuickJumper
+            hideOnSinglePage
+            current={pageInfo.page}
+            pageSize={pageInfo.size}
+            total={pageInfo.total}
+            onChange={(page) => {
+              fetchStoreResources({
+                page,
+                size: pageInfo.size,
+                search: searchText,
+                appIds: selectedAppIds,
+                type,
+              });
+            }}
+          />
+        </PaginationWrapper>
       </React.Fragment>
     );
   }, [type, PageContent]);

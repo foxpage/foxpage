@@ -5,10 +5,13 @@ import { Route, Switch } from 'react-router-dom';
 
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/lib/locale/zh_CN';
+import enUS from 'antd/lib/locale/en_US';
 import styled from 'styled-components';
 
+import { EN_STRING, ZH_CN_STRING } from '@/constants/global';
 import { Locale } from '@/types/common';
 import { setGlobalLocale } from '@/utils/global';
+import { getLoginUser } from '@/utils/login-user';
 
 import Internal from './sys/Internal';
 import PrivateRoute from './sys/PrivateRoute';
@@ -29,6 +32,15 @@ const Index = () => {
   });
 
   useEffect(() => {
+    const { languagePrefer } = getLoginUser();
+    if (!!languagePrefer)
+      setLocale({
+        ...(languagePrefer === ZH_CN_STRING ? zhCN : enUS),
+        business: languagePrefer === ZH_CN_STRING ? businessLocale[ZH_CN_STRING] : businessLocale[EN_STRING],
+      });
+  }, []);
+
+  useEffect(() => {
     setGlobalLocale(locale.locale);
   }, [locale]);
 
@@ -40,7 +52,10 @@ const Index = () => {
             <Route path="/login" component={Login} />
             <Route path="/register" component={Register} />
             <Route path="/application/:applicationId/folder/:folderId/builder" component={Builder} />
-            <Route path="/application/:applicationId/folder/:folderId/file/:fileId/builder" component={Builder} />
+            <Route
+              path="/application/:applicationId/folder/:folderId/file/:fileId/builder"
+              component={Builder}
+            />
             <Route
               path="/application/:applicationId/folder/:folderId/file/:fileId/content/:contentId/builder"
               component={Builder}

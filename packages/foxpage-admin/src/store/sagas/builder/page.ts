@@ -2,6 +2,7 @@ import { message } from 'antd';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
+import * as MORE_ACTIONS from '@/actions/builder/more';
 import * as ACTIONS from '@/actions/builder/page';
 import {
   clearLastSteps,
@@ -19,32 +20,23 @@ import { FileDetailFetchParams } from '@/types/application/file';
 import { PageParam } from '@/types/builder';
 
 function* fetchList(action: PageActionType) {
+  yield put(ACTIONS.setLoadingStatus(true));
+
   const {
     builder: { fetchCatalogFailed },
   } = getBusinessI18n();
-  const { applicationId, folderId = '', fileId, contentId, fileType } = action.payload as PageParam;
-  yield put(ACTIONS.setLoadingStatus(true));
-  if (!contentId && !fileId) {
-    const res = yield call(API.fetchFolderCatalog, {
-      applicationId,
-      id: folderId,
-    });
-    if (res.code === 200) {
-      yield put(ACTIONS.pushPageList(res.data.files));
-    } else {
-      message.error(res.msg || fetchCatalogFailed);
-    }
-  } else if (fileId) {
-    const res = yield call(fileType === 'page' ? API.fetchPagesCatalog : API.fetchTemplatesCatalog, {
-      applicationId,
-      id: fileId,
-    });
-    if (res.code === 200) {
-      yield put(ACTIONS.pushPageList(res.data));
-    } else {
-      message.error(res.msg || fetchCatalogFailed);
-    }
+  const { applicationId, folderId = '' } = action.payload as PageParam;
+
+  const res = yield call(API.fetchFolderCatalog, {
+    applicationId,
+    id: folderId,
+  });
+  if (res.code === 200) {
+    yield put(ACTIONS.pushPageList(res.data));
+  } else {
+    message.error(res.msg || fetchCatalogFailed);
   }
+
   yield put(ACTIONS.setLoadingStatus(false));
 }
 
@@ -55,11 +47,12 @@ function* selectContent(action: PageActionType) {
     yield put(saveToServer(applicationId, () => {}, true));
   }
   yield all([
+    put(MORE_ACTIONS.clearAll()),
     put(ACTIONS.setLocale(locale || '')),
+    put(ACTIONS.setContentId({ applicationId, folderId, fileId, contentId, fileType })),
     put(setSelectedComponent()),
     put(clearNextSteps()),
     put(clearLastSteps()),
-    put(ACTIONS.setContentId({ applicationId, folderId, fileId, contentId, fileType })),
     put(pushSsrHtml('')),
   ]);
 }

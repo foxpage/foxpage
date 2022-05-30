@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { useParams } from 'react-router-dom';
 
 import { Button, Form, Input } from 'antd';
 import { RootState } from 'typesafe-actions';
@@ -8,7 +7,6 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/group/user';
 import OperationDrawer from '@/components/business/OperationDrawer';
 import GlobalContext from '@/pages/GlobalContext';
-import { OrganizationUrlParams } from '@/types/index';
 
 const formItemLayout = {
   labelCol: { span: 5 },
@@ -16,6 +14,7 @@ const formItemLayout = {
 };
 
 const mapStateToProps = (store: RootState) => ({
+  organizationId: store.system.organizationId,
   editDrawerOpen: store.group.user.addDrawerOpen,
 });
 
@@ -26,10 +25,11 @@ const mapDispatchToProps = {
 
 type TeamEditDrawerType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Drawer: React.FC<TeamEditDrawerType> = props => {
-  const { organizationId } = useParams<OrganizationUrlParams>();
-  const { editDrawerOpen, addUser, updateAccountDrawerOpen } = props;
+const Drawer: React.FC<TeamEditDrawerType> = (props) => {
+  const { organizationId, editDrawerOpen, addUser, updateAccountDrawerOpen } = props;
   const [account, setAccount] = useState<string>('');
+
+  // multi-language
   const { locale } = useContext(GlobalContext);
   const { global, team } = locale.business;
 
@@ -51,15 +51,13 @@ const Drawer: React.FC<TeamEditDrawerType> = props => {
           type="primary"
           onClick={() => {
             addUser({ account, organizationId });
-          }}
-        >
+          }}>
           {global.apply}
         </Button>
-      }
-    >
+      }>
       <div style={{ padding: 12 }}>
         <Form.Item {...formItemLayout} label={team.account}>
-          <Input value={account} placeholder={team.account} onChange={e => setAccount(e.target.value)} />
+          <Input value={account} placeholder={team.account} onChange={(e) => setAccount(e.target.value)} />
         </Form.Item>
       </div>
     </OperationDrawer>

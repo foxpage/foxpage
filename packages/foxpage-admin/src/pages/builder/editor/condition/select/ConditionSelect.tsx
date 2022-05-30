@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 // import { EyeOutlined } from '@ant-design/icons';
-import { Button, Radio, Table } from 'antd';
+import { Button, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
@@ -48,7 +48,7 @@ const mapDispatchToProps = {
 
 type ConditionSelectType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
 
-const ConditionSelect: React.FC<ConditionSelectType> = props => {
+const ConditionSelect: React.FC<ConditionSelectType> = (props) => {
   const {
     fetching,
     visible,
@@ -87,7 +87,7 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
     setSelectedRows(conditions);
   }, [conditions]);
 
-  const handleGroupChange = useCallback(group => {
+  const handleGroupChange = useCallback((group) => {
     setGroup(group);
   }, []);
 
@@ -137,12 +137,10 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
           onClick={() => {
             onChange(selectedRows);
             handleClose();
-          }}
-        >
-          Apply
+          }}>
+          {global.apply}
         </Button>
-      }
-    >
+      }>
       <Group>
         <Toolbar>
           <ScopeSelect scope={group} onScopeChange={handleGroupChange} />
@@ -161,12 +159,12 @@ const ConditionSelect: React.FC<ConditionSelectType> = props => {
           size="small"
           rowSelection={{
             type: 'checkbox',
-            selectedRowKeys: selectedRows.map(condition => condition.content.id as string) || [],
+            selectedRowKeys: selectedRows.map((condition) => condition.content.id as string) || [],
             onChange: (_selectedRowKeys: React.Key[], selectedRows: ConditionItem[]) => {
               setSelectedRows(selectedRows);
             },
           }}
-          onChange={pagination => {
+          onChange={(pagination) => {
             changeOffset(pagination.current || 1);
           }}
         />

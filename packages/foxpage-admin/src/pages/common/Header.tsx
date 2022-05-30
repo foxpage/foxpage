@@ -7,7 +7,8 @@ import enUS from 'antd/lib/locale/en_US';
 import zhCN from 'antd/lib/locale/zh_CN';
 import styled from 'styled-components';
 
-import { ZH_CN_STRING } from '@/constants/global';
+import OrganizationSelector from '@/components/business/OrganizationSelector';
+import { ZH_CN_STRING, EN_STRING } from '@/constants/global';
 import GlobalContext from '@/pages/GlobalContext';
 import { getImageLinkByEnv, getLoginUser, setLoginUser } from '@/utils/index';
 
@@ -103,11 +104,11 @@ const LocaleItem = styled.div`
 `;
 
 const FoxpageHeader = () => {
-  const { organizationId, userInfo } = getLoginUser();
+  const { userInfo } = getLoginUser();
   const history = useHistory();
 
   const { locale, setLocale } = useContext(GlobalContext);
-  const { organization, store, login } = locale.business || businessLocale[ZH_CN_STRING];
+  const { global, workspace, store, login } = locale.business || businessLocale[ZH_CN_STRING];
 
   const handleLogout = useCallback(() => {
     setLoginUser();
@@ -117,9 +118,16 @@ const FoxpageHeader = () => {
   const handleLocaleChange = () => {
     const newLocale = {
       ...(locale.locale === ZH_CN_STRING ? enUS : zhCN),
-      business: locale.locale === ZH_CN_STRING ? businessLocale.en : businessLocale[ZH_CN_STRING],
+      business: locale.locale === ZH_CN_STRING ? businessLocale[EN_STRING] : businessLocale[ZH_CN_STRING],
     };
     setLocale(newLocale);
+
+    // update localstorage
+    const loginUserInfo = getLoginUser();
+    setLoginUser({
+      ...loginUserInfo,
+      languagePrefer: locale.locale === ZH_CN_STRING ? EN_STRING : ZH_CN_STRING,
+    });
   };
 
   return (
@@ -136,7 +144,7 @@ const FoxpageHeader = () => {
         width: '100%',
       }}>
       <Logo key="foxpage-logo">
-        <StyledLink to={`/organization/${organizationId}/projects`}>
+        <StyledLink to="/workspace">
           <img
             key="foxpage-logo-img"
             height={28}
@@ -149,29 +157,47 @@ const FoxpageHeader = () => {
 
       <MainNav>
         <NavItem>
-          <NavLinkContent
-            activeStyle={{
-              color: '#212121 !important',
-              textDecoration: 'none !important',
-              fontWeight: 'bold',
-            }}
-            to={`/organization/${organizationId}/projects`}>
-            {organization.name}
-          </NavLinkContent>
+          <OrganizationSelector />
         </NavItem>
-        {/* <NavItem>
-          <NavLinkContent
-            activeStyle={{ color: '#212121 !important', textDecoration: 'none !important', fontWeight: 'bold' }}
-            to="/workspace"
-          >
-            Workspace
-          </NavLinkContent>
-        </NavItem> */}
         <NavItem>
           <NavLinkContent
             activeStyle={{
-              color: '#212121 !important',
-              textDecoration: 'none !important',
+              fontWeight: 'bold',
+            }}
+            to="/workspace">
+            {workspace.name}
+          </NavLinkContent>
+        </NavItem>
+        <NavItem>
+          <NavLinkContent
+            activeStyle={{
+              fontWeight: 'bold',
+            }}
+            to="/projects">
+            {global.project}
+          </NavLinkContent>
+        </NavItem>
+        <NavItem>
+          <NavLinkContent
+            activeStyle={{
+              fontWeight: 'bold',
+            }}
+            to="/applications">
+            {global.application}
+          </NavLinkContent>
+        </NavItem>
+        <NavItem>
+          <NavLinkContent
+            activeStyle={{
+              fontWeight: 'bold',
+            }}
+            to="/teams">
+            {global.team}
+          </NavLinkContent>
+        </NavItem>
+        <NavItem>
+          <NavLinkContent
+            activeStyle={{
               fontWeight: 'bold',
             }}
             to="/store">

@@ -32,7 +32,7 @@ export class SetComponentLiveVersions extends BaseController {
     operationId: 'set-component-live-versions',
   })
   @ResponseSchema(ContentDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentLiveReq): Promise<ResData<Content>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentLiveReq): Promise<ResData<Content>> {
     try {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });
@@ -40,7 +40,13 @@ export class SetComponentLiveVersions extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4111501);
       }
 
-      const result = await this.service.content.live.setLiveVersion(params, { ctx });
+      const contentDetail = await this.service.content.info.getDetailById(params.id);
+
+      // set component live and update reference component's application status
+      const [result] = await Promise.all([
+        this.service.content.live.setLiveVersion(params, { ctx }),
+        this.service.component.updateReferLiveVersion(contentDetail.fileId, { ctx }),
+      ]);
 
       if (result.code === 1) {
         return Response.warning(i18n.content.invalidVersionId, 2111501);

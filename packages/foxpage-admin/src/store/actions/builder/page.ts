@@ -1,13 +1,13 @@
 import { createAction } from 'typesafe-actions';
 
 import { FileDetailFetchParams, FileType } from '@/types/application/file';
-import { PageContentType, PageParam } from '@/types/builder';
+import { PageCatalogRes, PageParam } from '@/types/builder';
 
 export const fetchPageList = createAction('BUILDER_PAGE__FETCH_PAGE_LIST', (params: PageParam) => ({
   ...params,
 }))();
 
-export const pushPageList = createAction('BUILDER_PAGE__FETCH_PAGE_LIST_SUCCESS', (data: PageContentType[]) => ({
+export const pushPageList = createAction('BUILDER_PAGE__FETCH_PAGE_LIST_SUCCESS', (data: PageCatalogRes) => ({
   data,
 }))();
 
@@ -28,13 +28,19 @@ export const setFileFoldStatus = createAction('BUILDER_SET_FILE_FOLD_STATUS', (i
   fold,
 }))();
 
-export const setLoadingStatus = createAction('BUILDER_PAGE__SET_FETCH_PAGE_LIST_LOADING', (value = false) => ({
-  value,
-}))();
+export const setLoadingStatus = createAction(
+  'BUILDER_PAGE__SET_FETCH_PAGE_LIST_LOADING',
+  (value = false) => ({
+    value,
+  }),
+)();
 
-export const fetchFileDetail = createAction('BUILDER_PAGE__FETCH_FILE_DETAIL', (params: FileDetailFetchParams) => ({
-  ...params,
-}))();
+export const fetchFileDetail = createAction(
+  'BUILDER_PAGE__FETCH_FILE_DETAIL',
+  (params: FileDetailFetchParams) => ({
+    ...params,
+  }),
+)();
 
 export const pushFileDetail = createAction('BUILDER_PAGE__PUSH__FILE_DETAIL', (data: FileType) => ({
   data,

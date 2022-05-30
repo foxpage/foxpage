@@ -11,8 +11,10 @@ const EditorRow = styled.div`
   justify-content: space-between;
 `;
 const { Text } = Typography;
-const TemplateEditor: React.FC<{ templateId?: string; onSelect: () => void }> = props => {
-  const { templateId, onSelect } = props;
+const TemplateEditor: React.FC<{ templateId?: string; disabled: boolean; onSelect: () => void }> = (
+  props,
+) => {
+  const { templateId, disabled, onSelect } = props;
   const { locale } = useContext(GlobalContext);
   const { global, file } = locale.business;
   return (
@@ -20,7 +22,7 @@ const TemplateEditor: React.FC<{ templateId?: string; onSelect: () => void }> = 
       <Field>
         <EditorRow>
           <Label>{file.template}</Label>
-          <Button type="dashed" size="small" onClick={onSelect}>
+          <Button type="dashed" size="small" disabled={disabled} onClick={onSelect}>
             {global.select}
           </Button>
         </EditorRow>

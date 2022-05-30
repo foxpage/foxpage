@@ -1,0 +1,42 @@
+import { createAction } from 'typesafe-actions';
+
+import { Application, ApplicationFetchParams, ApplicationFetchResponse } from '@/types/index';
+
+export const clearAll = createAction('APPLICATIONS_LIST__CLEAR_ALL', () => ({}))();
+export const updateFetching = createAction('APPLICATIONS_LIST__UPDATE_FETCHING', (status: boolean) => ({
+  status,
+}))();
+export const fetchList = createAction('APPLICATION_LISTS__FETCH_LIST', (params: ApplicationFetchParams) => ({
+  params,
+}))();
+export const pushList = createAction(
+  'APPLICATIONS_LIST__FETCH_LIST_SUCCEED',
+  (result: ApplicationFetchResponse) => ({
+    result,
+  }),
+)();
+
+// add
+export const updateSaving = createAction('APPLICATIONS_LIST__UPDATE_SAVING', (status: boolean) => ({
+  status,
+}))();
+
+export const updateDrawerVisible = createAction(
+  'APPLICATIONS_LIST__UPDATE_DRAWER_VISIBLE',
+  (visible: boolean, app?: Application) => ({
+    visible,
+    app,
+  }),
+)();
+
+export const saveApp = createAction('APPLICATIONS_LIST__SAVE_APP', () => ({}))();
+
+export const updateApp = createAction('APPLICATIONS_LIST__UPDATE_APP', (key: string, value: unknown) => ({
+  key,
+  value,
+}))();
+
+export const updateValue = createAction('APPLICATIONS_LIST__UPDATE_VALUE', (key: string, value: unknown) => ({
+  key,
+  value,
+}))();

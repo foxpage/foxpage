@@ -34,7 +34,7 @@ export class GetWorkspaceRecycleList extends BaseController {
     operationId: 'get-workspace-recycle-list',
   })
   @ResponseSchema(ProjectListRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @QueryParams() params: WorkspaceProjectListReq,
   ): Promise<ResData<PageData<FolderInfo>>> {

@@ -11,15 +11,16 @@ export interface PageParam {
   applicationId: string;
   folderId?: string;
   fileId?: string;
-  contentId: string;
+  contentId?: string;
   locale?: string;
-  fileType: string;
+  fileType?: string;
 }
 
 export interface PageContentType extends ProjectContentType {
   folderId: string;
   fold: boolean;
   name: string;
+  liveVersionNumber: number;
   contents?: PageContentType[];
 }
 
@@ -49,4 +50,11 @@ export interface PageCloneParams extends OptionsAction {
   applicationId: string;
   targetContentId: string;
   sourceContentId: string;
+}
+
+export interface PageCatalogRes {
+  files: PageContentType[];
+  id: string;
+  name: string;
+  folder?: Array<unknown>;
 }

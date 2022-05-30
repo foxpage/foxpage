@@ -1,14 +1,15 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 
-import _ from "lodash";
-import { Get, JsonController, QueryParams } from "routing-controllers";
-import { OpenAPI, ResponseSchema } from "routing-controllers-openapi";
+import _ from 'lodash';
+import { Get, JsonController, QueryParams } from 'routing-controllers';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { ResData } from "../types/index-types";
-import * as Response from "../utils/response";
-import { BaseController } from "./base-controller";
+import { ResData } from '../types/index-types';
+import * as Response from '../utils/response';
 
-@JsonController("exports")
+import { BaseController } from './base-controller';
+
+@JsonController('exports')
 export class GetAppDetail extends BaseController {
   constructor() {
     super();
@@ -19,54 +20,54 @@ export class GetAppDetail extends BaseController {
    * @param  {AppDetailReq} params
    * @returns {AppWithFolder} Promise
    */
-  @Get("")
+  @Get('')
   @OpenAPI({
-    summary: "export collection",
-    description: "",
-    tags: ["Application"],
-    operationId: "export-collection-list",
+    summary: 'export collection',
+    description: '',
+    tags: ['Application'],
+    operationId: 'export-collection-list',
   })
-  @ResponseSchema("")
+  @ResponseSchema('')
   async index(@QueryParams() params: { col: string }): Promise<ResData<any[]>> {
     try {
       let collectionList: any[] = [];
       switch (params.col.toLowerCase()) {
-        case "application":
+        case 'application':
           collectionList = await this.service.application.find({});
           break;
-        case "folder":
+        case 'folder':
           collectionList = await this.service.folder.list.find({});
           break;
-        case "file":
+        case 'file':
           collectionList = await this.service.file.list.find({});
           break;
-        case "content":
+        case 'content':
           collectionList = await this.service.content.list.find({
-            fileId: { $ne: "file_7vvqMgOWOiJs3GS" },
+            fileId: { $ne: 'file_7vvqMgOWOiJs3GS' },
           });
           break;
-        case "version":
+        case 'version':
           collectionList = await this.service.version.list.find({});
           break;
-        case "relation":
+        case 'relation':
           collectionList = await this.service.relation.find({});
           break;
-        case "organization":
+        case 'organization':
           collectionList = await this.service.org.find({});
           break;
-        case "goods":
+        case 'goods':
           collectionList = await this.service.store.goods.find({});
           break;
-        case "order":
+        case 'order':
           collectionList = await this.service.store.order.find({});
           break;
-        case "team":
+        case 'team':
           collectionList = await this.service.team.find({});
           break;
-        case "user":
+        case 'user':
           collectionList = await this.service.user.find({});
           break;
-        case "log":
+        case 'log':
           collectionList = await this.service.log.find({});
           break;
       }

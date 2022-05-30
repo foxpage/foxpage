@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { IsArray, Length, IsNumber, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 
 export class PagingReq {
@@ -63,4 +63,15 @@ export class App {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
   applicationId: string;
+}
+
+export class ContentIdVersion {
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  @Length(20, 20)
+  id: string;
+
+  @JSONSchema({ description: 'Content Version' })
+  @IsString()
+  version: string;
 }

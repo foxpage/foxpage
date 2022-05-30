@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import { FileTagType } from '@/constants/file';
-import { FoxpageBreadcrumb } from '@/pages/common';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '@/pages/common';
 import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/group/application/resource/groups';
 import { ResourceGroup } from '@/types/application';
@@ -73,7 +73,6 @@ const ColAutoSpan = {
 const mapStateToProps = (store: RootState) => ({
   groupList: store.group.application.resource.groups.groupList,
   loading: store.group.application.resource.groups.loading,
-  application: store.group.application.settings.application,
 });
 
 const mapDispatchToProps = {
@@ -88,7 +87,6 @@ type ComponentsProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchTo
 const ResourceGroups: React.FC<ComponentsProps> = ({
   groupList = [],
   loading = false,
-  application,
   dispatchFetchGroups,
   dispatchOpenAddGroupDrawer,
   deleteGroup,
@@ -98,15 +96,18 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
   const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
   const { locale } = useContext(GlobalContext);
   const { global, resource, application: applicationI18n } = locale.business;
+
   useEffect(() => {
     dispatchFetchGroups({
       appId: applicationId,
     });
     isInit.current = true;
   }, []);
+
   const addGroup = () => {
     dispatchOpenAddGroupDrawer();
   };
+
   const onDeleteGroup = (id: string) => {
     Modal.confirm({
       title: resource.deleteTitle,
@@ -124,78 +125,85 @@ const ResourceGroups: React.FC<ComponentsProps> = ({
   };
 
   return (
-    <div>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          {
-            name: applicationI18n.applicationList,
-            link: `/#/organization/${organizationId}/application/list`,
-          },
-          { name: resource.resourceGroup },
-        ]}
-      />
-      <OptionsBox>
-        <Button type="primary" onClick={addGroup}>
-          <PlusOutlined /> {resource.addResourceGroup}
-        </Button>
-      </OptionsBox>
-      <GroupsBox>
-        {loading || !isInit.current ? (
-          <LoadingBox>
-            <Spin size="large" />
-          </LoadingBox>
-        ) : groupList && groupList.length > 0 ? (
-          <Row gutter={[16, 16]}>
-            {groupList.map((group) => {
-              const resourceId = group.tags?.find?.((item) => item.type === FileTagType.ResourceGroup)
-                ?.resourceId;
-              const resource = application?.resources?.find((item) => item.id === resourceId);
-              const ribbonText = resource?.name;
-              return (
-                <Col {...ColAutoSpan} key={group.id}>
-                  <Link
-                    to={`/organization/${organizationId}/application/${applicationId}/detail/resource/${group.folderPath}`}>
-                    <Badge.Ribbon text={ribbonText || 'No Type'} color={ribbonText ? '' : 'red'}>
-                      <GroupCard hoverable>
-                        <OperateGroup className="foxpage-group-card-operate">
-                          <Button
-                            type="default"
-                            size="small"
-                            shape="circle"
-                            icon={<EditOutlined />}
-                            style={{ marginRight: 4 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              editGroup(group);
-                            }}
-                          />
-                          <Button
-                            type="default"
-                            size="small"
-                            shape="circle"
-                            icon={<DeleteOutlined />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              onDeleteGroup(group.id);
-                            }}
-                          />
-                        </OperateGroup>
-                        <div>{group.name}</div>
-                      </GroupCard>
-                    </Badge.Ribbon>
-                  </Link>
-                </Col>
-              );
-            })}
-          </Row>
-        ) : (
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-        )}
-      </GroupsBox>
+    <>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              {
+                name: applicationI18n.applicationList,
+                link: '/#/workspace/application',
+              },
+              { name: resource.resourceGroup },
+            ]}
+          />
+        }>
+        <>
+          <OptionsBox>
+            <Button type="primary" onClick={addGroup}>
+              <PlusOutlined /> {resource.addResourceGroup}
+            </Button>
+          </OptionsBox>
+          <GroupsBox>
+            {loading || !isInit.current ? (
+              <LoadingBox>
+                <Spin size="large" />
+              </LoadingBox>
+            ) : groupList && groupList.length > 0 ? (
+              <Row gutter={[16, 16]}>
+                {groupList.map((group) => {
+                  const resourceDetail = group.tags?.find?.(
+                    (item) => item.type === FileTagType.ResourceGroup,
+                  );
+                  const ribbonText = resourceDetail?.origin;
+
+                  return (
+                    <Col {...ColAutoSpan} key={group.id}>
+                      <Link
+                        to={`/organization/${organizationId}/application/${applicationId}/detail/resource/${group.folderPath}`}>
+                        <Badge.Ribbon text={ribbonText || 'No Type'} color={ribbonText ? '' : 'red'}>
+                          <GroupCard hoverable>
+                            <OperateGroup className="foxpage-group-card-operate">
+                              <Button
+                                type="default"
+                                size="small"
+                                shape="circle"
+                                icon={<EditOutlined />}
+                                style={{ marginRight: 4 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  editGroup(group);
+                                }}
+                              />
+                              <Button
+                                type="default"
+                                size="small"
+                                shape="circle"
+                                icon={<DeleteOutlined />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  onDeleteGroup(group.id);
+                                }}
+                              />
+                            </OperateGroup>
+                            <div>{group.name}</div>
+                          </GroupCard>
+                        </Badge.Ribbon>
+                      </Link>
+                    </Col>
+                  );
+                })}
+              </Row>
+            ) : (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            )}
+          </GroupsBox>
+        </>
+      </FoxpageDetailContent>
       <EditDrawer />
-    </div>
+    </>
   );
 };
 

@@ -10,7 +10,7 @@ import { ContentDetailRes, ContentListReq } from '../../types/validates/content-
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('content')
+@JsonController('contents')
 export class GetContentList extends BaseController {
   constructor() {
     super();
@@ -21,7 +21,7 @@ export class GetContentList extends BaseController {
    * @param  {ContentListReq} params
    * @returns {ContentInfo}
    */
-  @Get('s')
+  @Get('')
   @OpenAPI({
     summary: i18n.sw.contentList,
     description: '',
@@ -29,7 +29,7 @@ export class GetContentList extends BaseController {
     operationId: 'content-list',
   })
   @ResponseSchema(ContentDetailRes)
-  async index(@QueryParams() params: ContentListReq): Promise<ResData<ContentInfo[]>> {
+  async index (@QueryParams() params: ContentListReq): Promise<ResData<ContentInfo[]>> {
     try {
       // Check the validity of fileId
       const fileDetail = await this.service.file.info.getDetailById(params.fileId);

@@ -11,7 +11,7 @@ export type StoreResourceListActionType = ActionType<typeof ACTIONS>;
 const selectedItem: StoreProjectResource = {} as StoreProjectResource;
 const projectResourceList: StoreProjectResource[] = [];
 const packageResourceList: StorePackageResource[] = [];
-const pageInfo: PaginationInfo = { page: 1, size: 12, total: 0 };
+const pageInfo: PaginationInfo = { page: 1, size: 16, total: 0 };
 const buyIds: string[] = [];
 const allApplication: Application[] = [];
 const initialState = {
@@ -32,7 +32,7 @@ const initialState = {
 type initialDataType = typeof initialState;
 
 const reducer = (state: initialDataType = initialState, action: StoreResourceListActionType) =>
-  produce(state, draft => {
+  produce(state, (draft) => {
     switch (action.type) {
       case getType(ACTIONS.updateLoading): {
         const { loading } = action.payload;
@@ -91,7 +91,7 @@ const reducer = (state: initialDataType = initialState, action: StoreResourceLis
       case getType(ACTIONS.updateProjectResourceItemChecked): {
         const { id } = action.payload;
         const newResourceList = _.cloneDeep(draft.projectResourceList);
-        newResourceList.forEach(item => {
+        newResourceList.forEach((item) => {
           if (item.id === id) {
             item.checked = !item.checked;
           }
@@ -109,7 +109,7 @@ const reducer = (state: initialDataType = initialState, action: StoreResourceLis
       case getType(ACTIONS.updatePackageResourceItemChecked): {
         const { id } = action.payload;
         const newResourceList = _.cloneDeep(draft.packageResourceList);
-        newResourceList.forEach(item => {
+        newResourceList.forEach((item) => {
           if (item.id === id) {
             item.checked = !item.checked;
           }

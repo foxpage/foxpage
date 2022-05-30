@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { Content, Tag } from '@foxpage/foxpage-server-types';
+import { Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD } from '../../../config/constant';
@@ -42,9 +42,8 @@ export class GetContentTagContent extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
 
-      const tags = params.tags as Tag[];
-      if (tags.length === 0) {
-        return Response.warning(i18n.content.tagsCannotBeEmpty, 2160601);
+      if (!params.tags) {
+        params.tags = [];
       }
 
       // Get qualified content details

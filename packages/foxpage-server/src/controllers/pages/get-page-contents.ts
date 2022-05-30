@@ -11,6 +11,7 @@ import { ContentInfoUrl, ContentSearch } from '../../types/content-types';
 import { ResData } from '../../types/index-types';
 import { ContentDetailRes, ContentListReq } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
+import { mergeUrl } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
 @JsonController('pages')
@@ -33,7 +34,7 @@ export class GetPageContentList extends BaseController {
     operationId: 'get-page-content-list',
   })
   @ResponseSchema(ContentDetailRes)
-  async index(@QueryParams() params: ContentListReq): Promise<ResData<ContentInfoUrl>> {
+  async index (@QueryParams() params: ContentListReq): Promise<ResData<ContentInfoUrl>> {
     try {
       const contentParams: ContentSearch = {
         fileId: params.fileId,
@@ -61,7 +62,7 @@ export class GetPageContentList extends BaseController {
       let contentListWithUrls: ContentInfoUrl[] = [];
       let hostPath = '';
       if (pathname) {
-        hostPath = (appDetail?.host?.[0] || '') + slug + '/' + pathname;
+        hostPath = mergeUrl(appDetail?.host?.[0] || '', pathname, slug);
       }
 
       contentList.forEach((content) => {
@@ -76,6 +77,7 @@ export class GetPageContentList extends BaseController {
             urls = [hostPath];
           }
         }
+
         content.isBase = _.remove(content.tags, (tag) => !_.isNil(tag.isBase))[0]?.isBase || false;
         content.extendId = _.remove(content.tags, (tag) => !_.isNil(tag.extendId))[0]?.extendId || '';
         contentListWithUrls.push(Object.assign({}, content, { urls: _.clone(urls) }));

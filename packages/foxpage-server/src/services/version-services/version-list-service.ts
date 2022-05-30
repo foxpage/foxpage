@@ -27,7 +27,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * Single instance
    * @returns VersionListService
    */
-  public static getInstance(): VersionListService {
+  public static getInstance (): VersionListService {
     this._instance || (this._instance = new VersionListService());
     return this._instance;
   }
@@ -38,7 +38,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {NameVersion[]} nameVersions
    * @returns Promise
    */
-  async getContentVersionListByNameVersion(
+  async getContentVersionListByNameVersion (
     contentList: Content[],
     nameVersions: NameVersion[],
   ): Promise<ContentVersion[]> {
@@ -76,7 +76,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {VersionSearch} params
    * @returns {ContentVersionInfo[]} Promise
    */
-  async getVersionList(params: VersionSearch): Promise<ContentVersionInfo[]> {
+  async getVersionList (params: VersionSearch): Promise<ContentVersionInfo[]> {
     const versionList = await Model.version.getList({ search: params, size: 500 });
     const newVersionList = await Service.user.replaceDataUserId<ContentVersion, ContentVersionInfo>(
       versionList,
@@ -90,7 +90,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {string[]} contentIds
    * @returns Promise
    */
-  async getVersionByContentIds(contentIds: string[]): Promise<ContentVersion[]> {
+  async getVersionByContentIds (contentIds: string[]): Promise<ContentVersion[]> {
     return Model.version.find({ contentId: { $in: contentIds }, deleted: false });
   }
 
@@ -99,7 +99,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {string[]} contentIds
    * @returns Promise
    */
-  async getLiveVersionByContentIds(contentIds: string[]): Promise<Record<string, ContentVersion>> {
+  async getLiveVersionByContentIds (contentIds: string[]): Promise<Record<string, ContentVersion>> {
     const contentList = await Service.content.list.getDetailByIds(contentIds);
     const liveInfo = _.map(
       _.filter(contentList, (content) => content.liveVersionNumber > 0),
@@ -119,7 +119,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} versionList
    * @param  {boolean=true} isLiveVersion
    */
-  async getVersionListRelations(
+  async getVersionListRelations (
     versionList: ContentVersion[],
     isLiveVersion: boolean = true,
   ): Promise<Record<string, any[]>> {
@@ -149,7 +149,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {string[]} contentIds
    * @returns Promise
    */
-  async getContentMaxVersionDetail(
+  async getContentMaxVersionDetail (
     contentIds: string[],
     status: string = '',
   ): Promise<Record<string, ContentVersion>> {
@@ -178,7 +178,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {string[]} fileIds
    * @returns Promise
    */
-  async getMaxVersionByFileIds(fileIds: string[]): Promise<Record<string, ContentVersion>> {
+  async getMaxVersionByFileIds (fileIds: string[]): Promise<Record<string, ContentVersion>> {
     if (fileIds.length === 0) {
       return {};
     }
@@ -202,7 +202,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {ContentLiveVersion[]} contentLiveInfo
    * @returns {ContentVersion[]} Promise
    */
-  async getContentInfoByIdAndNumber(contentLiveInfo: ContentLiveVersion[]): Promise<ContentVersion[]> {
+  async getContentInfoByIdAndNumber (contentLiveInfo: ContentLiveVersion[]): Promise<ContentVersion[]> {
     let contentLiveDetails: ContentVersion[] = [];
 
     // Get live details
@@ -230,7 +230,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {ContentVersionNumber[]} idAndVersion
    * @returns {ContentVersion[]} Promise
    */
-  async getContentByIdAndVersionNumber(idAndVersion: ContentVersionNumber[]): Promise<ContentVersion[]> {
+  async getContentByIdAndVersionNumber (idAndVersion: ContentVersionNumber[]): Promise<ContentVersion[]> {
     return Model.version.getDetailByIdAndVersions(idAndVersion);
   }
 
@@ -239,7 +239,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {ContentVersionString[]} idAndVersions
    * @returns {ContentVersion[]} Promise
    */
-  async getContentInfoByIdAndVersion(idAndVersions: ContentVersionString[]): Promise<ContentVersion[]> {
+  async getContentInfoByIdAndVersion (idAndVersions: ContentVersionString[]): Promise<ContentVersion[]> {
     let contentLiveDetails: ContentVersion[] = [];
 
     // Get live details
@@ -263,7 +263,7 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {ContentVersionString[]} idAndVersionString
    * @returns {ContentVersion[]} Promise
    */
-  async getContentByIdAndVersionString(
+  async getContentByIdAndVersionString (
     idAndVersionString: ContentVersionString[],
   ): Promise<ContentVersion[]> {
     return Model.version.getDetailByIdAndVersionString(idAndVersionString);
@@ -278,11 +278,11 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @param  {string[]} contentIds
    * @returns Promise
    */
-  async getContentLiveOrBuildVersion(contentIds: string[]): Promise<ContentVersionNumber[]> {
+  async getContentLiveOrBuildVersion (contentIds: string[]): Promise<ContentVersionNumber[]> {
     // Get the largest version corresponding to content
     const contentVersionList = await this.find(
       { contentId: { $in: contentIds }, deleted: false },
-      'contentId versionNumber',
+      'contentId versionNumber status',
       { sort: { versionNumber: 'desc' } },
     );
 
@@ -303,15 +303,17 @@ export class VersionListService extends BaseService<ContentVersion> {
       const maxVersionContentIds = _.map(_.toArray(maxVersionInfoObject), 'contentId');
       const contentList = await Service.content.list.getDetailByIds(maxVersionContentIds);
       contentList.forEach((content) => {
-        liveVersionInfoObject.push({ contentId: content.id, versionNumber: content.liveVersionNumber });
-        _.omit(maxVersionInfoObject, content.id);
+        if (!baseVersionInfoObject[content.id]) {
+          liveVersionInfoObject.push({ contentId: content.id, versionNumber: content.liveVersionNumber });
+        }
+        maxVersionInfoObject = _.omit(maxVersionInfoObject, content.id);
       });
     }
 
     return _.concat(
       _.toArray(baseVersionInfoObject),
       _.toArray(maxVersionInfoObject),
-      _.toArray(liveVersionInfoObject),
+      liveVersionInfoObject,
     );
   }
 }

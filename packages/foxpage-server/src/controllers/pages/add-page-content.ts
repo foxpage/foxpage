@@ -51,13 +51,26 @@ export class AddPageContentDetail extends BaseController {
         return Response.warning(i18n.page.pageNameExist, 2050101);
       }
 
+      !params.tags && (params.tags = []);
+
       const contentParams: Partial<Content> = {
         title: params.title,
         fileId: params.fileId,
-        tags: params.tags || [],
+        tags: params.tags,
       };
+
+      // add special filed to tag
+      if (params.isBase) {
+        params.tags.push({ isBase: params.isBase });
+      }
+
+      if (params.extendId) {
+        params.tags.push({ extendId: params.extendId });
+      }
+
       const contentDetail = this.service.content.info.addContentDetail(contentParams, {
         ctx,
+        content: { relation: {}, schemas: [] },
         type: TYPE.PAGE as FileTypes,
       });
 

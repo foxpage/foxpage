@@ -1,6 +1,7 @@
 import _ from 'lodash';
 
 import {
+  Component,
   Content,
   ContentStatus,
   ContentVersion,
@@ -12,6 +13,7 @@ import {
 
 import { LOG, PRE, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
+import { ComponentContentInfo, } from '../../types/component-types';
 import {
   ContentVersionNumber,
   NameVersion,
@@ -40,7 +42,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * Single instance
    * @returns VersionInfoService
    */
-  public static getInstance(): VersionInfoService {
+  public static getInstance (): VersionInfoService {
     this._instance || (this._instance = new VersionInfoService());
     return this._instance;
   }
@@ -51,7 +53,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {Partial<ContentVersion>} params
    * @returns ContentVersion
    */
-  create(params: Partial<ContentVersion>, options: { ctx: FoxCtx; fileId?: string }): ContentVersion {
+  create (params: Partial<ContentVersion>, options: { ctx: FoxCtx; fileId?: string }): ContentVersion {
     const invalidRelations = Service.version.check.relation(params.content?.relation || {});
     if (invalidRelations.length > 0) {
       throw new Error('Invalid content relation:' + invalidRelations.join(', '));
@@ -90,11 +92,11 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {UpdateContentVersion} params
    * @returns Promise
    */
-  async updateVersionDetail(
+  async updateVersionDetail (
     params: UpdateContentVersion,
     options: { ctx: FoxCtx },
   ): Promise<Record<string, number | string | string[]>> {
-    if ((<DSL>params.content).relation) {
+    if (params.content && (<DSL>params.content).relation) {
       const invalidRelations = Service.version.check.relation((<DSL>params.content).relation || {});
       if (invalidRelations.length > 0) {
         return { code: 5, data: invalidRelations };
@@ -136,8 +138,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
 
     // Update
     params.content.id = params.id;
-    (<DSL>params.content).version = '1.0'; // default dsl version
-    console.log(params.content);
+    (<DSL>params.content).version = '0.0.1'; // default dsl version
     options.ctx.transactions.push(
       Model.version.updateDetailQuery(versionId, {
         version: version,
@@ -160,7 +161,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateVersionItem(
+  updateVersionItem (
     id: string,
     params: Partial<ContentVersion>,
     options: { ctx: FoxCtx; fileId?: string },
@@ -187,7 +188,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {boolean=false} createNew
    * @returns Promise
    */
-  async getMaxContentVersionDetail(
+  async getMaxContentVersionDetail (
     contentId: string,
     options: { ctx: FoxCtx; createNew?: boolean },
   ): Promise<ContentVersion> {
@@ -208,7 +209,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {string} contentId
    * @returns Promise
    */
-  async getMaxBaseContentVersionDetail(contentId: string): Promise<ContentVersion> {
+  async getMaxBaseContentVersionDetail (contentId: string): Promise<ContentVersion> {
     return Model.version.getMaxVersionDetailById(contentId, { status: VERSION.STATUS_BASE as ContentStatus });
   }
 
@@ -219,7 +220,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @returns {Promise<ContentVersion>}
    * @memberof VersionService
    */
-  async createNewContentVersion(contentId: string, options: { ctx: FoxCtx }): Promise<ContentVersion> {
+  async createNewContentVersion (contentId: string, options: { ctx: FoxCtx }): Promise<ContentVersion> {
     const newVersionDetail = (await this.getContentLatestVersion({ contentId })) || {};
 
     // Set new version information
@@ -244,7 +245,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {TypeStatus} params
    * @returns Promise
    */
-  async setVersionDeleteStatus(
+  async setVersionDeleteStatus (
     params: TypeStatus,
     options: { ctx: FoxCtx },
   ): Promise<Record<string, number>> {
@@ -274,7 +275,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} versionList
    * @returns void
    */
-  batchSetVersionDeleteStatus(
+  batchSetVersionDeleteStatus (
     versionList: ContentVersion[],
     options: { ctx: FoxCtx; status?: boolean },
   ): void {
@@ -291,7 +292,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {NameVersion[]} nameVersions
    * @returns Promise
    */
-  async getVersionDetailByFileNameVersion(
+  async getVersionDetailByFileNameVersion (
     applicationId: string,
     type: string,
     nameVersions: NameVersion[],
@@ -342,7 +343,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {SearchLatestVersion} params
    * @returns {ContentVersion} Promise
    */
-  async getContentLatestVersion(params: SearchLatestVersion): Promise<ContentVersion> {
+  async getContentLatestVersion (params: SearchLatestVersion): Promise<ContentVersion> {
     const version = await Model.version.getLatestVersionInfo(params);
     return version as ContentVersion;
   }
@@ -352,7 +353,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {ContentVersionNumber} params
    * @returns Promise
    */
-  async getContentVersionDetail(params: ContentVersionNumber): Promise<ContentVersion> {
+  async getContentVersionDetail (params: ContentVersionNumber): Promise<ContentVersion> {
     const { versionNumber = 0, contentId } = params;
 
     let versionDetail: ContentVersion;
@@ -379,7 +380,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} contentVersionList
    * @returns StringObject
    */
-  mappingContentVersionInfo(
+  mappingContentVersionInfo (
     contentList: Content[],
     contentVersionList: ContentVersion[],
   ): Record<string, ContentVersion> {
@@ -404,7 +405,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {ContentVersion} pageVersion
    * @returns Promise
    */
-  async getTemplateDetailFromPage(
+  async getTemplateDetailFromPage (
     applicationId: string,
     pageVersion: ContentVersion,
     options?: { isLive: boolean },
@@ -448,7 +449,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * versionId: when create is false, then update this version id's detail
    * @returns
    */
-  copyContentVersion(
+  copyContentVersion (
     sourceContentVersion: DSL,
     contentId: string,
     options: {
@@ -517,7 +518,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {DslSchemas[]} schemas
    * @returns DslSchemas
    */
-  changeDSLStructureIdRecursive(schemas: DslSchemas[], parentId?: string): DslSchemas[] {
+  changeDSLStructureIdRecursive (schemas: DslSchemas[], parentId?: string): DslSchemas[] {
     // TODO structure id in props need to replace too
     (schemas || []).forEach((structure) => {
       structure.id = generationId(PRE.STRUCTURE);
@@ -544,7 +545,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {Record<string,Record<string,string>>} relations
    * @returns
    */
-  replaceVersionSchemaRelationNames(
+  replaceVersionSchemaRelationNames (
     schemas: DslSchemas[] = [],
     relation: Record<string, DslRelation> = {},
     relations: Record<string, Record<string, string>> = {},
@@ -606,5 +607,66 @@ export class VersionInfoService extends BaseService<ContentVersion> {
     }
 
     return { schemas: JSON.parse(schemasString), relation: relation || {} };
+  }
+
+  /**
+   * Get the version's relation and component details
+   * @param versionDetail 
+   * @param options 
+   * @returns 
+   */
+  async getPageVersionInfo (
+    versionDetail: ContentVersion,
+    options: { applicationId: string, isLive?: boolean }
+  ): Promise<Record<string, any>> {
+    const versionSchemas = versionDetail?.content?.schemas || [];
+    let componentDetailList: Component[] = [];
+    let mockObject: Record<string, any> = [];
+    [mockObject, componentDetailList] = await Promise.all([
+      !options.isLive ?
+        Service.content.mock.getMockBuildVersions([versionDetail.contentId as string]) :
+        Service.content.mock.getMockLiveVersions([versionDetail.contentId as string]),
+      Service.content.component.getComponentsFromDSL(options.applicationId, versionSchemas)
+    ]);
+
+    let componentList = _.flatten(componentDetailList);
+
+    const editorComponentList = await Service.content.component.getEditorDetailFromComponent(
+      options.applicationId,
+      componentList,
+    );
+    componentList = componentList.concat(editorComponentList);
+    const idVersionList = Service.component.getEditorAndDependenceFromComponent(componentList);
+    const dependencies = await Service.component.getComponentDetailByIdVersion(idVersionList);
+    componentList = componentList.concat(_.map(dependencies, (depend) => depend?.content || {}));
+    const componentIds = Service.content.component.getComponentResourceIds(componentList);
+
+    const [resourceObject, relationObject, componentFileObject, contentAllParents] = await Promise.all([
+      Service.content.resource.getResourceContentByIds(componentIds),
+      Service.version.relation.getVersionRelations({ [versionDetail.contentId]: versionDetail }, false),
+      Service.file.list.getContentFileByIds(_.map(componentList, 'id')),
+      Service.content.list.getContentAllParents(componentIds),
+    ]);
+
+    const appResource = await Service.application.getAppResourceFromContent(contentAllParents);
+    const contentResource = Service.content.info.getContentResourceTypeInfo(
+      appResource,
+      contentAllParents,
+    );
+
+    // Add the resource to the component, add the editor-entry and the name of the dependencies in the component
+    componentList = Service.component.addNameToEditorAndDepends(
+      componentList as ComponentContentInfo[],
+      componentFileObject,
+    );
+    componentList = Service.content.component.replaceComponentResourceIdWithContent(
+      componentList,
+      resourceObject,
+      contentResource,
+    );
+
+    const relations = await Service.relation.formatRelationResponse(relationObject);
+
+    return { versionDetail, componentList, relations, mockObject };
   }
 }

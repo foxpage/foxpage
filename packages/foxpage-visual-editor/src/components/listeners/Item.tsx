@@ -1,5 +1,6 @@
-import 'brace/mode/json';
-import 'brace/theme/solarized_light';
+// TODO: for build
+// import 'brace/mode/json';
+// import 'brace/theme/solarized_light';
 
 import React, { Component } from 'react';
 

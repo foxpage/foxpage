@@ -1,5 +1,8 @@
 import { PostComponentsVersionsProps, PutComponentsLiveVersionProps, PutComponentsVersionPublishProps, PutComponentsVersionsProps } from '@/apis/group/application/packages/index';
 import { AppComponentEditVersionType } from '@/types/application';
+import { BaseResponse, PaginationReqParams, ResponseBody } from '@/types/common';
+
+import { RemoteResource } from '../resources';
 
 import { ComponentVersionResource } from '.';
 
@@ -23,42 +26,67 @@ export interface ComponentRemotesFetchParams {
   name: string;
 }
 
-export interface ComponentRemoteSaveParams {
+export interface RemoteComponentFetchParams extends PaginationReqParams {
   applicationId: string;
-  components: ComponentRemote[];
+  groupId: string;
+  name?: string;
 }
+
+export interface RemoteComponentFetchedRes extends ResponseBody<RemoteComponentItem[]> {
+}
+
+export interface ComponentRemoteSaveParams<T = ComponentRemote> {
+  applicationId: string;
+  components: T[];
+}
+
+// design is ugly
+export interface EditorComponent {
+  name: string;
+  groupId: string;
+  component: {
+    id?: string;
+    version?: string;
+    content: {
+      resource: {
+        entry: {
+          browser?: string;
+          css?: string;
+          debug?: string;
+          node?: string;
+          editor?: string;
+        };
+        ['editor-entry']?: any[];
+      },
+      meta: {};
+      schema: {};
+    };
+  };
+};
+
+export type EditorComponentSaveParams = ComponentRemoteSaveParams<EditorComponent>;
+
+export interface EditorComponentSavedRes extends BaseResponse<Record<string, string>> { };
 
 export interface ComponentRemote {
   component: {
     content: {
+      meta?: {},
       resource: ComponentVersionResource;
     };
     id: string;
     version: string;
   };
-  resource: {
-    files: {
-      cjs: {
-        ['production.js']: string;
-      };
-      umd: {
-        ['style.css']: string;
-        ['editor.js']: string;
-        ['development.js']: string;
-        ['production.min.js']: string;
-      }
-    },
-    groupId: string;
-    groupName: string;
-    isNew: boolean;
-    name: string;
-    resourceName: string;
-    latestVersion: string;
-    version: string;
-  }
+  resource: RemoteResource;
 }
 
-export interface ComponentRemoteSearchResponse {
+export interface RemoteComponentItem {
   lastVersion: AppComponentEditVersionType;
   components: ComponentRemote[];
+}
+
+
+export interface EditorBatchPublishParams {
+  applicationId: string;
+  idVersions: { id: string, version?: string }[];
 }

@@ -3,13 +3,12 @@ import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Divider, Popconfirm, Table, Tag } from 'antd';
+import { Button, Divider, Popconfirm, Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/variable';
-import EditDrawer from '@/pages/builder/variable/EditDrawer';
-import { FoxpageBreadcrumb } from '@/pages/common';
-import { suffixTagColor } from '@/pages/common/constant/FileType';
+import EditDrawer from '@/pages/builder/toolbar/tools/variable/EditDrawer';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '@/pages/common';
 import GlobalContext from '@/pages/GlobalContext';
 import VariableType from '@/types/application/variable.d';
 import periodFormat from '@/utils/period-format';
@@ -35,9 +34,9 @@ const mapDispatchToProps = {
 
 type Type = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
 
-const Variable: React.FC<Type> = props => {
+const Variable: React.FC<Type> = (props) => {
   const [folderId, setFolderId] = useState<string | undefined>(undefined);
-  const { applicationId, organizationId } = useParams<{ applicationId: string; organizationId: string }>();
+  const { applicationId } = useParams<{ applicationId: string }>();
   const {
     loading,
     variables,
@@ -86,7 +85,7 @@ const Variable: React.FC<Type> = props => {
       title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
-      render: (text: string, record: VariableType) => {
+      render: (text: string) => {
         return (
           <>
             {text}
@@ -146,8 +145,7 @@ const Variable: React.FC<Type> = props => {
                 setFolderId(record.folderId);
                 openEditDrawer(record);
                 getVariableBuildVersion(record, applicationId);
-              }}
-            >
+              }}>
               <EditOutlined />
             </Button>
             <Divider type="vertical" />
@@ -157,8 +155,7 @@ const Variable: React.FC<Type> = props => {
                 handleDelete(record.id);
               }}
               okText={global.yes}
-              cancelText={global.no}
-            >
+              cancelText={global.no}>
               <Button size="small" shape="circle" icon={<DeleteOutlined />} />
             </Popconfirm>
           </React.Fragment>
@@ -168,23 +165,31 @@ const Variable: React.FC<Type> = props => {
   ];
   return (
     <React.Fragment>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
-          { name: global.variables },
-        ]}
-      />
-      <div style={{ marginTop: 12 }}>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              { name: application.applicationList, link: '/#/workspace/application' },
+              { name: global.variables },
+            ]}
+          />
+        }>
         <Table
+          rowKey={(record: VariableType) => record.id.toString()}
           loading={loading}
           dataSource={variables}
           columns={columns}
           pagination={
             pageInfo.total > pageInfo.size
-              ? { position: ['bottomCenter'], current: pageInfo.page, pageSize: pageInfo.size, total: pageInfo.total }
+              ? {
+                  position: ['bottomCenter'],
+                  current: pageInfo.page,
+                  pageSize: pageInfo.size,
+                  total: pageInfo.total,
+                }
               : false
           }
-          onChange={pagination => {
+          onChange={(pagination) => {
             if (pagination.current && pagination.pageSize) {
               getApplicationVariables(applicationId, {
                 ...pageInfo,
@@ -194,7 +199,8 @@ const Variable: React.FC<Type> = props => {
             }
           }}
         />
-      </div>
+      </FoxpageDetailContent>
+
       <EditDrawer applicationId={applicationId} folderId={folderId} onSave={handleSave} />
     </React.Fragment>
   );

@@ -13,6 +13,7 @@ export interface StateType {
     drawerOpen: boolean;
     group?: ResourceGroup;
   };
+  resourceUrl: string;
 }
 
 const defaultState: StateType = {
@@ -21,6 +22,7 @@ const defaultState: StateType = {
   editDrawer: {
     drawerOpen: false,
   },
+  resourceUrl: '',
 };
 
 const reducer = (state: StateType = defaultState, action: AppResourceGroupsActionType) =>
@@ -43,6 +45,11 @@ const reducer = (state: StateType = defaultState, action: AppResourceGroupsActio
       case getType(ACTIONS.updateResourcesEditDrawerState): {
         const { params = {} } = action.payload;
         Object.assign(draft.editDrawer, params);
+        break;
+      }
+      case getType(ACTIONS.pushResourceUrl): {
+        const { url = '' } = action.payload;
+        draft.resourceUrl = url;
         break;
       }
       default:

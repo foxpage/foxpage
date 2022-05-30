@@ -11,11 +11,12 @@ import { ListActionType } from '@/reducers/builder/component-list';
  * @param action action
  */
 function* handleFetchComponentList(action: ListActionType) {
+  yield put(ACTIONS.updateComponentListLoading(true));
+
   const { applicationId } = action.payload as { applicationId: string };
   const {
     component: { fetchListFailed },
   } = getBusinessI18n();
-  yield put(ACTIONS.updateComponentListLoading(false));
 
   const res = yield call(fetchLiveComponentList, { applicationId });
   if (res.code === 200) {
@@ -23,6 +24,8 @@ function* handleFetchComponentList(action: ListActionType) {
   } else {
     message.error(res.msg || fetchListFailed);
   }
+
+  yield put(ACTIONS.updateComponentListLoading(false));
 }
 
 function* watch() {

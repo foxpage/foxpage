@@ -61,7 +61,7 @@ interface IProps {
 
 type TemplateSelectModalProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
 
-const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
+const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
   const {
     loading,
     open,
@@ -117,7 +117,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
     }
   };
 
-  const handleCardClick = id => {
+  const handleCardClick = (id) => {
     if (tab === ResourceTabEnum.application) {
       setSelectedTemplateId(id);
     }
@@ -128,7 +128,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
       <Spin spinning={loading}>
         <Row gutter={16} style={{ paddingBottom: 12 }}>
           {resourceList &&
-            resourceList.map(resource => {
+            resourceList.map((resource) => {
               let actions, MetaContent;
               if (tab === ResourceTabEnum.application) {
                 MetaContent = <Meta title={resource.title} style={{ marginBottom: 12 }} />;
@@ -146,21 +146,21 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
 
               const CardContent = (
                 <Card
+                  key={resource.id}
                   style={{ width: 258, margin: '12px 6px' }}
                   cover={<img alt="example" src={getImageUrlByEnv('/images/placeholder.png')} />}
                   actions={actions}
                   hoverable
                   onClick={() => {
                     handleCardClick(resource.id);
-                  }}
-                >
+                  }}>
                   {MetaContent}
                   {tab === ResourceTabEnum.store && (
                     <FileName>
                       Content:
                       {(resource as StoreProjectResource).files
-                        ?.map(file => {
-                          return file.contents?.map(item => {
+                        ?.map((file) => {
+                          return file.contents?.map((item) => {
                             return <span style={{ marginLeft: 6 }}>{item.title}</span>;
                           });
                         })
@@ -179,20 +179,21 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
                     <Radio.Group
                       name="radiogroup"
                       value={selectedTemplateId}
-                      onChange={e => {
+                      onChange={(e) => {
                         setSelectedTemplateId(e.target.value);
-                      }}
-                    >
+                      }}>
                       <Space direction="vertical">
                         {(resource as StoreProjectResource).files
-                          ?.map(file => {
-                            return file.contents?.map(item => {
+                          ?.map((file) => {
+                            return file.contents?.map((item) => {
                               return (
                                 <Radio value={item.id}>
                                   {item.title}
                                   <LocalsView
                                     maxLocaleCount={100}
-                                    locales={item.tags.filter(item => item.locale).map(item => item.locale)}
+                                    locales={item.tags
+                                      .filter((item) => item.locale)
+                                      .map((item) => item.locale)}
                                   />
                                 </Radio>
                               );
@@ -203,8 +204,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
                     </Radio.Group>
                   }
                   autoAdjustOverflow
-                  arrowPointAtCenter
-                >
+                  arrowPointAtCenter>
                   {CardContent}
                 </Popover>
               );
@@ -246,8 +246,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = props => {
       style={{ height: '70%' }}
       onCancel={onCancel}
       destroyOnClose
-      maskClosable={false}
-    >
+      maskClosable={false}>
       {fileType === FileTypeEnum.page ? (
         TemplateRowContent
       ) : (

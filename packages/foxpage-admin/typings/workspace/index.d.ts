@@ -1,8 +1,5 @@
-import { FileTypeEnum } from '@/constants/global';
 import { DynamicDataLevelEnum, DynamicDataTypeEnum } from '@/constants/workspace';
-import { FileType } from '@/types/application/file';
-import { ResponseBody } from '@/types/common';
-import { Application } from '@/types/index';
+import { PaginationInfo, PaginationReqParams, ResponseBody } from '@/types/common';
 import { ProjectType } from '@/types/project';
 
 export interface MyProjectSearchResult extends ResponseBody {
@@ -13,6 +10,10 @@ export interface MyProjectSearchResult extends ResponseBody {
 export interface DynamicSearchResult extends ResponseBody {
   pageInfo: PaginationInfo;
   data: Dynamic[];
+}
+
+export interface DynamicFetchParams extends PaginationReqParams {
+  organizationId: string;
 }
 
 export interface DynamicContent {
@@ -32,7 +33,6 @@ export interface DynamicContent {
     body: {
       [key: string]: unknown;
     };
-
   };
   response: {
     code: number;
@@ -40,7 +40,6 @@ export interface DynamicContent {
       [key: string]: unknown;
     };
   };
-  applicationId: string;
   realMethod: string;
 }
 

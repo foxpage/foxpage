@@ -10,24 +10,25 @@ export interface ProjectType {
   id: string;
   name: string;
   intro: string;
-  application: Application;
+  application: Pick<Application, 'id' | 'name'>;
   creator: Creator;
 }
 
 export interface ProjectFileType {
-  id: string;
-  name: string;
-  intro: string;
-  applicationId: string;
-  creator: Creator;
-  type: string;
-  suffix: string;
-  folderId: string;
+  application: Pick<Application, 'id' | 'name'>;
   createTime: string;
-  updateTime: string;
+  creator: Creator;
   deleted: boolean;
+  folderId: string;
+  id: string;
+  intro: string;
+  name: string;
+  suffix: string;
   tags: FileTag[];
+  type: string;
+  updateTime: string;
   online: boolean;
+  hasContent: boolean;
 }
 
 export interface ProjectFolderType {
@@ -73,6 +74,7 @@ export interface ProjectAddParams {
 
 export interface ProjectFetchParams extends PaginationReqParams {
   organizationId: string;
+  type?: string;
 }
 export interface ProjectFetchResponse extends BaseResponse {
   data: ProjectType[];
@@ -95,4 +97,14 @@ export interface ParentFileFetchParams {
 }
 export interface ParentFileFetchResponse extends BaseResponse {
   data: ParentFile[];
+}
+
+export interface ProjectListFetchParams extends PaginationReqParams {
+  organizationId: string;
+  type?: string;
+}
+
+// recycle
+export interface ProjectCommonFetchParams extends PaginationReqParams {
+  organizationId: string;
 }

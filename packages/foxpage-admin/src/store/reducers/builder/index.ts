@@ -5,7 +5,6 @@ import condition from './condition';
 import fn from './function';
 import more from './more';
 import page from './page';
-import ssr from './ssr';
 import template from './template';
 import templateSelect from './template-select';
 import variable from './variable';
@@ -15,7 +14,6 @@ const reducers = combineReducers({
   viewer,
   template,
   componentList,
-  ssr,
   page,
   variable,
   condition,

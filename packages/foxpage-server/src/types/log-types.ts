@@ -13,6 +13,7 @@ export interface UserOperationParams {
   operator: string;
   startTime: number;
   endTime: number;
+  organizationId?: string;
   applicationId?: string;
   action?: string;
   page?: number;

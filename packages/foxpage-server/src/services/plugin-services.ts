@@ -17,14 +17,14 @@ export class PluginService {
    * Single instance
    * @returns PluginServices
    */
-  public static getInstance(): PluginService {
+  public static getInstance (): PluginService {
     this._instance || (this._instance = new PluginService());
     return this._instance;
   }
 
-  private loadPlugins(): void {
+  private loadPlugins (): void {
     const plugins = createPluginLoader({
-      baseDir: join(__dirname, process.env.START_FROM === 'yarn' ? '../../../../../' : '../../'),
+      baseDir: join(__dirname, process.env.START_FROM === 'yarn' ? '../../../../../' : '../../../'),
       plugins: config.plugins || [],
       api: {},
       mode: 3,

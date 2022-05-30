@@ -17,7 +17,7 @@ const initialState = {
 type initialDataType = typeof initialState;
 
 const reducer = (state: initialDataType = initialState, action: ListActionType) =>
-  produce(state, draft => {
+  produce(state, (draft) => {
     switch (action.type) {
       case getType(ACTIONS.updateComponentListLoading): {
         const { loading } = action.payload;
@@ -26,7 +26,7 @@ const reducer = (state: initialDataType = initialState, action: ListActionType) 
       }
       case getType(ACTIONS.pushComponentList): {
         const { data } = action.payload;
-        draft.allComponent = data;
+        draft.allComponent = data || [];
         draft.fetchComponentListLoading = false;
         break;
       }

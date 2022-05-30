@@ -12,9 +12,10 @@ import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationUrlParams } from '@/types/application';
 import { FileType } from '@/types/application/file';
 
-import { FoxpageBreadcrumb } from '../../../common';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '../../../common';
 
 const mapStateToProps = (store: RootState) => ({
+  organizationId: store.system.organizationId,
   loading: store.group.application.templates.list.loading,
   list: store.group.application.templates.list.list,
   pageInfo: store.group.application.templates.list.pageInfo,
@@ -29,9 +30,18 @@ const mapDispatchToProps = {
 
 type TemplateListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Main: React.FC<TemplateListType> = props => {
-  const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
-  const { loading, list, pageInfo, fetchTemplateList, clearAll, deleteTemplate, updateTemplate } = props;
+const Main: React.FC<TemplateListType> = (props) => {
+  const { applicationId } = useParams<ApplicationUrlParams>();
+  const {
+    organizationId,
+    loading,
+    list,
+    pageInfo,
+    fetchTemplateList,
+    clearAll,
+    deleteTemplate,
+    updateTemplate,
+  } = props;
   const [editFile, setEditFile] = useState<FileType | undefined>();
   const { locale } = useContext(GlobalContext);
   const { application, file } = locale.business;
@@ -77,13 +87,15 @@ const Main: React.FC<TemplateListType> = props => {
 
   return (
     <React.Fragment>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
-          { name: file.template },
-        ]}
-      />
-      <div style={{ marginTop: 12 }}>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              { name: application.applicationList, link: '/#/workspace/application' },
+              { name: file.template },
+            ]}
+          />
+        }>
         <FileList
           loading={loading}
           pageInfo={pageInfo}
@@ -92,14 +104,14 @@ const Main: React.FC<TemplateListType> = props => {
           organizationId={organizationId}
           fileType={FileTypeEnum.template}
           onDelete={handleDelete}
-          onEdit={record => {
+          onEdit={(record) => {
             setEditFile(record);
           }}
           onPageInfoChange={(page, size) => {
             fetchTemplateList({ applicationId, page, size });
           }}
         />
-      </div>
+      </FoxpageDetailContent>
       {editFile && (
         <FileEditDrawer
           open={!!editFile}

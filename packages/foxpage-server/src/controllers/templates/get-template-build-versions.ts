@@ -4,8 +4,6 @@ import _ from 'lodash';
 import { Ctx, Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { Component } from '@foxpage/foxpage-server-types';
-
 import { i18n } from '../../../app.config';
 import { VERSION } from '../../../config/constant';
 import { PageBuildVersion } from '../../types/content-types';
@@ -34,71 +32,35 @@ export class GetPageBuildVersionDetail extends BaseController {
     operationId: 'get-template-build-version',
   })
   @ResponseSchema(PageBuildVersionRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @QueryParams() params: PageBuildVersionReq,
   ): Promise<ResData<PageBuildVersion>> {
     try {
       // Get the largest version number of content
-      let versionDetail = await this.service.version.info.getMaxContentVersionDetail(params.id, {
-        ctx,
-        createNew: true,
-      });
+      let versionDetail = await this.service.version.info.getMaxContentVersionDetail(params.id, { ctx, createNew: true });
 
       // The latest version is released or deleted, then create a new version
       if (!versionDetail || versionDetail.status !== VERSION.STATUS_BASE || versionDetail.deleted) {
         versionDetail = await this.service.version.info.createNewContentVersion(params.id, { ctx });
       }
 
-      let componentList: Component[] = await this.service.content.component.getComponentsFromDSL(
-        params.applicationId,
-        versionDetail.content?.schemas || [],
-      );
-
-      // Get the component information in the editor in the component
-      const editorComponentList = await this.service.content.component.getEditorDetailFromComponent(
-        params.applicationId,
-        componentList,
-      );
-
-      componentList = componentList.concat(editorComponentList);
-      const componentIds = this.service.content.component.getComponentResourceIds(componentList);
-
-      // Get component resource information, get relation information
-      const [resourceObject, relationObject, contentAllParents] = await Promise.all([
-        this.service.content.resource.getResourceContentByIds(componentIds),
-        this.service.version.relation.getVersionRelations(
-          { [versionDetail.contentId]: versionDetail },
-          false,
-        ),
-        this.service.content.list.getContentAllParents(componentIds),
-      ]);
-
-      // Place the relation details on the follower node
-      // and set it to the structure of {"templates": [], "variables":[],...}
-      const [relations, appResource] = await Promise.all([
-        this.service.relation.formatRelationResponse(relationObject),
-        this.service.application.getAppResourceFromContent(contentAllParents),
-      ]);
-
-      const contentResource = this.service.content.info.getContentResourceTypeInfo(
-        appResource,
-        contentAllParents,
-      );
-
-      // Add resource to component
-      componentList = this.service.content.component.replaceComponentResourceIdWithContent(
-        componentList,
-        resourceObject,
-        contentResource,
+      const versionInfo = await this.service.version.info.getPageVersionInfo(
+        versionDetail,
+        { applicationId: params.applicationId }
       );
 
       await this.service.version.info.runTransaction(ctx.transactions);
 
+      versionDetail.content.extension = versionInfo.mockObject[params.id]?.extension || {};
+      const mockRelations = versionInfo.mockObject[params.id]?.relations || {};
+      versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockRelations);
+
       // Splicing return result
       const pageBuildVersion: PageBuildVersion = Object.assign({}, versionDetail, {
-        relations,
-        components: componentList,
+        relations: versionInfo.relations,
+        mock: versionInfo.mockObject[params.id]?.mock || {},
+        components: versionInfo.componentList,
       });
 
       return Response.success(pageBuildVersion, 1070501);

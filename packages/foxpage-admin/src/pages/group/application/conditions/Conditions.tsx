@@ -8,8 +8,8 @@ import { DrawerProps } from 'antd/lib/drawer';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/condition';
-import EditDrawer from '@/pages/builder/condition/EditDrawer';
-import { FoxpageBreadcrumb } from '@/pages/common';
+import EditDrawer from '@/pages/builder/toolbar/tools/condition/EditDrawer';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '@/pages/common';
 import { ConditionEnum } from '@/pages/common/constant/Condition';
 import { suffixTagColor } from '@/pages/common/constant/FileType';
 import GlobalContext from '@/pages/GlobalContext';
@@ -41,7 +41,7 @@ type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & D
 
 function Component(props: IProps) {
   const [folderId, setFolderId] = useState<string | undefined>(undefined);
-  const { applicationId, organizationId } = useParams<{ applicationId: string; organizationId: string }>();
+  const { applicationId } = useParams<{ applicationId: string }>();
   const {
     pageNum,
     total,
@@ -78,7 +78,7 @@ function Component(props: IProps) {
   };
 
   const handleConditionDelete = useCallback(
-    id => {
+    (id) => {
       deleteCondition(
         {
           applicationId,
@@ -103,7 +103,7 @@ function Component(props: IProps) {
         return (
           <>
             {text}
-            {record.tags?.find(item => item.copyFrom) && (
+            {record.tags?.find((item) => item.copyFrom) && (
               <Tag color={suffixTagColor.refer} style={{ marginLeft: 4 }}>
                 refer
               </Tag>
@@ -170,8 +170,7 @@ function Component(props: IProps) {
             title={`${global.deleteMsg}${record.name}?`}
             okText={global.yes}
             cancelText={global.no}
-            onConfirm={() => handleConditionDelete(record.id)}
-          >
+            onConfirm={() => handleConditionDelete(record.id)}>
             <Button size="small" shape="circle" icon={<DeleteOutlined />} />
           </Popconfirm>
         </>
@@ -181,13 +180,15 @@ function Component(props: IProps) {
 
   return (
     <>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
-          { name: condition.name },
-        ]}
-      />
-      <div style={{ marginTop: 12 }}>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              { name: application.applicationList, link: '/#/workspace/application' },
+              { name: condition.name },
+            ]}
+          />
+        }>
         <Table
           columns={columns}
           loading={fetching}
@@ -199,11 +200,11 @@ function Component(props: IProps) {
               ? { position: ['bottomCenter'], current: pageNum, pageSize: PAGE_SIZE, total: total }
               : false
           }
-          onChange={pagination => {
+          onChange={(pagination) => {
             changeOffset(pagination.current || 1);
           }}
         />
-      </div>
+      </FoxpageDetailContent>
 
       <EditDrawer applicationId={applicationId} folderId={folderId} onSuccess={fetchList} />
     </>

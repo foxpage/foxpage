@@ -8,6 +8,7 @@ import * as Service from '../services';
 import { ContentPath } from '../types/component-types';
 import { NewResourceDetail } from '../types/file-types';
 import { FoxCtx, IdVersion } from '../types/index-types';
+import { VersionNumber } from '../types/content-types';
 import { formatToPath, generationId } from '../utils/tools';
 
 import { PluginService } from './plugin-services';
@@ -31,9 +32,26 @@ export class ResourceService {
    * Single instance
    * @returns ResourceService
    */
-  public static getInstance(): ResourceService {
+  public static getInstance (): ResourceService {
     this._instance || (this._instance = new ResourceService());
     return this._instance;
+  }
+
+  async getResourceRemoteUrl (type: string, groupConfig: Record<string, string>): Promise<string> {
+    const remoteUrls = await this.plugins.resourceRemoteUrl(Object.assign(
+      { resourceConfig: config.resourceConfig },
+      {
+        groupConfig,
+        type
+      }
+    ));
+
+    if (_.isArray(remoteUrls)) {
+      const typeUrl = _.find(remoteUrls, { type });
+      return typeUrl?.url || '';
+    }
+
+    return '';
   }
 
   /**
@@ -41,7 +59,7 @@ export class ResourceService {
    * @param  {any} options
    * @returns Promise
    */
-  async getResourceList(options: any): Promise<IndexContent> {
+  async getResourceList (options: any): Promise<IndexContent> {
     if (_.has(this.plugins, 'resourceList')) {
       const resourceData = await this.plugins.resourceList(options);
       let typeResource: IndexContent | undefined = undefined;
@@ -61,9 +79,9 @@ export class ResourceService {
    * @param  {any} options
    * @returns Promise
    */
-  async getResourceGroupLatestVersion(
+  async getResourceGroupLatestVersion (
     groupFolderId: string,
-    options?: { name?: string; packageName?: string },
+    options?: { name?: string; packageName?: string, proxy?: string },
   ): Promise<NewResourceDetail[]> {
     const config = await this.getGroupConfig(groupFolderId);
     const [remoteGroupResources, localeGroupResources] = await Promise.all([
@@ -85,16 +103,18 @@ export class ResourceService {
       }
 
       resourceList.push(
-        Object.assign(_.pick(resource.foxpage, ['name', 'version', 'resourceName', 'meta', 'schema']), {
-          id: localeGroupResources[resource.foxpage?.resourceName || '']?.id || undefined,
-          latestVersion: localeGroupResources[resource.foxpage?.resourceName || '']?.version || '',
-          files: resource.files || {},
-          isNew: isNewVersion,
-        }),
+        Object.assign(
+          _.pick(resource.foxpage, ['name', 'version', 'resourceName', 'meta', 'schema']),
+          {
+            id: localeGroupResources[resource.foxpage?.resourceName || '']?.id || undefined,
+            latestVersion: localeGroupResources[resource.foxpage?.resourceName || '']?.version || '',
+            files: resource.files || {},
+            isNew: isNewVersion,
+          }),
       );
     }
 
-    return resourceList;
+    return _.orderBy(resourceList, ['isNew', 'name'], ['desc', 'asc']);
   }
 
   /**
@@ -102,7 +122,7 @@ export class ResourceService {
    * @param  {string} groupFolderId
    * @returns Promise
    */
-  async getGroupConfig(groupFolderId: string): Promise<Record<string, any>> {
+  async getGroupConfig (groupFolderId: string): Promise<Record<string, any>> {
     const folderDetail = await Service.folder.info.getDetailById(groupFolderId);
     let resourceId = '';
     let groupConfig = {};
@@ -139,23 +159,17 @@ export class ResourceService {
    * @param  {string} groupFolderId
    * @returns Promise
    */
-  async getGroupResourceMaxVersion(groupFolderId: string): Promise<Record<string, ResourceVersionDetail>> {
+  async getGroupResourceMaxVersion (groupFolderId: string): Promise<Record<string, ResourceVersionDetail>> {
     const resourceList = await Service.folder.list.find({ parentFolderId: groupFolderId, deleted: false });
     const resourceIds = _.map(resourceList, 'id');
 
-    const resourceMaxVersion: { _id: string; name: string }[] = await Service.folder.list.folderAggregate([
-      { $match: { parentFolderId: { $in: resourceIds }, deleted: false } },
-      { $sort: { name: -1 } },
-      { $group: { _id: '$parentFolderId', name: { $max: '$name' } } },
-    ]);
-
+    const resourceMaxVersion = await this.getResourceMaxVersion(resourceIds);
     let resourceVersionObject: Record<string, ResourceVersionDetail> = {};
-    const resourceMaxVersionObject = _.keyBy(resourceMaxVersion, '_id');
     for (const resource of resourceList) {
       resourceVersionObject[resource.name] = {
         id: resource.id,
         name: resource.name,
-        version: resourceMaxVersionObject[resource.id]?.name || '',
+        version: resourceMaxVersion[resource.id]?.version || '',
       };
     }
 
@@ -168,7 +182,7 @@ export class ResourceService {
    * @param  {{applicationId:string;id:string}} options
    * @returns Promise
    */
-  async checkRemoteResourceExist(
+  async checkRemoteResourceExist (
     resourceList: NewResourceDetail[],
     options: { applicationId: string; id: string },
   ): Promise<Record<string, any>> {
@@ -191,6 +205,7 @@ export class ResourceService {
       existIdVersions = await Service.folder.list.find({
         applicationId: options.applicationId,
         $or: checkResourceVersionParams,
+        deleted: false
       });
     }
 
@@ -219,6 +234,7 @@ export class ResourceService {
         applicationId: options.applicationId,
         parentFolderId: options.id,
         name: { $in: resourceNames },
+        deleted: false,
       });
     }
 
@@ -235,7 +251,7 @@ export class ResourceService {
    * @param  {{ctx:FoxCtx;applicationId:string;folderId:string}} options
    * @returns void
    */
-  saveResources(
+  saveResources (
     resourceList: NewResourceDetail[],
     options: { ctx: FoxCtx; applicationId: string; folderId: string },
   ): Record<string, any> {
@@ -285,7 +301,7 @@ export class ResourceService {
    * @returns response content id and path mapping object, eg
    * {umd:{'style.css':'cont_xxxx'},cjs:{'production.js':'cont_xxxx'}}
    */
-  addResourceChildrenRecursive(
+  addResourceChildrenRecursive (
     resourceChildren: any,
     options: { ctx: FoxCtx; applicationId: string; folderId: string },
   ): Record<string, any> {
@@ -355,7 +371,7 @@ export class ResourceService {
    * @param  {} Record<string
    * @returns Promise
    */
-  async getResourceVersionDetail(
+  async getResourceVersionDetail (
     groupId: string,
     idVersions: IdVersion[],
   ): Promise<Record<string, ContentPath[]>> {
@@ -404,7 +420,7 @@ export class ResourceService {
     return resourcePathObject;
   }
 
-  formatRecursiveToPath(childrenInfo: any): Record<string, string> {
+  formatRecursiveToPath (childrenInfo: any): Record<string, string> {
     let resourcePath: Record<string, string> = {};
 
     if ((childrenInfo?.files || []).length > 0) {
@@ -427,5 +443,50 @@ export class ResourceService {
     }
 
     return resourcePath;
+  }
+
+  /**
+   * Get resource content id by path
+   * @param parentId 
+   * @param pathArr 
+   * @returns 
+   */
+  async getContentIdByPath (parentId: string, pathArr?: string[]): Promise<string> {
+    let contentId = '';
+    if (pathArr && pathArr.length > 1) {
+      const folderDetail = await Service.folder.info.getDetail({ parentFolderId: parentId, name: pathArr[0], deleted: false });
+      contentId = await this.getContentIdByPath(folderDetail.id, _.drop(pathArr));
+    } else if (pathArr && pathArr.length === 1) {
+      const fileDetail = await Service.file.info.getDetail({ folderId: parentId, name: pathArr[0], deleted: false });
+      contentId = await this.getContentIdByPath(fileDetail.id);
+    } else {
+      const contentDetail = await Service.content.info.getDetail({ fileId: parentId, deleted: false });
+      contentId = contentDetail?.id || '';
+    }
+
+    return contentId;
+  }
+
+  /**
+   * Get resource max version infos
+   * @param resourceIds 
+   * @returns 
+   */
+  async getResourceMaxVersion (resourceIds: string[]): Promise<Record<string, VersionNumber>> {
+    const resourceVersions = await Service.folder.list.find({
+      parentFolderId: { $in: resourceIds },
+      deleted: false,
+    });
+    let maxResourceVersion: Record<string, VersionNumber> = {};
+    resourceVersions.forEach(version => {
+      const versionNumber = Service.version.number.createNumberFromVersion(_.trim(version.name));
+      if (!maxResourceVersion[version.parentFolderId]) {
+        maxResourceVersion[version.parentFolderId] = { version: version.name, versionNumber };
+      } else if (maxResourceVersion[version.parentFolderId].versionNumber < versionNumber) {
+        maxResourceVersion[version.parentFolderId] = { version: version.name, versionNumber };
+      }
+    });
+
+    return maxResourceVersion;
   }
 }

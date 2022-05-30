@@ -20,7 +20,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * Single instance
    * @returns VersionCheckService
    */
-  public static getInstance(): VersionCheckService {
+  public static getInstance (): VersionCheckService {
     this._instance || (this._instance = new VersionCheckService());
     return this._instance;
   }
@@ -33,7 +33,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {any} content
    * @returns {string[]} Promise
    */
-  async contentFields(fileId: string, content: any): Promise<string[]> {
+  async contentFields (fileId: string, content: any): Promise<string[]> {
     let missingFields: string[] = [];
 
     // Get the type of page
@@ -43,11 +43,11 @@ export class VersionCheckService extends BaseService<ContentVersion> {
       [TYPE.PAGE, TYPE.TEMPLATE, TYPE.VARIABLE, TYPE.CONDITION, TYPE.FUNCTION].indexOf(fileDetail.type) !== -1
     ) {
       for (const field of ['schemas', 'relation']) {
-        !content[field] && missingFields.push(field);
+        !content?.[field] && missingFields.push(field);
       }
     } else if ([TYPE.COMPONENT, TYPE.LIBRARY].indexOf(fileDetail.type) !== -1) {
       for (const field of ['resource', 'meta', 'schema']) {
-        !content[field] && missingFields.push(field);
+        !content?.[field] && missingFields.push(field);
       }
     }
 
@@ -60,7 +60,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} contentVersion
    * @returns ContentVersionNumber
    */
-  notExistVersionNumber(
+  notExistVersionNumber (
     idNumbers: ContentVersionNumber[],
     contentVersion: ContentVersion[],
   ): ContentVersionNumber[] {
@@ -84,7 +84,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} contentVersion
    * @returns ContentVersionString
    */
-  notExistVersion(
+  notExistVersion (
     idVersions: ContentVersionString[],
     contentVersion: ContentVersion[],
   ): ContentVersionString[] {
@@ -106,7 +106,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {number} versionNumber
    * @returns {boolean} Promise
    */
-  async isNewVersion(contentId: string, versionNumber: number): Promise<boolean> {
+  async isNewVersion (contentId: string, versionNumber: number): Promise<boolean> {
     const versionDetail = await Model.version.getDetailByVersionNumber(contentId, versionNumber);
 
     return !versionDetail;
@@ -118,7 +118,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {ContentCheck} params
    * @returns Promise
    */
-  async versionExist(contentId: string, version: string, versionId: string = ''): Promise<boolean> {
+  async versionExist (contentId: string, version: string, versionId: string = ''): Promise<boolean> {
     return this.checkExist({ contentId, version, deleted: false }, versionId);
   }
 
@@ -132,7 +132,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {VersionCheckResult} versionDSL
    * @returns versionDSL
    */
-  structure(versionDSL: DSL): VersionCheckResult {
+  structure (versionDSL: DSL): VersionCheckResult {
     if (!versionDSL.id || !_.startsWith(versionDSL.id, PRE.CONTENT)) {
       return { code: 1, data: versionDSL, msg: versionDSL.id || '' };
     }
@@ -146,7 +146,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
       }
     }
 
-    const checkResult = this.schemaCheckRecursive(versionDSL.schemas);
+    const checkResult = this.schemaCheckRecursive(versionDSL?.schemas || []);
     if ((checkResult.options?.invalidNames || []).length > 0) {
       return { code: 3, data: versionDSL, msg: checkResult.options.invalidNames.join(',') };
     }
@@ -163,7 +163,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {} DslRelation>
    * @returns string
    */
-  relation(relation: Record<string, DslRelation>): string[] {
+  relation (relation: Record<string, DslRelation>): string[] {
     let invalidKeys: string[] = [];
     for (const key in relation) {
       // do not check system variable, conditions ..
@@ -192,7 +192,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {{invalidNames:string[]}={invalidNames:[]}} options
    * @returns string
    */
-  schemaCheckRecursive(
+  schemaCheckRecursive (
     schemas: DslSchemas[],
     options: { invalidNames: string[] } = { invalidNames: [] },
   ): { schemas: DslSchemas[]; options: { invalidNames: string[] } } {

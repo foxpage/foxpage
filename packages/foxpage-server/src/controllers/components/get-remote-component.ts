@@ -52,7 +52,7 @@ export class GetRemoteComponent extends BaseController {
     operationId: 'get-remote-component-list',
   })
   @ResponseSchema(RemotePackageRes)
-  async index(
+  async index (
     @QueryParams() params: RemotePackageReq,
   ): Promise<ResData<{ components: RemoteComponentRes[]; lastVersion: ContentVersion }>> {
     try {
@@ -114,9 +114,9 @@ export class GetRemoteComponent extends BaseController {
           ? resourcePathPre + '/cjs/production.js'
           : '';
 
-        // const editorPath = _.has(res, ['files', 'umd', 'editor.js'])
-        //   ? resourcePathPre + '/umd/editor.js'
-        //   : '';
+        const editorPath = _.has(res, ['files', 'umd', 'editor.js'])
+          ? resourcePathPre + '/umd/editor.js'
+          : '';
 
         // DO not response asset int resource
         res.files?.assets && delete res.files.assets;
@@ -133,10 +133,9 @@ export class GetRemoteComponent extends BaseController {
                   css: { path: cssPath },
                   debug: { path: debugPath },
                   node: { path: nodePath },
+                  editor: { path: editorPath }
                 },
-                // 'editor-entry': [{ path: editorPath }],
                 'editor-entry': [],
-                dependencies: [],
               },
               meta: res.meta || {},
               schema: res.schema || {},
@@ -148,7 +147,7 @@ export class GetRemoteComponent extends BaseController {
       return Response.success(
         {
           components: componentResourceList,
-          lastVersion: maxComponentVersion[params.id] || {},
+          lastVersion: maxComponentVersion[params.id] || null,
         },
         1111201,
       );

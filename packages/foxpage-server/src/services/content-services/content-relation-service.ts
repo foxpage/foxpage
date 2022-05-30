@@ -19,7 +19,7 @@ export class ContentRelationService extends BaseService<Content> {
    * Single instance
    * @returns ContentRelationService
    */
-  public static getInstance(): ContentRelationService {
+  public static getInstance (): ContentRelationService {
     this._instance || (this._instance = new ContentRelationService());
     return this._instance;
   }
@@ -36,7 +36,7 @@ export class ContentRelationService extends BaseService<Content> {
    *  @param {isBuild: boolean} = false, return the details of the build, including the relation
    * @returns Promise
    */
-  async getRelationDetailRecursive(
+  async getRelationDetailRecursive (
     relations: Record<string, DslRelation>,
     relayChain: Record<string, string[]> = {},
     isBuild: boolean = false,
@@ -53,12 +53,12 @@ export class ContentRelationService extends BaseService<Content> {
 
     // Get the live version of relation by ID
     let versionNumbers: ContentVersionNumber[] = [];
-    let contentVersionNumbers = [];
     if (isBuild) {
-      contentVersionNumbers = await Service.version.list.getContentLiveOrBuildVersion(
+      versionNumbers = await Service.version.list.getContentLiveOrBuildVersion(
         contentIds.concat(templateIds),
       );
     } else {
+      let contentVersionNumbers = [];
       [versionNumbers, contentVersionNumbers] = await Promise.all([
         Service.content.live.getContentLiveIdByIds(templateIds),
         Service.version.number.getContentMaxVersionByIds(contentIds),
@@ -122,7 +122,7 @@ export class ContentRelationService extends BaseService<Content> {
    * @param  {string='id'} idKey
    * @returns any
    */
-  getTypeContentIdVersionFromRelation(itemList: any[], idKey: string = 'id'): any {
+  getTypeContentIdVersionFromRelation (itemList: any[], idKey: string = 'id'): any {
     let templateIds: string[] = [];
     let otherTypeIds: string[] = [];
     let itemVersions: ContentVersionString[] = [];

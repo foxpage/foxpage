@@ -9,7 +9,7 @@ const userSchema = new Schema<User>(
     password: { type: String, maxLength: 100, select: false, default: '' },
     nickName: { type: String, minLength: 0, maxLength: 30, default: '' },
     email: { type: String, maxLength: 100, default: '' },
-    registerType: { type: Number, required: true, min: 1, max: 2, default: 1 },
+    registerType: { type: Number, required: true, min: 1, max: 10, default: 1 },
     changePwdStatus: { type: Boolean, default: false },
     createTime: { type: Date, required: true, default: Date.now },
     updateTime: { type: Date, required: true, default: Date.now },

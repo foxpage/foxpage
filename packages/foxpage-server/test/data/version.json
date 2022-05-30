@@ -1,8 +1,14 @@
 {
   "id": "cver_htMLwz4MW7viarg",
   "idVersionNumber": [
-    { "_id": "cont_cuREMD9zcUZEcVU", "versionNumber": 10 },
-    { "_id": "cver_QLAXF7DpTSE8v4f", "versionNumber": 2 }
+    {
+      "_id": "cont_cuREMD9zcUZEcVU",
+      "versionNumber": 10
+    },
+    {
+      "_id": "cver_QLAXF7DpTSE8v4f",
+      "versionNumber": 2
+    }
   ],
   "list": [
     {
@@ -127,7 +133,7 @@
           "dependencies": []
         },
         "meta": "{}",
-        "schema": "{\"type\":\"object\",\"properties\":{\"configProps\":{\"$ref\":\"#/definitions/ConfigProps\"}},\"defaultProperties\":[],\"required\":[\"configProps\"],\"definitions\":{\"ConfigProps\":{\"description\":\"组件 API props\\ndoc: https://github.com/YousefED/typescript-json-schema/blob/master/api.md\\n组件入参类型interface名称约定为ComponentProps！！！\",\"type\":\"object\",\"properties\":{\"title\":{\"description\":\"Title of component. Support rich html, like '<h2> Title of component </h2>'.\",\"type\":\"string\"},\"needAirport\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"needAirline\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"departCityCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"arrivalCityCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"tripType\":{\"description\":\"request param of getFlights\",\"enum\":[\"OW\",\"RT\"],\"type\":\"string\"},\"sortType\":{\"$ref\":\"#/definitions/FlightSortType\",\"description\":\"request param of getFlights\"},\"displayNum\":{\"description\":\"Number of display flight card\",\"minimum\":1,\"default\":30,\"type\":\"number\"},\"departAirportCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"arrivalAirportCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"budgetAirline\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"airlineCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"flightTime\":{\"enum\":[\"TODAY\"],\"type\":\"string\"},\"flightType\":{\"enum\":[\"DIRECT\"],\"type\":\"string\"}},\"defaultProperties\":[],\"required\":[\"needAirline\",\"needAirport\",\"sortType\",\"title\",\"tripType\"]},\"FlightSortType\":{\"enum\":[\"DEPART_DATE\",\"FRESH\",\"ORDER\",\"PRICE\",\"SEARCH\"],\"type\":\"string\"}},\"$schema\":\"http://json-schema.org/draft-07/schema#\"}"
+        "schema": "{\"type\":\"object\",\"properties\":{\"configProps\":{\"$ref\":\"#/definitions/ConfigProps\"}},\"defaultProperties\":[],\"required\":[\"configProps\"],\"definitions\":{\"ConfigProps\":{\"description\":\"组件 API props\\ndoc: https://github.com/YousefED/typescript-json-schema/blob/master/api.md\\n组件入参类型interface名称约定为ComponentProps！！！\",\"type\":\"object\",\"properties\":{\"title\":{\"description\":\"Title of component. Support rich html, like '<h2> Title of component </h2>'.\",\"type\":\"string\"},\"needAirport\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"needAirline\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"departCityCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"arrivalCityCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"type\":{\"description\":\"request param of getFlights\",\"enum\":[\"OW\",\"RT\"],\"type\":\"string\"},\"sortType\":{\"$ref\":\"#/definitions/FlightSortType\",\"description\":\"request param of getFlights\"},\"displayNum\":{\"description\":\"Number of display flight card\",\"minimum\":1,\"default\":30,\"type\":\"number\"},\"departAirportCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"arrivalAirportCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"budgetAirline\":{\"description\":\"request param of getFlights\",\"type\":\"boolean\"},\"airlineCode\":{\"description\":\"request param of getFlights\",\"type\":\"string\"},\"flightTime\":{\"enum\":[\"TODAY\"],\"type\":\"string\"},\"flightType\":{\"enum\":[\"DIRECT\"],\"type\":\"string\"}},\"defaultProperties\":[],\"required\":[\"needAirline\",\"needAirport\",\"sortType\",\"title\",\"type\"]},\"FlightSortType\":{\"enum\":[\"DEPART_DATE\",\"FRESH\",\"ORDER\",\"PRICE\",\"SEARCH\"],\"type\":\"string\"}},\"$schema\":\"http://json-schema.org/draft-07/schema#\"}"
       },
       "creator": "user-dvbfW1qsl8qkz39",
       "createTime": "2021-12-30T14:29:17.452+08:00",

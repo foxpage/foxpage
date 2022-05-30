@@ -34,7 +34,7 @@ export class UpdateResourceGroup extends BaseController {
     operationId: 'update-resource-group',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateResourceConfigReq): Promise<ResData<Folder>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: UpdateResourceConfigReq): Promise<ResData<Folder>> {
     try {
       if (!params.name) {
         return Response.warning(i18n.resource.invalidName, 2122201);
@@ -63,11 +63,14 @@ export class UpdateResourceGroup extends BaseController {
       }
 
       // Check if group name has exist
+      const resourceTag = _.find(groupDetail.tags, 'resourceId') as Record<string, any>;
       const existGroup = await this.service.folder.list.find({
         parentFolderId: groupDetail.parentFolderId,
         id: { $ne: params.id },
         name: params.name,
         deleted: false,
+        'tags.type': TAG.RESOURCE_CONFIG,
+        'tags.resourceId': resourceTag.resourceId
       });
 
       if (existGroup.length > 0) {

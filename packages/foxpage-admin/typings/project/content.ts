@@ -7,3 +7,6 @@ export interface ProjectContentSearchParams {
 export interface ProjectContentDeleteParams extends ProjectContentSearchParams {
   id: string;
 }
+
+
+export interface ProjectFileDetailFetchParams { applicationId: string, ids: string[] }

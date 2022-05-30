@@ -28,7 +28,7 @@ export class LogService extends BaseService<Log> {
    * Single instance
    * @returns LogService
    */
-  public static getInstance(): LogService {
+  public static getInstance (): LogService {
     this._instance || (this._instance = new LogService());
     return this._instance;
   }
@@ -37,7 +37,7 @@ export class LogService extends BaseService<Log> {
    * Save the change log of the current request
    * @returns Promise
    */
-  async saveChangeLogs(ctx: FoxCtx): Promise<void> {
+  async saveChangeLogs (ctx: FoxCtx): Promise<void> {
     if (ctx.operations.length > 0) {
       const allLogs: Log[] = [];
       const operator = ctx.userInfo.id;
@@ -85,7 +85,7 @@ export class LogService extends BaseService<Log> {
    * @param  {any} params
    * @returns Promise
    */
-  async saveRequest(params: any, options: { ctx: FoxCtx }): Promise<void> {
+  async saveRequest (params: any, options: { ctx: FoxCtx }): Promise<void> {
     // Set current real request method
     params.content.realMethod = (
       options.ctx.logAttr.method ||
@@ -104,7 +104,7 @@ export class LogService extends BaseService<Log> {
       }
 
       if (!_.isEmpty(params.content.request.body)) {
-        params.content.request.body = JSON.stringify(params.content.request.body);
+        params.content.request.body = JSON.stringify(this.filterSensitiveData(params.content.request.body));
       }
 
       const logDetail: Log = Object.assign({}, params, {
@@ -114,7 +114,7 @@ export class LogService extends BaseService<Log> {
         category: _.isString(params.category)
           ? this.getLogCategory(params.category, options.ctx)
           : params.category,
-        operator: options.ctx.userInfo.id,
+        operator: options.ctx.userInfo?.id || '',
         deleted: false,
       });
 
@@ -126,7 +126,7 @@ export class LogService extends BaseService<Log> {
    * Obtain log classification data
    * @param  {string} type
    */
-  getLogCategory(type: string, ctx: FoxCtx): Record<string, string> {
+  getLogCategory (type: string, ctx: FoxCtx): Record<string, string> {
     if (type === LOG.CATEGORY_APPLICATION) {
       return { type, id: ctx.logAttr.applicationId || '' };
     } else if (type === LOG.CATEGORY_ORGANIZATION) {
@@ -151,7 +151,7 @@ export class LogService extends BaseService<Log> {
    * @param  {ContentChange} params
    * @returns Promise
    */
-  async getChangesContentList(params: ContentChange): Promise<Record<string, any>> {
+  async getChangesContentList (params: ContentChange): Promise<Record<string, any>> {
     // Get the log data of the specified action
     const changeList: any[] = await Model.log.find({
       createTime: { $gte: new Date(new Date(params.timestamp)) },
@@ -213,6 +213,9 @@ export class LogService extends BaseService<Log> {
       logItem.type === LOG.CONTENT_TAG && (logTypeName = 'tag');
       logItem.type === LOG.CONTENT_REMOVE && (logTypeName = fileTypeObject[logFileId]?.type);
       logItem.type === LOG.LIVE && (logTypeName = fileTypeObject[logFileId]?.type);
+      if (logItem.type === LOG.FILE_REMOVE && fileTypeObject[logFileId]?.type === TYPE.COMPONENT) {
+        logTypeName = fileTypeObject[logFileId]?.type;
+      }
 
       // Does not return invalid file types or editor components
       if (!logTypeName || logTypeName === TYPE.EDITOR) {
@@ -234,7 +237,7 @@ export class LogService extends BaseService<Log> {
    * @param  {string} id
    * @returns Promise
    */
-  async getDataDetail(id: string): Promise<any> {
+  async getDataDetail (id: string): Promise<any> {
     const idPre = id.split('_')[0] || '';
     let afterData: any = {};
 
@@ -266,7 +269,7 @@ export class LogService extends BaseService<Log> {
    * @param  {any} data
    * @returns void
    */
-  addLogItem<T extends { id: string; contentId?: string }>(
+  addLogItem<T extends { id: string; contentId?: string }> (
     action: string,
     data: T | T[],
     options?: { dataType?: string; fileId?: string },
@@ -297,7 +300,16 @@ export class LogService extends BaseService<Log> {
    * @param  {UserOperationParams} params
    * @returns {list:Log[], count:number}
    */
-  async getUserOperationList(params: UserOperationParams): Promise<{ list: Log[]; count: number }> {
+  async getUserOperationList (params: UserOperationParams): Promise<{ list: Log[]; count: number }> {
+    let applicationIds: string[] = [];
+    if (params.organizationId) {
+      const appList = await Service.application.find({
+        organizationId: params.organizationId,
+        deleted: false
+      });
+      applicationIds = _.map(appList, 'id');
+    }
+
     const skip = ((params.page || 1) - 1) * (params.size || 10);
     const searchParams: any = {
       operator: params.operator,
@@ -308,6 +320,10 @@ export class LogService extends BaseService<Log> {
         $lt: new Date(new Date(params.endTime)),
       },
     };
+
+    if (applicationIds.length > 0) {
+      searchParams['category.id'] = { $in: applicationIds };
+    }
 
     if (params.applicationId) {
       searchParams['content.applicationId'] = params.applicationId;
@@ -334,7 +350,7 @@ export class LogService extends BaseService<Log> {
    * @param  {string} transactionId
    * @returns Promise
    */
-  async getListByTransactionId(transactionId: string): Promise<Log[]> {
+  async getListByTransactionId (transactionId: string): Promise<Log[]> {
     return Model.log.find({ transactionId }, '-_id -category._id');
   }
 
@@ -343,7 +359,7 @@ export class LogService extends BaseService<Log> {
    * @param  {DataLogPage} params
    * @returns Promise
    */
-  async getDataHistory(params: DataLogPage): Promise<PageData<Log>> {
+  async getDataHistory (params: DataLogPage): Promise<PageData<Log>> {
     const [logList, logCount] = await Promise.all([
       Model.log.getDataPageList(params),
       Model.log.getDataPageCount(params),
@@ -356,7 +372,7 @@ export class LogService extends BaseService<Log> {
    * @param  {string[]} ids
    * @returns Promise
    */
-  async getLogDataInfo(ids: string[]): Promise<Record<string, any>> {
+  async getLogDataInfo (ids: string[]): Promise<Record<string, any>> {
     let typeIds: Record<string, string[]> = {};
     _.union(<string[]>_.pullAll(ids, ['', undefined, null])).forEach((id) => {
       const dataType = this.checkDataIdType(id);
@@ -394,7 +410,7 @@ export class LogService extends BaseService<Log> {
    * @param  {string} id
    * @returns string
    */
-  checkDataIdType(id: string): { id: string; type: string } {
+  checkDataIdType (id: string): { id: string; type: string } {
     const typeValue = {
       [PRE.ORGANIZATION]: TYPE.ORGANIZATION,
       [PRE.TEAM]: TYPE.TEAM,
@@ -406,5 +422,17 @@ export class LogService extends BaseService<Log> {
     };
 
     return { id, type: typeValue[id.slice(0, 4)] };
+  }
+
+  /**
+   * filter request sensitive data, pwd...
+   * @param data 
+   */
+  filterSensitiveData (data: any): any {
+    if (data.password) {
+      data.password = '********';
+    }
+
+    return data;
   }
 }

@@ -12,7 +12,7 @@ import { BorderType } from './index.d';
 
 const { Option } = Select;
 
-const Border: React.FC<BorderType> = props => {
+const Border: React.FC<BorderType> = (props) => {
   const {
     borderColor,
     borderRadius,
@@ -58,15 +58,15 @@ const Border: React.FC<BorderType> = props => {
           <EditContext.Provider
             value={{
               componentProps: { borderColor },
-              propChange: (_prop: string, val: string) => {
+              propChange: (_prop: string, val: any) => {
                 onChange('borderColor', val);
               },
               applyState: (_e: any) => {
                 onApplyState('borderColor', borderColor as string);
               },
               propsChange: () => {},
-            }}
-          >
+              onBindVariable: () => {},
+            }}>
             <ColorPicker propKey="borderColor" hideVariableBtn={true} style={colorPickerStyle} />
           </EditContext.Provider>
         </Col>
@@ -85,8 +85,7 @@ const Border: React.FC<BorderType> = props => {
             onChange={(value: any) => {
               onChange('borderStyle', value);
               onApplyState('borderStyle', value);
-            }}
-          >
+            }}>
             <Option value="none">{foxpageI18n.borderStyleNone}</Option>
             <Option value="solid">{foxpageI18n.borderStyleSolid}</Option>
             <Option value="dashed">{foxpageI18n.borderStyleDashed}</Option>

@@ -9,7 +9,7 @@ const Container = styled.div`
   margin: 0 auto;
   position: relative;
 `;
-const Index = props => {
+const Index = (props) => {
   return (
     <Container>
       <ViewPort {...props} />

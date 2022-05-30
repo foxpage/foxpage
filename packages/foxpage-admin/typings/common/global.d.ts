@@ -1,5 +1,4 @@
-import { Locale } from 'antd/lib/locale-provider';
-import { StringLiteralLike } from 'typescript';
+import { Locale as AntLocale } from 'antd/lib/locale-provider';
 
 import { APP_CONFIG } from './app-config';
 
@@ -12,8 +11,7 @@ declare interface IWindow extends Window {
   APP_CONFIG: APP_CONFIG;
 }
 
-
-export interface Locale extends Locale {
+export interface Locale extends AntLocale {
   business: {
     global: {
       all: string;
@@ -23,6 +21,7 @@ export interface Locale extends Locale {
       project: string;
       team: string;
       user: string;
+      role: string;
       projects: string;
       dynamics: string;
       recycles: string;
@@ -34,12 +33,15 @@ export interface Locale extends Locale {
       packages: string;
       contents: string;
       versions: string;
+      liveVersion: string;
+      newVersion: string;
       dashboard: string;
       type: string;
       modify: string;
       update: string;
       delete: string;
       operator: string;
+      idLabel: string;
       nameLabel: string;
       creator: string;
       createTime: string;
@@ -50,6 +52,7 @@ export interface Locale extends Locale {
       delete: string;
       apply: string;
       save: string;
+      publish: string;
       remove: string;
       view: string;
       search: string;
@@ -89,6 +92,9 @@ export interface Locale extends Locale {
       nameError: string;
       selectLocale: string;
       nameFormatInvalid: string;
+      structure: string;
+      userPermission: string;
+      expression: string;
     };
     workspace: {
       name: string;
@@ -123,12 +129,17 @@ export interface Locale extends Locale {
       registerFailed: string;
     };
     project: {
+      name: string;
       add: string;
       edit: string;
       nameLabel: string;
       deleteMessage: string;
+      myProject: string;
+      teamProject: string;
+      recycleBin: string;
     };
     application: {
+      name: string;
       add: string;
       new: string;
       edit: string;
@@ -151,6 +162,11 @@ export interface Locale extends Locale {
       addLocale: string;
       addResource: string;
       selectApplication: string;
+      myApplication: string;
+    };
+    dynamic: {
+      name: string;
+      myDynamic: string;
     };
     folder: {
       name: string;
@@ -177,6 +193,11 @@ export interface Locale extends Locale {
     content: {
       name: string;
       add: string;
+      addBase: string;
+      extendTitle: string;
+      extendTips: string;
+      baseContent: string;
+      addLocale: string;
       edit: string;
       nameLabel: string;
       deleteMessage: string;
@@ -220,10 +241,19 @@ export interface Locale extends Locale {
     };
     package: {
       component: string;
+      quickly: string;
+      fastSaveEmptyTips: string;
+      groupTips: string;
+      noGroupTips: string;
       editor: string;
       library: string;
       fetchFailed: string;
       setVersionLiveTip: string;
+      saveComponentFiled: string;
+      batchSaveTips: string;
+      selectCount: string;
+      total: string;
+      inputNameTips: string;
     };
     component: {
       add: string;
@@ -263,6 +293,7 @@ export interface Locale extends Locale {
       resourceVersion: string;
       deleteTitle: string;
       deleteMsg: string;
+      saveResourceFiled: string;
       resourceGroup: string;
       addResourceGroup: string;
       addGroup: string;
@@ -270,7 +301,8 @@ export interface Locale extends Locale {
       groupName: string;
       groupType: string;
       groupInfo: string;
-      manifestPath: string;
+      resourceScope: string;
+      resourceScopeAddress: string;
       selfBuild: string;
       thirdParty: string;
     };
@@ -283,10 +315,15 @@ export interface Locale extends Locale {
       language: string;
       resource: string;
       slug: string;
+      other: string;
+      editor: string;
+      preview: string;
+      debugger: string;
     };
     builder: {
       componentList: string;
       componentSearch: string;
+      dragTips: string;
       pageStyle: string;
       pad: string;
       pc: string;
@@ -305,10 +342,12 @@ export interface Locale extends Locale {
       selectPage: string;
       componentCopyMsg: string;
       componentDeleteMsg: string;
+      componentRollBackMsg: string;
       fetchDslFailed: string;
       fetchCatalogFailed: string;
       fetchTemplateFailed: string;
-
+      fetchMockFailed: string;
+      parsePageFailed: string;
     };
     variable: {
       title: string;
@@ -324,6 +363,23 @@ export interface Locale extends Locale {
       useVariableTip: string;
       useVariableAttrTip: string;
       content: string;
+    };
+    authorize: {
+      user: string;
+      role: string;
+      admin: string;
+      editor: string;
+      publish: string;
+      add: string;
+      delete: string;
+      deleteConfirm: string;
+      placeholderUser: string;
+      placeholderRole: string;
+    };
+    mock: {
+      title: string;
+      enableMockMode: string;
+      enableMockTips: string;
     };
   };
 }

@@ -1,6 +1,7 @@
 export * from './component';
 export * from './condition';
 export * from './dnd';
+export * from './mock';
 export * from './page';
 export * from './selection';
 export * from './structure';

@@ -1,9 +1,8 @@
-export const ROOT_CONTAINER = 'root-container';
+export const INIT_DATA = 'init_data';
 export const REQUIRE_LOAD_COMPONENT = 'require_load_component';
 export const SET_COMPONENT_STRUCTURE = 'set_component_structure';
 export const SELECT_COMPONENT = 'select_component';
 export const SET_SELECT_COMPONENT = 'set_select_component';
-export const SET_COMPONENT_SOURCE = 'set_component_source';
 export const LOAD_FINISH = 'load_finish';
 export const DELETE_COMPONENT = 'delete_component';
 export const COPY_COMPONENT = 'copy_component';
@@ -19,3 +18,5 @@ export const SET_ZOOM = 'set_zoom';
 export const OPEN_VARIABLE_BIND = 'open_variable_bind';
 export const OPEN_CONDITION_BIND = 'open_condition_bind';
 export const SET_FOXPAGE_LOCALE = 'set_foxpage_locale';
+export const CHANGE_COMPONENT_LIST_DRAWER = 'change_component_list_drawer';
+export const SET_MOCK_DATA = 'set_mock_data';

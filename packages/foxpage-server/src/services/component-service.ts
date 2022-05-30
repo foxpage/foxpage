@@ -4,6 +4,7 @@ import { FoxCtx } from 'src/types/index-types';
 import {
   Component,
   ComponentDSL,
+  Content,
   ContentVersion,
   Dependencies,
   EditorEntry,
@@ -12,7 +13,7 @@ import {
   IdVersionNumbers,
 } from '@foxpage/foxpage-server-types';
 
-import { LOG } from '../../config/constant';
+import { LOG, TAG, TYPE } from '../../config/constant';
 import { ComponentContentInfo } from '../types/component-types';
 import { UpdateContentVersion } from '../types/content-types';
 
@@ -21,13 +22,13 @@ import * as Service from './index';
 export class ComponentService {
   private static _instance: ComponentService;
 
-  constructor() {}
+  constructor() { }
 
   /**
    * Single instance
    * @returns ComponentService
    */
-  public static getInstance(): ComponentService {
+  public static getInstance (): ComponentService {
     this._instance || (this._instance = new ComponentService());
     return this._instance;
   }
@@ -37,7 +38,7 @@ export class ComponentService {
    * @param  {UpdateContentVersion} params
    * @returns Promise
    */
-  async updateVersionDetail(
+  async updateVersionDetail (
     params: UpdateContentVersion,
     options: { ctx: FoxCtx },
   ): Promise<Record<string, number | string | string[]>> {
@@ -82,7 +83,7 @@ export class ComponentService {
    * the acquired version information of the components
    * @returns Promise Returns the component details information object with contentId_version as the key
    */
-  async getComponentDetailByIdVersion(
+  async getComponentDetailByIdVersion (
     idVersions: IdVersion[],
     componentInfos: Record<string, ContentVersion> = {},
   ): Promise<Record<string, ContentVersion>> {
@@ -130,7 +131,7 @@ export class ComponentService {
    * @param  {IdVersion[]} idVersions
    * @returns Promise
    */
-  async getComponentVersionNumberFromVersion(idVersions: IdVersion[]): Promise<IdVersionNumbers[]> {
+  async getComponentVersionNumberFromVersion (idVersions: IdVersion[]): Promise<IdVersionNumbers[]> {
     let idVersionNumbers: IdVersionNumbers[] = [];
     let liveIdVersions: IdVersion[] = [];
 
@@ -158,7 +159,7 @@ export class ComponentService {
    * @param  {ContentVersion[]} versionList
    * @returns IdVersion
    */
-  getComponentEditorAndDependends(versionList: Component[]): IdVersion[] {
+  getComponentEditorAndDependends (versionList: Component[]): IdVersion[] {
     let componentIdVersion: IdVersion[] = [];
     versionList.forEach((version) => {
       componentIdVersion = componentIdVersion.concat(version?.resource?.['editor-entry'] || []);
@@ -172,7 +173,7 @@ export class ComponentService {
    * @param  {ContentVersion[]} versionList
    * @returns IdVersion
    */
-  getEditorAndDependenceFromComponent(componentList: Component[]): IdVersion[] {
+  getEditorAndDependenceFromComponent (componentList: Component[]): IdVersion[] {
     let componentIdVersion: IdVersion[] = [];
     componentList.forEach((component) => {
       componentIdVersion = componentIdVersion.concat(component?.resource?.['editor-entry'] || []);
@@ -189,7 +190,7 @@ export class ComponentService {
    * @param  {} File>
    * @returns Component
    */
-  addNameToEditorAndDepends(
+  addNameToEditorAndDepends (
     componentList: ComponentContentInfo[],
     componentFileObject: Record<string, File>,
   ): ComponentContentInfo[] {
@@ -227,7 +228,7 @@ export class ComponentService {
    * @param  {ComponentDSL} versionContent
    * @returns Promise
    */
-  async getComponentResourcePath(versionContent: ComponentDSL): Promise<ComponentDSL> {
+  async getComponentResourcePath (versionContent: ComponentDSL): Promise<ComponentDSL> {
     // Get the corresponding resource information in the component
     const contentIds = Service.content.component.getComponentResourceIds(<Component[]>[versionContent]);
     const idVersion = this.getComponentEditorAndDependends(<Component[]>[versionContent]);
@@ -272,5 +273,37 @@ export class ComponentService {
     );
 
     return versionContent;
+  }
+
+  /**
+  * Get component file info by app id and component name
+  * @param applicationId 
+  * @param componentName 
+  * @returns 
+  */
+  async getComponentInfoByNames (applicationId: string, componentNames: string[]) {
+    return Service.file.info.find({ applicationId, type: TYPE.COMPONENT, name: { $in: componentNames }, deleted: false })
+  }
+
+  /**
+   * Set the reference component new live status log
+   * @param fileId 
+   * @param options 
+   */
+  async updateReferLiveVersion (fileId: string, options: { ctx: FoxCtx }): Promise<void> {
+    // Get referenced applications file id
+    const referenceFileList = await Service.file.list.find({
+      type: TYPE.COMPONENT,
+      deleted: false,
+      tags: { $elemMatch: { type: TAG.DELIVERY_REFERENCE, 'reference.id': fileId } },
+    });
+
+    (referenceFileList || []).forEach(file => {
+      options.ctx.operations.push(
+        ...Service.log.addLogItem(LOG.LIVE, ({} as Content), {
+          fileId: file.id,
+        }),
+      );
+    });
   }
 }

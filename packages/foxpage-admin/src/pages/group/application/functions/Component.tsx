@@ -8,8 +8,8 @@ import { DrawerProps } from 'antd/lib/drawer';
 import { RootState } from 'typesafe-actions';
 
 import { FunctionTypeEnum } from '@/constants/function';
-import EditDrawer from '@/pages/builder/function/EditDrawer';
-import { FoxpageBreadcrumb } from '@/pages/common';
+import EditDrawer from '@/pages/builder/toolbar/tools/function/EditDrawer';
+import { FoxpageBreadcrumb, FoxpageDetailContent } from '@/pages/common';
 import { suffixTagColor } from '@/pages/common/constant/FileType';
 import GlobalContext from '@/pages/GlobalContext';
 import * as ACTIONS from '@/store/actions/builder/function';
@@ -41,9 +41,19 @@ interface DProps extends Omit<DrawerProps, 'onClose'> {
 type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & DProps;
 
 function Component(props: IProps) {
-  const { pageNum, total, fetching, list, clearAll, changeOffset, openDrawer, fetchFunctions, deleteCondition } = props;
+  const {
+    pageNum,
+    total,
+    fetching,
+    list,
+    clearAll,
+    changeOffset,
+    openDrawer,
+    fetchFunctions,
+    deleteCondition,
+  } = props;
 
-  const { applicationId, organizationId } = useParams<ApplicationUrlParams>();
+  const { applicationId } = useParams<ApplicationUrlParams>();
   const { locale } = useContext(GlobalContext);
   const { global, folder, application } = locale.business;
 
@@ -70,7 +80,7 @@ function Component(props: IProps) {
   };
 
   const handleConditionDelete = useCallback(
-    id => {
+    (id) => {
       if (id && applicationId) {
         deleteCondition(
           {
@@ -99,7 +109,7 @@ function Component(props: IProps) {
         return (
           <>
             {text}
-            {record.tags?.find(item => item.copyFrom) && (
+            {record.tags?.find((item) => item.copyFrom) && (
               <Tag color={suffixTagColor.refer} style={{ marginLeft: 4 }}>
                 refer
               </Tag>
@@ -161,8 +171,7 @@ function Component(props: IProps) {
             title={`${global.deleteMsg}${record.name}?`}
             okText="Yes"
             cancelText="No"
-            onConfirm={() => handleConditionDelete(record.id)}
-          >
+            onConfirm={() => handleConditionDelete(record.id)}>
             <Button size="small" shape="circle" icon={<DeleteOutlined />} />
           </Popconfirm>
         </>
@@ -172,13 +181,15 @@ function Component(props: IProps) {
 
   return (
     <>
-      <FoxpageBreadcrumb
-        breadCrumb={[
-          { name: application.applicationList, link: `/#/organization/${organizationId}/application/list` },
-          { name: global.functions },
-        ]}
-      />
-      <div style={{ marginTop: 12 }}>
+      <FoxpageDetailContent
+        breadcrumb={
+          <FoxpageBreadcrumb
+            breadCrumb={[
+              { name: application.applicationList, link: '/#/workspace/application' },
+              { name: global.functions },
+            ]}
+          />
+        }>
         <Table
           loading={fetching}
           columns={columns}
@@ -190,11 +201,11 @@ function Component(props: IProps) {
               ? { position: ['bottomCenter'], current: pageNum, pageSize: PAGE_SIZE, total: total }
               : false
           }
-          onChange={pagination => {
+          onChange={(pagination) => {
             changeOffset(pagination.current || 1);
           }}
         />
-      </div>
+      </FoxpageDetailContent>
       <EditDrawer onSuccess={fetchList} />
     </>
   );

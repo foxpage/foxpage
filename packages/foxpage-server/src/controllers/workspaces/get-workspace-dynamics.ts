@@ -33,17 +33,33 @@ export class GetWorkspaceDynamicList extends BaseController {
     operationId: 'get-workspace-dynamic-list',
   })
   @ResponseSchema(DynamicListRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @QueryParams() params: WorkspaceDynamicListReq,
   ): Promise<ResData<PageData<Log>>> {
     try {
-      this.service.folder.info.setPageSize(params);
-
       const creator = ctx.userInfo.id;
       if (!creator) {
         return Response.warning(i18n.user.invalidUser, 2140201);
       }
+
+      const orgDetail = await this.service.org.getDetail({
+        id: params.organizationId,
+        members: { $elemMatch: { userId: ctx.userInfo.id, status: true } }
+      });
+
+      if (!orgDetail || _.isEmpty(orgDetail)) {
+        return Response.success({
+          pageInfo: {
+            page: params.page,
+            size: params.size,
+            total: 0,
+          },
+          data: [],
+        }, 1140202);
+      }
+
+      this.service.folder.info.setPageSize(params);
 
       // Default time range is last 7 days
       if (!params.startTime || !params.endTime) {
@@ -52,7 +68,7 @@ export class GetWorkspaceDynamicList extends BaseController {
       }
 
       const operationResult = await this.service.log.getUserOperationList(
-        Object.assign({ operator: creator, action: LOG.REQUEST }, params),
+        Object.assign({ operator: creator, organizationId: orgDetail.id, action: LOG.REQUEST }, params),
       );
 
       // Get operation data base info, include app name

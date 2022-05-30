@@ -1,10 +1,17 @@
-import { FuncItem } from '@/types/application/function';
+import { FuncContentItem } from '@/types/application/function';
 import { VariableType } from '@/types/application/variable';
+import { MockContent } from '@/types/builder/mock';
 
 import { ConditionContentItem } from '../application/condition';
 
-import { ComponentSourceType,ComponentType } from './component';
+import { ComponentSourceType, ComponentType } from './component';
 
+export interface Extension {
+  extendId?: string;
+  sort?: number;
+  parentId?: string;
+  mockId?: string;
+}
 export interface ComponentMetaType {
   notRender?: boolean;
   decorated?: boolean;
@@ -34,21 +41,22 @@ export interface ComponentStructure {
   version?: string;
   name: string;
   label?: string;
-  type: string;
-  meta?: ComponentMetaType;
+  type?: string;
+  meta?: string | ComponentMetaType;
   wrapper?: string;
   children: Array<ComponentStructure>;
   resource?: ComponentSourceType;
-  schema?: ComponentSchemaType;
-  meta?: string;
+  schema?: ComponentSchemaType | string;
   position?: number;
   relation?: RelationType;
   props?: ComponentPropsType;
+  mock?: ComponentPropsType;
   directive?: ComponentDirectiveType;
   isUpdate?: boolean;
   belongTemplate?: boolean;
   useStyleEditor?: boolean;
   enableChildren?: boolean;
+  extension?: Extension;
 }
 
 export interface componentSourceType {
@@ -69,12 +77,14 @@ export interface DslType {
   components: ComponentType[];
   content: DslContent;
   relations: RelationsType;
+  mock: MockContent;
 }
 
 export interface DslContent {
   id: string;
   schemas: ComponentStructure[];
   relation: RelationType;
+  extension?: Pick<Extension, 'extendId' | 'mockId'>;
 }
 
 export interface RelationType {
@@ -127,4 +137,11 @@ export interface ComponentAddParams {
   pos: string;
   desc: ComponentStructure;
   parentId: string;
+}
+
+export interface ExtensionData {
+  baseContent?: DslType;
+  curContent?: DslType;
+  baseStructureRecord?: StructureRecord;
+  curStructureRecord?: StructureRecord;
 }

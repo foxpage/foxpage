@@ -9,3 +9,4 @@ export enum FileTypeEnum {
 }
 
 export const ZH_CN_STRING = 'zh-cn';
+export const EN_STRING = 'en';

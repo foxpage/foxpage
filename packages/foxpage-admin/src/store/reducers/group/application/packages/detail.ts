@@ -53,7 +53,7 @@ const defaultState = {
     pageInfo: {
       total: 0,
       page: 1,
-      size: 10,
+      size: 1000,
     },
   },
   cloudSyncDrawer: {

@@ -37,7 +37,7 @@ export class AddOrganizationMembers extends BaseController {
     operationId: 'update-organization-member-detail',
   })
   @ResponseSchema(OrgBaseDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: AddOrgMembersReq): Promise<ResData<NewUserBase>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: AddOrgMembersReq): Promise<ResData<NewUserBase>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, {
         type: TYPE.ORGANIZATION,
@@ -51,34 +51,59 @@ export class AddOrganizationMembers extends BaseController {
       }
 
       // Check if the user already exists
-      const userInfo = await this.service.user.getUserDetailByAccount(params.account);
-      if (userInfo.id) {
-        return Response.warning(i18n.user.exist, 2010102);
+      let userId = '';
+      if (params.account) {
+        const userInfo = await this.service.user.getUserDetailByAccount(params.account);
+        if (userInfo.id) {
+          return Response.warning(i18n.user.exist, 2010102);
+        }
+
+        // Create new user
+        userId = generationId(PRE.USER);
+        const userPwd = randStr(10);
+        this.service.user.addNewUser(
+          {
+            id: userId,
+            account: params.account,
+            email: '',
+            nickName: '',
+            registerType: 1,
+            deleted: false,
+            changePwdStatus: true, // You need to update your password the first time you log in
+            password: userPwd,
+          },
+          { ctx },
+        );
+
+        // Add users to the organization
+        this.service.org.addNewMembers(params.organizationId, [userId], { ctx });
+
+        await this.service.org.runTransaction(ctx.transactions);
+
+        return Response.success({ id: userId, account: params.account, password: userPwd }, 1010101);
+      } else if (params.userId) {
+
+        // Check user exist
+        const [userDetail, memberObject] = await Promise.all([
+          this.service.user.getDetailById(params.userId),
+          this.service.org.checkUserIdInOrg(params.organizationId, params.userId)
+        ]);
+        if (!userDetail || userDetail.deleted !== false) {
+          return Response.warning(i18n.user.invalidUser);
+        }
+
+        if (memberObject.status !== undefined) {
+          this.service.org.updateMembersStatus(params.organizationId, [params.userId], true, { ctx });
+        } else {
+          this.service.org.addNewMembers(params.organizationId, [params.userId], { ctx });
+        }
+
+        await this.service.org.runTransaction(ctx.transactions);
+
+        return Response.success('', 1010102);
+      } else {
+        return Response.warning(i18n.user.invalidUser);
       }
-
-      // Create new user
-      const userId = generationId(PRE.USER);
-      const userPwd = randStr(10);
-      this.service.user.addNewUser(
-        {
-          id: userId,
-          account: params.account,
-          email: '',
-          nickName: '',
-          registerType: 1,
-          deleted: false,
-          changePwdStatus: true, // You need to update your password the first time you log in
-          password: userPwd,
-        },
-        { ctx },
-      );
-
-      // Add users to the organization
-      this.service.org.addNewMembers(params.organizationId, [userId], { ctx });
-
-      await this.service.org.runTransaction(ctx.transactions);
-
-      return Response.success({ id: userId, account: params.account, password: userPwd }, 1010101);
     } catch (err) {
       return Response.error(err, i18n.org.addOrgMemberFailed, 3010101);
     }

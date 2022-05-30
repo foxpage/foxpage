@@ -25,7 +25,7 @@ export class FolderModel extends BaseModel<Folder> {
    * Single instance
    * @returns FolderModel
    */
-  public static getInstance(): FolderModel {
+  public static getInstance (): FolderModel {
     this._instance || (this._instance = new FolderModel());
     return this._instance;
   }
@@ -35,12 +35,17 @@ export class FolderModel extends BaseModel<Folder> {
    * @param  {any} params
    * @returns Promise
    */
-  async getFolderListByParentIds(params: FolderChildrenSearch): Promise<Folder[]> {
+  async getFolderListByParentIds (params: FolderChildrenSearch): Promise<Folder[]> {
     const { page = 1, size = 10, parentFolderIds = [] } = params;
-    const filter: { parentFolderId: any; deleted: boolean; name?: any } = {
+    const filter: { parentFolderId: any; creator?: any, deleted: boolean; name?: any } = {
       parentFolderId: { $in: parentFolderIds },
       deleted: false,
     };
+
+    if (params.userIds && params.userIds.length > 0) {
+      filter.creator = { $in: params.userIds };
+    }
+
     if (params.search) {
       filter.name = { $regex: new RegExp(params.search, 'i') };
     }
@@ -58,12 +63,17 @@ export class FolderModel extends BaseModel<Folder> {
    * @param  {any} params
    * @returns Promise
    */
-  async getFolderCountByParentIds(params: FolderChildrenSearch): Promise<number> {
+  async getFolderCountByParentIds (params: FolderChildrenSearch): Promise<number> {
     const { parentFolderIds = [] } = params;
-    const filter: { parentFolderId: any; deleted: boolean; name?: any } = {
+    const filter: { parentFolderId: any; creator?: any, deleted: boolean; name?: any } = {
       parentFolderId: { $in: parentFolderIds },
       deleted: false,
     };
+
+    if (params.userIds && params.userIds.length > 0) {
+      filter.creator = { $in: params.userIds };
+    }
+
     if (params.search) {
       filter.name = { $regex: new RegExp(params.search, 'i') };
     }
@@ -75,7 +85,7 @@ export class FolderModel extends BaseModel<Folder> {
    * @param  {FolderPageSearch} params
    * @returns {Folder[]} Promise
    */
-  async getPageList(params: FolderPageSearch): Promise<Folder[]> {
+  async getPageList (params: FolderPageSearch): Promise<Folder[]> {
     const from = params.from || 0;
     const to = params.to || 0;
 
@@ -103,7 +113,7 @@ export class FolderModel extends BaseModel<Folder> {
    * @param  {FolderPageSearch} params
    * @returns {number} Promise
    */
-  async getCount(params: FolderPageSearch): Promise<number> {
+  async getCount (params: FolderPageSearch): Promise<number> {
     let searchParams: { $or?: any[]; applicationId: string; parentFolderId?: string; deleted: boolean } = {
       applicationId: params.applicationId,
       deleted: false,
@@ -123,15 +133,25 @@ export class FolderModel extends BaseModel<Folder> {
    * @param  {WorkspaceFolderSearch} params
    * @returns Promise
    */
-  async getWorkspaceFolderList(params: WorkspaceFolderSearch): Promise<Folder[]> {
+  async getWorkspaceFolderList (params: WorkspaceFolderSearch): Promise<Folder[]> {
     const page = params.page || 1;
     const size = params.size || 10;
 
-    let searchParams: { creator: string; 'tags.type': any; deleted: boolean; name?: any } = {
+    let searchParams: {
+      creator: string;
+      'tags.type': any;
+      deleted: boolean;
+      name?: any;
+      applicationId?: any;
+    } = {
       creator: params.creator,
       'tags.type': params.types.length === 1 ? params.types[0] : { $in: params.types },
       deleted: params.deleted || false,
     };
+
+    if (params.applicationIds && params.applicationIds.length > 0) {
+      searchParams.applicationId = { $in: params.applicationIds }
+    }
 
     if (params.search) {
       searchParams.name = { $regex: new RegExp(params.search, 'i') };
@@ -150,8 +170,14 @@ export class FolderModel extends BaseModel<Folder> {
    * @param  {WorkspaceFolderSearch} params
    * @returns Promise
    */
-  async getWorkspaceFolderCount(params: WorkspaceFolderSearch): Promise<number> {
-    let searchParams: { creator: string; 'tags.type': any; deleted: boolean; name?: any } = {
+  async getWorkspaceFolderCount (params: WorkspaceFolderSearch): Promise<number> {
+    let searchParams: {
+      creator: string;
+      'tags.type': any;
+      deleted: boolean;
+      name?: any;
+      applicationId?: any;
+    } = {
       creator: params.creator,
       'tags.type': params.types.length === 1 ? params.types[0] : { $in: params.types },
       deleted: params.deleted || false,
@@ -159,6 +185,10 @@ export class FolderModel extends BaseModel<Folder> {
 
     if (params.search) {
       searchParams.name = { $regex: new RegExp(params.search, 'i') };
+    }
+
+    if (params.applicationIds && params.applicationIds.length > 0) {
+      searchParams.applicationId = { $in: params.applicationIds }
     }
 
     return this.model.countDocuments(searchParams);

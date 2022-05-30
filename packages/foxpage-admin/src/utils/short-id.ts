@@ -1,13 +1,19 @@
-import shortid from 'shortid';
+const idStrings: string = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-function getPass(len: number) {
-  let tmpCh = '';
-  for (let i = 0; i < len; i++) {
-    tmpCh += String.fromCharCode(Math.floor(Math.random() * 26) + 'a'.charCodeAt(0));
+/**
+ * Generate random string
+ * @param  {} number=2
+ */
+export function randStr(number: number = 2): string {
+  let str = '';
+  for (let i = 0; i < number; i++) {
+    const pos = Math.round(Math.random() * (idStrings.length - 1));
+    str += idStrings[pos];
   }
-  return tmpCh;
+
+  return str;
 }
 
-const shortId = (len = 11) => getPass(len - 9) + shortid.generate();
+const shortId = (len = 15) => randStr(len);
 
 export default shortId;

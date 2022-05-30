@@ -1,49 +1,27 @@
-import React, { CSSProperties, useContext, useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { Layout, Spin } from 'antd';
+import { Layout } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
+import * as PAGE_ACTIONS from '@/actions/builder/page';
 import * as ACTIONS from '@/actions/builder/template';
 import { updatePageCopyModalOpen } from '@/actions/builder/template-select';
+import { fetchApplicationInfo } from '@/actions/group/application/settings';
 import { FileTypeEnum } from '@/constants/global';
-import GlobalContext from '@/pages/GlobalContext';
+import { PageParam } from '@/types/builder';
 import { getProjectFile } from '@/utils/project/file';
 
-import ComponentListDrawer from './drawer/componentList';
 import PageTemplateSelect from './template/PageTemplateSelect';
-import VariableBind from './variable/bind/VariableBind';
+import Toolbar from './toolbar/Toolbar';
+import { VariableBind } from './toolbar/tools';
+import Viewer from './viewer/Viewer';
 import BuilderContext from './BuilderContext';
 import Editor from './editor';
-import PageList from './pageList';
-import Structure from './structure';
-import ToolBar from './ToolBar';
-import Viewer from './Viewer';
 
 const { Sider, Content } = Layout;
-
-const SelectTemplateText = styled.div`
-  color: #cac6c6;
-  font-size: 24px;
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  > div {
-    padding: 24px 48px;
-    border-radius: 4px;
-    border: 1px dashed #dddddd;
-    background: #fff;
-    cursor: pointer;
-    margin-right: 300px;
-    &:hover {
-      border-color: #1890ff;
-    }
-  }
-`;
 
 const StyledLayout = styled(Layout)`
   display: flex;
@@ -55,7 +33,8 @@ const StyledLayout = styled(Layout)`
   background: rgb(255, 255, 255);
   height: 100%;
   .ant-drawer {
-    box-shadow: 6px 0 16px -8px rgb(0 0 0 / 8%), 9px 0 28px 0 rgb(0 0 0 / 5%), 12px 0 48px 16px rgb(0 0 0 / 3%);
+    box-shadow: 6px 0 16px -8px rgb(0 0 0 / 8%), 9px 0 28px 0 rgb(0 0 0 / 5%),
+      12px 0 48px 16px rgb(0 0 0 / 3%);
   }
   .ant-drawer > * {
     transition: none !important;
@@ -64,14 +43,13 @@ const StyledLayout = styled(Layout)`
 
 const StyledSlider = styled(Sider)`
   display: flex;
-  border-left: 1px solid rgb(219, 219, 219);
-  border-right: 1px solid rgb(219, 219, 219);
+  align-items: flex-start;
+  border-right: 1px solid rgb(242, 242, 242);
   background: rgb(255, 255, 255);
   height: 100%;
   padding: 0;
-  width: 100%;
-  align-items: flex-start;
   z-index: 1;
+  user-select: none;
   .ant-layout-sider-children {
     width: 100%;
   }
@@ -80,53 +58,42 @@ const StyledSlider = styled(Sider)`
   }
 `;
 
-const LeftSliderContainer = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
+const StyledContent = styled(Content)`
+  position: relative;
   height: 100%;
-  flex-direction: column;
-  > div {
-    width: 100%;
-    flex: 1;
-  }
-`;
-
-const StyledSpin = styled(Spin)`
-  width: calc(100% - 300px);
-  height: 100%;
-  margin-top: 48px !important;
-  position: absolute !important;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
+  background-color: rgb(242, 242, 242);
+  user-select: none;
 `;
 
 const mapStateToProps = (store: RootState) => ({
   versionChange: store.builder.template.versionChange,
-  storeContentId: store.builder.page.contentId,
-  renderStructure: store.builder.template.renderStructure,
   version: store.builder.template.version,
-  templateLoading: store.builder.viewer.loading,
   componentLoading: store.builder.template.loading,
+  selectedComponent: store.builder.template.selectedComponent,
+  templateLoading: store.builder.viewer.loading,
   fileType: store.builder.page.fileType,
   pageLoading: store.builder.page.loading,
-  selectedComponent: store.builder.template.selectedComponent,
+  fileDetail: store.builder.page.fileDetail,
+  pageList: store.builder.page.pageList,
+  storeContentId: store.builder.page.contentId,
+  locale: store.builder.page.locale,
 });
 
 const mapDispatchToProps = {
-  fetchTree: ACTIONS.fetchPageRenderTree,
   clearAll: ACTIONS.clearAll,
+  fetchTree: ACTIONS.fetchPageRenderTree,
+  clearResource: ACTIONS.clearResource,
+  localeChange: ACTIONS.localeChange,
   updatePageCopyModalOpen: updatePageCopyModalOpen,
+  fetchFileDetail: PAGE_ACTIONS.fetchFileDetail,
+  fetchCatalog: PAGE_ACTIONS.fetchPageList,
+  selectContent: PAGE_ACTIONS.selectContent,
+  fetchAppInfo: fetchApplicationInfo,
 };
 
 type BuilderProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Index: React.FC<BuilderProps> = props => {
-  const { locale } = useContext(GlobalContext);
-  const { builder } = locale.business;
+const Index: React.FC<BuilderProps> = (props) => {
   const [currentMenu, setCurMenu] = useState<'component' | undefined>(undefined);
   const [containerStyle, setContainerStyle] = useState<CSSProperties>({
     height: '100%',
@@ -134,9 +101,10 @@ const Index: React.FC<BuilderProps> = props => {
   });
   const containerRef = useRef<any>(null);
 
-  const { applicationId } = useParams<{ applicationId: string }>();
-
   const {
+    locale,
+    fileDetail,
+    pageList,
     storeContentId,
     version = { content: { schemas: [{ props: {} }] } },
     versionChange,
@@ -144,18 +112,81 @@ const Index: React.FC<BuilderProps> = props => {
     templateLoading,
     componentLoading,
     pageLoading,
-    renderStructure,
     selectedComponent,
-    fetchTree,
     clearAll,
+    fetchTree,
+    clearResource,
+    fetchFileDetail,
+    fetchCatalog,
+    selectContent,
     updatePageCopyModalOpen,
+    localeChange,
+    fetchAppInfo,
   } = props;
 
+  // get url search params
+  const { fileId, folderId, applicationId, contentId } = useParams<PageParam>();
+
+  const handleSelectContent = (params: PageParam) => {
+    clearResource({
+      onSuccess: () => {
+        selectContent(params);
+      },
+    });
+  };
+
   useEffect(() => {
-    return () => {
-      clearAll();
-    };
+    if (applicationId) {
+      fetchAppInfo(applicationId);
+    }
+  }, [applicationId]);
+
+  useEffect(() => {
+    if (fileId) {
+      fetchFileDetail({ applicationId, ids: [fileId] });
+    }
+
+    if (folderId) {
+      fetchCatalog({
+        applicationId,
+        folderId,
+      });
+    }
   }, []);
+
+  useEffect(() => {
+    localeChange(applicationId, locale);
+  }, [locale]);
+
+  // get default content id when url search params contentId is empty
+  useEffect(() => {
+    if (!storeContentId && pageList.length > 0) {
+      // get file with filedId or default by index 0
+      const file = fileId
+        ? pageList.find((item) => item.id === fileId)
+        : pageList.find((item) => item.contents && item.contents.length > 0);
+
+      // get content by default index 0
+      const contents = file && file?.contents;
+      const content =
+        contents && contentId ? contents.find((content) => content.id === contentId) : contents?.[0];
+
+      if (content) {
+        const defaultContentId = content && content?.id;
+        const localeTag = content?.tags.filter((item) => item.locale);
+
+        // push to store
+        handleSelectContent({
+          applicationId,
+          folderId,
+          fileId,
+          contentId: contentId || defaultContentId,
+          locale: localeTag && localeTag.length > 0 ? localeTag[0].locale : '',
+          fileType: fileDetail?.type || FileTypeEnum.page,
+        });
+      }
+    }
+  }, [pageList]);
 
   useEffect(() => {
     if (storeContentId) {
@@ -172,59 +203,56 @@ const Index: React.FC<BuilderProps> = props => {
     }
   }, [versionChange]);
 
+  useEffect(() => {
+    return () => {
+      clearAll();
+    };
+  }, []);
+
+  const handleContentChange = (contentId: string) => {
+    for (let index = 0; index < pageList.length; index++) {
+      const item = pageList[index];
+      const content = item.contents?.find((subItem) => subItem.id === contentId);
+      if (content) {
+        const localeTags = content.tags ? content.tags.filter((item) => item.locale) : [];
+        selectContent({
+          applicationId,
+          folderId,
+          fileId: item.id,
+          contentId,
+          locale: localeTags.length > 0 ? localeTags[0].locale : '',
+          fileType: 'template',
+        });
+        break;
+      }
+    }
+  };
+
   return (
     <StyledLayout hasSider>
       <BuilderContext.Provider value={{ currentMenu, setCurMenu, container: containerRef.current }}>
-        <StyledSlider width={250} style={{ backgroundColor: '#fff' }}>
-          <LeftSliderContainer>
-            <PageList />
-            <Structure />
-          </LeftSliderContainer>
+        <StyledSlider width={40}>
+          <Toolbar />
         </StyledSlider>
-        <Content style={{ height: '100%', position: 'relative', backgroundColor: 'rgb(245, 245, 245)' }}>
-          {(templateLoading || componentLoading || pageLoading) && <StyledSpin spinning={true} />}
-
-          <div ref={containerRef} style={{ height: '100%' }}>
-            <Viewer containerStyle={containerStyle} />
-            {fileType === FileTypeEnum.page &&
-              !templateLoading &&
-              !componentLoading &&
-              !pageLoading &&
-              renderStructure.length === 0 && (
-                <SelectTemplateText>
-                  <div
-                    onClick={() => {
-                      updatePageCopyModalOpen(true);
-                    }}
-                  >
-                    {builder.selectPage}
-                  </div>
-                </SelectTemplateText>
-              )}
-
-            <ComponentListDrawer
-              container={containerRef.current}
-              visible={currentMenu === 'component'}
-              onClose={() => {
-                setCurMenu(undefined);
-              }}
-              showPlaceholder={(visible: boolean) => {
-                if (visible) {
-                  setCurMenu(undefined);
-                }
-                // setCalibrationLineState({ visible, dndParams, offSet });
-              }}
+        <StyledContent>
+          <div ref={containerRef} style={{ height: '100%', margin: '0 auto' }}>
+            <Viewer
+              containerStyle={containerStyle}
+              loading={templateLoading || componentLoading || pageLoading}
+              onContentChange={handleContentChange}
+              onOpenPagesModal={updatePageCopyModalOpen}
             />
-            <ToolBar />
             <PageTemplateSelect />
           </div>
-        </Content>
+        </StyledContent>
+        <VariableBind />
         {!selectedComponent?.id && (
-          <StyledSlider style={{ position: 'absolute', right: 0, top: 52, bottom: 0, height: 'auto' }} width={300}>
+          <StyledSlider
+            style={{ position: 'absolute', right: 0, top: 52, bottom: 0, height: 'auto' }}
+            width={300}>
             <Editor />
           </StyledSlider>
         )}
-        <VariableBind />
       </BuilderContext.Provider>
     </StyledLayout>
   );

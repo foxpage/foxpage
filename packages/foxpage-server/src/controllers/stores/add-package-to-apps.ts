@@ -36,7 +36,7 @@ export class AddStorePackageToApplication extends BaseController {
     operationId: 'add-store-packages-to-applications',
   })
   @ResponseSchema(GetStorePackageListRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: AddGoodsToApplicationReq): Promise<ResData<any>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: AddGoodsToApplicationReq): Promise<ResData<any>> {
     try {
       // Check permission
       const hasAuth = await Promise.all(
@@ -67,6 +67,7 @@ export class AddStorePackageToApplication extends BaseController {
           const existFiles = await this.service.file.list.find({
             applicationId: { $in: params.appIds },
             name: { $in: _.map(fileList, 'name') },
+            deleted: false
           });
 
           if (existFiles.length > 0) {

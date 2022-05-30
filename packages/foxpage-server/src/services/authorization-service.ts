@@ -19,7 +19,7 @@ export class AuthService extends BaseService<Authorize> {
    * Single instance
    * @returns AuthService
    */
-  public static getInstance(): AuthService {
+  public static getInstance (): AuthService {
     this._instance || (this._instance = new AuthService());
     return this._instance;
   }
@@ -30,7 +30,7 @@ export class AuthService extends BaseService<Authorize> {
    * @param  {string} user
    * @returns Promise
    */
-  async application(applicationId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+  async application (applicationId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const [appDetail, hasAuth] = await Promise.all([
       Service.application.getDetailById(applicationId),
       this.getTargetTypeAuth(
@@ -52,7 +52,7 @@ export class AuthService extends BaseService<Authorize> {
    * @param  {string} user
    * @returns Promise
    */
-  async organization(organizationId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+  async organization (organizationId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const [orgDetail, hasAuth] = await Promise.all([
       Service.org.getDetailById(organizationId),
       this.getTargetTypeAuth(
@@ -70,7 +70,7 @@ export class AuthService extends BaseService<Authorize> {
    * @param  {string} user
    * @returns Promise
    */
-  async team(teamId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+  async team (teamId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const [teamDetail, hasAuth] = await Promise.all([
       Service.team.getDetailById(teamId),
       this.getTargetTypeAuth(
@@ -90,7 +90,7 @@ export class AuthService extends BaseService<Authorize> {
    * @param  {string} user
    * @returns Promise
    */
-  async folder(folderId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+  async folder (folderId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const user = options.ctx.userInfo.id;
 
     const [folderDetail, hasAppAuth, hasAuth] = await Promise.all([
@@ -113,7 +113,7 @@ export class AuthService extends BaseService<Authorize> {
    * @param  {string} user
    * @returns Promise
    */
-  async file(fileId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+  async file (fileId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const user = options.ctx.userInfo.id;
     !options?.mask && options.mask === 2;
 
@@ -141,7 +141,7 @@ export class AuthService extends BaseService<Authorize> {
    * @param  {string} user
    * @returns Promise
    */
-  async content(contentId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+  async content (contentId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const user = options.ctx.userInfo.id;
 
     const [contentDetail, hasAppAuth, hasAuth] = await Promise.all([
@@ -168,7 +168,7 @@ export class AuthService extends BaseService<Authorize> {
    * @param  {string} user
    * @returns Promise
    */
-  async version(versionId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+  async version (versionId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
     const user = options.ctx.userInfo.id;
 
     const [versionDetail, hasAppAuth, hasAuth] = await Promise.all([
@@ -194,7 +194,7 @@ export class AuthService extends BaseService<Authorize> {
    * @param mask
    * @returns
    */
-  async getTargetTypeAuth(
+  async getTargetTypeAuth (
     params: { type: string; typeId: string; targetId: string },
     mask: number = 2,
   ): Promise<boolean> {
@@ -212,13 +212,22 @@ export class AuthService extends BaseService<Authorize> {
    * @returns {Promise<boolean>}
    * @memberof AuthService
    */
-  async checkTypeIdAuthorize(
+  async checkTypeIdAuthorize (
     params: { type: string; typeId: string },
     options: { ctx: FoxCtx; mask?: number },
   ): Promise<boolean> {
     if (params.type === TYPE.APPLICATION) {
       return this.application(params.typeId, options);
+    } else if (params.type === TYPE.FOLDER) {
+      return this.folder(params.typeId, options);
+    } else if (params.type === TYPE.FILE) {
+      return this.file(params.typeId, options);
+    } else if (params.type === TYPE.CONTENT) {
+      return this.content(params.typeId, options);
+    } else if (params.type === TYPE.VERSION) {
+      return this.version(params.typeId, options);
     }
+
     return false;
   }
 }

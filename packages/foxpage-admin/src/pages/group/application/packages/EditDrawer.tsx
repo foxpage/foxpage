@@ -25,7 +25,7 @@ const mapDispatchToProps = {
   addComponent: ACTIONS.addComponentAction,
 };
 type DrawerProp = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
-const Drawer: React.FC<DrawerProp> = props => {
+const Drawer: React.FC<DrawerProp> = (props) => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const { componentDrawer, packageType, closeDrawer, addComponent } = props;
   const { locale } = useContext(GlobalContext);
@@ -42,7 +42,7 @@ const Drawer: React.FC<DrawerProp> = props => {
     }
     initialValuesRef.current = initialValues;
   }, [type, data]);
-  const afterVisibleChange = useCallback(visiable => {
+  const afterVisibleChange = useCallback((visiable) => {
     if (visiable) {
       form.setFieldsValue(initialValuesRef.current);
     } else {
@@ -52,7 +52,7 @@ const Drawer: React.FC<DrawerProp> = props => {
   const onSave = () => {
     form
       .validateFields()
-      .then(values => {
+      .then((values) => {
         const { name } = values;
         if (type === 'add') {
           addComponent(
@@ -71,7 +71,7 @@ const Drawer: React.FC<DrawerProp> = props => {
           console.error('unhandled type:', type);
         }
       })
-      .catch(info => {
+      .catch((info) => {
         console.log('Validate Failed:', info);
       });
   };
@@ -84,19 +84,17 @@ const Drawer: React.FC<DrawerProp> = props => {
       destroyOnClose
       actions={
         <Button type="primary" onClick={onSave}>
-          Apply
+          {global.apply}
         </Button>
       }
-      afterVisibleChange={afterVisibleChange}
-    >
+      afterVisibleChange={afterVisibleChange}>
       <Group>
         <Form {...formItemLayout} form={form}>
           <Form.Item
             name="name"
             label={global.nameLabel}
-            getValueFromEvent={e => e.target.value?.trim()}
-            rules={[{ required: true }]}
-          >
+            getValueFromEvent={(e) => e.target.value?.trim()}
+            rules={[{ required: true }]}>
             <Input placeholder={global.nameLabel} />
           </Form.Item>
         </Form>

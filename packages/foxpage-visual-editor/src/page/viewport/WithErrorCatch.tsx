@@ -44,16 +44,28 @@ class WithErrorCatch extends React.Component<WithErrorCatchProps, WithErrorCatch
     //   ],
     // };
     // this.props.addError(componentId, errorDetail);
-    // this.setState({
-    //   withError: true,
-    // });
+    this.setState({
+      withError: true,
+    });
   }
 
   render() {
-    const { componentNode } = this.props;
+    const { componentNode = null, componentName, componentId } = this.props;
 
     if (this.state.withError) {
-      return <div>Render Error</div>;
+      return (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: 10,
+            fontSize: '14px',
+            border: '1px solid #ff9898',
+            color: '#ff4141',
+            background: '#ffdada',
+          }}>
+          {`Component ${componentName} [${componentId}] render error.`}
+        </div>
+      );
     }
 
     return componentNode;
