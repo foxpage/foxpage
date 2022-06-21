@@ -20,6 +20,7 @@ export const PRE = {
 };
 
 export const TYPE = {
+  SYSTEM: 'system',
   ORGANIZATION: 'organization',
   APPLICATION: 'application',
   FOLDER: 'folder',
@@ -80,6 +81,8 @@ export const VERSION = {
   STATUS_RELEASE_CANDIDATE: 'release candidate',
   STATUS_RELEASE: 'release',
 };
+
+export const DSL_VERSION = '1.0';
 
 export const DELIVERY_CLONE = 'clone';
 export const DELIVERY_REFERENCE = 'reference';

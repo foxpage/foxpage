@@ -77,8 +77,10 @@ export interface AppTypeContent {
 
 export interface TagContentData {
   id: string;
+  version: string;
   tags: Tag[];
   content: DSL;
+  dslVersion?: string;
 }
 
 export interface PageContentData {
@@ -89,8 +91,9 @@ export interface PageContentData {
 
 export interface AppTag {
   applicationId: string;
-  pathname: string;
   tags: Tag[];
+  pathname?: string;
+  fileId?: string;
 }
 
 export interface FileTagContent {
@@ -98,13 +101,10 @@ export interface FileTagContent {
   tags: Tag[];
 }
 
-export interface PageContentSearch {
+export interface PageContentSearch extends Search {
   applicationId: string;
   fileId: string;
   type: FileTypes;
-  page: number;
-  size: number;
-  search?: string;
 }
 
 export interface UpdateTypeContent {
@@ -148,11 +148,19 @@ export interface VersionPublish {
 export interface PageContentRelations {
   content: DSL;
   relations: Record<string, DSL[]>;
+  dslVersion?: string;
+  mock?: Record<string, any>;
+}
+
+export interface PageContentRelationsAndExternal {
+  content: VersionWithExternal;
+  relations: Record<string, DSL[]>;
   mock?: Record<string, any>;
 }
 
 export interface PageContentRelationInfos extends PageContentRelations {
   id: string;
+  version?: string;
   dependMissing?: string[];
   recursiveItem?: string;
 }
@@ -194,6 +202,7 @@ export interface FileContentAndVersion {
   contentId: string;
   content: DSL;
   relations?: Record<string, ContentVersion[]>;
+  online?: boolean;
 }
 
 export interface VersionCheckResult {
@@ -202,7 +211,10 @@ export interface VersionCheckResult {
   msg?: string;
 }
 
-export interface VersionWithMock extends DSL {
+export interface VersionWithExternal extends DSL {
+  name: string;
+  version: string;
+  fileId: string;
   mocks?: Record<string, DSL>;
   extension?: Record<string, string>;
 }

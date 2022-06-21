@@ -67,10 +67,10 @@ export class AuthorizeDetail {
 }
 
 export class AddAuthReq {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  @Length(20, 20)
-  applicationId: string;
+  // @JSONSchema({ description: 'Application ID' })
+  // @IsString()
+  // @Length(20, 20)
+  // applicationId: string;
 
   @JSONSchema({ description: 'Auth type' })
   @IsString()
@@ -78,7 +78,7 @@ export class AddAuthReq {
 
   @JSONSchema({ description: 'Auth type id' })
   @IsString()
-  @Length(20, 20)
+  @IsOptional()
   typeId: string;
 
   @JSONSchema({ description: 'Auth target ids' })
@@ -97,10 +97,10 @@ export class AddAuthReq {
 }
 
 export class UpdateAuthReq {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  @Length(20, 20)
-  applicationId: string;
+  // @JSONSchema({ description: 'Application ID' })
+  // @IsString()
+  // @Length(20, 20)
+  // applicationId: string;
 
   @JSONSchema({ description: 'Auth ids' })
   @IsArray()

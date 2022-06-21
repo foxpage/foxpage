@@ -553,9 +553,15 @@ export class TagContentVersionReq {
   @Length(20, 20)
   applicationId: string;
 
-  @JSONSchema({ description: 'Path' })
+  @JSONSchema({ description: 'Path, path or file id must pass one of it' })
   @IsString()
+  @IsOptional()
   pathname: string;
+
+  @JSONSchema({ description: 'File id, path or file id must pass one of it' })
+  @IsString()
+  @IsOptional()
+  fileId: string;
 
   @JSONSchema({ description: 'Content Tags' })
   @IsArray()
@@ -622,6 +628,29 @@ export class ContentChangeReq {
   @JSONSchema({ description: 'Timestamp' })
   @IsNumber()
   timestamp: number;
+}
+
+export class VersionPublishStatus2Req {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'Version ID, contentId or versionId must provider one of it' })
+  @IsString()
+  @Length(20, 20)
+  @IsOptional()
+  id: string;
+
+  @JSONSchema({ description: 'Content ID, contentId or versionId must provider one of it' })
+  @IsString()
+  @Length(20, 20)
+  @IsOptional()
+  contentId: string;
+
+  @JSONSchema({ description: 'Version status' })
+  @IsString()
+  status: ContentStatus;
 }
 
 export class VersionPublishStatusReq {

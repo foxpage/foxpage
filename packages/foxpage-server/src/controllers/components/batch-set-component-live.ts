@@ -9,8 +9,8 @@ import { Content, ContentStatus } from '@foxpage/foxpage-server-types';
 import { i18n } from '../../../app.config';
 import { VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
+import { BatchLiveReq } from '../../types/validates/component-validate-types';
 import { ContentDetailRes } from '../../types/validates/content-validate-types';
-import { BatchLiveReq } from '../../types/validates/component-validate-types'
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
@@ -48,7 +48,7 @@ export class BatchSetComponentLiveVersions extends BaseController {
         this.service.file.list.getContentFileByIds(contentIds),
         this.service.version.list.getContentInfoByIdAndVersion(_.map(
           params.idVersions, (idVersion) => {
-            return { contentId: idVersion.id, version: idVersion.version }
+            return { contentId: idVersion.id, version: idVersion.version };
           }
         ))
       ]);
@@ -60,16 +60,16 @@ export class BatchSetComponentLiveVersions extends BaseController {
           invalidComponents.push(contentId);
         }
         if (contentFileObject[contentId].applicationId !== params.applicationId) {
-          notInApps.push(contentId)
+          notInApps.push(contentId);
         }
       }
 
       if (invalidComponents.length > 0) {
-        return Response.warning(i18n.component.invalidContentId + ': ' + invalidComponents.join(', '), 211201)
+        return Response.warning(i18n.component.invalidContentId + ': ' + invalidComponents.join(', '), 211201);
       }
 
       if (notInApps.length > 0) {
-        return Response.warning(i18n.component.componentNotInApp + ': ' + notInApps.join(', '), 2112202)
+        return Response.warning(i18n.component.componentNotInApp + ': ' + notInApps.join(', '), 2112202);
       }
 
       const invalidVersion: string[] = _.difference(contentIds, _.map(versionList, 'contentId'));
@@ -97,7 +97,7 @@ export class BatchSetComponentLiveVersions extends BaseController {
       for (const idVersion of params.idVersions) {
         const versionNumber = this.service.version.number.createNumberFromVersion(idVersion.version);
         this.service.content.live.setLiveContent(idVersion.id, versionNumber, { ctx });
-        await this.service.component.updateReferLiveVersion(contentFileObject[idVersion.id]?.id, { ctx });
+        await this.service.component.updateReferLiveVersion(idVersion.id, contentFileObject[idVersion.id]?.id, { ctx });
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);

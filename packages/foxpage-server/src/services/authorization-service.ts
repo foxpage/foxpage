@@ -25,21 +25,34 @@ export class AuthService extends BaseService<Authorize> {
   }
 
   /**
+   * Check whether the specified user has system auth
+   * @param  {string} user
+   * @returns Promise
+   */
+   async system (options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
+    return this.getTargetTypeAuth(
+        { type: TYPE.SYSTEM, typeId: '', targetId: options.ctx.userInfo.id },
+        options.mask,
+      );
+  }
+
+  /**
    * Check whether the specified user is the owner of the app
    * @param  {string} applicationId
    * @param  {string} user
    * @returns Promise
    */
   async application (applicationId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
-    const [appDetail, hasAuth] = await Promise.all([
+    const [appDetail, systemAuth, hasAuth] = await Promise.all([
       Service.application.getDetailById(applicationId),
+      this.system(options),
       this.getTargetTypeAuth(
         { type: TYPE.APPLICATION, typeId: applicationId, targetId: options.ctx.userInfo.id },
         options.mask,
       ),
     ]);
 
-    if (appDetail?.creator === options.ctx.userInfo?.id || hasAuth) {
+    if (appDetail?.creator === options.ctx.userInfo?.id || systemAuth || hasAuth) {
       return true;
     }
 
@@ -53,15 +66,16 @@ export class AuthService extends BaseService<Authorize> {
    * @returns Promise
    */
   async organization (organizationId: string, options: { ctx: FoxCtx; mask?: number }): Promise<boolean> {
-    const [orgDetail, hasAuth] = await Promise.all([
+    const [orgDetail, systemAuth, hasAuth] = await Promise.all([
       Service.org.getDetailById(organizationId),
+      this.system(options),
       this.getTargetTypeAuth(
         { type: TYPE.ORGANIZATION, typeId: organizationId, targetId: options.ctx.userInfo.id },
         options.mask,
       ),
     ]);
 
-    return orgDetail?.creator === options.ctx.userInfo?.id || hasAuth;
+    return orgDetail?.creator === options.ctx.userInfo?.id || systemAuth || hasAuth;
   }
 
   /**
@@ -216,7 +230,9 @@ export class AuthService extends BaseService<Authorize> {
     params: { type: string; typeId: string },
     options: { ctx: FoxCtx; mask?: number },
   ): Promise<boolean> {
-    if (params.type === TYPE.APPLICATION) {
+    if (params.type === TYPE.SYSTEM) {
+      return this.system(options);
+    } else if (params.type === TYPE.APPLICATION) {
       return this.application(params.typeId, options);
     } else if (params.type === TYPE.FOLDER) {
       return this.folder(params.typeId, options);

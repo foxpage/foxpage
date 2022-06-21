@@ -1,4 +1,4 @@
-import { IsArray, Length, IsNumber, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, Length, Min, ValidateNested } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 
 export class PagingReq {

@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content, ContentVersion, DSL, File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD } from '../../../config/constant';
+import { DSL_VERSION, METHOD } from '../../../config/constant';
 import {
   RelationAssocContent,
   RelationContentInfo,
@@ -49,7 +49,7 @@ export class GetTagContentInfo extends BaseController {
     operationId: 'get-tag-content-version',
   })
   @ResponseSchema(TagVersionRelationRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @Body() params: TagContentVersionReq,
   ): Promise<ResData<TagVersionRelation[]>> {
@@ -110,11 +110,36 @@ export class GetTagContentInfo extends BaseController {
               : '')
           );
 
-          contentInfo[content.id] = { pages: [contentVersionObject[content.id]?.content] as DSL[] };
+          contentInfo[content.id] = {
+            pages: [
+              Object.assign(
+                {},
+                contentVersionObject[content.id]?.content,
+                {
+                  dslVersion: contentVersionObject[content.id]?.dslVersion || DSL_VERSION,
+                  name: content.title,
+                  version: contentVersionObject[content.id]?.version,
+                  versionNumber: this.service.version.number.createNumberFromVersion(contentVersionObject[content.id]?.version || '0.0.1'),
+                  fileId: content.fileId
+                }
+              )
+            ] as DSL[]
+          };
 
           if (fileType) {
             !contentInfo[content.id][fileType] && (contentInfo[content.id][fileType] = []);
-            contentInfo[content.id][fileType]?.push(versionObject[relation.id]?.content || undefined);
+            contentInfo[content.id][fileType]?.push(
+              Object.assign(
+                {},
+                versionObject[relation.id]?.content || undefined,
+                {
+                  name: contentObject[relation.id]?.title,
+                  version: versionObject[relation.id]?.version,
+                  versionNumber: this.service.version.number.createNumberFromVersion(versionObject[relation.id]?.version || '0.0.1'),
+                  fileId: contentObject[relation.id]?.fileId
+                }
+              )
+            );
           }
         });
 

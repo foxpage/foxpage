@@ -69,6 +69,7 @@ export interface SearchModel extends Partial<PageSize> {
 export interface Creator {
   id: string;
   account: string;
+  nickName?: string;
 }
 
 export interface Header {

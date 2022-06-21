@@ -11,7 +11,6 @@ import { ContentInfoUrl, ContentSearch } from '../../types/content-types';
 import { ResData } from '../../types/index-types';
 import { ContentDetailRes, ContentListReq } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
-import { mergeUrl } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
 @JsonController('pages')
@@ -58,23 +57,28 @@ export class GetPageContentList extends BaseController {
         }
       }
 
-      let urls: string[] = [];
-      let contentListWithUrls: ContentInfoUrl[] = [];
-      let hostPath = '';
+      let hostLocaleObject: Record<string, string> = {};
       if (pathname) {
-        hostPath = mergeUrl(appDetail?.host?.[0] || '', pathname, slug);
+        hostLocaleObject = this.service.application.getAppHostLocaleUrl(appDetail?.host || [], pathname, slug);
       }
 
+      let urls: string[] = [];
+      let contentListWithUrls: ContentInfoUrl[] = [];
       contentList.forEach((content) => {
         urls = [];
-        if (hostPath) {
-          const queryList = _.pull(tag.generateQueryStringByTags(content.tags || []), '');
-          queryList.forEach((query) => {
-            urls.push(hostPath + '?' + query);
+        if (!_.isEmpty(hostLocaleObject)) {
+          content.tags.forEach(item => {
+            const query = _.pull(tag.generateQueryStringByTags([item]), '');
+            if (item.locale) {
+              if (hostLocaleObject[item.locale]) {
+                urls.push(hostLocaleObject[item.locale] + '?' + query);
+              } else {
+                urls.push(hostLocaleObject['base'] + '?' + query);
+              }
+            }
           });
-
           if (urls.length === 0) {
-            urls = [hostPath];
+            urls.push(hostLocaleObject['base']);
           }
         }
 

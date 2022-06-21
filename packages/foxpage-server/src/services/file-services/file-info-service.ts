@@ -30,7 +30,7 @@ export class FileInfoService extends BaseService<File> {
    * Single instance
    * @returns ContentInfoService
    */
-  public static getInstance(): FileInfoService {
+  public static getInstance (): FileInfoService {
     this._instance || (this._instance = new FileInfoService());
     return this._instance;
   }
@@ -41,7 +41,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {Partial<File>} params
    * @returns File
    */
-  create(params: Partial<File>, options: { ctx: FoxCtx }): File {
+  create (params: Partial<File>, options: { ctx: FoxCtx }): File {
     const fileDetail: File = {
       id: params.id || generationId(PRE.FILE),
       applicationId: params.applicationId || '',
@@ -67,7 +67,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {NewFileInfo} params
    * @returns Record
    */
-  async addFileDetail(
+  async addFileDetail (
     params: NewFileInfo,
     options: { ctx: FoxCtx },
   ): Promise<Record<string, number | (File & { contentId: string })>> {
@@ -130,7 +130,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {AppTypeFileUpdate} params
    * @returns Promise
    */
-  async updateFileDetail(
+  async updateFileDetail (
     params: AppTypeFileUpdate,
     options: { ctx: FoxCtx },
   ): Promise<Record<string, number>> {
@@ -197,7 +197,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateFileItem(id: string, params: Partial<File>, options: { ctx: FoxCtx }): void {
+  updateFileItem (id: string, params: Partial<File>, options: { ctx: FoxCtx }): void {
     options.ctx.transactions.push(Model.file.updateDetailQuery(id, params));
     options.ctx.operations.push(
       ...Service.log.addLogItem(LOG.FILE_UPDATE, Object.assign({ id }, params), { fileId: params.id }),
@@ -211,7 +211,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {TypeStatus} params
    * @returns Promise
    */
-  async setFileDeleteStatus(params: TypeStatus, options: { ctx: FoxCtx }): Promise<Record<string, number>> {
+  async setFileDeleteStatus (params: TypeStatus, options: { ctx: FoxCtx }): Promise<Record<string, number>> {
     const fileDetail = await this.getDetailById(params.id);
     if (!fileDetail) {
       return { code: 1 }; // Invalid file information
@@ -252,7 +252,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {File[]} fileList
    * @returns void
    */
-  batchSetFileDeleteStatus(fileList: File[], options: { ctx: FoxCtx; status?: boolean }): void {
+  batchSetFileDeleteStatus (fileList: File[], options: { ctx: FoxCtx; status?: boolean }): void {
     const status = options.status === false ? false : true;
     options.ctx.transactions.push(this.setDeleteStatus(_.map(fileList, 'id'), status));
     options.ctx.operations.push(...Service.log.addLogItem(LOG.FILE_REMOVE, fileList || []));
@@ -263,7 +263,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {FileNameSearch} params
    * @returns {File[]} Promise
    */
-  async getFileIdByNames(params: FileNameSearch): Promise<File[]> {
+  async getFileIdByNames (params: FileNameSearch): Promise<File[]> {
     return Model.file.getDetailByNames(params);
   }
 
@@ -273,7 +273,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {boolean=false} createNew
    * @returns Promise
    */
-  async getFileDetailByNames(
+  async getFileDetailByNames (
     params: FilePathSearch,
     options: { ctx: FoxCtx; createNew?: boolean },
   ): Promise<Partial<File>> {
@@ -322,7 +322,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {File} params
    * @returns Promise
    */
-  createFileContentVersion(params: File, options: FileContentVersion): Record<string, string> {
+  createFileContentVersion (params: File, options: FileContentVersion): Record<string, string> {
     // Create page content information
     const contentId = generationId(PRE.CONTENT);
     const contentDetail: Content = {
@@ -359,7 +359,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {{folders:FolderChildren[];files:File[]}} params
    * @returns string
    */
-  getFileIdFromResourceRecursive(params: { folders: FolderChildren[]; files: File[] }): string[] {
+  getFileIdFromResourceRecursive (params: { folders: FolderChildren[]; files: File[] }): string[] {
     const { folders = [], files = [] } = params;
     let fileIds = _.map(files, 'id');
     folders.forEach((folder) => {
@@ -378,7 +378,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {Record<string} versionObject
    * @returns FileFolderContentChildren
    */
-  addContentToFileRecursive(
+  addContentToFileRecursive (
     params: FileFolderContentChildren,
     contentObject: Record<string, Content>,
     versionObject: Record<string, ContentVersion>,
@@ -407,7 +407,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {string} pathName
    * @returns Promise
    */
-  async getFileDetailByPathname(applicationId: string, pathName: string): Promise<Partial<File>> {
+  async getFileDetailByPathname (applicationId: string, pathName: string): Promise<Partial<File>> {
     // Get files that match the pathname tag
     let fileDetail: File | undefined;
     const fileList = await Service.file.list.find({
@@ -441,7 +441,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {string} options?
    * @returns Promise
    */
-  async copyFile(
+  async copyFile (
     sourceFileId: string,
     targetApplicationId: string,
     options: {
@@ -478,7 +478,7 @@ export class FileInfoService extends BaseService<File> {
 
     // Get the version details of all content
     const contentVersionList = await Service.version.live.getContentAndRelationVersion(
-      _.map(contentList, 'id'),
+      _.map(contentList, 'id'), true
     );
 
     let relationsContentIds: string[] = [];
@@ -535,7 +535,7 @@ export class FileInfoService extends BaseService<File> {
 
     // Create file content
     for (const content of contentList) {
-      options.relations = Service.content.info.copyContent(content, contentDSLObject[content.id], {
+      options.relations = Service.content.info.copyContent(content, contentDSLObject[content.id] || {}, {
         ctx: options.ctx,
         relations: options.relations,
         tempRelations: {},
@@ -551,7 +551,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {string[]} tagIndexes
    * @returns any
    */
-  removeTags(tagList: any[], tagIndexes: string[]): any[] {
+  removeTags (tagList: any[], tagIndexes: string[]): any[] {
     tagList.forEach((tag, index) => {
       tag = _.omit(tag, tagIndexes);
 

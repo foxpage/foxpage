@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Content, ContentVersion, Tag } from '@foxpage/foxpage-server-types';
+import { Content, ContentVersion, File, Tag } from '@foxpage/foxpage-server-types';
 import { tag } from '@foxpage/foxpage-shared';
 
 import * as Model from '../../models';
@@ -31,7 +31,12 @@ export class ContentTagService extends BaseService<Content> {
    * @returns {SDKTagContentData} Promise
    */
   async getAppContentByTags (params: AppTag): Promise<TagContentData[]> {
-    const fileDetail = await Service.file.info.getFileDetailByPathname(params.applicationId, params.pathname);
+    let fileDetail: Partial<File> = {};
+    if (params.fileId) {
+      fileDetail = await Service.file.info.getDetailById(params.fileId);
+    } else {
+      fileDetail = await Service.file.info.getFileDetailByPathname(params.applicationId, <string>params.pathname);
+    }
 
     if (_.isEmpty(fileDetail)) {
       return [];
@@ -50,7 +55,7 @@ export class ContentTagService extends BaseService<Content> {
     // Put tags into contentVersionList
     return contentVersionList.map((content) => {
       return Object.assign(
-        { id: content.contentId, content: content.content },
+        { id: content.contentId, content: content.content, version: content.version },
         { tags: contentLiveInfoObject[content.contentId]?.tags || [] },
       );
     });
@@ -75,6 +80,28 @@ export class ContentTagService extends BaseService<Content> {
     const matchTag = <any>tag.matchContent(<any[]>contentList, tags);
 
     return matchTag || {};
+  }
+
+  /**
+   * Get tag value
+   * response { id: tagValue }
+   * @param tagsContent 
+   * @param tagName 
+   * @returns 
+   */
+  getContentCopyTags (tagsContent: { id: string, tags: any[] }[], tagName: string): Record<string, string> {
+    let tagMap: Record<string, string> = {};
+    tagsContent.forEach(item => {
+      if (item.tags && item.tags.length > 0) {
+        item.tags.forEach(cell => {
+          if (cell[tagName]) {
+            tagMap[item.id] = cell[tagName];
+          }
+        });
+      }
+    });
+
+    return tagMap;
   }
 
   /**

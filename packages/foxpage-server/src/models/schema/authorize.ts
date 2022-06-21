@@ -6,7 +6,7 @@ const authorizeSchema = new Schema<Authorize>(
   {
     id: { type: String, required: true, length: 20, unique: true },
     type: { type: String, required: true }, // page, project, variable ..
-    typeId: { type: String, required: true },
+    typeId: { type: String, default: '', },
     targetId: { type: String, required: true },
     mask: { type: Number, required: true }, // 0: no auth, 1: admin, 2: editor, 4: delete, 8: publish, 16: view
     allow: { type: Boolean, default: true },

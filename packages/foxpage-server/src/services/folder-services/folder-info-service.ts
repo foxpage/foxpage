@@ -73,21 +73,23 @@ export class FolderInfoService extends BaseService<Folder> {
   /**
    * Get app multi default folder ids
    * @param  {AppsFolderType} params
-   * @returns Promise
+   * @returns Promise {appId: folderId}
    */
   async getAppsTypeFolderId (params: AppsFolderType): Promise<Record<string, string>> {
     const folderList = await Model.folder.find({
       applicationId: { $in: params.applicationIds },
+      parentFolderId: '',
       'tags.type': params.type,
     });
-
-    const appFolder: Record<string, string> = {};
+  
+    const appFolderMap: Record<string, string> = {};
     _.map(folderList, (folder) => {
       if (folder.tags?.[0]?.type === params.type) {
-        appFolder[folder.applicationId] = folder.id;
+        appFolderMap[folder.applicationId] = folder.id;
       }
     });
-    return appFolder;
+    
+    return appFolderMap;
   }
 
   /**
@@ -96,16 +98,8 @@ export class FolderInfoService extends BaseService<Folder> {
    * @returns {string[]} Promise
    */
   async getAppDefaultFolderIds (params: AppDefaultFolderSearch): Promise<Set<string>> {
-    const folderList = await Model.folder.find({
-      applicationId: { $in: params.applicationIds },
-      'tags.type': params.type,
-    });
-
-    const folderDetails = _.filter(folderList, (folder) => {
-      return folder.tags?.[0]?.type === params.type;
-    });
-
-    return new Set(_.map(folderDetails, 'id'));
+    const folderDetails = await this.getAppsTypeFolderId(params);
+    return new Set(_.values(folderDetails));
   }
 
   /**

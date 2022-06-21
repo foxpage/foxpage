@@ -10,7 +10,7 @@ import {
 
 import { AppBaseInfo } from './app-types';
 import { ContentInfo } from './content-types';
-import { Creator, FoxCtx } from './index-types';
+import { Creator, FoxCtx, Search } from './index-types';
 
 export type FolderInfo = Exclude<Folder, 'creator' | 'applicationId'> & { creator: Creator } & {
   application: AppBaseInfo;
@@ -18,6 +18,7 @@ export type FolderInfo = Exclude<Folder, 'creator' | 'applicationId'> & { creato
 export type FileInfo = Exclude<File, 'creator' | 'applicationId'> & { creator: Creator } & {
   application: AppBaseInfo;
   hasContent?: boolean;
+  hasLiveContent?: boolean;
 };
 export type FileFolderInfo = { folders: FolderInfo[]; files: FileInfo[] };
 export type FolderUserInfo = Exclude<Folder, 'creator'> & { creator: Creator };
@@ -86,16 +87,12 @@ export interface FolderPageSearch {
   to?: number;
 }
 
-export interface WorkspaceFolderSearch {
+export interface WorkspaceFolderSearch extends Search {
   creator: string;
   types: string[];
   organizationId?: string;
   applicationIds?: string[],
-  deleted?: boolean;
   sort?: Record<string, number>;
-  search?: string;
-  page?: number;
-  size?: number;
 }
 
 export interface FileNameSearch {
@@ -116,21 +113,14 @@ export interface ResourceSearch {
   name?: string;
 }
 
-export interface AppFolderSearch {
-  deleted?: boolean;
-  search?: string;
-  page?: number;
-  size?: number;
+export interface AppFolderSearch extends Search {
   parentFolderId?: string;
   parentFolderIds?: string[];
 }
 
-export interface FolderChildrenSearch {
+export interface FolderChildrenSearch extends Search {
   parentFolderIds: string[];
   userIds?: string[],
-  search?: string;
-  page?: number;
-  size?: number;
   sort?: Record<string, number>;
 }
 
@@ -179,13 +169,9 @@ export interface NewFileInfo {
   content?: any;
 }
 
-export interface FileListSearch {
+export interface FileListSearch extends Search {
   applicationId: string;
   id: string;
-  deleted?: boolean;
-  search?: string;
-  page?: number;
-  size?: number;
 }
 
 export interface ProjectPageContent {

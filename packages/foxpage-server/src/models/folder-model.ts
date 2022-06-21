@@ -150,7 +150,7 @@ export class FolderModel extends BaseModel<Folder> {
     };
 
     if (params.applicationIds && params.applicationIds.length > 0) {
-      searchParams.applicationId = { $in: params.applicationIds }
+      searchParams.applicationId = { $in: params.applicationIds };
     }
 
     if (params.search) {
@@ -188,7 +188,7 @@ export class FolderModel extends BaseModel<Folder> {
     }
 
     if (params.applicationIds && params.applicationIds.length > 0) {
-      searchParams.applicationId = { $in: params.applicationIds }
+      searchParams.applicationId = { $in: params.applicationIds };
     }
 
     return this.model.countDocuments(searchParams);

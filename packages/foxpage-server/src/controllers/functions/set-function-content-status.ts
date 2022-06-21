@@ -39,7 +39,7 @@ export class SetFunctionContentStatus extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.FUNCTION });
 
       // Permission check
-      const hasAuth = await this.service.auth.content(params.id, { ctx, mask: 4 });
+      const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4090701);
       }

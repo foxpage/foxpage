@@ -5,8 +5,8 @@ import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
-import { METHOD } from '../../../config/constant';
-import { PageContentRelations } from '../../types/content-types';
+import { DSL_VERSION, METHOD } from '../../../config/constant';
+import { PageContentRelationsAndExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
@@ -36,7 +36,7 @@ export class GetAppPageLiveInfoList extends BaseController {
   async index (
     @Ctx() ctx: FoxCtx,
     @Body() params: AppContentVersionReq,
-  ): Promise<ResData<PageContentRelations[]>> {
+  ): Promise<ResData<PageContentRelationsAndExternal[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
       if (params.ids.length === 0) {
@@ -60,13 +60,15 @@ export class GetAppPageLiveInfoList extends BaseController {
         }
       });
 
-      const contentMockObject = await this.service.content.mock.getMockLiveVersions(
-        _.concat(validContentIds, templateIds)
-      );
+      const [contentMockObject, contentList] = await Promise.all([
+        this.service.content.mock.getMockLiveVersions(_.concat(validContentIds, templateIds)),
+        this.service.content.list.getDetailByIds(validContentIds),
+      ]);
 
       let dependMissing: string[] = [];
       let recursiveItem: string[] = [];
-      let contentAndRelation: PageContentRelations[] = [];
+      let contentAndRelation: PageContentRelationsAndExternal[] = [];
+      const contentObject = _.keyBy(contentList, 'id');
 
       contentVersionList.forEach((content) => {
         const dependMissing: string[] = [];
@@ -90,8 +92,16 @@ export class GetAppPageLiveInfoList extends BaseController {
 
         contentAndRelation.push(Object.assign(
           {},
-          _.pick(content, ['content', 'relations']),
+          _.pick(content, ['relations']),
           {
+            content: Object.assign(
+              {}, content.content, {
+              dslVersion: content.dslVersion || DSL_VERSION,
+              name: contentObject[content?.content?.id]?.title || '',
+              version: <string>content.version,
+              versionNumber: this.service.version.number.createNumberFromVersion(content.version || '0.0.1'),
+              fileId: contentObject[content?.content?.id]?.fileId || '',
+            }),
             mock: contentMockObject[content.id]?.mock || {},
             extension: contentMockObject[content.id]?.extension || {},
           }

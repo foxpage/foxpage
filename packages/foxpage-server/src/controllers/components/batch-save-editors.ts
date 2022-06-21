@@ -7,8 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Content, ContentStatus, File, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { PRE, TYPE, TAG, VERSION } from '../../../config/constant';
-import { NewResourceDetail } from '../../types/file-types';
+import { PRE, TAG, TYPE, VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { SaveEditorPackageReq } from '../../types/validates/component-validate-types';
 import { ResponseBase } from '../../types/validates/index-validate-types';
@@ -37,7 +36,7 @@ export class SaveEditorComponents extends BaseController {
   async index (
     @Ctx() ctx: FoxCtx,
     @Body() params: SaveEditorPackageReq,
-  ): Promise<ResData<NewResourceDetail[]>> {
+  ): Promise<ResData<Record<string, any>[]>> {
     try {
       const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
       if (!hasAuth) {
@@ -78,7 +77,7 @@ export class SaveEditorComponents extends BaseController {
 
       // add new editor
       let newVersion: Record<string, any> = {};
-      let editorNameMap: Record<string, string> = {};
+      let editorNameMap: Record<string, any> = {};
       const nameFileDetail: Record<string, File> = {};
       const nameContentDetail: Record<string, Content> = {};
       const editorObject = _.keyBy(params.components, 'name');
@@ -97,7 +96,7 @@ export class SaveEditorComponents extends BaseController {
         }, { ctx });
 
         if (editorObject[name]?.component?.content?.schema) {
-          editorObject[name].component.content.schema = JSON.stringify(editorObject[name]?.component?.content.schema)
+          editorObject[name].component.content.schema = JSON.stringify(editorObject[name]?.component?.content.schema);
         }
 
         this.service.version.info.create({
@@ -108,7 +107,7 @@ export class SaveEditorComponents extends BaseController {
           content: Object.assign({ id: nameContentDetail[name].id }, editorObject[name]?.component?.content),
         }, { ctx });
 
-        editorNameMap[name] = nameContentDetail[name].id || '';
+        editorNameMap[name] = { id: nameContentDetail[name].id || '', version: '0.0.1' };
       }
 
       // Get file content ids, get editor latest version
@@ -128,15 +127,24 @@ export class SaveEditorComponents extends BaseController {
               versionNumber: maxContentVersion[contentId].versionNumber + 1,
               content: editorObject[contentObject[contentId].title].component?.content || {},
             };
+            editorNameMap[contentObject[contentId].title] = {
+              id: contentId || '',
+              version: this.service.version.number.getVersionFromNumber(maxContentVersion[contentId].versionNumber + 1),
+            };
+          } else {
+            editorNameMap[contentObject[contentId].title] = {
+              id: contentId || '',
+              version: this.service.version.number.getVersionFromNumber(maxContentVersion[contentId].versionNumber),
+            };
           }
-          editorNameMap[contentObject[contentId].title] = contentId || '';
+
         }
       }
 
       // create new version
       for (const contentId in newVersion) {
         if (newVersion[contentId].content?.schema) {
-          newVersion[contentId].content.schema = JSON.stringify(newVersion[contentId].content.schema)
+          newVersion[contentId].content.schema = JSON.stringify(newVersion[contentId].content.schema);
         }
 
         this.service.version.info.create({

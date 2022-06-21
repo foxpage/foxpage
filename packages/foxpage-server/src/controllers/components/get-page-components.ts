@@ -92,7 +92,7 @@ export class GetPageComponentList extends BaseController {
       fileList.list.forEach((file) => {
         let contentId = contentObject[file.id]?.id || referenceObject[file?.tags?.[0]?.reference?.id]?.id || '';
         let liveVersionNumber = contentObject[file.id]?.liveVersionNumber || 0;
-        if (liveVersionNumber === 0) {
+        if (liveVersionNumber === 0 && file.tags?.[0]?.type === TAG.DELIVERY_REFERENCE) {
           liveVersionNumber = referenceObject[file?.tags?.[0]?.reference?.id]?.liveVersionNumber || 0;
         }
 

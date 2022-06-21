@@ -73,6 +73,8 @@ export class UpdateTemplateVersionDetail extends BaseController {
         return Response.warning(i18n.template.versionExist, 2071806);
       } else if (result.code === 4) {
         return Response.warning(i18n.template.missingFields + ':' + (<string[]>result.data).join(','), 2071807);
+      } else if (result.code === 4) {
+        return Response.warning(i18n.template.invalidRelations + ':' + (<string[]>result.data).join(','), 2071808);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);

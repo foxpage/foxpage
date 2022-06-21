@@ -42,12 +42,17 @@ export interface AppSetting {
   };
 }
 
+export interface AppHost {
+  url: string;
+  locales: string[];
+}
+
 // Application
 export interface Application extends CommonFields {
   name: string;
   intro: string;
   organizationId: string;
-  host?: string[];
+  host?: AppHost[];
   slug?: string;
   locales: string[];
   resources: AppResource[];
@@ -155,6 +160,7 @@ export interface CommonContentVersion extends CommonFields {
   contentId: string;
   version: string;
   versionNumber: number;
+  dslVersion?: string;
   status?: ContentStatus;
 }
 

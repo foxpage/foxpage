@@ -5,8 +5,8 @@ import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
-import { METHOD } from '../../../config/constant';
-import { PageContentRelations } from '../../types/content-types';
+import { DSL_VERSION, METHOD } from '../../../config/constant';
+import { PageContentRelationsAndExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
@@ -36,7 +36,7 @@ export class GetAppPageBuildInfoList extends BaseController {
   async index (
     @Ctx() ctx: FoxCtx,
     @Body() params: AppContentVersionReq,
-  ): Promise<ResData<PageContentRelations[]>> {
+  ): Promise<ResData<PageContentRelationsAndExternal[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE });
       if (params.ids.length === 0) {
@@ -53,10 +53,12 @@ export class GetAppPageBuildInfoList extends BaseController {
       }
 
       // Get the live details of the specified contentIds and the relation details
-      const contentVersionList = await this.service.version.live.getContentAndRelationVersion(
-        validContentIds,
-        true, // Get build version details
-      );
+      const [contentVersionList, contentList] = await Promise.all([
+        this.service.version.live.getContentAndRelationVersion(validContentIds, true),
+        this.service.content.list.getDetailByIds(validContentIds),
+      ]);
+
+      const contentObject = _.keyBy(contentList, 'id');
 
       let templateIds: string[] = [];
       contentVersionList.forEach(content => {
@@ -73,7 +75,7 @@ export class GetAppPageBuildInfoList extends BaseController {
 
       let dependMissing: string[] = [];
       let recursiveItem: string[] = [];
-      let contentAndRelation: PageContentRelations[] = [];
+      let contentAndRelation: PageContentRelationsAndExternal[] = [];
       contentVersionList.forEach((content) => {
         const dependMissing: string[] = [];
         if (content.dependMissing && content.dependMissing.length > 0) {
@@ -96,7 +98,18 @@ export class GetAppPageBuildInfoList extends BaseController {
         content.relations = this.service.version.relation.moveMockRelations(content.relations, mockTemplateRelations);
 
         contentAndRelation.push({
-          content: _.merge({}, content.content || {}, { extension: mockObject[content.id]?.extension || {} }),
+          content: Object.assign(
+            {},
+            content.content || {},
+            {
+              dslVersion: content.dslVersion || DSL_VERSION,
+              name: contentObject[content.content?.id]?.title || '',
+              version: <string>content.version,
+              versionNumber: this.service.version.number.createNumberFromVersion(content.version || '0.0.1'),
+              fileId: contentObject[content.content?.id]?.fileId || '',
+              extension: mockObject[content.id]?.extension || {}
+            }
+          ),
           relations: content.relations || {},
           mock: mockObject[content.id]?.mock || {},
         });

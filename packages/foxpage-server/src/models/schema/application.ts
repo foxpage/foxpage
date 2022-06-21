@@ -3,12 +3,13 @@ import { model, Schema } from 'mongoose';
 import { Application } from '@foxpage/foxpage-server-types';
 
 const resourceSchema = new Schema({ id: String, name: String, type: Number, detail: Object });
+const hostSchema = new Schema({ url: String, locales: [String] });
 const applicationSchema = new Schema<Application>(
   {
     id: { type: String, required: true, length: 20, unique: true },
     name: { type: String, required: true, minLength: 2, maxLength: 50 },
     intro: { type: String, maxLength: 1000, default: '' },
-    host: { type: [String], default: [] },
+    host: { type: [hostSchema], default: [] },
     slug: { type: String, maxLength: 100, default: '' },
     locales: { type: [String], default: [] },
     resources: { type: [resourceSchema], default: [] },
@@ -25,7 +26,7 @@ const applicationSchema = new Schema<Application>(
 );
 
 applicationSchema.set('toJSON', { getters: true });
-applicationSchema.pre('save', function(next) {
+applicationSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {

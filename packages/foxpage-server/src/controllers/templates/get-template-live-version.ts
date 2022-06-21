@@ -5,6 +5,7 @@ import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
+import { DSL_VERSION } from '../../../config/constant';
 import { PageBuildVersion } from '../../types/content-types';
 import { ResData } from '../../types/index-types';
 import { PageBuildVersionReq, PageBuildVersionRes } from '../../types/validates/page-validate-types';
@@ -48,6 +49,8 @@ export class GetTemplateLiveVersionDetail extends BaseController {
 
       // Splicing return result
       versionDetail.content.extension = versionInfo.mockObject[params.id]?.extension || {};
+      versionDetail.content.dslVersion = versionDetail.dslVersion || DSL_VERSION;
+      
       const mockRelations = versionInfo.mockObject[params.id]?.relations || {};
       versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockRelations);
 

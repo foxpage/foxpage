@@ -7,6 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
+import { DSL_VERSION } from '../../../config/constant';
 import { PageBuildVersion } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { PageBuildVersionReq, PageBuildVersionRes } from '../../types/validates/page-validate-types';
@@ -79,6 +80,7 @@ export class GetPageBuildVersionDetail extends BaseController {
 
       // Splicing return result
       versionDetail.content.extension = versionInfo.mockObject[params.id]?.extension || {};
+      versionDetail.content.dslVersion = versionDetail.dslVersion || DSL_VERSION;
       const mockRelations = versionInfo.mockObject[params.id]?.relations || {};
       const mockTemplateRelations = templateVersionInfo.mockObject[templateVersion.contentId as string]?.relations || {};
       versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockRelations);

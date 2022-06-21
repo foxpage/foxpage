@@ -147,7 +147,7 @@ export class SaveRemoteComponents extends BaseController {
               editorEntry.id =
                 checkResult.contentPath[item.resource.id][_.replace(editorEntry.path, pathPre, '')];
             } else {
-              editorEntry.id = await this.service.resource.getContentIdByPath(item.resource.groupId, _.drop(editorEntry.path.split('/')))
+              editorEntry.id = await this.service.resource.getContentIdByPath(item.resource.groupId, _.drop(editorEntry.path.split('/')));
             }
 
             delete editorEntry.contentId;

@@ -1,6 +1,6 @@
 {
   "name": "@foxpage/foxpage-server-types",
-  "version": "0.3.11",
+  "version": "0.3.15",
   "types": "index.d.ts",
   "type": "module",
   "main": "index.d.ts",

@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { Content, ContentStatus, ContentVersion, DSL, FileTypes } from '@foxpage/foxpage-server-types';
 
-import { LOG, TYPE, VERSION } from '../../../config/constant';
+import { DSL_VERSION, LOG, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { AppTypeContent, PageContentRelationInfos, VersionPublish } from '../../types/content-types';
 import { FoxCtx } from '../../types/index-types';
@@ -48,6 +48,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
 
   /**
    * Set the release status of the version, which can only be set from the base version to other versions
+   * Only set status to release, not set current data to live
    * @param  {VersionPublish} params
    * @param  {boolean} liveRelation, Mark whether to publish and set the relation associated with the version of live
    * @returns Promise
@@ -187,6 +188,8 @@ export class VersionLiveService extends BaseService<ContentVersion> {
       pageContentRelations.push({
         id: page.contentId,
         content: page.content as DSL,
+        version: page.version,
+        dslVersion: page.dslVersion || DSL_VERSION,
         relations,
         dependMissing,
         recursiveItem,

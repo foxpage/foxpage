@@ -8,7 +8,7 @@ import { FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD, TYPE } from '../../../config/constant';
-import { PageContentData } from '../../types/content-types';
+import { VersionWithExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
@@ -23,7 +23,7 @@ export class GetMockList extends BaseController {
   /**
    * Get the live version details of the mock specified under the application
    * @param  {AppContentVersionReq} params
-   * @returns {PageContentData[]}
+   * @returns {VersionWithExternal[]}
    */
   @Post('/lives')
   @OpenAPI({
@@ -33,16 +33,33 @@ export class GetMockList extends BaseController {
     operationId: 'get-mock-live-version-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<PageContentData[]>> {
+  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<VersionWithExternal[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
-      const pageList = await this.service.content.live.getContentLiveDetails({
-        applicationId: params.applicationId,
-        type: TYPE.MOCK as FileTypes,
-        contentIds: params.ids,
+      const [pageList, contentList] = await Promise.all([
+        this.service.content.live.getContentLiveDetails({
+          applicationId: params.applicationId,
+          type: TYPE.MOCK as FileTypes,
+          contentIds: params.ids || [],
+        }),
+        this.service.content.list.getDetailByIds(params.ids),
+      ]);
+
+      let pageVersions: VersionWithExternal[] = [];
+      const contentObject = _.keyBy(contentList, 'id');
+      pageList.forEach(item => {
+        pageVersions.push(Object.assign(
+          {},
+          item.content || {},
+          {
+            name: contentObject[item.contentId]?.title || '',
+            version:item.version || '',
+            fileId: contentObject[item.contentId]?.fileId || '',
+          }
+        ));
       });
 
-      return Response.success(_.map(pageList, 'content'), 1190601);
+      return Response.success(pageVersions, 1190601);
     } catch (err) {
       return Response.error(err, i18n.mock.getAppMockFailed, 3190601);
     }

@@ -12,7 +12,7 @@ import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
-  VersionPublishStatusReq,
+  VersionPublishStatus2Req,
 } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
@@ -37,13 +37,27 @@ export class SetVersionPublishStatus extends BaseController {
     operationId: 'set-variable-version-public-status',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: VersionPublishStatusReq): Promise<ResData<ContentVersion>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: VersionPublishStatus2Req): Promise<ResData<ContentVersion>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.VARIABLE });
 
-      const hasAuth = await this.service.auth.version(params.id, { ctx, mask: 8 });
+      // one of content id or version id must valid
+      if (!params.id && !params.contentId) {
+        return Response.warning(i18n.variable.invalidVariableId, 2081002);
+      }
+
+      const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4081001);
+      }
+
+      if (!params.id) {
+        const versionDetail = await this.service.version.info.getContentLatestVersion({ contentId: params.contentId });
+        params.id = versionDetail.id;
+      }
+
+      if (!params.id) {
+        return Response.warning(i18n.variable.invalidVariableId, 2081003);
       }
 
       // Set publishing status

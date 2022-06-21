@@ -26,6 +26,7 @@
     "updateAuthorizeDetailSuccess": "Update user authorized success",
     "updateAuthorizedFailed": "Update user authorized failed",
     "invalidAuthIds": "Invalid authorize ids",
+    "invalidTypeId": "Invalid type id",
     "setAuthorizeStatusSuccess": "Set authorize delete status success",
     "setAuthorizeStatusFailed": "Set authorize delete status failed",
     "updateOneTypeTargetAuth": "The authorization of only one piece of data can be updated at a time"

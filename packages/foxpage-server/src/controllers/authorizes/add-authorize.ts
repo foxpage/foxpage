@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Authorize } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { PRE } from '../../../config/constant';
+import { PRE, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AddAuthReq, AuthDetailRes } from '../../types/validates/authorize-validate-types';
 import * as Response from '../../utils/response';
@@ -35,6 +35,10 @@ export class AddAuthorizeDetail extends BaseController {
   @ResponseSchema(AuthDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: AddAuthReq): Promise<ResData<string>> {
     try {
+      if (params.type !== TYPE.SYSTEM && !params.typeId) {
+        return Response.warning(i18n.auth.invalidTypeId, 2180101);
+      }
+
       // check current user has auth to set or not
       const hasAuth = await this.service.auth.checkTypeIdAuthorize(_.pick(params, ['type', 'typeId']), {
         ctx,
@@ -70,7 +74,9 @@ export class AddAuthorizeDetail extends BaseController {
       }
 
       // Add new auth data
-      ctx.transactions.push(this.service.auth.addDetailQuery(typeAuthList));
+      if (typeAuthList.length > 0) {
+        ctx.transactions.push(this.service.auth.addDetailQuery(typeAuthList));
+      }
 
       // Update exist auth data
       if (authTargetIds.length > 0) {

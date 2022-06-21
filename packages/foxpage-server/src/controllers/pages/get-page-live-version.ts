@@ -7,6 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
+import { DSL_VERSION } from '../../../config/constant';
 import { PageBuildVersion } from '../../types/content-types';
 import { ResData } from '../../types/index-types';
 import { PageBuildVersionReq, PageBuildVersionRes } from '../../types/validates/page-validate-types';
@@ -20,18 +21,7 @@ export class GetPageLiveVersionDetail extends BaseController {
   }
 
   /**
-   * Get the build version details of the specified page content,
-   * and return the details of the relation and the details of the component
-   * 1, Get the live version of the page, if the version [does not exist/not base/deleted]
-   * 2, Get the Live information of the template that the page depends on
-   * 3, Get the components of the page/template
-   * 4, get the editor of the components in 3 and the dependent components
-   * 5, get the details of the components in 3 and 4
-   * 6, Get the component's resource id list
-   * 7, Get resource details by resource ID
-   * 8, Get all the relation information details of the page through the page details
-   * 9, encapsulate the returned relation list into {templates:[],variables:[]...} format
-   * 10, Replace the resource ID on the page with resource details
+   * Get page live version detail
    * @param  {AppContentVersionReq} params
    * @returns {PageContentData[]}
    */
@@ -77,6 +67,12 @@ export class GetPageLiveVersionDetail extends BaseController {
 
       // Splicing return result
       versionDetail.content.extension = versionInfo.mockObject[params.id]?.extension || {};
+      versionDetail.content.dslVersion = versionDetail.dslVersion || DSL_VERSION;
+
+      const mockRelations = versionInfo.mockObject[params.id]?.relations || {};
+      const mockTemplateRelations = templateVersionInfo.mockObject[templateVersion.contentId as string]?.relations || {};
+      versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockRelations);
+      versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockTemplateRelations);
 
       const pageBuildVersion: PageBuildVersion = Object.assign({}, versionDetail, {
         relations: versionInfo.relations || {},

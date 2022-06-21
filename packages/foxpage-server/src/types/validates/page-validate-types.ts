@@ -58,7 +58,7 @@ export class AppTypePageListCommonReq {
   @IsOptional()
   folderId: string;
 
-  @JSONSchema({ description: 'Response data type: project|app|all, default is app' })
+  @JSONSchema({ description: 'Response data type: live|"", default is empty to get all status data' })
   @IsString()
   @IsOptional()
   type: string;

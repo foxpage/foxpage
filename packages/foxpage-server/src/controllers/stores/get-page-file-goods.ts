@@ -20,6 +20,7 @@ interface GoodsWithAppInfo extends StoreGoods {
     applicationName?: string;
     creator?: string;
   };
+  application?: Record<string, any>;
   creator: Creator;
 }
 
@@ -68,6 +69,10 @@ export class GetStoreFileGoodsList extends BaseController {
           if (goods.details) {
             goods.details.applicationName = appObject?.[goods.details.applicationId]?.name || '';
             goods.creator = userObject[<string>goods.details.creator] || '';
+            goods.application = {
+              id:  goods.details.applicationId,
+              name:  goods.details.applicationName,
+            };
           }
         });
       }

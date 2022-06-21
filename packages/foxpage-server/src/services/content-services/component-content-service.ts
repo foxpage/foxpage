@@ -11,7 +11,7 @@ import {
   ResourceType,
 } from '@foxpage/foxpage-server-types';
 
-import { TYPE } from '../../../config/constant';
+import { PRE, TYPE } from '../../../config/constant';
 import * as Model from '../../models';
 import { ComponentContentInfo, ComponentInfo, ComponentNameVersion } from '../../types/component-types';
 import {
@@ -24,7 +24,8 @@ import {
   NameVersionContent,
   NameVersionPackage,
 } from '../../types/content-types';
-import { TRecord } from '../../types/index-types';
+import { FoxCtx , TRecord } from '../../types/index-types';
+import { generationId } from '../../utils/tools';
 import { BaseService } from '../base-service';
 import * as Service from '../index';
 
@@ -450,5 +451,35 @@ export class ComponentContentService extends BaseService<Content> {
         { version: contentVersion.version, package: contentVersion.content as ComponentDSL },
       );
     });
+  }
+
+  /**
+   * Clone package content
+   * @param targetFileId 
+   * @param sourceFileId 
+   * @param options 
+   */
+  async cloneContent(targetFileId:string, sourceFileId:string, options: { ctx: FoxCtx }): Promise<void> {
+    const contentList = await Service.content.file.getContentByFileIds([sourceFileId]);
+    const contentInfo = contentList[0] || {};
+    const contentId = contentInfo?.id || '';
+    if (contentId) {
+      const contentDetail = Service.content.info.create({
+        id: generationId(PRE.CONTENT),
+        title: _.trim(contentInfo?.title) || '',
+        fileId: targetFileId,
+        creator: options.ctx.userInfo.id,
+      }, options);
+
+      const versionInfo = await Service.version.info.getDetail({contentId, versionNumber:  contentInfo?.liveVersionNumber });
+      Service.version.info.create({
+        id: generationId(PRE.CONTENT_VERSION),
+        contentId: contentDetail.id,
+        version: versionInfo.version || '0.0.1',
+        versionNumber: versionInfo.versionNumber || 1,
+        content: Object.assign({ id: contentDetail.id }, versionInfo.content || {}),
+        creator: options.ctx.userInfo.id,
+      }, options);
+    }
   }
 }

@@ -45,7 +45,7 @@ export class SetComponentLiveVersions extends BaseController {
       // set component live and update reference component's application status
       const [result] = await Promise.all([
         this.service.content.live.setLiveVersion(params, { ctx }),
-        this.service.component.updateReferLiveVersion(contentDetail.fileId, { ctx }),
+        this.service.component.updateReferLiveVersion(contentDetail.id, contentDetail.fileId, { ctx }),
       ]);
 
       if (result.code === 1) {

@@ -5,7 +5,7 @@ import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
-import { METHOD } from '../../../config/constant';
+import { DSL_VERSION, METHOD } from '../../../config/constant';
 import { PageContentRelations } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
@@ -92,7 +92,13 @@ export class GetAppTemplateBuildInfoList extends BaseController {
         }
 
         contentAndRelation.push({
-          content: _.merge({}, content.content || {}, { extension: mockObject[content.id]?.extension || {} }),
+          content: Object.assign({},
+            content.content || {},
+            {
+              dslVersion: content.dslVersion || DSL_VERSION,
+              extension: mockObject[content.id]?.extension || {}
+            }
+          ),
           relations: content.relations || {},
           mock: mockObject[content.id]?.mock || {},
         });

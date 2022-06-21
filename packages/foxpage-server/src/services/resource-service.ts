@@ -6,9 +6,9 @@ import { config } from '../../app.config';
 import { PRE, TAG, TYPE } from '../../config/constant';
 import * as Service from '../services';
 import { ContentPath } from '../types/component-types';
+import { VersionNumber } from '../types/content-types';
 import { NewResourceDetail } from '../types/file-types';
 import { FoxCtx, IdVersion } from '../types/index-types';
-import { VersionNumber } from '../types/content-types';
 import { formatToPath, generationId } from '../utils/tools';
 
 import { PluginService } from './plugin-services';

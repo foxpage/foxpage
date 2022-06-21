@@ -316,4 +316,26 @@ export class VersionListService extends BaseService<ContentVersion> {
       liveVersionInfoObject,
     );
   }
+  /**
+   * get refer content version detail
+   * response {fileId: contentVersion}
+   * @param contentList 
+   * @returns 
+   */
+  async getReferVersionList (fileMaps: Record<string, string>): Promise<Record<string, ContentVersion>> {
+    if (_.isEmpty(fileMaps)) {
+      return {};
+    }
+
+    const fileContentList = await Service.content.file.getContentByFileIds(_.values(fileMaps));
+    const fileContentObject = _.keyBy(fileContentList, 'fileId');
+    const contentIds = _.map(fileContentList, 'id');
+    const versionObject = await Service.version.list.getLiveVersionByContentIds(contentIds);
+    let fileVersions: Record<string, ContentVersion> = {};
+    for (const fileId in fileMaps) {
+      fileVersions[fileId] = versionObject[fileContentObject[fileMaps[fileId]]?.id] || {};
+    }
+
+    return fileVersions;
+  }
 }

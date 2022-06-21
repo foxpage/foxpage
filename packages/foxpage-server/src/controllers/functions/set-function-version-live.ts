@@ -36,7 +36,7 @@ export class SetFunctionLiveVersions extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.FUNCTION });
 
-      const hasAuth = await this.service.auth.content(params.id, { ctx, mask: 8 });
+      const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4090901);
       }

@@ -37,7 +37,7 @@ export class GetStoreProjectList extends BaseController {
     operationId: 'get-store-page-template-page-list',
   })
   @ResponseSchema(GetPageTemplateListRes)
-  async index(
+  async index (
     @Ctx() ctx: FoxCtx,
     @Body() params: GetPageTemplateListReq,
   ): Promise<ResData<ProjectGoodsInfo>> {

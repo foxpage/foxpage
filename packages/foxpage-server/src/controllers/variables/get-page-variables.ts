@@ -4,11 +4,11 @@ import _ from 'lodash';
 import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { AppFolderTypes, Content, ContentVersion, FileTypes } from '@foxpage/foxpage-server-types';
+import { AppFolderTypes, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { TYPE } from '../../../config/constant';
-import { ContentInfo, FileContentAndVersion } from '../../types/content-types';
+import { FileContentAndVersion } from '../../types/content-types';
 import { ResData } from '../../types/index-types';
 import { AppContentListRes, AppTypePageListCommonReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
@@ -34,10 +34,8 @@ export class GetPageVariableList extends BaseController {
     operationId: 'get-page-variable-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index(@QueryParams() params: AppTypePageListCommonReq): Promise<ResData<ContentInfo[]>> {
+  async index (@QueryParams() params: AppTypePageListCommonReq): Promise<ResData<FileContentAndVersion[]>> {
     try {
-      let fileListPromise = [];
-      let appFolderId = '';
       this.service.folder.info.setPageSize(params);
 
       if (params.folderId) {
@@ -45,89 +43,24 @@ export class GetPageVariableList extends BaseController {
         if (!folderDetail || folderDetail.deleted || folderDetail.applicationId !== params.applicationId) {
           return Response.warning(i18n.folder.invalidFolderId, 2080301);
         }
-
-        fileListPromise.push(
-          this.service.file.list.getFileListByFolderId(params.folderId, { type: TYPE.VARIABLE as FileTypes }),
-        );
-      }
-
-      if (params.type !== TYPE.PROJECT) {
-        appFolderId = await this.service.folder.info.getAppTypeFolderId({
+      } else {
+        const appFolderId = await this.service.folder.info.getAppTypeFolderId({
           applicationId: params.applicationId,
           type: TYPE.VARIABLE as AppFolderTypes,
         });
-
-        fileListPromise.push(
-          this.service.file.list.getFileListByFolderId(appFolderId, { type: TYPE.VARIABLE as FileTypes }),
-        );
+        params.folderId = appFolderId;
       }
 
-      const fileList = _.flatten(await Promise.all(fileListPromise));
-
-      let fileVersion: FileContentAndVersion[] = [];
-      const pageFileList = _.chunk(fileList, params.size)[params.page - 1] || [];
-
-      if (pageFileList.length > 0) {
-        const appFileList = _.remove(pageFileList, (file) => file.folderId === appFolderId);
-
-        // Get the live details of the content of the file
-        let appContentList: Content[] = [];
-        let appVersionObject: Record<string, ContentVersion> = {};
-        let appVersionItemRelation: Record<string, any[]> = {};
-        if (appFileList.length > 0) {
-          appContentList = await this.service.content.file.getContentByFileIds(_.map(pageFileList, 'id'));
-          appVersionObject = await this.service.version.list.getContentMaxVersionDetail(
-            _.map(appContentList, 'id'),
-          );
-          appVersionItemRelation = await this.service.version.list.getVersionListRelations(
-            _.toArray(appVersionObject),
-          );
-        }
-
-        let contentList: Content[] = [];
-        let versionObject: Record<string, ContentVersion> = {};
-        let versionItemRelation: Record<string, any[]> = {};
-        if (pageFileList.length > 0) {
-          contentList = await this.service.content.file.getContentByFileIds(_.map(pageFileList, 'id'));
-          versionObject = await this.service.version.list.getContentMaxVersionDetail(
-            _.map(contentList, 'id'),
-          );
-          versionItemRelation = await this.service.version.list.getVersionListRelations(
-            _.toArray(versionObject),
-            false,
-          );
-        }
-
-        // Splicing combination returns data
-        const fileObject = _.keyBy(appFileList.concat(pageFileList), 'id');
-        const allVersionItemRelations = _.merge(appVersionItemRelation, versionItemRelation);
-        const allVersionObject = _.merge(appVersionObject, versionObject);
-        for (const content of appContentList.concat(contentList)) {
-          const itemRelations = await this.service.relation.formatRelationDetailResponse(
-            allVersionItemRelations[content.id],
-          );
-
-          fileVersion.push({
-            id: fileObject?.[content.fileId]?.id,
-            name: fileObject?.[content.fileId]?.name,
-            type: fileObject?.[content.fileId]?.type,
-            version: allVersionObject?.[content.id]?.version || '',
-            versionNumber: content.liveVersionNumber || allVersionObject?.[content.id]?.versionNumber,
-            contentId: content.id,
-            content: allVersionObject?.[content.id]?.content || {},
-            relations: itemRelations,
-          });
-        }
-      }
+      const fileInfo = await this.service.file.list.getItemFileContentDetail(params, <FileTypes>TYPE.VARIABLE);
 
       return Response.success(
         {
           pageInfo: {
-            total: fileList.length,
+            total: fileInfo.counts,
             page: params.page,
             size: params.size,
           },
-          data: fileVersion,
+          data: fileInfo.list,
         },
         1080301,
       );

@@ -4,7 +4,6 @@ import { FoxCtx } from 'src/types/index-types';
 import {
   Component,
   ComponentDSL,
-  Content,
   ContentVersion,
   Dependencies,
   EditorEntry,
@@ -282,7 +281,7 @@ export class ComponentService {
   * @returns 
   */
   async getComponentInfoByNames (applicationId: string, componentNames: string[]) {
-    return Service.file.info.find({ applicationId, type: TYPE.COMPONENT, name: { $in: componentNames }, deleted: false })
+    return Service.file.info.find({ applicationId, type: TYPE.COMPONENT, name: { $in: componentNames }, deleted: false });
   }
 
   /**
@@ -290,7 +289,7 @@ export class ComponentService {
    * @param fileId 
    * @param options 
    */
-  async updateReferLiveVersion (fileId: string, options: { ctx: FoxCtx }): Promise<void> {
+  async updateReferLiveVersion (contentId: string, fileId: string, options: { ctx: FoxCtx }): Promise<void> {
     // Get referenced applications file id
     const referenceFileList = await Service.file.list.find({
       type: TYPE.COMPONENT,
@@ -300,8 +299,10 @@ export class ComponentService {
 
     (referenceFileList || []).forEach(file => {
       options.ctx.operations.push(
-        ...Service.log.addLogItem(LOG.LIVE, ({} as Content), {
+        ...Service.log.addLogItem(LOG.LIVE, ({ id: contentId, contentId }), {
           fileId: file.id,
+          category: { type: TYPE.APPLICATION, id: file.applicationId },
+          dataType: TYPE.COMPONENT,
         }),
       );
     });

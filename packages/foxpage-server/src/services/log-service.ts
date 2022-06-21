@@ -70,7 +70,7 @@ export class LogService extends BaseService<Log> {
             transactionId: ctx.logAttr.transactionId,
             id: generationId(PRE.LOG),
             category: _.isString(log.category) ? this.getLogCategory(log.category, ctx) : log.category,
-            operator: operator,
+            operator: operator || 'anonymous',
             deleted: false,
           }),
         );
@@ -272,7 +272,7 @@ export class LogService extends BaseService<Log> {
   addLogItem<T extends { id: string; contentId?: string }> (
     action: string,
     data: T | T[],
-    options?: { dataType?: string; fileId?: string },
+    options?: { dataType?: string; fileId?: string, category?: Record<string, string> },
   ): any[] {
     !_.isArray(data) && (data = [data]);
 
@@ -281,7 +281,7 @@ export class LogService extends BaseService<Log> {
     data.forEach((cell) => {
       logData.push({
         action: action,
-        category: LOG.CATEGORY_APPLICATION,
+        category: options?.category || LOG.CATEGORY_APPLICATION,
         content: {
           id: cell?.id || '',
           contentId: cell?.contentId || '',

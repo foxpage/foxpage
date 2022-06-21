@@ -3,13 +3,16 @@ import { model, Schema } from 'mongoose';
 
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
+import { DSL_VERSION, VERSION } from '../../../config/constant';
+
 const contentVersionSchema = new Schema<ContentVersion>(
   {
     id: { type: String, required: true, length: 20, unique: true },
     contentId: { type: String, required: true, length: 20 },
     version: { type: String, maxLength: 20, default: '' },
     versionNumber: { type: Number, min: 0, default: 0 },
-    status: { type: String, maxLength: 20, default: 'base' },
+    dslVersion: { type: String, default: DSL_VERSION },
+    status: { type: String, maxLength: 20, default: VERSION.STATUS_BASE },
     content: { type: Object, default: {} },
     creator: { type: String, required: true, length: 20 },
     createTime: { type: Date, default: Date.now, required: true },
@@ -22,7 +25,7 @@ const contentVersionSchema = new Schema<ContentVersion>(
   },
 );
 
-contentVersionSchema.pre('save', function(next) {
+contentVersionSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {
@@ -32,10 +35,16 @@ contentVersionSchema.pre('save', function(next) {
   if (this.content?.meta && !_.isPlainObject(this.content.meta)) {
     this.content.meta = JSON.stringify(this.content.meta);
   }
+  if (this.content?.schema && !_.isPlainObject(this.content.schema)) {
+    this.content.schema = JSON.stringify(this.content.schema);
+  }
+  if (this.content?.relation && !_.isPlainObject(this.content.relation)) {
+    this.content.relation = JSON.stringify(this.content.relation);
+  }
   next();
 });
 
-contentVersionSchema.pre(['update', 'updateOne', 'updateMany'], function(next) {
+contentVersionSchema.pre(['update', 'updateOne', 'updateMany'], function (next) {
   const versionContent = (this.getUpdate() || {}) as ContentVersion;
 
   if (versionContent.content) {
@@ -47,12 +56,16 @@ contentVersionSchema.pre(['update', 'updateOne', 'updateMany'], function(next) {
       versionContent.content.schema = JSON.stringify(versionContent.content.schema);
     }
 
+    if (versionContent?.content?.relation && _.isPlainObject(versionContent.content.relation)) {
+      versionContent.content.relation = JSON.stringify(versionContent.content.relation);
+    }
+
     this.update({}, { $set: { content: versionContent.content } });
   }
   next();
 });
 
-contentVersionSchema.pre('insertMany', function(next: any, docs: ContentVersion[]) {
+contentVersionSchema.pre('insertMany', function (next: any, docs: ContentVersion[]) {
   if (_.isArray(docs) && docs.length > 0) {
     for (const doc of docs) {
       if (doc.content) {
@@ -63,6 +76,10 @@ contentVersionSchema.pre('insertMany', function(next: any, docs: ContentVersion[
         if (doc?.content?.schema && _.isPlainObject(doc.content.schema)) {
           doc.content.schema = JSON.stringify(doc.content.schema);
         }
+
+        if (doc?.content?.relation && _.isPlainObject(doc.content.relation)) {
+          doc.content.relation = JSON.stringify(doc.content.relation);
+        }
       }
     }
   }
@@ -71,7 +88,7 @@ contentVersionSchema.pre('insertMany', function(next: any, docs: ContentVersion[
 });
 
 // Format `meta` filed in version content after query
-contentVersionSchema.post(['find', 'findOne'], function(result) {
+contentVersionSchema.post(['find', 'findOne'], function (result) {
   if (result) {
     !_.isArray(result) && (result = [result]);
     result.forEach((item: any) => {
@@ -85,6 +102,14 @@ contentVersionSchema.post(['find', 'findOne'], function(result) {
       if (item?.content?.schema && _.isString(item.content.schema)) {
         try {
           item.content.schema = JSON.parse(item.content.schema);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+
+      if (item?.content?.relation && _.isString(item.content.relation)) {
+        try {
+          item.content.relation = JSON.parse(item.content.relation);
         } catch (err) {
           console.log(err);
         }

@@ -4,11 +4,11 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { ContentVersion, FileTypes } from '@foxpage/foxpage-server-types';
+import { FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
-import { PageContentData, VersionWithMock } from '../../types/content-types';
+import { DSL_VERSION, METHOD, TYPE } from '../../../config/constant';
+import { PageContentData, VersionWithExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
@@ -36,16 +36,20 @@ export class GetPageLivesList extends BaseController {
   async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<PageContentData[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
-      const pageList: ContentVersion[] = await this.service.content.live.getContentLiveDetails({
-        applicationId: params.applicationId,
-        type: TYPE.PAGE as FileTypes,
-        contentIds: params.ids || [],
-      });
+      const [pageList, contentList] = await Promise.all([
+        this.service.content.live.getContentLiveDetails({
+          applicationId: params.applicationId,
+          type: TYPE.PAGE as FileTypes,
+          contentIds: params.ids || [],
+        }),
+        this.service.content.list.getDetailByIds(params.ids),
+      ]);
 
+      const contentObject = _.keyBy(contentList, 'id');
       const contentIds = _.map(pageList, 'contentId');
       const mockObject = await this.service.content.mock.getMockLiveVersions(contentIds);
 
-      let pageVersions: VersionWithMock[] = [];
+      let pageVersions: VersionWithExternal[] = [];
       pageList.forEach(item => {
         const mockRelations = mockObject[item.contentId]?.relations || {};
         item.content.relations = this.service.version.relation.moveMockRelations(item.content.relations, mockRelations);
@@ -54,6 +58,11 @@ export class GetPageLivesList extends BaseController {
           {},
           item.content || {},
           {
+            dslVersion: item.dslVersion || DSL_VERSION,
+            name: contentObject[item.contentId]?.title || '',
+            version: item.version || '',
+            versionNumber: this.service.version.number.createNumberFromVersion(item.version || '0.0.1'),
+            fileId: contentObject[item.contentId]?.fileId || '',
             mock: mockObject[item.contentId]?.mock || {},
             extension: mockObject[item.contentId]?.extension || {},
           }

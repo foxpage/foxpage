@@ -84,6 +84,16 @@ export class AppResource {
   id: string;
 }
 
+export class AppHostInfo {
+  @JSONSchema({ description: 'Host url' })
+  @IsString()
+  url: string;
+
+  @JSONSchema({ description: 'Host locales' })
+  @IsArray()
+  locales: Array<string>;
+}
+
 export class AppBaseDetail {
   @JSONSchema({ description: 'Application Name' })
   @IsString()
@@ -99,7 +109,7 @@ export class AppBaseDetail {
   @JSONSchema({ description: 'Application Host' })
   @IsArray()
   @IsOptional()
-  host: Array<string>;
+  host: AppHostInfo[];
 
   @JSONSchema({ description: 'App Slug' })
   @IsString()

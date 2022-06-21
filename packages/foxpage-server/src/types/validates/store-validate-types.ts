@@ -152,6 +152,12 @@ export class AddGoodsToApplicationReq {
   delivery: string;
 }
 
+export class AddGoodsItemTpApplicationReq extends AddGoodsToApplicationReq {
+  @JSONSchema({ description: 'Item type, variable|condition|function..' })
+  @IsString()
+  type: string;
+}
+
 export class GetStorePackageListRes extends ResponsePageBase {
   @ValidateNested({ each: true })
   @IsArray()

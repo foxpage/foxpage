@@ -1,9 +1,8 @@
-export interface StorePageParams {
+import { Search } from './index-types';
+
+export interface StorePageParams extends Search {
   type?: string;
   appIds?: string[];
-  search?: string;
-  page?: number;
-  size?: number;
 }
 
 export interface StoreFileStatus {

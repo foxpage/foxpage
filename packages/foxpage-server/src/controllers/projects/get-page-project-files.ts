@@ -4,6 +4,8 @@ import _ from 'lodash';
 import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
+import { Content } from '@foxpage/foxpage-server-types';
+
 import { i18n } from '../../../app.config';
 import { TYPE } from '../../../config/constant';
 import { FileFolderInfo } from '../../types/file-types';
@@ -49,11 +51,19 @@ export class GetProjectFileList extends BaseController {
 
       const fileIds = _.map(childrenList.data?.files || [], 'id');
       const fileContents = await this.service.content.list.find({ fileId: { $in: fileIds }, deleted: false });
-      const existContentFileIds = _.map(fileContents, 'fileId');
+      let fileContentList:Record<string, Content[]> = {};
+      fileContents.forEach(content => {
+        if (!fileContentList[content.fileId]) {
+          fileContentList[content.fileId] = [];
+        }
+        fileContentList[content.fileId].push(content);
+      });
 
       (childrenList.data?.files || []).forEach(file => {
-        file.hasContent = existContentFileIds.indexOf(file.id) !== -1;
+        file.hasContent = _.has(fileContentList, file.id);
+        file.hasLiveContent = (_.filter(fileContentList[file.id] || [], content => content.liveVersionNumber > 0)).length > 0;
       });
+
 
       return Response.success(
         {

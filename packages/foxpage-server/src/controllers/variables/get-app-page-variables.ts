@@ -5,7 +5,7 @@ import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { TAG, TYPE } from '../../../config/constant';
 import { ContentInfo } from '../../types/content-types';
 import { AppTypeFileParams, FileAssoc } from '../../types/file-types';
 import { ResData } from '../../types/index-types';
@@ -45,6 +45,18 @@ export class GetPageVariableList extends BaseController {
       if (result.list.length > 0) {
         fileList = await this.service.file.list.getFileAssocInfo(result.list, { type: TYPE.VARIABLE });
       }
+
+      // get reference variable version detail
+      let referenceMap = this.service.content.tag.getContentCopyTags(
+        _.map(fileList, item => _.pick(item, 'id', 'tags')) as {id:string, tags: any[]}[], 
+        TAG.COPY
+      );
+      const referVersionObject = await this.service.version.list.getReferVersionList(referenceMap);
+      fileList.forEach(variable => {
+        if (referVersionObject[variable.id]) {
+          variable.content = referVersionObject[variable.id]?.content || {};
+        }
+      });
 
       return Response.success(
         {
