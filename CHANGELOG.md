@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.4](https://github.com/foxpage/foxpage/compare/v0.3.3...v0.3.4) (2022-07-01)
+
+
+### Bug Fixes
+
+* 🐛 fixed check create variable and condition auth failed ([eeb738e](https://github.com/foxpage/foxpage/commit/eeb738e19af141962b52a5c402bff318b88cb676))
+
 ### [0.3.3](https://github.com/foxpage/foxpage/compare/v0.3.2...v0.3.3) (2022-07-01)
 
 
