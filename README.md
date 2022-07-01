@@ -18,6 +18,8 @@ Foxpage is a lightweight front-end low-code framework.
 
 English | [简体中文](./README.zh-CN.md)
 
+<a href="https://www.foxpage.io/#/guide" target="_blank">Read the using document</a>
+
 ## Features
 
 - 🖥️ **Visualization**. Provides visual page editing, what you see is what you get.
@@ -40,7 +42,7 @@ English | [简体中文](./README.zh-CN.md)
 
 ## Getting Started
 
-<a href="https://www.foxpage.io/#/guide" target="_blank">Read the Getting Started tutorial</a> or follow the steps below:
+<!-- Read the Getting Started tutorial or follow the steps below: -->
 
 ### ⏳ Installation
 

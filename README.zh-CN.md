@@ -19,6 +19,8 @@ Foxpage 是一个轻量级前端低代码框架。
 
 [English](./README.md) | 简体中文
 
+<a href="https://console.foxfamily.io/#/guide" target="_blank">阅读使用教程</a>
+
 ## 特性
 
 - 🖥️ **可视化**，提供可视化的前端页面搭建，所见即所得。
@@ -40,8 +42,6 @@ Foxpage 是一个轻量级前端低代码框架。
 ```
 
 ## 开始使用
-
-<a href="https://console.foxfamily.io/#/guide" target="_blank">阅读入门教程</a> 或者按照以下步骤操作:
 
 ### ⏳ 安装
 
