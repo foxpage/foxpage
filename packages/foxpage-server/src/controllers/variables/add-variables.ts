@@ -41,7 +41,12 @@ export class AddVariableDetail extends BaseController {
     }
 
     try {
-      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      let hasAuth = false;
+      if (params.folderId) {
+        hasAuth = await this.service.auth.folder(params.folderId, { ctx });
+      } else {
+        hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      }
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4080101);
       }

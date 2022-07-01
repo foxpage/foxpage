@@ -122,6 +122,7 @@ export const formatResponse = (
         const tmpFile = transformArrToObject(
           key.split('/'),
           _.startsWith(pkg.manifest[key], '/') ? '' : '/' + pkg.manifest[key],
+          pkg,
         );
         manifestFile = _.merge(manifestFile, tmpFile);
       }
@@ -130,7 +131,7 @@ export const formatResponse = (
         name: pkg.name,
         version: pkg.version,
         foxpage: Object.assign(
-          { resourceName: pkg.name },
+          { resourceName: _.last(pkg.name.split('/')) },
           pkgFoxpageObject[pkg.name + '@' + pkg.version]?.foxpage,
         ),
         files: manifestFile,
@@ -147,11 +148,11 @@ export const formatResponse = (
  * @param  {string} value
  * @returns any
  */
-const transformArrToObject = (keyArr: string[], value: string): any => {
+const transformArrToObject = (keyArr: string[], value: string, pkg?: Record<string, any>): any => {
   let itemObject: any = {};
   for (const key of _.reverse(keyArr)) {
     if (key === _.first(keyArr)) {
-      itemObject[key] = value;
+      itemObject[key] = '/' + pkg.name + '@' + pkg.version + '/dist' + value;
     } else {
       itemObject = { [key]: itemObject };
     }

@@ -1,6 +1,6 @@
 {
   "name": "@foxpage/foxpage-plugin-unpkg",
-  "version": "0.3.7",
+  "version": "0.3.12",
   "main": "lib/main.js",
   "types": "lib/main.d.ts",
   "license": "MIT",

@@ -96,7 +96,6 @@ export class GetAppTemplateBuildInfoList extends BaseController {
             content.content || {},
             {
               dslVersion: content.dslVersion || DSL_VERSION,
-              extension: mockObject[content.id]?.extension || {}
             }
           ),
           relations: content.relations || {},

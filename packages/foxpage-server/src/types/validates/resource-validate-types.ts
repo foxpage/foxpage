@@ -376,10 +376,9 @@ export class ResourceRemoteURLReq {
   @Length(20, 20)
   applicationId: string;
 
-  @JSONSchema({ description: 'Resource Group ID' })
+  @JSONSchema({ description: 'Resource type name' })
   @IsString()
-  @Length(20, 20)
-  id: string;
+  resourceType: string;
 
   @JSONSchema({ description: 'Resource Group scope' })
   @IsString()

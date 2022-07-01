@@ -53,12 +53,7 @@ export class GetAppPageBuildInfoList extends BaseController {
       }
 
       // Get the live details of the specified contentIds and the relation details
-      const [contentVersionList, contentList] = await Promise.all([
-        this.service.version.live.getContentAndRelationVersion(validContentIds, true),
-        this.service.content.list.getDetailByIds(validContentIds),
-      ]);
-
-      const contentObject = _.keyBy(contentList, 'id');
+      const contentVersionList = await this.service.version.live.getContentAndRelationVersion(validContentIds, true);
 
       let templateIds: string[] = [];
       contentVersionList.forEach(content => {
@@ -103,11 +98,6 @@ export class GetAppPageBuildInfoList extends BaseController {
             content.content || {},
             {
               dslVersion: content.dslVersion || DSL_VERSION,
-              name: contentObject[content.content?.id]?.title || '',
-              version: <string>content.version,
-              versionNumber: this.service.version.number.createNumberFromVersion(content.version || '0.0.1'),
-              fileId: contentObject[content.content?.id]?.fileId || '',
-              extension: mockObject[content.id]?.extension || {}
             }
           ),
           relations: content.relations || {},

@@ -212,9 +212,9 @@ export interface VersionCheckResult {
 }
 
 export interface VersionWithExternal extends DSL {
-  name: string;
-  version: string;
-  fileId: string;
+  name?: string;
+  version?: string;
+  fileId?: string;
   mocks?: Record<string, DSL>;
   extension?: Record<string, string>;
 }
