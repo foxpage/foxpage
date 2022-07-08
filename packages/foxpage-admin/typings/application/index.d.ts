@@ -22,7 +22,10 @@ export interface Application {
   name: string;
   organizationId: string;
   slug: string;
-  host: string[];
+  host: Array<{
+    url: string;
+    locales: string[];
+  }>;
   locales: string[];
   createTime: string;
   updateTime: string;
@@ -30,12 +33,16 @@ export interface Application {
   deleted: boolean;
   resources: ApplicationResourceType[];
 }
+
 export interface ApplicationUpdateType {
   applicationId: string;
   intro: string;
   name: string;
   slug: string;
-  host: string[];
+  host: Array<{
+    url: string;
+    locales: string[];
+  }>;
   locales: string[];
   resources: ApplicationResourceType[];
 }

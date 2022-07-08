@@ -39,22 +39,36 @@ function* handleFetchList(action: ProjectListActionType) {
 
   const {
     organizationId,
+    applicationId,
+    type,
     page = 1,
     search = '',
     size = 10,
-    type = 'user',
   } = action.payload as ProjectListFetchParams;
   const {
     global: { fetchListFailed },
   } = getBusinessI18n();
 
-  const rs = yield call(API.fetchProjects, {
+  let params: ProjectListFetchParams = {
     page,
     search,
     size,
     organizationId,
-    type,
-  });
+  };
+  if (type) {
+    params = {
+      ...params,
+      type,
+    };
+  }
+  if (applicationId) {
+    params = {
+      ...params,
+      applicationId,
+    };
+  }
+
+  const rs = yield call(API.fetchProjects, params);
   if (rs.code === 200) {
     yield put(ACTIONS.pushProjectList(rs.data || [], rs.pageInfo));
   } else {
@@ -111,10 +125,11 @@ function* save(action: ProjectListActionType) {
 }
 
 function* deleteProject(action: ProjectListActionType) {
-  const { id, applicationId, organizationId } = action.payload as {
+  const { id, applicationId, organizationId, from } = action.payload as {
     id: string;
     applicationId: string;
     organizationId: string;
+    from?: string;
   };
   const { pageInfo, projectList } = store.getState().workspace.projects.project.list;
   const {
@@ -128,7 +143,26 @@ function* deleteProject(action: ProjectListActionType) {
   if (rs.code === 200) {
     message.success(deleteSuccess);
     const page = projectList.length === 1 && pageInfo.page > 1 ? pageInfo.page - 1 : pageInfo.page;
-    yield put(ACTIONS.fetchProjectList({ organizationId, ...pageInfo, page, search: '', type: 'user' }));
+
+    let params: ProjectListFetchParams = {
+      organizationId,
+      ...pageInfo,
+      page,
+      search: '',
+    };
+    if (from === 'app') {
+      params = {
+        ...params,
+        applicationId,
+      };
+    } else {
+      params = {
+        ...params,
+        type: 'user',
+      };
+    }
+
+    yield put(ACTIONS.fetchProjectList(params));
   } else {
     message.error(rs.msg || deleteFailed);
   }

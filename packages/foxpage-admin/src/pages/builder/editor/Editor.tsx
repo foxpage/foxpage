@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import _ from 'lodash';
 import { RootState } from 'typesafe-actions';
 
 import { FileTypeEnum } from '@/constants/global';
@@ -17,15 +16,14 @@ const mapStateToProps = (store: RootState) => ({
 
 type EditorDrawerProps = ReturnType<typeof mapStateToProps>;
 
-const EditorDrawer: React.FC<EditorDrawerProps> = props => {
+const EditorDrawer: React.FC<EditorDrawerProps> = (props) => {
   const { selectedComponentId, versionType } = props;
 
   return (
     <>
       <div style={{ height: '100%' }}>
-        {(!selectedComponentId || selectedComponentId === SYSTEM_PAGE) && versionType === FileTypeEnum.page && (
-          <PageEditor />
-        )}
+        {(!selectedComponentId || selectedComponentId === SYSTEM_PAGE) &&
+          versionType === FileTypeEnum.page && <PageEditor />}
       </div>
     </>
   );

@@ -60,6 +60,7 @@ const mapStateToProps = (store: RootState) => ({
   selectedAppIds: store.store.list.selectedAppIds,
   projectResourceList: store.store.list.projectResourceList,
   packageResourceList: store.store.list.packageResourceList,
+  variableResourceList: store.store.list.variableResourceList,
   applicationList: store.store.list.allApplication,
 });
 
@@ -76,7 +77,7 @@ interface IProps {
 
 type StoreResourceToolProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
 
-const SelectTool: React.FC<StoreResourceToolProps> = props => {
+const SelectTool: React.FC<StoreResourceToolProps> = (props) => {
   const {
     type,
     pageInfo,
@@ -84,6 +85,7 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
     selectedAppIds,
     projectResourceList,
     packageResourceList,
+    variableResourceList,
     applicationList,
     fetchStoreResources,
     updateSelectedAppIds,
@@ -94,30 +96,36 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
   const { global, application, builder, store } = locale.business;
 
   const resourceList: Array<StoreProjectResource | StorePackageResource> =
-    type === FileTypeEnum.package ? packageResourceList : projectResourceList;
+    type === FileTypeEnum.package
+      ? packageResourceList
+      : type === FileTypeEnum.variable
+      ? variableResourceList
+      : projectResourceList;
 
-  const handleSearch = text => {
-    fetchStoreResources({ type, appIds: selectedAppIds, search: text, page: pageInfo.page, size: pageInfo.size });
+  const handleSearch = (text) => {
+    fetchStoreResources({
+      type,
+      appIds: selectedAppIds,
+      search: text,
+      page: pageInfo.page,
+      size: pageInfo.size,
+    });
   };
 
-  const handleSearchTextChange = e => {
+  const handleSearchTextChange = (e) => {
     updateSearchText(e.target.value);
   };
 
   const handleAdd = () => {
     const ids =
-      type === FileTypeEnum.package
+      type === FileTypeEnum.page || type === FileTypeEnum.template
         ? resourceList
-            .filter(item => item.checked)
-            .map(item => {
-              return item.id;
+            .filter((item) => item.checked)
+            .map((item) => {
+              return (item as StoreProjectResource).files.map((item) => item.id);
             })
-        : resourceList
-            .filter(item => item.checked)
-            .map(item => {
-              return (item as StoreProjectResource).files.map(item => item.id);
-            })
-            .flat();
+            .flat()
+        : resourceList.filter((item) => item.checked).map((item) => item.id);
     updateBuyModalVisible(true, ids);
   };
 
@@ -131,7 +139,7 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
             style={{ width: '60%' }}
             placeholder={application.selectApplication}
             defaultValue={[]}
-            onChange={value => {
+            onChange={(value) => {
               updateSelectedAppIds(value);
               fetchStoreResources({
                 type,
@@ -140,9 +148,8 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
                 size: pageInfo.size,
                 appIds: value,
               });
-            }}
-          >
-            {applicationList?.map(application => (
+            }}>
+            {applicationList?.map((application) => (
               <Option key={application.id} value={application.id}>
                 {application.name}
               </Option>
@@ -167,9 +174,8 @@ const SelectTool: React.FC<StoreResourceToolProps> = props => {
             type="primary"
             icon={<PlusOutlined />}
             style={{ marginLeft: 8 }}
-            disabled={!resourceList.find(item => item.checked)}
-            onClick={handleAdd}
-          >
+            disabled={!resourceList.find((item) => item.checked)}
+            onClick={handleAdd}>
             {store.buy}
           </Button>
         </SearchRowContent>

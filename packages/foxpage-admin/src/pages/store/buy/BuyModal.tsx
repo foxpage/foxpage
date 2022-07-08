@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { Modal, Select } from 'antd';
@@ -42,9 +42,29 @@ const BuyModal: React.FC<BuyModalProps> = (props) => {
     fetchApplicationList,
     addGoods,
   } = props;
+  const [selectedAppIds, setSelectedAppIds] = useState([]);
+  const [deliveryType, setDeliveryType] = useState<StoreBuyGoodsType | undefined>();
   const { locale } = useContext(GlobalContext);
   const { application, store } = locale.business;
-  let selectedAppIds: string[] = [];
+  // let selectedAppIds: string[] = [];
+
+  const deliveryTypeMap = [
+    {
+      label: store.refer,
+      value: StoreBuyGoodsType.reference,
+    },
+    {
+      label: store.clone,
+      value: StoreBuyGoodsType.clone,
+    },
+  ];
+
+  useEffect(() => {
+    if (!buyModalVisible) {
+      setSelectedAppIds([]);
+      setDeliveryType(undefined);
+    }
+  }, [buyModalVisible]);
 
   useEffect(() => {
     if (buyModalVisible) {
@@ -56,15 +76,12 @@ const BuyModal: React.FC<BuyModalProps> = (props) => {
     updateBuyModalVisible(false);
   };
 
-  const handleApplicationChange = (value) => {
-    selectedAppIds = value;
-  };
-
   const handleOnOk = () => {
     addGoods({
       appIds: selectedAppIds,
       goodsIds: buyIds,
-      delivery: type === FileTypeEnum.package ? StoreBuyGoodsType.reference : StoreBuyGoodsType.clone,
+      delivery:
+        type === FileTypeEnum.package ? deliveryType || StoreBuyGoodsType.reference : StoreBuyGoodsType.clone,
     });
   };
 
@@ -78,16 +95,26 @@ const BuyModal: React.FC<BuyModalProps> = (props) => {
       onOk={handleOnOk}>
       <Select
         mode="multiple"
-        style={{ width: '100%' }}
         placeholder={application.selectApplication}
-        defaultValue={[]}
-        onChange={handleApplicationChange}>
+        value={selectedAppIds}
+        onChange={setSelectedAppIds}
+        style={{ width: '100%' }}>
         {applicationList?.map((application) => (
           <Option key={application.id} value={application.id}>
             {application.name}
           </Option>
         ))}
       </Select>
+      {type === 'package' && (
+        <Select
+          showArrow={false}
+          placeholder={store.deliveryTypePlaceholder}
+          options={deliveryTypeMap}
+          value={deliveryType}
+          onChange={setDeliveryType}
+          style={{ width: '100%', marginTop: 12 }}
+        />
+      )}
     </Modal>
   );
 };

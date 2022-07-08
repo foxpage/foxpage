@@ -122,6 +122,8 @@ function Component(props: IProps) {
       title: folder.name,
       dataIndex: 'folderName',
       key: 'folderName',
+      render: (folderName) =>
+        folderName === '_variable' ? <Tag color="blue">Application</Tag> : <span>{folderName}</span>,
     },
     {
       title: global.type,

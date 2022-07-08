@@ -8,7 +8,7 @@ const configProfile = require('../config.profile');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-const PORT = 3002;
+const PORT = 3004;
 
 module.exports = merge(webpackBaseConfig, {
   output: {
@@ -34,8 +34,8 @@ module.exports = merge(webpackBaseConfig, {
     contentBase: './src', // Relative directory for base of server
     hot: true, // Live-reload
     inline: true,
-    port: 3002, // Port Number
-    host: '0.0.0.0', // Change to '0.0.0.0' for external facing server
+    port: PORT, // Port Number
+    host: 'localhost', // Change to '0.0.0.0' for external facing server
     disableHostCheck: true,
   },
 
@@ -61,7 +61,7 @@ module.exports = merge(webpackBaseConfig, {
     new CopyWebpackPlugin({
       patterns: [
         // for local test
-        { from: '../../foxpage-visual-editor/dist/main.bundle.js', to:'foxpage-visual-editor.js' },
+        { from: '../../foxpage-visual-editor/dist/main.bundle.js', to: 'foxpage-visual-editor.js' },
       ]
     }),
   ],

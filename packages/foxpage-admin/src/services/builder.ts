@@ -1,7 +1,8 @@
 import { message } from 'antd';
+import Axios from 'axios';
 import _ from 'lodash';
 
-import { parsePage, parsePageInServer } from '@foxpage/foxpage-js-sdk';
+import { PageParseOption, PARSE_PAGE_PATH, parsePage } from '@foxpage/foxpage-js-sdk';
 import { Page, RelationInfo, RenderAppInfo } from '@foxpage/foxpage-types';
 
 import { searchVariable } from '@/apis/group/application/variable';
@@ -169,7 +170,10 @@ const addDsl = (
   parentId?: string,
 ) => {
   if (!parentId || parentId === '') {
-    tree.splice(position, 0, dsl);
+    const isRootTree = tree?.[0]?.name === '' && tree?.[0]?.type === '';
+    const rTree = isRootTree ? tree?.[0]?.children : tree;
+
+    rTree.splice(position, 0, dsl);
     return;
   }
 
@@ -177,6 +181,7 @@ const addDsl = (
     tree.splice(position, 0, dsl);
     return;
   }
+
   for (let i = 0; i < tree.length; i++) {
     const treeItem = tree[i];
     if (tree[i].id === parentId && treeItem.children) {
@@ -189,6 +194,7 @@ const addDsl = (
     }
   }
 };
+
 const changeDsl = (dsl: ComponentStructure, tree: ComponentStructure[]) => {
   for (let i = tree.length - 1; i > -1; i--) {
     const treeItem = tree[i];
@@ -250,6 +256,18 @@ const updateDsl = (version: DslType, params: ComponentStaticSaveParams, versionT
   return version;
 };
 
+const parsePageInServer = async (page: Page, opt: PageParseOption, host: string) => {
+  const result = await Axios.post(`${PARSE_PAGE_PATH}?&host=${host}`, {
+    page,
+    opt: {
+      appId: opt.appInfo.appId,
+      relationInfo: opt.relationInfo,
+      locale: opt.locale,
+    },
+  });
+  return result;
+};
+
 const mergeDsl = async (
   application: Application,
   page: DslContent,
@@ -276,17 +294,24 @@ const mergeDsl = async (
   } = getBusinessI18n();
 
   try {
-    const host = application.host[0] || '';
+    // @ts-ignore
+    if (APP_CONFIG.env === 'dev') {
+      throw new Error('is develope');
+    }
+    const host = application.host?.[0]?.url || '';
     if (!host) {
       throw new Error('no host');
     }
     // TODO 类型声明文件后期三端统一
-    const result = (await parsePageInServer(page as Page, {
-      host: `${host}/${application.slug}`,
-      appInfo,
-      relationInfo: (relationInfo as unknown) as RelationInfo,
-      locale,
-    })) as Record<string, any>;
+    const result = (await parsePageInServer(
+      page as Page,
+      {
+        appInfo,
+        relationInfo: (relationInfo as unknown) as RelationInfo,
+        locale,
+      },
+      `${host}/${application.slug}`,
+    )) as Record<string, any>;
     if (result.status === 200) {
       if (result.data.status) {
         return { page: { ...page, schemas: result.data.result.parsedPage } };
@@ -298,10 +323,10 @@ const mergeDsl = async (
     }
     return {};
   } catch (e) {
-    return parsePage(page as Page, {
+    return (parsePage(page as Page, {
       appInfo,
       relationInfo: (relationInfo as unknown) as RelationInfo,
-    }) as unknown as { result: { parsedPage: DslContent }; status: boolean };
+    }) as unknown) as { result: { parsedPage: DslContent }; status: boolean };
   }
 };
 

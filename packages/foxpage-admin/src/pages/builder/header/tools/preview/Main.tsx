@@ -43,8 +43,16 @@ const PreviewPage: React.FC<HeaderType> = (props) => {
     );
   }
 
-  let reals = host.map((item) => `${item}/${slug}${PREVIEW_URL}?appid=${appInfo.id}&pageid=${contentId}`);
-  let debugs = host.map((item) => `${item}/${slug}${DEBUG_URL}?appid=${appInfo.id}&pageid=${contentId}`);
+  // filter host by page locale
+  let pageLocaleHost = host && pageLocale && host.filter((item) => item.locales.indexOf(pageLocale) > -1);
+  if (!pageLocaleHost || pageLocaleHost.length === 0) pageLocaleHost = [host[0]];
+
+  let reals =
+    pageLocaleHost &&
+    pageLocaleHost.map((item) => `${item.url}/${slug}${PREVIEW_URL}?appid=${appInfo.id}&pageid=${contentId}`);
+  let debugs =
+    pageLocaleHost &&
+    pageLocaleHost.map((item) => `${item.url}/${slug}${DEBUG_URL}?appid=${appInfo.id}&pageid=${contentId}`);
 
   if (pageLocale) {
     reals = reals.map((item) => `${item}&locale=${pageLocale}`);

@@ -1,8 +1,8 @@
 import { Locale } from '@/types/common';
 import { getGlobalLocale } from '@/utils/global';
 
-import businessEn from './en';
-import businessZhCN from './zh-cn';
+import businessEn from './en/en';
+import businessZhCN from './zh/zh-cn';
 
 const locale = {
   'zh-cn': businessZhCN,

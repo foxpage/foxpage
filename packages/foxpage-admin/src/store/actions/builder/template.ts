@@ -18,7 +18,12 @@ import { OptionsAction } from '@/types/common';
 
 export const fetchPageRenderTree = createAction(
   'BUILDER_TEMPLATE__FETCH_RENDER_TREE',
-  (applicationId: string, contentId: string, fileType?: string) => ({ applicationId, contentId, fileType }),
+  (applicationId: string, contentId: string, fileType?: string, noRefresh?: boolean) => ({
+    applicationId,
+    contentId,
+    fileType,
+    noRefresh,
+  }),
 )();
 
 export const pushTemplateData = createAction(
@@ -96,6 +101,20 @@ export const saveComponent = createAction(
     deleteSelectedComponent,
     preUpdateCb,
   }),
+)();
+
+export const dropComponent = createAction(
+  'BUILDER_TEMPLATE__DROP_COMPONENT',
+  (
+    applicationId: string,
+    dndInfo: Record<string, any>,
+    desc: ComponentStructure,
+  ) => ({
+    applicationId,
+    dndInfo,
+    desc,
+  }),
+ 
 )();
 
 export const deleteComponent = createAction(
@@ -318,8 +337,10 @@ export const pushMocks = createAction('BUILDER_TEMPLATE__PUSH_MOCKS', (mocks: Mo
   mocks,
 }))();
 
-export const localeChange = createAction('BUILDER_TEMPLATE__LOCALE_CHANGE', (applicationId: string, locale: string) => ({
-  applicationId,
-  locale,
-}))();
-
+export const localeChange = createAction(
+  'BUILDER_TEMPLATE__LOCALE_CHANGE',
+  (applicationId: string, locale: string) => ({
+    applicationId,
+    locale,
+  }),
+)();

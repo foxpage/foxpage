@@ -7,16 +7,22 @@ import * as ACTIONS from '@/actions/builder/variable';
 import * as API from '@/apis/group/application/variable';
 import { VariableTypes } from '@/pages/common/constant/VariableFile';
 import { getBusinessI18n } from '@/pages/locale';
+import { ProjectContentActionType } from '@/reducers/workspace/projects/project/content';
 import { searchVariableRelation } from '@/services/builder';
 import { store } from '@/store/index';
 import { VariableActionType } from '@/store/reducers/builder/variable';
-import VariableType, { VariableDeleteParams, VariableSaveParams } from '@/types/application/variable';
+import VariableType, {
+  VariableDeleteParams,
+  VariablePublishParams,
+  VariableSaveParams,
+} from '@/types/application/variable';
 import { PaginationInfo } from '@/types/common';
+import { GoodsCommitParams } from '@/types/store';
 import { isNameError } from '@/utils/error';
 
 function* getVariables(action: VariableActionType) {
   const { applicationId } = store.getState().builder.page;
-  const { folderId } = action.payload as { folderId?: string };
+  const { folderId, type } = action.payload as { folderId?: string; type?: string };
   const {
     variable: { fetchFailed },
   } = getBusinessI18n();
@@ -29,6 +35,9 @@ function* getVariables(action: VariableActionType) {
   };
   if (folderId) {
     params.folderId = folderId;
+  }
+  if (type) {
+    params.type = type;
   }
   const res = yield call(API.getVariables, params);
   if (res.code === 200) {
@@ -85,6 +94,7 @@ function* saveVariables(action: VariableActionType) {
     props: schemas[0].props || {},
     oldRelation,
   });
+
   if (hasError) {
     return;
   }
@@ -97,6 +107,7 @@ function* saveVariables(action: VariableActionType) {
   }
 
   delete editVariable.relations;
+
   const res = yield call(editVariable.id ? API.updateVariables : API.addVariables, {
     ...editVariable,
     applicationId,
@@ -125,7 +136,11 @@ function* getBuildVersion(action: VariableActionType) {
   });
   if (res.code === 200) {
     yield put(
-      ACTIONS.pushVariableBuilderVersion({ ...file, content: res.data.content, relations: res.data.relations }),
+      ACTIONS.pushVariableBuilderVersion({
+        ...file,
+        content: res.data.content,
+        relations: res.data.relations,
+      }),
     );
   } else {
     message.error(res.msg || fetchDetailFailed);
@@ -153,12 +168,64 @@ function* deleteVariable(action: VariableActionType) {
   }
 }
 
+function* handlePublish(action: ProjectContentActionType) {
+  const { params, cb } = action.payload as { params: VariablePublishParams; cb?: () => void };
+  const rs = yield call(API.publish, params);
+
+  const {
+    global: { publishSuccess, publishFailed },
+  } = getBusinessI18n();
+
+  if (rs.code === 200) {
+    message.success(publishSuccess);
+
+    if (typeof cb === 'function') {
+      cb();
+    }
+  } else {
+    message.error(rs.msg || publishFailed);
+  }
+}
+
+function* handleCommitToStore(action: ProjectContentActionType) {
+  const { params, cb } = action.payload as { params: GoodsCommitParams; cb?: () => void };
+  const { applicationId, id, type, isOnline } = params;
+  const newParams = isOnline
+    ? {
+        applicationId,
+        id,
+      }
+    : {
+        applicationId,
+        id,
+        type,
+      };
+  const api = isOnline ? API.revokeFromStore : API.commitToStore;
+  const rs = yield call(api, newParams);
+
+  const {
+    global: { commitSuccess, commitFailed, revokeSuccess, revokeFailed },
+  } = getBusinessI18n();
+
+  if (rs.code === 200) {
+    message.success(isOnline ? revokeSuccess : commitSuccess);
+
+    if (typeof cb === 'function') {
+      cb();
+    }
+  } else {
+    message.error(rs.msg || isOnline ? revokeFailed : commitFailed);
+  }
+}
+
 function* watch() {
   yield takeLatest(getType(ACTIONS.getApplicationVariables), getApplicationVariables);
   yield takeLatest(getType(ACTIONS.getVariables), getVariables);
   yield takeLatest(getType(ACTIONS.saveVariable), saveVariables);
   yield takeLatest(getType(ACTIONS.getVariableBuilderVersion), getBuildVersion);
   yield takeLatest(getType(ACTIONS.deleteVariable), deleteVariable);
+  yield takeLatest(getType(ACTIONS.publishVariable), handlePublish);
+  yield takeLatest(getType(ACTIONS.commitToStore), handleCommitToStore);
 }
 
 export default function* rootSaga() {

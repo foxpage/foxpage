@@ -117,6 +117,9 @@ export interface Locale extends AntLocale {
       buyModalTitle: string;
       buySuccess: string;
       buyFailed: string;
+      refer: string;
+      clone: string;
+      deliveryTypePlaceholder: string;
     };
     login: {
       loginOut: string;
@@ -161,6 +164,7 @@ export interface Locale extends AntLocale {
       notSelectError: string;
       addLocale: string;
       addResource: string;
+      addHost: string;
       selectApplication: string;
       myApplication: string;
     };
@@ -378,6 +382,7 @@ export interface Locale extends AntLocale {
     };
     mock: {
       title: string;
+      mockMode: string;
       enableMockMode: string;
       enableMockTips: string;
     };

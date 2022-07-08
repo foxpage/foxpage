@@ -17,10 +17,10 @@ import * as ACTIONS from '@/actions/builder/component-list';
 import GlobalContext from '@/pages/GlobalContext';
 
 import BuilderContext from '../BuilderContext';
-import { CHANGE_COMPONENT_LIST_DRAWER } from '../constant';
+import { CHANGE_DRAWER_MENU } from '../constant';
 import { postMsg } from '../post-message';
 
-import { Condition, Function, Structure, Variable } from './tools';
+import { Condition, Function, Variable } from './tools';
 
 const Container = styled.div`
   height: 100%;
@@ -77,9 +77,10 @@ const Toolbar = (props: ToolbarProps) => {
 
   const handleMenuClick = useCallback(
     (menu: string) => {
-      postMsg(CHANGE_COMPONENT_LIST_DRAWER, {
-        status: menu === 'component' && currentMenu !== 'component',
+      postMsg(CHANGE_DRAWER_MENU, {
+        menu: menu === currentMenu ? '' : menu,
       });
+
       const newMenu = menu === currentMenu ? undefined : menu;
       setCurMenu(newMenu);
     },
@@ -90,10 +91,8 @@ const Toolbar = (props: ToolbarProps) => {
     const { data } = event;
     const { type } = data;
     switch (type) {
-      case CHANGE_COMPONENT_LIST_DRAWER: {
-        if(!data.status){
-          handleMenuClick('');
-        }
+      case CHANGE_DRAWER_MENU: {
+        handleMenuClick(data.menu);
         break;
       }
       default:
@@ -150,7 +149,6 @@ const Toolbar = (props: ToolbarProps) => {
       {currentMenu === 'variable' && <Variable onClose={() => handleMenuClick('')} />}
       {currentMenu === 'condition' && <Condition onClose={() => handleMenuClick('')} />}
       {currentMenu === 'function' && <Function onClose={() => handleMenuClick('')} />}
-      {currentMenu === 'structure' && <Structure onClose={() => handleMenuClick('')} />}
     </React.Fragment>
   );
 };

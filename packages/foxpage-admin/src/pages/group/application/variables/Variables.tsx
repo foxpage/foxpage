@@ -2,16 +2,39 @@ import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Divider, Popconfirm, Table } from 'antd';
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
+import { Button, Divider, Popconfirm, Table, Tag } from 'antd';
+import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/variable';
 import EditDrawer from '@/pages/builder/toolbar/tools/variable/EditDrawer';
 import { FoxpageBreadcrumb, FoxpageDetailContent } from '@/pages/common';
+import { PublishIcon } from '@/pages/common/CustomIcon';
 import GlobalContext from '@/pages/GlobalContext';
 import VariableType from '@/types/application/variable.d';
 import periodFormat from '@/utils/period-format';
+
+const PublishOutlined = styled(PublishIcon)`
+  width: 16px;
+  height: 16px;
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const OptionsBox = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+`;
 
 interface IProps {
   visible: boolean;
@@ -29,6 +52,8 @@ const mapDispatchToProps = {
   openEditDrawer: ACTIONS.updateVariableEditDrawerOpen,
   deleteVariables: ACTIONS.deleteVariable,
   save: ACTIONS.saveVariable,
+  publish: ACTIONS.publishVariable,
+  commitToStore: ACTIONS.commitToStore,
   clearAll: ACTIONS.clearAll,
 };
 
@@ -42,15 +67,17 @@ const Variable: React.FC<Type> = (props) => {
     variables,
     pageInfo,
     save,
+    publish,
     openEditDrawer,
     getApplicationVariables,
     getVariableBuildVersion,
     deleteVariables,
+    commitToStore,
     clearAll,
   } = props;
 
   const { locale } = useContext(GlobalContext);
-  const { global, folder, application } = locale.business;
+  const { global, folder, application, store, variable } = locale.business;
 
   useEffect(() => {
     getApplicationVariables(applicationId, pageInfo);
@@ -80,6 +107,37 @@ const Variable: React.FC<Type> = (props) => {
     });
   };
 
+  const handlePublish = (contentId) => {
+    if (contentId) {
+      publish(
+        {
+          applicationId,
+          contentId,
+          status: 'release',
+        },
+        () => {
+          getApplicationVariables(applicationId, pageInfo);
+        },
+      );
+    }
+  };
+
+  const handleCommit = (id, isOnline) => {
+    if (id) {
+      commitToStore(
+        {
+          id,
+          applicationId: applicationId,
+          type: 'variable',
+          isOnline,
+        },
+        () => {
+          getApplicationVariables(applicationId, pageInfo);
+        },
+      );
+    }
+  };
+
   const columns = [
     {
       title: global.nameLabel,
@@ -102,6 +160,8 @@ const Variable: React.FC<Type> = (props) => {
       title: folder.name,
       dataIndex: 'folderName',
       key: 'folderName',
+      render: (folderName) =>
+        folderName === '_variable' ? <Tag color="blue">Application</Tag> : <span>{folderName}</span>,
     },
     {
       title: global.type,
@@ -132,7 +192,7 @@ const Variable: React.FC<Type> = (props) => {
     {
       title: global.actions,
       key: 'id',
-      width: 100,
+      width: 180,
       render: (_text: string, record: VariableType) => {
         return (
           <React.Fragment>
@@ -149,6 +209,29 @@ const Variable: React.FC<Type> = (props) => {
               <EditOutlined />
             </Button>
             <Divider type="vertical" />
+            <Button
+              type="default"
+              size="small"
+              shape="circle"
+              title={global.publish}
+              onClick={() => handlePublish(record.contentId)}>
+              <PublishOutlined />
+            </Button>
+            <Divider type="vertical" />
+            <Popconfirm
+              title={record?.online ? store.revokeTitle : store.commitTitle}
+              okText={global.yes}
+              cancelText={global.no}
+              onConfirm={() => handleCommit(record.id, record.online)}>
+              <Button
+                type="default"
+                size="small"
+                shape="circle"
+                title={record?.online ? store.revoke : store.commit}>
+                {record?.online ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
+              </Button>
+            </Popconfirm>
+            <Divider type="vertical" />
             <Popconfirm
               title={`${global.deleteMsg} ${record.name}?`}
               onConfirm={() => {
@@ -163,6 +246,7 @@ const Variable: React.FC<Type> = (props) => {
       },
     },
   ];
+
   return (
     <React.Fragment>
       <FoxpageDetailContent
@@ -174,31 +258,38 @@ const Variable: React.FC<Type> = (props) => {
             ]}
           />
         }>
-        <Table
-          rowKey={(record: VariableType) => record.id.toString()}
-          loading={loading}
-          dataSource={variables}
-          columns={columns}
-          pagination={
-            pageInfo.total > pageInfo.size
-              ? {
-                  position: ['bottomCenter'],
-                  current: pageInfo.page,
-                  pageSize: pageInfo.size,
-                  total: pageInfo.total,
-                }
-              : false
-          }
-          onChange={(pagination) => {
-            if (pagination.current && pagination.pageSize) {
-              getApplicationVariables(applicationId, {
-                ...pageInfo,
-                page: pagination.current,
-                size: pagination.pageSize,
-              });
+        <>
+          <OptionsBox>
+            <Button type="primary" onClick={() => openEditDrawer(true)}>
+              <PlusOutlined /> {variable.add}
+            </Button>
+          </OptionsBox>
+          <Table
+            rowKey={(record: VariableType) => record.id.toString()}
+            loading={loading}
+            dataSource={variables}
+            columns={columns}
+            pagination={
+              pageInfo.total > pageInfo.size
+                ? {
+                    position: ['bottomCenter'],
+                    current: pageInfo.page,
+                    pageSize: pageInfo.size,
+                    total: pageInfo.total,
+                  }
+                : false
             }
-          }}
-        />
+            onChange={(pagination) => {
+              if (pagination.current && pagination.pageSize) {
+                getApplicationVariables(applicationId, {
+                  ...pageInfo,
+                  page: pagination.current,
+                  size: pagination.pageSize,
+                });
+              }
+            }}
+          />
+        </>
       </FoxpageDetailContent>
 
       <EditDrawer applicationId={applicationId} folderId={folderId} onSave={handleSave} />

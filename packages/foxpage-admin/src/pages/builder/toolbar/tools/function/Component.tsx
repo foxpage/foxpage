@@ -86,6 +86,7 @@ function Component(props: IProps) {
             }
           : {
               applicationId,
+              type: 'live',
               page: pageNum,
               size: PAGE_SIZE,
             };

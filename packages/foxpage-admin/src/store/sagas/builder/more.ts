@@ -12,7 +12,7 @@ import { getBusinessI18n } from '@/pages/locale';
 import * as utils from '@/services/builder';
 import { store } from '@/store/index';
 import { MoreActionType } from '@/store/reducers/builder/more';
-import { MockNewParams, MockPublishParams,MockValueUpdateParams } from '@/types/builder';
+import { MockNewParams, MockPublishParams, MockValueUpdateParams } from '@/types/builder';
 import { DslFetchParams } from '@/types/builder/more';
 
 function* handleFetchDsl(action: MoreActionType) {
@@ -105,8 +105,9 @@ function* handleAddMock(action: MoreActionType) {
       yield put(ACTIONS.updateMockId(newMockId));
     }
 
+    const newVersionId = res.data?.id;
     if (typeof cb === 'function') {
-      cb(newMockId);
+      cb(newVersionId);
     }
   } else {
     message.error(res.msg || addFailed);

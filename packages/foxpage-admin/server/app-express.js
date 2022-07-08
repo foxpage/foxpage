@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-
+const request = require('request');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -8,13 +8,13 @@ const favicon = require('serve-favicon');
 const package_json = require('../package.json');
 const config = require('../config.profile');
 
-const port = package_json.config ? package_json.config.port : '80';
+const port = package_json.config ? package_json.config.port : '3002';
 let ENV = 'fat'; // default ENV fat
 if (package_json.config && package_json.config.env) {
   ENV = package_json.config.env.toLowerCase();
 }
 
-const slug = (config[ENV] || config.fat).slug;
+const slug = (config[ENV] || config.fat)?.slug || '';
 
 // express app
 const app = express();
@@ -33,19 +33,23 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // health check
 app.get(`${slug}/healthcheck`, (req, res) => {
   res.send('OK');
 });
 
-// proxyMiddleware()(app);
+app.post(`${slug}/_foxpage/*`, (req, res) => {
+  const { originalUrl, query = {} } = req;
+  const { host } = query;
+  req.pipe(request(host + originalUrl)).pipe(res);
+});
 
-// middleware
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
+app.use(
+  bodyParser.urlencoded({
+    extended: false,
+  }),
+);
 
 app.get(`${slug}/`, (req, res) => {
   const data = fs.readFileSync(`${__dirname}/../dist/index.html`, 'utf8');
@@ -54,7 +58,6 @@ app.get(`${slug}/`, (req, res) => {
 
 // static file serve
 app.use(`${slug}/dist`, express.static(path.join(__dirname, '../dist')));
-
 
 // start up
 app.listen(port);

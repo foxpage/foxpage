@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 
 import {
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
   BugOutlined,
   CloudUploadOutlined,
   CodeOutlined,
@@ -25,9 +23,8 @@ import { updatePageCopyModalOpen } from '@/actions/builder/template-select';
 import { FileTypeEnum } from '@/constants/global';
 import { PageParam } from '@/types/builder/page';
 
-import { PublishIcon } from '../../common/CustomIcon';
+import { BackIcon, NextIcon, PublishIcon } from '../../common/CustomIcon';
 import GlobalContext from '../../GlobalContext';
-import PreviewModal from '../modal/Preview';
 import More from '../more';
 import PageCopy from '../template/PageCopy';
 
@@ -112,6 +109,25 @@ const MoreItem = styled.div`
   }
 `;
 
+const MockModeContainer = styled.div`
+  height: 100%;
+  padding: 5px 8px 0;
+  border-top: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  color: #ff5918;
+`;
+const MockModeText = styled.p`
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 28px;
+`;
+
 const activeIconStyle: CSSProperties = {
   color: '#1890ff',
 };
@@ -175,9 +191,28 @@ const Index: React.FC<HeaderType> = (props) => {
   const history = useHistory();
   const { folderId, fileId, contentId: _contentId } = useParams<UrlParams>();
   const { locale } = useContext(GlobalContext);
-  const { global, builder, version } = locale.business;
+  const { global, builder, version, mock } = locale.business;
 
   const { state } = useLocation<any>();
+
+  // save hint before leave
+  useEffect(() => {
+    window.addEventListener('beforeunload', (e) => {
+      if (editStatus) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    return () => {
+      window.removeEventListener('beforeunload', (e) => {
+        if (editStatus) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
+    };
+  }, [editStatus]);
 
   const handleBack = () => {
     let pathname: string;
@@ -187,13 +222,13 @@ const Index: React.FC<HeaderType> = (props) => {
       search = state?.backSearch || '';
     } else {
       if (_contentId) {
-        pathname = '/workspace/project/content';
+        pathname = '/projects/content';
         search = `?applicationId=${applicationId}&folderId=${folderId}&fileId=${fileId}`;
       } else if (fileId) {
-        pathname = '/workspace/project/detail';
+        pathname = '/projects/detail';
         search = `?applicationId=${applicationId}&folderId=${folderId}`;
       } else {
-        pathname = '/workspace/project/list';
+        pathname = '/projects/list';
       }
     }
     history.push({ pathname, search });
@@ -280,7 +315,7 @@ const Index: React.FC<HeaderType> = (props) => {
                 goLastStep(applicationId);
               }
             }}>
-            <ArrowLeftOutlined />
+            <BackIcon color={lastStepStatus ? '' : 'rgb(195, 193, 193)'} />
             <IconMsg>{builder.lastStep}</IconMsg>
           </IconContainer>
           <IconContainer
@@ -290,11 +325,17 @@ const Index: React.FC<HeaderType> = (props) => {
                 goNextStep(applicationId);
               }
             }}>
-            <ArrowRightOutlined />
+            <NextIcon color={nextStepStatus ? '' : 'rgb(195, 193, 193)'} />
             <IconMsg>{builder.nextStep}</IconMsg>
           </IconContainer>
         </Part>
         <Part style={{ flex: 1, justifyContent: 'flex-end', paddingRight: 12 }}>
+          {mockModeEnable && (
+            <MockModeContainer>
+              <BugOutlined />
+              <MockModeText>{mock.mockMode}</MockModeText>
+            </MockModeContainer>
+          )}
           <Popover
             placement="bottom"
             overlayClassName="foxpage-builder-header_popover"
@@ -353,7 +394,6 @@ const Index: React.FC<HeaderType> = (props) => {
         </Part>
       </StyledHeader>
 
-      {versionType === FileTypeEnum.page && <PreviewModal />}
       <PageCopy />
       <More />
     </React.Fragment>

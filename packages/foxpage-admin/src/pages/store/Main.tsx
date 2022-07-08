@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 
 import { EyeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Card, Checkbox, Col, Empty, Pagination, Row, Spin, Tabs } from 'antd';
+import { Card, Checkbox, Col, Empty, Pagination, Row, Spin, Tabs, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -35,8 +35,9 @@ const PaginationWrapper = styled.div`
 const mapStateToProps = (store: RootState) => ({
   loading: store.store.list.loading,
   pageInfo: store.store.list.pageInfo,
-  projectResourceList: store.store.list.projectResourceList,
   packageResourceList: store.store.list.packageResourceList,
+  projectResourceList: store.store.list.projectResourceList,
+  variableResourceList: store.store.list.variableResourceList,
   searchText: store.store.list.searchText,
   selectedAppIds: store.store.list.selectedAppIds,
   type: store.store.list.type,
@@ -48,6 +49,7 @@ const mapDispatchToProps = {
   updateBuyModalVisible: ACTIONS.updateBuyModalVisible,
   updateProjectResourceItemChecked: ACTIONS.updateProjectResourceItemChecked,
   updatePackageResourceItemChecked: ACTIONS.updatePackageResourceItemChecked,
+  updateVariableResourceItemChecked: ACTIONS.updateVariableResourceItemChecked,
   updateSelectedAppIds: ACTIONS.updateSelectedAppIds,
   updateSearchText: ACTIONS.updateSearchText,
   updateType: ACTIONS.updateType,
@@ -61,8 +63,9 @@ const Store: React.FC<StoreResourceProps> = (props) => {
   const {
     loading,
     pageInfo,
-    projectResourceList,
     packageResourceList,
+    projectResourceList,
+    variableResourceList,
     searchText,
     selectedAppIds,
     type,
@@ -72,17 +75,22 @@ const Store: React.FC<StoreResourceProps> = (props) => {
     fetchStoreResources,
     updateProjectResourceItemChecked,
     updatePackageResourceItemChecked,
+    updateVariableResourceItemChecked,
     updateSelectedAppIds,
     updateSearchText,
     updateType,
     fetchAllApplicationList,
   } = props;
   const { locale } = useContext(GlobalContext);
-  const { global, file } = locale.business;
+  const { global, file, variable } = locale.business;
 
   useEffect(() => {
+    // fetch page, template, package, variable list info
     fetchStoreResources({ page: pageInfo.page, size: pageInfo.size, search: '', type: FileTypeEnum.page });
+
+    // fetch all application list
     fetchAllApplicationList({ page: 1, size: 1000 });
+
     return () => {
       clearAll();
     };
@@ -106,13 +114,22 @@ const Store: React.FC<StoreResourceProps> = (props) => {
     e.stopPropagation();
     updateBuyModalVisible(
       true,
-      type === FileTypeEnum.package ? [item.id] : item.files.map((item) => item.id),
+      type === FileTypeEnum.package || type === FileTypeEnum.variable
+        ? [item.id]
+        : item.files.map((item) => item.id),
     );
   };
 
   const PageContent = useMemo(() => {
     const isPageOrTemplate = type === FileTypeEnum.page || type === FileTypeEnum.template;
-    const resource = isPageOrTemplate ? projectResourceList : packageResourceList;
+    const isVariable = type === FileTypeEnum.variable;
+    const _type = isPageOrTemplate ? 'default' : type;
+    const resourceMap = {
+      variable: variableResourceList,
+      package: packageResourceList,
+      default: projectResourceList,
+    };
+    const resource = resourceMap[_type];
 
     return (
       <Spin spinning={loading}>
@@ -145,6 +162,8 @@ const Store: React.FC<StoreResourceProps> = (props) => {
                     onClick={() => {
                       isPageOrTemplate
                         ? updateProjectResourceItemChecked(resource.id)
+                        : isVariable
+                        ? updateVariableResourceItemChecked(resource.id)
                         : updatePackageResourceItemChecked(resource.id);
                     }}
                     cover={
@@ -157,19 +176,24 @@ const Store: React.FC<StoreResourceProps> = (props) => {
                     hoverable
                     bordered>
                     <Meta
-                      title={resource.name}
-                      description={`${global.application}: ${resource.application.name}`}
+                      title={
+                        <Tooltip placement="topLeft" title={resource.name}>
+                          {resource.name}
+                        </Tooltip>
+                      }
+                      description={`${global.application}: ${resource.application?.name}`}
                     />
                     {isPageOrTemplate && (
                       <FileName>
                         {file.name}:
-                        {resource.files.map((item) => {
-                          return (
-                            <span key={item.id} style={{ marginLeft: 6 }}>
-                              {item.name}
-                            </span>
-                          );
-                        })}
+                        {resource.files &&
+                          resource.files.map((item) => {
+                            return (
+                              <span key={item.id} style={{ marginLeft: 6 }}>
+                                {item.name}
+                              </span>
+                            );
+                          })}
                       </FileName>
                     )}
                   </Card>
@@ -182,7 +206,7 @@ const Store: React.FC<StoreResourceProps> = (props) => {
         </Row>
       </Spin>
     );
-  }, [loading, type, projectResourceList, packageResourceList, global, file]);
+  }, [loading, type, projectResourceList, packageResourceList, variableResourceList, global, file]);
 
   const PaneContent = useMemo(() => {
     return (
@@ -227,6 +251,9 @@ const Store: React.FC<StoreResourceProps> = (props) => {
             {PaneContent}
           </TabPane>
           <TabPane tab={file.package} key={FileTypeEnum.package}>
+            {PaneContent}
+          </TabPane>
+          <TabPane tab={variable.title} key={FileTypeEnum.variable}>
             {PaneContent}
           </TabPane>
         </Tabs>

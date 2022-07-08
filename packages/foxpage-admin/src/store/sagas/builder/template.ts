@@ -17,11 +17,13 @@ import {
   updatePageDsl,
   updateTemplateDsl,
 } from '@/apis/builder';
+import { REACT_COMPONENT_TYPE } from '@/constants/build';
 import { FileTypeEnum, VersionStatusEnum } from '@/constants/index';
-import { BLANK_NODE } from '@/pages/builder/constant';
+import { BLANK_NODE, ROOT_CONTAINER, SYSTEM_PAGE } from '@/pages/builder/constant';
 import { getBusinessI18n } from '@/pages/locale';
 import { TemplateActionType } from '@/reducers/builder/template';
 import * as utils from '@/services/builder';
+import { newWrapperComponent } from '@/services/builder';
 import { store } from '@/store/index';
 import { ConditionContentItem, ConditionItem } from '@/types/application/condition';
 import { FuncContentItem } from '@/types/application/function';
@@ -82,10 +84,11 @@ function* disposalData(
       utils.setComponentSource(component, componentSourceMap);
     });
 
-    const renderStructure = utils.getRenderStructure(
-      componentList,
-      versionType === 'page' ? version.content.schemas[0].id : undefined,
-    );
+    // const renderStructure = utils.getRenderStructure(
+    //   componentList,
+    //   versionType === 'page' ? version.content.schemas[0].id : undefined,
+    // );
+    const renderStructure = utils.getRenderStructure(componentList, version.content.schemas[0].id);
 
     let mergedDsl: any;
     let parsedComponentList: ComponentStructure[] = [];
@@ -100,7 +103,7 @@ function* disposalData(
         functions,
         store.getState().builder.page.locale,
       );
-      utils.setSourceToDsl(mergedDsl.page.schemas, componentSourceMap, componentList);
+      utils.setSourceToDsl(mergedDsl?.page?.schemas || [], componentSourceMap, componentList);
       utils.generateComponentList(parsedComponentList, _.cloneDeep(mergedDsl.page.schemas));
     } else {
       parsedComponentList = componentList;
@@ -118,9 +121,10 @@ function* disposalData(
 }
 
 function* fetchPageRenderTree(action: TemplateActionType) {
-  yield put(ACTIONS.updateLoadingStatus(true));
+  const { applicationId, contentId, fileType, noRefresh } = action.payload as any;
 
-  const { applicationId, contentId, fileType } = action.payload as PageParam;
+  if (!noRefresh) yield put(ACTIONS.updateLoadingStatus(true));
+
   const api: any = fileType === FileTypeEnum.page ? fetchPageBuildVersion : fetchTemplateBuildVersion;
   const res = yield call(api, {
     applicationId,
@@ -130,6 +134,20 @@ function* fetchPageRenderTree(action: TemplateActionType) {
   if (res.code === 200) {
     // render content
     let renderContent: DslType | null = res.data as DslType;
+
+    // handle content.relation type error
+    const renderContentContent = _.cloneDeep(renderContent.content);
+    if (
+      renderContentContent &&
+      renderContentContent?.relation &&
+      typeof renderContentContent.relation === 'string'
+    ) {
+      renderContentContent.relation = JSON.parse(renderContentContent.relation);
+    }
+    renderContent = {
+      ...renderContent,
+      content: renderContentContent,
+    };
 
     // mock related
     let extendPage;
@@ -248,19 +266,20 @@ function* fetchPageRenderTree(action: TemplateActionType) {
         }),
       );
 
-      if (
-        (!renderContent?.content?.schemas || renderContent?.content?.schemas.length === 0) &&
-        fileType === FileTypeEnum.page
-      ) {
-        yield addVersionContent(applicationId, generateId(), { width: '100%', height: '100%' });
-        yield put(ACTIONS.fetchPageRenderTree(applicationId, contentId || '', fileType));
-      }
+      // Supplementary Root structure logic is prepended to when add new content
+      // if (
+      //   (!renderContent?.content?.schemas || renderContent?.content?.schemas.length === 0) &&
+      //   fileType === FileTypeEnum.page
+      // ) {
+      //   yield addVersionContent(applicationId, generateId(), { width: '100%', height: '100%' });
+      //   yield put(ACTIONS.fetchPageRenderTree(applicationId, contentId || '', fileType));
+      // }
     }
   } else {
     message.error(res.msg);
   }
 
-  yield put(ACTIONS.updateLoadingStatus(false));
+  if (!noRefresh) yield put(ACTIONS.updateLoadingStatus(false));
   yield put(updateRequireLoadStatus(true));
 }
 
@@ -325,6 +344,7 @@ function* saveComponent(action: TemplateActionType) {
     pushLastStep: boolean;
     preUpdateCb: () => void;
   };
+
   const { requireLoad } = params;
   if (deleteSelectedComponent) {
     yield put(ACTIONS.setSelectedComponent());
@@ -345,7 +365,7 @@ function* saveComponent(action: TemplateActionType) {
       label: params.content.label,
       name: params.content.name,
       parentId: params.content.parentId,
-      props: type === 'mock' ? params.content.mock : params.content.props,
+      props: type === 'mock' ? { ...params.content.props, ...params.content.mock } : params.content.props,
       wrapper: params.content.wrapper,
       directive: params.content.directive,
       extension: params.content.extension,
@@ -354,7 +374,7 @@ function* saveComponent(action: TemplateActionType) {
 
   const assignVersion = _.cloneDeep(version);
   const newVersion = utils.updateDsl(assignVersion, generateParams('props'), versionType);
-  const desposalData = yield disposalData(applicationId, newVersion, componentSourceMap);
+  const desposalData = yield disposalData(applicationId, newVersion, componentSourceMap, versionType);
 
   // sync mock data & mockVersion & mockParsedRenderStructure
   const mockData = params.content?.mock || {};
@@ -455,6 +475,93 @@ function* insertComponent(action: TemplateActionType) {
   );
   yield delay(300);
   yield put(ACTIONS.setSelectedComponent(component.id));
+}
+
+function* dropComponent(action: TemplateActionType) {
+  const { applicationId, dndInfo: dragInfo, desc } = action.payload as {
+    applicationId: string;
+    dndInfo: Record<string, any>;
+    desc: ComponentStructure;
+  };
+  const { version, versionType, componentList = [] } = store.getState().builder.template;
+  const { allComponent } = store.getState().builder.componentList;
+
+  let position = dragInfo.pos === 'APPEND_BEFORE' ? dragInfo.destIndex - 1 : dragInfo.destIndex;
+
+  if (!version?.content?.schemas) {
+    yield put(ACTIONS.appendComponent(applicationId, ROOT_CONTAINER, desc));
+    return;
+  }
+
+  const parentId =
+    dragInfo.parentId && SYSTEM_PAGE !== dragInfo.parentId
+      ? dragInfo.parentId
+      : versionType === 'page'
+      ? version.content.schemas[0]?.id
+      : undefined;
+  let finalParentId;
+  if (dragInfo.method === 'INSERT') {
+    finalParentId = parentId;
+    const parentComponent = componentList.find((item: ComponentStructure) => item.id === finalParentId);
+    position = parentComponent?.children?.length;
+  } else {
+    const targetComponent = componentList.find(
+      (item: ComponentStructure) => item.id === dragInfo.componentId,
+    );
+    if (targetComponent && targetComponent.wrapper) {
+      const container = componentList.find((item: ComponentStructure) => item.id === targetComponent.wrapper);
+      finalParentId = container?.parentId;
+    } else {
+      finalParentId = targetComponent?.parentId;
+    }
+  }
+
+  if (desc.type === 'add') {
+    const wrapper = newWrapperComponent(allComponent, desc.name, finalParentId);
+    const params = {
+      id: version.content.id,
+      parentId: finalParentId,
+      type: desc.type,
+      position,
+      content: wrapper,
+      requireLoad: true,
+    };
+    yield put(ACTIONS.pushComponentSource([desc.name]));
+    yield put(ACTIONS.saveComponent(applicationId, params as any, false));
+  } else {
+    const { wrapper } = desc;
+    const wrapperComponent = componentList.find((item: ComponentStructure) => item.id === wrapper);
+    const content = wrapperComponent
+      ? {
+          id: wrapper,
+          label: wrapperComponent.label,
+          name: wrapperComponent.name,
+          props: wrapperComponent.props || {},
+          parentId: finalParentId,
+          children: wrapperComponent.children || [],
+          type: wrapperComponent.type || REACT_COMPONENT_TYPE,
+          directive: wrapperComponent.directive,
+        }
+      : {
+          id: desc.id,
+          label: desc.label,
+          name: desc.name,
+          props: desc.props || {},
+          parentId: finalParentId,
+          children: dragInfo.children || [],
+          type: REACT_COMPONENT_TYPE,
+          directive: desc.directive,
+        };
+    const params = {
+      id: version.content.id,
+      parentId: finalParentId,
+      type: desc.type,
+      position,
+      content: content,
+      requireLoad: false,
+    };
+    yield put(ACTIONS.saveComponent(applicationId, params as any, false));
+  }
 }
 
 function* publish(action: TemplateActionType) {
@@ -741,8 +848,10 @@ function* saveToServer(action: TemplateActionType) {
   });
   if (res.code === 200) {
     !hideMessage && message.success(saveSuccess);
+
     // if not, will not publish succeed
-    yield put(ACTIONS.updateVersion(res.data));
+    // yield put(ACTIONS.updateVersion(res.data));
+    yield put(ACTIONS.fetchPageRenderTree(applicationId, res.data.contentId, undefined, true));
     yield put(ACTIONS.updatePageEditStatus(false));
     if (typeof successCb === 'function') {
       yield successCb();
@@ -931,6 +1040,7 @@ function* watch() {
   yield takeLatest(getType(ACTIONS.appendComponent), appendComponent);
   yield takeLatest(getType(ACTIONS.insertComponent), insertComponent);
   yield takeLatest(getType(ACTIONS.saveComponent), saveComponent);
+  yield takeLatest(getType(ACTIONS.dropComponent), dropComponent);
   yield takeLatest(getType(ACTIONS.publish), publish);
   yield takeLatest(getType(ACTIONS.useTemplate), extendTemplate);
   yield takeLatest(getType(ACTIONS.deleteComponent), deleteComponent);

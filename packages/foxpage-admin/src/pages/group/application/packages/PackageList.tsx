@@ -81,9 +81,7 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
               style={{ paddingRight: 8 }}>
               {text}
             </Link>
-            {record.tags?.find(
-              (item) => item.type === StoreBuyGoodsType.reference || item.type === StoreBuyGoodsType.clone,
-            ) && (
+            {record.tags?.find((item) => item.type === StoreBuyGoodsType.reference) && (
               <Tag color={suffixTagColor.refer} style={{ marginLeft: 4, zoom: 0.8 }}>
                 refer
               </Tag>
@@ -154,8 +152,8 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
               });
             }}
             disabled={!!release}
-            okText="Yes"
-            cancelText="No"
+            okText={global.yes}
+            cancelText={global.no}
             placement="topRight">
             <DeleteButton
               type="default"

@@ -55,7 +55,7 @@ const mapDispatchToProps = {
 
 type ConditionEditorProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
-const Condition: React.FC<ConditionEditorProps> = props => {
+const Condition: React.FC<ConditionEditorProps> = (props) => {
   const {
     open,
     applicationId,
@@ -91,8 +91,12 @@ const Condition: React.FC<ConditionEditorProps> = props => {
         const newConditions: ConditionItem[] = [];
         const conditionRelations = version?.relations?.conditions || [];
         const conditionDirective = component.directive?.if || [];
-        conditionRelations.forEach(conditionRelation => {
-          if (conditionDirective.find((item: string) => conditionRelation.id && item.includes(conditionRelation.id))) {
+        conditionRelations.forEach((conditionRelation) => {
+          if (
+            conditionDirective.find(
+              (item: string) => conditionRelation.id && item.includes(conditionRelation.id),
+            )
+          ) {
             const relationContent = conditionRelation as ConditionContentItem;
             const schemaItems = relationContent?.schemas[0];
             if (!schemaItems) {
@@ -112,14 +116,14 @@ const Condition: React.FC<ConditionEditorProps> = props => {
             const childrenPropsItems = schemaItems?.children;
             if (isTimeConditionRelation(schemaItems)) {
               timeConditionsContent.current = relationContent.id;
-              childrenPropsItems.forEach(item => {
+              childrenPropsItems.forEach((item) => {
                 const props = item.props;
                 if (props.key === timeConditionsKey && props.operation === gtQqRelations.value) {
                   setShowStartTime(getTimeByZone(LOCAL_TIME_ZONE, props.value));
-                  setDefaultTimezone(props.value.substr(TIME_ZONE_START_POS, 3));
+                  setDefaultTimezone(props.value?.substr(TIME_ZONE_START_POS, 3));
                 } else if (props.key === timeConditionsKey && props.operation === ltEqRelations.value) {
                   setShowEndTime(getTimeByZone(LOCAL_TIME_ZONE, props.value));
-                } else if (props.key === displayKey && props.operation === ltEqRelations.value) {
+                } else if (props.key === displayKey && props.operation === eqRelations.value) {
                   setDisplay(props.value === displayKey);
                 }
               });
@@ -135,8 +139,8 @@ const Condition: React.FC<ConditionEditorProps> = props => {
     setDefaultTimezone(value);
   };
 
-  const handleChangeTime = value => {
-    const [startTime, endTime] = value;
+  const handleChangeTime = (value) => {
+    const [startTime, endTime] = value || [];
     const newShowStartTime = startTime ? startTime.format() : '';
     const newShowEndTime = endTime ? endTime.format() : '';
     setShowStartTime(newShowStartTime);
@@ -146,34 +150,39 @@ const Condition: React.FC<ConditionEditorProps> = props => {
   const handleSaveCondition = () => {
     if (!showStartTime || !showEndTime) {
       conditions.length > 0 && updateComponentCondition(conditions);
-      return;
+      // return;
     }
-    const items: ConditionContentSchemaChildrenItem[] = [
-      {
-        type: conditionExpression,
-        props: {
-          key: timeConditionsKey,
-          operation: gtQqRelations.value,
-          value: getTimeByZone(defaultTimezone, showStartTime),
+
+    let items: ConditionContentSchemaChildrenItem[] = [];
+    if (showStartTime && showEndTime) {
+      items = [
+        {
+          type: conditionExpression,
+          props: {
+            key: timeConditionsKey,
+            operation: gtQqRelations.value,
+            value: getTimeByZone(defaultTimezone, showStartTime),
+          },
         },
-      },
-      {
-        type: conditionExpression,
-        props: {
-          key: timeConditionsKey,
-          operation: ltEqRelations.value,
-          value: getTimeByZone(defaultTimezone, showEndTime),
+        {
+          type: conditionExpression,
+          props: {
+            key: timeConditionsKey,
+            operation: ltEqRelations.value,
+            value: getTimeByZone(defaultTimezone, showEndTime),
+          },
         },
+      ];
+    }
+
+    items.push({
+      type: conditionExpression,
+      props: {
+        key: displayKey,
+        operation: eqRelations.value,
+        value: display ? displayKey : '0',
       },
-      {
-        type: conditionExpression,
-        props: {
-          key: displayKey,
-          operation: eqRelations.value,
-          value: display ? displayKey : '0',
-        },
-      },
-    ];
+    });
     const timeConditionsName = `__condition_${shortId(10)}`;
     const timeConditionContentItem: ConditionContentItem = {
       id: timeConditionsContent.current,
@@ -208,7 +217,9 @@ const Condition: React.FC<ConditionEditorProps> = props => {
         ]),
       );
     };
-    timeConditionsContent.current ? updateConditionVersion(timeCondition, cb) : saveCondition(timeCondition, cb, false);
+    timeConditionsContent.current
+      ? updateConditionVersion(timeCondition, cb)
+      : saveCondition(timeCondition, cb, false);
   };
 
   return (
@@ -222,8 +233,7 @@ const Condition: React.FC<ConditionEditorProps> = props => {
         <Button type="primary" onClick={handleSaveCondition}>
           {global.apply}
         </Button>
-      }
-    >
+      }>
       <>
         <Group>
           <Title>{condition.general}</Title>
@@ -235,15 +245,13 @@ const Condition: React.FC<ConditionEditorProps> = props => {
               style={{ width: 200, marginRight: 10, marginBottom: 8 }}
               placeholder={condition.timezoneSelect}
               onChange={handleSelectTimezone}
-              optionLabelProp="label"
-            >
-              {timezones.map(item => (
+              optionLabelProp="label">
+              {timezones.map((item) => (
                 <Select.Option
                   key={item.key}
                   value={item.value}
                   label={item.desc}
-                  title={`${item.desc}(${item.country})`}
-                >
+                  title={`${item.desc}(${item.country})`}>
                   {item.desc}({item.country})
                 </Select.Option>
               ))}
@@ -265,7 +273,7 @@ const Condition: React.FC<ConditionEditorProps> = props => {
               checkedChildren={condition.show}
               unCheckedChildren={condition.hide}
               checked={display}
-              onChange={value => setDisplay(value)}
+              onChange={(value) => setDisplay(value)}
             />
           </Field>
         </Group>
@@ -275,7 +283,7 @@ const Condition: React.FC<ConditionEditorProps> = props => {
             <Label>{global.terms} </Label>
             <ConditionList
               conditions={conditions}
-              updateComponentCondition={conditions => {
+              updateComponentCondition={(conditions) => {
                 setConditions(conditions);
               }}
             />

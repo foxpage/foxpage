@@ -6,6 +6,7 @@ import { FileTag, PaginationReqParams, ResponseBody } from '../common';
 export declare interface ConditionFetchParams extends PaginationReqParams {
   applicationId: string;
   folderId?: string;
+  type?: string;
 }
 
 export declare interface ConditionContentSchemaChildrenPropsItem {

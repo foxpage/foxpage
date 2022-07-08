@@ -9,8 +9,10 @@ import {
   ControlOutlined,
   DashboardOutlined,
   FileOutlined,
+  FileSearchOutlined,
   FileTextOutlined,
   FunctionOutlined,
+  ProjectOutlined,
   SettingOutlined,
   SlidersOutlined,
 } from '@ant-design/icons';
@@ -29,6 +31,7 @@ import Component from '../packages';
 import ComponentDetail from '../packages/detail';
 import Pages from '../pages';
 import PageContents from '../pages/Content';
+import Projects from '../projects/Index';
 import Resource from '../resource';
 import ResourceDetail from '../resource/detail';
 import Setting from '../settings';
@@ -67,13 +70,17 @@ type ApplicationDetailProps = ReturnType<typeof mapStateToProps> & typeof mapDis
 
 const Detail: React.FC<ApplicationDetailProps> = (props) => {
   const [selectedKeys, setSelectedKeys] = useState<Array<string>>(['files']);
+  const [siderCollapsed, setSiderCollapsed] = useState(false);
   const history = useHistory();
   const location = useLocation();
   const routeMatch = useRouteMatch();
   const { applicationId } = useParams<ApplicationUrlParams>();
   const { application, getAppDetail, organizationId } = props;
+
+  // multi-language
   const { locale } = useContext(GlobalContext);
   const { global, file } = locale.business;
+
   useEffect(() => {
     getAppDetail(applicationId);
   }, []);
@@ -92,6 +99,7 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
     const pathname = `/organization/${organizationId}/application/${applicationId}/detail/${e.keyPath
       .reverse()
       .join('/')}`;
+    console.log('pathname', pathname);
     history.push({
       pathname,
     });
@@ -99,39 +107,49 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
   };
   return (
     <Layout hasSider style={{ height: '100%' }}>
-      <Sider width={250} theme="light" style={{ height: '100%', overflow: 'auto' }}>
-        <AppName>{application?.name}</AppName>
+      <Sider
+        width={250}
+        theme="light"
+        breakpoint="xl"
+        collapsedWidth={60}
+        onBreakpoint={(broken) => setSiderCollapsed(broken)}
+        style={{ height: '100%', overflow: 'auto' }}>
+        <AppName style={{ paddingLeft: siderCollapsed ? 8 : 24 }}>{application?.name}</AppName>
         <Menu
           onClick={handleClick}
           mode="inline"
           selectedKeys={selectedKeys}
-          defaultOpenKeys={['resource']}
+          defaultOpenKeys={['resource', 'file']}
           theme="light">
           <Menu.Item key="dashbroad" icon={<DashboardOutlined />}>
             {global.dashboard}
           </Menu.Item>
-          <Menu.Item key="page" icon={<FileTextOutlined />}>
-            {file.page}
+          <Menu.Item key="projects" icon={<ProjectOutlined />}>
+            {global.project}
           </Menu.Item>
-          <Menu.Item key="template" icon={<FileOutlined />}>
-            {file.template}
-          </Menu.Item>
-          <Menu.Item key="function" icon={<FunctionOutlined />}>
-            {global.functions}
-          </Menu.Item>
-          <Menu.Item key="variable" icon={<SlidersOutlined />}>
-            {global.variables}
-          </Menu.Item>
-          <Menu.Item key="condition" icon={<ControlOutlined />}>
-            {global.conditions}
+          <Menu.SubMenu key="file" title={file.name} icon={<FileSearchOutlined />}>
+            <Menu.Item key="page" icon={<FileTextOutlined />}>
+              {file.page}
+            </Menu.Item>
+            <Menu.Item key="template" icon={<FileOutlined />}>
+              {file.template}
+            </Menu.Item>
+            <Menu.Item key="function" icon={<FunctionOutlined />}>
+              {global.functions}
+            </Menu.Item>
+            <Menu.Item key="variable" icon={<SlidersOutlined />}>
+              {global.variables}
+            </Menu.Item>
+            <Menu.Item key="condition" icon={<ControlOutlined />}>
+              {global.conditions}
+            </Menu.Item>
+          </Menu.SubMenu>
+          <Menu.Item key="packages" icon={<BookOutlined />}>
+            {global.packages}
           </Menu.Item>
           <Menu.Item key="resource" icon={<ContainerOutlined />}>
             {global.resources}
           </Menu.Item>
-          <Menu.Item key="packages" icon={<BookOutlined />}>
-            {global.packages}
-          </Menu.Item>
-
           <Menu.Item key="dynamics" icon={<BranchesOutlined />}>
             {global.dynamics}
           </Menu.Item>
@@ -139,11 +157,6 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
           <Menu.Item key="setting" icon={<SettingOutlined />}>
             {global.setting}
           </Menu.Item>
-          {/* <SubMenu key="resource" title="Resource">
-              <Menu.Item key="packages">Packages</Menu.Item>
-              <Menu.Item key="variables">Variables</Menu.Item>
-              <Menu.Item key="conditions">Option Conditions</Menu.Item>
-            </SubMenu> */}
         </Menu>
       </Sider>
       <Switch>
@@ -152,11 +165,11 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
           component={PageContents}
         />
         <Route
-          path="/organization/:organizationId/application/:applicationId/detail/page"
+          path="/organization/:organizationId/application/:applicationId/detail/file/page"
           component={Pages}
         />
         <Route
-          path="/organization/:organizationId/application/:applicationId/detail/dynamics"
+          path="/organization/:organizationId/application/:applicationId/detail/file/dynamics"
           component={Versions}
         />
         <Route
@@ -172,19 +185,19 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
           component={TemplateContents}
         />
         <Route
-          path="/organization/:organizationId/application/:applicationId/detail/template"
+          path="/organization/:organizationId/application/:applicationId/detail/file/template"
           component={Templates}
         />
         <Route
-          path="/organization/:organizationId/application/:applicationId/detail/function"
+          path="/organization/:organizationId/application/:applicationId/detail/file/function"
           component={Functions}
         />
         <Route
-          path="/organization/:organizationId/application/:applicationId/detail/variable"
+          path="/organization/:organizationId/application/:applicationId/detail/file/variable"
           component={Variables}
         />
         <Route
-          path="/organization/:organizationId/application/:applicationId/detail/condition"
+          path="/organization/:organizationId/application/:applicationId/detail/file/condition"
           component={Conditions}
         />
         <Route
@@ -205,9 +218,13 @@ const Detail: React.FC<ApplicationDetailProps> = (props) => {
         />
         {/* <Route path="/organization/application/detail/:applicationId/resource/conditions" component={Conditions} />
             <Route path="/organization/application/detail/:applicationId/resource/variables" component={Variables} /> */}
+        <Route
+          path="/organization/:organizationId/application/:applicationId/detail/projects"
+          component={Projects}
+        />
         <Redirect
           from={`/organization/${organizationId}/application/${applicationId}/detail`}
-          to={`/organization/${organizationId}/application/${applicationId}/detail/page`}
+          to={`/organization/${organizationId}/application/${applicationId}/detail/file/page`}
         />
       </Switch>
     </Layout>

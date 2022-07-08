@@ -19,7 +19,7 @@ import { objectEmptyCheck } from '@/utils/object-empty-check';
 
 const LocaleSelect = styled.div`
   border: 1px solid rgb(217, 217, 217);
-  padding: 8px;
+  padding: 8px 0 0 8px;
 `;
 
 const Tips = styled.p`
@@ -141,7 +141,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawerType> = (props) => {
                         handleLocaleClick(locale);
                       }}
                       color={selected ? 'green' : 'blue'}
-                      style={{ width: 70, textAlign: 'center', cursor: 'pointer' }}>
+                      style={{ width: 70, textAlign: 'center', cursor: 'pointer', marginBottom: 8 }}>
                       {selected && <CheckOutlined />}
                       {locale}
                     </Tag>

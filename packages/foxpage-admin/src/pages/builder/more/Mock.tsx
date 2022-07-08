@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { CloudUploadOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Button, Checkbox, message,Modal as AntModal, Spin, Tooltip } from 'antd';
+import { Button, Checkbox, message, Modal as AntModal, Spin, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -11,7 +11,6 @@ import * as TEMPLATE_ACTIONS from '@/actions/builder/template';
 import JSONEditor from '@/components/business/JsonEditor';
 import GlobalContext from '@/pages/GlobalContext';
 import { MockContent } from '@/types/builder';
-import { objectEmptyCheck } from '@/utils/object-empty-check';
 
 import { PublishIcon } from '../../common/CustomIcon';
 
@@ -160,11 +159,12 @@ const Dsl: React.FC<DslProps> = (props) => {
           },
         },
         (id) => {
-          publishMock({
-            applicationId,
-            id: id || mockId,
-            status: 'release',
-          });
+          if (id)
+            publishMock({
+              applicationId,
+              id,
+              status: 'release',
+            });
         },
       );
     }
@@ -186,12 +186,7 @@ const Dsl: React.FC<DslProps> = (props) => {
             <QuestionCircleOutlined />
           </Tooltip>
         </Checkbox>
-        <Button
-          type="ghost"
-          size="small"
-          disabled={objectEmptyCheck(mock?.schemas)}
-          onClick={handleSave}
-          style={{ marginLeft: 8 }}>
+        <Button type="ghost" size="small" onClick={handleSave} style={{ marginLeft: 8 }}>
           <CloudUploadOutlined /> {global.save}
         </Button>
         <Button

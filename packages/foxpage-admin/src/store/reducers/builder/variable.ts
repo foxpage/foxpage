@@ -56,7 +56,6 @@ const reducer = (state: StateType = initialState, action: VariableActionType) =>
 
       case getType(ACTIONS.updateVariableEditDrawerOpen): {
         const { open } = action.payload;
-
         draft.editorDrawerOpen = open;
         draft.editVariable = variable;
         break;

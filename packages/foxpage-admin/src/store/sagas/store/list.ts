@@ -18,7 +18,12 @@ function* handleFetchStoreResources(action: StoreResourceListActionType) {
     store: { fetchResourceFailed },
   } = getBusinessI18n();
   const isPackage = type === FileTypeEnum.package;
-  const fetchApi = isPackage ? API.fetchStorePackageResources : API.fetchStoreProjectResources;
+  const isVariable = type === FileTypeEnum.variable;
+  const fetchApi = isPackage
+    ? API.fetchStorePackageResources
+    : isVariable
+    ? API.fetchStoreVariableResources
+    : API.fetchStoreProjectResources;
 
   const res = yield call(fetchApi, { appIds, type, search, page, size });
   if (res.code === 200) {
@@ -26,6 +31,8 @@ function* handleFetchStoreResources(action: StoreResourceListActionType) {
     yield put(
       isPackage
         ? ACTIONS.pushPackageStoreResources(res.data, res.pageInfo)
+        : isVariable
+        ? ACTIONS.pushVariableStoreResources(res.data, res.pageInfo)
         : ACTIONS.pushProjectStoreResources(res.data, res.pageInfo),
     );
   } else {
@@ -39,10 +46,17 @@ function* handleAddGoods(action: StoreResourceListActionType) {
   const {
     store: { buySuccess, buyFailed },
   } = getBusinessI18n();
-  const res = yield call(type === FileTypeEnum.package ? API.addPackageGoods : API.addPageGoods, {
+  const goodsTypeApiMap = {
+    package: API.addPackageGoods,
+    page: API.addPageGoods,
+    template: API.addPageGoods,
+    variable: API.addVariableGoods,
+  };
+  const res = yield call(goodsTypeApiMap[type], {
     appIds,
     goodsIds,
     delivery,
+    type: type === 'variable' ? type : undefined,
   });
 
   if (res.code === 200) {

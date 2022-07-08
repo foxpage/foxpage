@@ -1,12 +1,20 @@
 import { createAction } from 'typesafe-actions';
 
-import VariableType, { VariableDeleteParams, VariableSaveParams } from '@/types/application/variable';
+import VariableType, {
+  VariableDeleteParams,
+  VariablePublishParams,
+  VariableSaveParams,
+} from '@/types/application/variable';
 import { VariableBindParams } from '@/types/builder/editor';
 import { RelationsType } from '@/types/builder/structure.d';
 import { PaginationInfo } from '@/types/common';
+import { GoodsCommitParams } from '@/types/store';
 
-export const getVariables = createAction('BUILDER__GET_VARIABLES', (folderId?: string) => ({
+export const clearAll = createAction('BUILDER__VARIABLE_CLEAR_ALL', () => ({}))();
+
+export const getVariables = createAction('BUILDER__GET_VARIABLES', (folderId?: string, type?: string) => ({
   folderId,
+  type,
 }))();
 
 export const getApplicationVariables = createAction(
@@ -26,10 +34,13 @@ export const deleteVariable = createAction('BUILDER__DELETE_VARIABLES', (params:
   ...params,
 }))();
 
-export const updateVariableContent = createAction('BUILDER__DELETE_VARIABLES', (fileId: string, folderId?: string) => ({
-  fileId,
-  folderId,
-}))();
+export const updateVariableContent = createAction(
+  'BUILDER__DELETE_VARIABLES',
+  (fileId: string, folderId?: string) => ({
+    fileId,
+    folderId,
+  }),
+)();
 
 export const updateVariableEditDrawerOpen = createAction(
   'BUILDER__UPDATE_VARIABLE_EDIT_DRAWER_OPEN',
@@ -71,9 +82,12 @@ export const getVariableBuilderVersion = createAction(
   }),
 )();
 
-export const pushVariableBuilderVersion = createAction('GET_VARIABLE_BUILD_VERSION_SUCCESS', (data: VariableType) => ({
-  data,
-}))();
+export const pushVariableBuilderVersion = createAction(
+  'GET_VARIABLE_BUILD_VERSION_SUCCESS',
+  (data: VariableType) => ({
+    data,
+  }),
+)();
 
 export const saveVariable = createAction('BUILDER__SAVE_VARIABLES', (params: VariableSaveParams) => ({
   ...params,
@@ -86,4 +100,17 @@ export const setVariableBindModalVisibleStatus = createAction(
   }),
 )();
 
-export const clearAll = createAction('BUILDER__VARIABLE_CLEAR_ALL', () => ({}))();
+//publish
+export const publishVariable = createAction(
+  'BUILDER__PUBLISH_VARIABLES',
+  (params: VariablePublishParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+// commit to store
+export const commitToStore = createAction(
+  'BUILDER__COMMIT_VARIABLE_TO_STORE',
+  (params: GoodsCommitParams, cb?: () => void) => ({ params, cb }),
+)();

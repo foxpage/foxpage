@@ -36,7 +36,14 @@ function* handleFetchAllLocales(action: SettingsActionType) {
 
 function* handleSaveApplicationInfo(action: SettingsActionType) {
   const {
-    application: { nameInvalid, resourceNameInvalid, resourceTypeInvalid, hostInvalid, regionInvalid, languageInvalid },
+    application: {
+      nameInvalid,
+      resourceNameInvalid,
+      resourceTypeInvalid,
+      hostInvalid,
+      regionInvalid,
+      languageInvalid,
+    },
     global: { saveSuccess, saveFailed },
   } = getBusinessI18n();
   const application = action.payload as ApplicationEditType;
@@ -74,13 +81,14 @@ function* handleSaveApplicationInfo(action: SettingsActionType) {
   }
 
   yield put(ACTIONS.updateLoading(true));
+
   const rs = yield call(API.updateApp, {
     applicationId: application.id,
     slug: application.slug,
     host: application.host,
     name: application.name,
     intro: application.intro,
-    locales: application.localeObjects.map(item => `${item.language}-${item.region}`),
+    locales: application.localeObjects.map((item) => `${item.language}-${item.region}`),
     resources: application.resources,
   });
 

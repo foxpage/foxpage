@@ -58,7 +58,7 @@ export const updateMock = createAction('BUILDER_MORE__UPDATE_MOCK', (params: Moc
 }))();
 export const addMock = createAction(
   'BUILDER_MORE__ADD_MOCK',
-  (params: MockNewParams, cb?: (mockId?: string) => void) => ({
+  (params: MockNewParams, cb?: (versionId?: string) => void) => ({
     params,
     cb,
   }),

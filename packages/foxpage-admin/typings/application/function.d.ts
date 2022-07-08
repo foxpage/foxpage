@@ -6,6 +6,7 @@ import { PaginationReqParams, ResponseBody } from '../common';
 export declare interface FuncFetchParams extends PaginationReqParams {
   applicationId: string;
   folderId?: string;
+  type?: string;
 }
 
 export declare interface FuncContentSchemaPropsItem {

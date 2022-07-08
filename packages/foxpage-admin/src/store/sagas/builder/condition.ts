@@ -1,5 +1,4 @@
 import { message } from 'antd';
-import _ from 'lodash';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
@@ -74,11 +73,7 @@ function* refresh() {
 function* handleSaveCondition(actions: ConditionActionType) {
   const { applicationId, folderId } = store.getState().builder.page;
 
-  const {
-    refreshList = true,
-    params,
-    cb,
-  } = actions.payload as {
+  const { refreshList = true, params, cb } = actions.payload as {
     params: ConditionNewParams;
     cb?: (contentId?: string) => void;
     refreshList: boolean;
@@ -124,11 +119,7 @@ function* handleDeleteCondition(actions: ConditionActionType) {
   const {
     global: { deleteSuccess, deleteFailed },
   } = getBusinessI18n();
-  const {
-    params,
-    cb,
-    refreshList = true,
-  } = actions.payload as {
+  const { params, cb, refreshList = true } = actions.payload as {
     params: ConditionDeleteParams;
     cb?: () => void;
     refreshList: boolean;
@@ -150,11 +141,7 @@ function* handleDeleteCondition(actions: ConditionActionType) {
 }
 
 function* handleUpdateCondition(actions: ConditionActionType) {
-  const {
-    params,
-    refreshList = true,
-    cb,
-  } = actions.payload as {
+  const { params, refreshList = true, cb } = actions.payload as {
     params: ConditionUpdateParams;
     cb?: () => void;
     refreshList: boolean;

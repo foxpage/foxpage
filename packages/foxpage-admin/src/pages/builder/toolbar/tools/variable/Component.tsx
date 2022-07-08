@@ -83,7 +83,7 @@ const Variable: React.FC<Type> = (props) => {
     {
       title: global.actions,
       key: 'updateTime',
-      width: 100,
+      width: 72,
       render: (_text: string, record: VariableType) => {
         return (
           <React.Fragment>
@@ -97,8 +97,7 @@ const Variable: React.FC<Type> = (props) => {
                   onClick={() => {
                     openEditDrawer(record);
                     getVariableBuildVersion(record, storeApplicationId);
-                  }}
-                  style={{ marginLeft: 8 }}>
+                  }}>
                   <EditOutlined />
                 </Button>
                 <Popconfirm
@@ -117,7 +116,7 @@ const Variable: React.FC<Type> = (props) => {
                     size="small"
                     shape="circle"
                     title={global.remove}
-                    style={{ marginLeft: 8 }}
+                    style={{ marginLeft: 4, marginRight: 0 }}
                   />
                 </Popconfirm>
               </React.Fragment>
@@ -175,7 +174,7 @@ const Variable: React.FC<Type> = (props) => {
               if (group === ScopeEnum.project) {
                 getVariables(storeFolderId);
               } else {
-                getVariables();
+                getVariables(undefined, 'live');
               }
             }}
           />

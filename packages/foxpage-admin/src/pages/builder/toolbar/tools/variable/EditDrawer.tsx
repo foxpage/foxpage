@@ -41,7 +41,7 @@ const mapDispatchToProps = {
 };
 
 type Type = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
-const EditDrawer: React.FC<Type> = props => {
+const EditDrawer: React.FC<Type> = (props) => {
   const {
     folderId,
     applicationId,
@@ -69,7 +69,7 @@ const EditDrawer: React.FC<Type> = props => {
     if (relation) {
       for (const key in relation) {
         if (relation[key].type === FileTypeEnum.function) {
-          const funcContent = relations?.functions?.find(item => item.id === relation[key].id);
+          const funcContent = relations?.functions?.find((item) => item.id === relation[key].id);
           if (funcContent) {
             setFunc(funcContent as FuncContentItem);
           }
@@ -135,12 +135,10 @@ const EditDrawer: React.FC<Type> = props => {
           type="primary"
           onClick={() => {
             onSave();
-          }}
-        >
+          }}>
           {global.apply}
         </Button>
-      }
-    >
+      }>
       {editVariable ? (
         <Group>
           <Field>
@@ -149,7 +147,7 @@ const EditDrawer: React.FC<Type> = props => {
               value={editVariable.name}
               disabled={!!editVariable.id}
               placeholder={global.nameLabel}
-              onChange={e => update('name', e.target.value)}
+              onChange={(e) => update('name', e.target.value)}
             />
           </Field>
           <Field>
@@ -161,7 +159,7 @@ const EditDrawer: React.FC<Type> = props => {
                   style={{ width: 200 }}
                   placeholder={global.type}
                   value={type}
-                  onChange={e => {
+                  onChange={(e) => {
                     updateContent('type', e.target.value);
                   }}
                 />
@@ -181,10 +179,9 @@ const EditDrawer: React.FC<Type> = props => {
                   disabled={!!editVariable.id}
                   style={{ width: 200 }}
                   value={type}
-                  onChange={value => {
+                  onChange={(value) => {
                     updateContent('type', value);
-                  }}
-                >
+                  }}>
                   {VariableTypes.map((type: string) => (
                     <Option value={type} key={type}>
                       {type}
@@ -207,15 +204,20 @@ const EditDrawer: React.FC<Type> = props => {
             <React.Fragment>
               <Field>
                 <Label>{functionI18n.name}</Label>
-                <Table columns={columns} bordered dataSource={func ? [func] : []} pagination={false} size="small" />
+                <Table
+                  columns={columns}
+                  bordered
+                  dataSource={func ? [func] : []}
+                  pagination={false}
+                  size="small"
+                />
                 <Button
                   type="dashed"
                   size="small"
                   style={{ width: '100%', marginTop: 12 }}
                   onClick={() => {
                     setDrawerVisible(true);
-                  }}
-                >
+                  }}>
                   {variable.selectFunction}
                 </Button>
               </Field>
@@ -223,7 +225,7 @@ const EditDrawer: React.FC<Type> = props => {
                 <Label>{variable.args}</Label>
                 <JsonEditor
                   jsonData={(editVariable.content.schemas[0].props as FunctionVariableProps).args || []}
-                  onChangeJSON={json => {
+                  onChangeJSON={(json) => {
                     updateVariableContentProps('args', json);
                   }}
                   onError={() => {
@@ -237,8 +239,8 @@ const EditDrawer: React.FC<Type> = props => {
               <Label>{variable.value}</Label>
               <JsonEditor
                 refreshFlag={editVariable.id}
-                jsonData={(editVariable.content.schemas[0].props as StaticVariableProps)?.value || {}}
-                onChangeJSON={json => {
+                jsonData={(editVariable.content.schemas?.[0]?.props as StaticVariableProps)?.value || {}}
+                onChangeJSON={(json) => {
                   updateContent('props', {
                     value: json,
                     type: 'json',
@@ -265,7 +267,7 @@ const EditDrawer: React.FC<Type> = props => {
           />
         </Group>
       ) : (
-        <div></div>
+        <div />
       )}
     </OperationDrawer>
   );

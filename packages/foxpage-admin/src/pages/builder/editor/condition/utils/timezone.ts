@@ -62,6 +62,9 @@ export function getAllTimeZone(locale: string) {
 }
 
 export function getTimeByZone(timezone, time) {
+  if (!time) {
+    return '';
+  }
   let startTimeStr = time;
   startTimeStr =
     startTimeStr.substr(0, TIME_ZONE_START_POS) +

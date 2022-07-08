@@ -74,8 +74,10 @@ export interface ProjectAddParams {
 
 export interface ProjectFetchParams extends PaginationReqParams {
   organizationId: string;
+  applicationId?: string;
   type?: string;
 }
+
 export interface ProjectFetchResponse extends BaseResponse {
   data: ProjectType[];
 }
@@ -95,12 +97,14 @@ export interface ParentFileFetchParams {
   applicationId: string;
   id: string;
 }
+
 export interface ParentFileFetchResponse extends BaseResponse {
   data: ParentFile[];
 }
 
 export interface ProjectListFetchParams extends PaginationReqParams {
   organizationId: string;
+  applicationId?: string;
   type?: string;
 }
 

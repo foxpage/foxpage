@@ -109,7 +109,7 @@ const Main: React.FC<PageListType> = (props) => {
               { name: application.applicationList, link: '/#/workspace/application' },
               {
                 name: file.page,
-                link: `/#/organization/${organizationId}/application/${applicationId}/detail/page`,
+                link: `/#/organization/${organizationId}/application/${applicationId}/detail/file/page`,
               },
               { name: global.contents },
             ]}

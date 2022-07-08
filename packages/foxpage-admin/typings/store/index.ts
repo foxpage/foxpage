@@ -72,8 +72,9 @@ export interface GoodsAddParams {
 export interface GoodsCommitParams extends OptionsAction {
   applicationId: string;
   id: string;
-  type: string;
+  type?: string;
   intro?: string;
+  isOnline?: string;
 }
 
 export interface GoodsOfflineParams extends OptionsAction {

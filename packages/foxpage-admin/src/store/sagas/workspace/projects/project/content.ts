@@ -4,6 +4,7 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/workspace/projects/project/content';
 import * as AUTH_API from '@/apis/auth';
+import { updatePageDsl } from '@/apis/builder';
 import { getAppDetail } from '@/apis/group/application/list';
 import { fetchFileDetail } from '@/apis/group/file';
 import * as API from '@/apis/group/project/content';
@@ -23,6 +24,7 @@ import {
   ProjectContentSearchParams,
   ProjectFileDetailFetchParams,
 } from '@/types/index';
+import shortId from '@/utils/short-id';
 
 function* handleFetchList(action: ProjectContentActionType) {
   const { applicationId, fileId, fileType } = action.payload as ProjectContentSearchParams;
@@ -46,7 +48,7 @@ function* handleFetchList(action: ProjectContentActionType) {
 function* save(action: ProjectContentActionType) {
   const { applicationId, fileId, fileType } = action.payload as ProjectContentSearchParams;
   const {
-    global: { saveSuccess, saveFailed, nameError },
+    global: { saveSuccess, saveFailed, nameError, addFailed },
   } = getBusinessI18n();
   const state = store.getState().workspace.projects.project.content;
   const content = state.editContent;
@@ -74,6 +76,31 @@ function* save(action: ProjectContentActionType) {
     message.success(saveSuccess);
     yield put(ACTIONS.updateEditDrawerOpen(false));
     yield put(ACTIONS.fetchContentList({ applicationId, fileId, fileType }));
+
+    // add root as default for content new base page/new locale page without extend
+    if (!content.id && (content.isBase || (!content.isBase && !content.extendId))) {
+      const addRootRes = yield call(updatePageDsl, {
+        applicationId,
+        content: {
+          id: res.data.id,
+          relation: {},
+          schemas: [
+            {
+              children: [],
+              id: `stru_${shortId(15)}`,
+              name: '',
+              props: { width: '100%', height: '100%' },
+              type: '',
+            },
+          ],
+        },
+        id: res.data.id,
+      });
+
+      if (addRootRes.code !== 200) {
+        message.error(addRootRes.msg || addFailed);
+      }
+    }
   } else {
     message.error(res.msg || saveFailed);
   }

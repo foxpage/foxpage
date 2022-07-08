@@ -61,7 +61,12 @@ export const saveProject = createAction(
 
 export const deleteProject = createAction(
   'WORKSPACE_PROJECT_LIST__DELETE_PROJECT',
-  (id: string, applicationId: string, organizationId: string) => ({ id, applicationId, organizationId }),
+  (id: string, applicationId: string, organizationId: string, from?: string) => ({
+    id,
+    applicationId,
+    organizationId,
+    from,
+  }),
 )();
 
 export const clearAll = createAction('WORKSPACE_PROJECT_LIST__CLEAR_ALL', () => ({}))();

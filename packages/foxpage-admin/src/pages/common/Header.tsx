@@ -8,7 +8,7 @@ import zhCN from 'antd/lib/locale/zh_CN';
 import styled from 'styled-components';
 
 import OrganizationSelector from '@/components/business/OrganizationSelector';
-import { ZH_CN_STRING, EN_STRING } from '@/constants/global';
+import { EN_STRING, ZH_CN_STRING } from '@/constants/global';
 import GlobalContext from '@/pages/GlobalContext';
 import { getImageLinkByEnv, getLoginUser, setLoginUser } from '@/utils/index';
 

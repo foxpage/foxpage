@@ -27,6 +27,7 @@ export function mergeRelations(base: DslType['relations'], current: DslType['rel
 export function mergeContent(base: DslType, current: DslType) {
   const { content: baseContent, components: baseComponents = [] } = base;
   const { content: curContent, components: currentComponents = [] } = current;
+
   try {
     const mergedContent =
       !!baseContent.schemas && curContent.schemas

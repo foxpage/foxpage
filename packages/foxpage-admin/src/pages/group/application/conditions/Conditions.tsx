@@ -2,9 +2,10 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Table, Tag } from 'antd';
 import { DrawerProps } from 'antd/lib/drawer';
+import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/condition';
@@ -17,6 +18,12 @@ import { ConditionItem } from '@/types/application/condition';
 import periodFormat from '@/utils/period-format';
 
 const PAGE_SIZE = 10;
+
+const OptionsBox = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+`;
 
 const mapStateToProps = (state: RootState) => ({
   pageNum: state.builder.condition.pageNum,
@@ -116,6 +123,8 @@ function Component(props: IProps) {
       title: folder.name,
       dataIndex: 'folderName',
       key: 'folderName',
+      render: (folderName) =>
+        folderName === '_variable' ? <Tag color="blue">Application</Tag> : <span>{folderName}</span>,
     },
     {
       title: global.type,
@@ -189,21 +198,28 @@ function Component(props: IProps) {
             ]}
           />
         }>
-        <Table
-          columns={columns}
-          loading={fetching}
-          bordered={false}
-          rowKey={(record: ConditionItem) => record.id.toString()}
-          dataSource={list}
-          pagination={
-            total > PAGE_SIZE
-              ? { position: ['bottomCenter'], current: pageNum, pageSize: PAGE_SIZE, total: total }
-              : false
-          }
-          onChange={(pagination) => {
-            changeOffset(pagination.current || 1);
-          }}
-        />
+        <>
+          <OptionsBox>
+            <Button type="primary" onClick={() => openDrawer(true, undefined, 'new')}>
+              <PlusOutlined /> {condition.add}
+            </Button>
+          </OptionsBox>
+          <Table
+            columns={columns}
+            loading={fetching}
+            bordered={false}
+            rowKey={(record: ConditionItem) => record.id.toString()}
+            dataSource={list}
+            pagination={
+              total > PAGE_SIZE
+                ? { position: ['bottomCenter'], current: pageNum, pageSize: PAGE_SIZE, total: total }
+                : false
+            }
+            onChange={(pagination) => {
+              changeOffset(pagination.current || 1);
+            }}
+          />
+        </>
       </FoxpageDetailContent>
 
       <EditDrawer applicationId={applicationId} folderId={folderId} onSuccess={fetchList} />

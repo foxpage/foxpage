@@ -38,6 +38,14 @@ export const pushPackageStoreResources = createAction(
   }),
 )();
 
+export const pushVariableStoreResources = createAction(
+  'STORE__PUSH_STORE_VARIABLE_RESOURCE__LIST',
+  (list: StorePackageResource[], pageInfo: PaginationInfo) => ({
+    list,
+    pageInfo,
+  }),
+)();
+
 export const updatePreviewModalVisible = createAction(
   'STORE__UPDATE_PREVIEW_MODAL_VISIBLE',
   (visible: boolean, resourceItem?: any) => ({
@@ -54,12 +62,22 @@ export const updateBuyModalVisible = createAction(
   }),
 )();
 
-export const updateProjectResourceItemChecked = createAction('STORE__UPDATE_RESOURCE_ITEM_CHECKED', (id: string) => ({
-  id,
-}))();
+export const updateProjectResourceItemChecked = createAction(
+  'STORE__UPDATE_RESOURCE_ITEM_CHECKED',
+  (id: string) => ({
+    id,
+  }),
+)();
 
 export const updatePackageResourceItemChecked = createAction(
   'STORE__UPDATE_PACKAGE_RESOURCE_ITEM_CHECKED',
+  (id: string) => ({
+    id,
+  }),
+)();
+
+export const updateVariableResourceItemChecked = createAction(
+  'STORE__UPDATE_VARIABLE_RESOURCE_ITEM_CHECKED',
   (id: string) => ({
     id,
   }),
@@ -88,6 +106,9 @@ export const fetchAllApplicationList = createAction(
   }),
 )();
 
-export const pushAllApplicationList = createAction('STORE__PUSH_ALL_APPLICATION_LIST', (list: Application[]) => ({
-  list,
-}))();
+export const pushAllApplicationList = createAction(
+  'STORE__PUSH_ALL_APPLICATION_LIST',
+  (list: Application[]) => ({
+    list,
+  }),
+)();

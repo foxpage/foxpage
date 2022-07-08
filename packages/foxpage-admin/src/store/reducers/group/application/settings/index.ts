@@ -1,4 +1,5 @@
 import produce from 'immer';
+import _ from 'lodash';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/store/actions/group/application/settings';
@@ -17,11 +18,20 @@ const defaultState = {
 export type StateType = typeof defaultState;
 
 const reducer = (state: StateType = defaultState, action: SettingsActionType) =>
-  produce(state, draft => {
+  produce(state, (draft) => {
     switch (action.type) {
       case getType(ACTIONS.pushApplicationInfo): {
         const { application } = action.payload;
-        draft.application = application;
+        // handle app host single/multiple
+        const newApplication = _.cloneDeep(application);
+        newApplication.host =
+          newApplication?.host?.length > 0
+            ? newApplication.host.map((item) => ({
+                url: typeof item === 'string' ? item : item.url,
+                locales: typeof item === 'string' ? [] : item.locales,
+              }))
+            : [];
+        draft.application = newApplication;
         break;
       }
 

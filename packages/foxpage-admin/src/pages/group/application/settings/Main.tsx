@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -14,6 +14,7 @@ import { FoxpageBreadcrumb, FoxpageDetailContent } from '@/pages/common';
 import GlobalContext from '@/pages/GlobalContext';
 import { ApplicationEditType, RegionType } from '@/types/application';
 import { ContentUrlParams } from '@/types/application/content';
+import { objectEmptyCheck } from '@/utils/object-empty-check';
 
 const { Option } = Select;
 
@@ -80,7 +81,7 @@ const Main: React.FC<SettingType> = (props) => {
   } = props;
   const [region, setRegion] = useState<Array<RegionType>>([]);
   const [editApplication, setEditApplication] = useState<ApplicationEditType | undefined>();
-  const host = editApplication?.host?.length ? editApplication?.host[0] : '';
+  const host = editApplication?.host?.length ? editApplication?.host[0].url : '';
   const slug = editApplication?.slug || '';
   const hostSlug = host && slug ? `${host}/${slug}` : '';
 
@@ -99,7 +100,7 @@ const Main: React.FC<SettingType> = (props) => {
 
   useEffect(() => {
     if (application) {
-      const { locales = [], resources = [] } = application;
+      const { locales = [], resources = [], host } = application;
       setEditApplication({
         ...application,
         resources: resources.length > 0 ? resources : [],
@@ -113,6 +114,17 @@ const Main: React.FC<SettingType> = (props) => {
                 };
               })
             : [],
+        host: !objectEmptyCheck(host)
+          ? host.map((item) => {
+              const hostWithoutLocale = typeof item === 'string';
+              return hostWithoutLocale
+                ? {
+                    url: item,
+                    locales: [],
+                  }
+                : item;
+            })
+          : [],
       } as ApplicationEditType);
     }
   }, [application]);
@@ -211,6 +223,49 @@ const Main: React.FC<SettingType> = (props) => {
     }
   }, [editApplication]);
 
+  const localeOptions = useMemo(() => {
+    if (editApplication) {
+      const { localeObjects } = editApplication;
+      return !objectEmptyCheck(localeObjects)
+        ? localeObjects.map((item) => ({
+            label: `${item.language}-${item.region}`,
+            value: `${item.language}-${item.region}`,
+          }))
+        : [];
+    } else {
+      return [];
+    }
+  }, [editApplication]);
+
+  const handleRemoveHost = useCallback(
+    (index: number) => {
+      const newEditApplication = _.cloneDeep(editApplication);
+      newEditApplication?.host.splice(index, 1);
+      setEditApplication(newEditApplication);
+    },
+    [editApplication],
+  );
+
+  const handleAddHost = useCallback(
+    (index: number) => {
+      const newEditApplication = _.cloneDeep(editApplication);
+      newEditApplication?.host.splice(index, 0, { url: '', locales: [] });
+      setEditApplication(newEditApplication);
+    },
+    [editApplication],
+  );
+
+  const handleUpdateHost = useCallback(
+    (index: number, key: string, value: string | string[]) => {
+      const newEditApplication = _.cloneDeep(editApplication);
+      if (newEditApplication) {
+        newEditApplication.host[index][key] = value;
+        setEditApplication(newEditApplication);
+      }
+    },
+    [editApplication],
+  );
+
   return (
     <React.Fragment>
       <FoxpageDetailContent
@@ -255,40 +310,6 @@ const Main: React.FC<SettingType> = (props) => {
                 value={editApplication?.intro}
                 onChange={(e) => {
                   handleUpdate('intro', e.target.value);
-                }}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col span={6}>
-              <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
-                {setting.accessControl}
-              </Title>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={6}>
-              <Label>{global.host}</Label>
-            </Col>
-
-            <Col span={10}>
-              <Input
-                value={editApplication?.host?.length ? editApplication?.host[0] : ''}
-                onChange={(e) => {
-                  handleUpdate('host', [e.target.value]);
-                }}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col span={6}>
-              <Label>{setting.slug}</Label>
-            </Col>
-            <Col span={10}>
-              <Input
-                value={editApplication?.slug}
-                onChange={(e) => {
-                  handleUpdate('slug', e.target.value);
                 }}
               />
             </Col>
@@ -371,6 +392,76 @@ const Main: React.FC<SettingType> = (props) => {
           <Row>
             <Col span={6}>
               <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
+                {setting.accessControl}
+              </Title>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={18} offset={6}>
+              {editApplication?.host?.map((host, index) => (
+                <Row key={`host-${index}`}>
+                  <Col span={25}>
+                    <ResourceLabel style={{ width: 38, marginBottom: 0 }}>{global.host}</ResourceLabel>
+                    <Input
+                      value={host?.url}
+                      onChange={(e) => {
+                        handleUpdateHost(index, 'url', e.target.value);
+                      }}
+                      style={{ width: 200 }}
+                    />
+                    <ResourceLabel style={{ marginLeft: 12, marginBottom: 0, textAlign: 'right' }}>
+                      {global.locale}
+                    </ResourceLabel>
+                    <Select
+                      showArrow
+                      allowClear
+                      mode="multiple"
+                      maxTagCount={2}
+                      options={localeOptions}
+                      value={host?.locales || []}
+                      onChange={(value) => handleUpdateHost(index, 'locales', value)}
+                      style={{ width: 232 }}
+                    />
+                    <MinusOutlined
+                      style={iconStyle}
+                      onClick={() => {
+                        handleRemoveHost(index);
+                      }}
+                    />
+                  </Col>
+                </Row>
+              ))}
+            </Col>
+            <Col span={10} offset={6}>
+              <Button
+                type="dashed"
+                onClick={() => handleAddHost(editApplication?.host?.length || 0)}
+                block
+                style={{ marginBottom: 12 }}>
+                <PlusOutlined style={{ marginRight: 8, cursor: 'pointer' }} />
+                {applicationI18n.addHost}
+              </Button>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={18} offset={6}>
+              <Row>
+                <Col span={25}>
+                  <ResourceLabel style={{ width: 38 }}>{setting.slug}</ResourceLabel>
+                  <Input
+                    value={editApplication?.slug}
+                    onChange={(e) => {
+                      handleUpdate('slug', e.target.value);
+                    }}
+                    style={{ width: 554 }}
+                  />
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={6}>
+              <Title level={5} type="secondary" style={{ textAlign: 'right' }}>
                 {setting.resource}
               </Title>
             </Col>
@@ -388,9 +479,11 @@ const Main: React.FC<SettingType> = (props) => {
                         handleUpdateResource(index, 'name', e.target.value);
                       }}
                     />
-                    <ResourceLabel style={{ marginLeft: 12 }}>{global.type}</ResourceLabel>
+                    <ResourceLabel style={{ marginLeft: 12, textAlign: 'right' }}>
+                      {global.type}
+                    </ResourceLabel>
                     <Select
-                      style={{ width: 200 }}
+                      style={{ width: 232 }}
                       value={resource.type}
                       onChange={(val) => {
                         handleUpdateResource(index, 'type', val);
@@ -413,10 +506,12 @@ const Main: React.FC<SettingType> = (props) => {
                         });
                       }}
                     />
-                    <ResourceLabel style={{ marginLeft: 12 }}>{setting.downloadHost}</ResourceLabel>
+                    <ResourceLabel style={{ marginLeft: 12, textAlign: 'right' }}>
+                      {setting.downloadHost}
+                    </ResourceLabel>
                     <Input
                       value={resource.detail.downloadHost}
-                      style={{ width: 200 }}
+                      style={{ width: 232 }}
                       onChange={(e) => {
                         handleUpdateResource(index, 'detail', {
                           downloadHost: e.target.value,

@@ -11,6 +11,7 @@ export type StoreResourceListActionType = ActionType<typeof ACTIONS>;
 const selectedItem: StoreProjectResource = {} as StoreProjectResource;
 const projectResourceList: StoreProjectResource[] = [];
 const packageResourceList: StorePackageResource[] = [];
+const variableResourceList: StorePackageResource[] = [];
 const pageInfo: PaginationInfo = { page: 1, size: 16, total: 0 };
 const buyIds: string[] = [];
 const allApplication: Application[] = [];
@@ -19,6 +20,7 @@ const initialState = {
   previewModalVisible: false,
   projectResourceList,
   packageResourceList,
+  variableResourceList,
   selectedItem,
   buyModalVisible: false,
   buyIds,
@@ -44,14 +46,25 @@ const reducer = (state: initialDataType = initialState, action: StoreResourceLis
         const { list, pageInfo } = action.payload;
         draft.projectResourceList = list;
         draft.packageResourceList = [];
+        draft.variableResourceList = [];
         draft.pageInfo = pageInfo;
         break;
       }
 
       case getType(ACTIONS.pushPackageStoreResources): {
         const { list, pageInfo } = action.payload;
-        draft.projectResourceList = [];
         draft.packageResourceList = list;
+        draft.projectResourceList = [];
+        draft.variableResourceList = [];
+        draft.pageInfo = pageInfo;
+        break;
+      }
+
+      case getType(ACTIONS.pushVariableStoreResources): {
+        const { list, pageInfo } = action.payload;
+        draft.variableResourceList = list;
+        draft.packageResourceList = [];
+        draft.projectResourceList = [];
         draft.pageInfo = pageInfo;
         break;
       }
@@ -115,6 +128,18 @@ const reducer = (state: initialDataType = initialState, action: StoreResourceLis
           }
         });
         draft.packageResourceList = newResourceList;
+        break;
+      }
+
+      case getType(ACTIONS.updateVariableResourceItemChecked): {
+        const { id } = action.payload;
+        const newResourceList = _.cloneDeep(draft.variableResourceList);
+        newResourceList.forEach((item) => {
+          if (item.id === id) {
+            item.checked = !item.checked;
+          }
+        });
+        draft.variableResourceList = newResourceList;
         break;
       }
 

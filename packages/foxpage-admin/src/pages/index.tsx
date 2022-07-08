@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { Route, Switch } from 'react-router-dom';
 
 import { ConfigProvider } from 'antd';
-import zhCN from 'antd/lib/locale/zh_CN';
 import enUS from 'antd/lib/locale/en_US';
+import zhCN from 'antd/lib/locale/zh_CN';
 import styled from 'styled-components';
 
 import { EN_STRING, ZH_CN_STRING } from '@/constants/global';

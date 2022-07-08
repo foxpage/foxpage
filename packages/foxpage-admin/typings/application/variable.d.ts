@@ -33,8 +33,9 @@ interface VariableType {
   contentId: string;
   content: VariableContent;
   relations?: RelationsType;
-  tags: Array<FileTag>
-};
+  tags: Array<FileTag>;
+  online?: boolean;
+}
 
 export default VariableType;
 
@@ -66,4 +67,11 @@ export interface GetApplicationVariableParams extends PaginationReqParams {
 
 export interface GetApplicationVariableResult extends BaseResponse<VariableType> {
   list: VariableType[];
+}
+
+export interface VariablePublishParams {
+  applicationId: string;
+  id?: string;
+  contentId?: string;
+  status: string;
 }

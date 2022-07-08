@@ -21,11 +21,13 @@ import {
   BLANK_NODE,
   COPY_COMPONENT,
   DELETE_COMPONENT,
+  DROP_COMPONENT,
   INIT_DATA,
   LOAD_FINISH,
   OPEN_CONDITION_BIND,
   OPEN_VARIABLE_BIND,
   REQUIRE_LOAD_COMPONENT,
+  ROLL_BACK_COMPONENT,
   SAVE_COMPONENT,
   SELECT_COMPONENT,
   SELECT_CONTENT,
@@ -42,10 +44,10 @@ import {
   viewModelHeight,
   viewModelWidth,
 } from '../constant';
-import { dndHandler } from '../dnd/drop-handler';
 import Condition from '../editor/condition/Condition';
 import { postMsg } from '../post-message';
 
+// @ts-ignore
 const StyledSpin = styled(Spin)`
   display: flex;
   justify-content: center;
@@ -90,7 +92,7 @@ const mapStateToProps = (store: RootState) => ({
   fileId: store.builder.page.fileId,
   folderId: store.builder.page.folderId,
   fileType: store.builder.page.fileType,
-  structureLength: store.builder.template.renderStructure?.length || 0,
+  pageStructure: store.builder.template.renderStructure || [],
   renderStructure: store.builder.template.parsedRenderStructure,
   renderStructureWithMock: store.builder.template.mockParsedRenderStructure,
   componentSource: store.builder.template.componentSourceMap,
@@ -103,6 +105,7 @@ const mapStateToProps = (store: RootState) => ({
   viewModel: store.builder.template.viewModel,
   allComponent: store.builder.componentList.allComponent,
   mockModeEnable: store.builder.more.mockModeEnable,
+  baseStructure: store.builder.template.extensionData.baseStructureRecord,
 });
 
 const mapDispatchToProps = {
@@ -113,7 +116,9 @@ const mapDispatchToProps = {
   copyComponent: ACTIONS.copyComponent,
   insertComponent: ACTIONS.insertComponent,
   appendComponent: ACTIONS.appendComponent,
+  rollBackComponent: ACTIONS.rollbackComponent,
   saveComponent: ACTIONS.saveComponentEditorValue,
+  dropComponent: ACTIONS.dropComponent,
   updateEditorValue: ACTIONS.updateEditorValue,
   updateWrapperValue: ACTIONS.updateWrapperProps,
   setVariableBindModalVisibleStatus,
@@ -131,10 +136,11 @@ const Main: React.FC<Props> = (props) => {
     folderId,
     renderStructure,
     renderStructureWithMock,
+    baseStructure,
     componentSource,
     requireLoad,
     locale,
-    structureLength,
+    pageStructure,
     selectedComponent,
     selectedWrapperComponent,
     relations = [],
@@ -149,10 +155,12 @@ const Main: React.FC<Props> = (props) => {
     updateRequireLoadStatus,
     setSelectedComponent,
     copyComponent,
+    rollBackComponent,
     deleteComponent,
     insertComponent,
     appendComponent,
     saveComponent,
+    dropComponent,
     updateEditorValue,
     updateWrapperValue,
     setVariableBindModalVisibleStatus,
@@ -165,7 +173,13 @@ const Main: React.FC<Props> = (props) => {
   const { locale: i18nLocale } = useContext(GlobalContext);
   const { builder } = i18nLocale.business;
   const { host = [], slug } = appInfo || {};
-  const previewHtmlURL = host[0] && slug ? `${host[0]}/${slug}${EDITOR_URL}` : '';
+  const previewHtmlURL =
+    // @ts-ignore
+    APP_CONFIG.env === 'dev'
+      ? `http://localhost:3000${EDITOR_URL}`
+      : host[0] && slug
+      ? `${host[0]?.url}/${slug}${EDITOR_URL}`
+      : '';
 
   const messageListener = (event) => {
     const { data } = event;
@@ -197,6 +211,9 @@ const Main: React.FC<Props> = (props) => {
       case COPY_COMPONENT:
         copyComponent(applicationId, data.id);
         break;
+      case ROLL_BACK_COMPONENT:
+        rollBackComponent(applicationId, data.id);
+        break;
       case SELECT_CONTENT:
         onContentChange(relations[0].id);
         break;
@@ -209,6 +226,9 @@ const Main: React.FC<Props> = (props) => {
       case SAVE_COMPONENT:
         const { isWrapper } = data;
         saveComponent({ applicationId, folderId, isWrapper });
+        break;
+      case DROP_COMPONENT:
+        dropComponent(applicationId, data.dndInfo, data.desc);
         break;
       case UPDATE_EDITOR_VALUE:
         updateEditorValue(data.key, data.value);
@@ -256,10 +276,10 @@ const Main: React.FC<Props> = (props) => {
   }, [requireLoad, frameWindow, renderStructure, componentSource, locale]);
 
   useEffect(() => {
-    if (allComponent && frameWindow) {
-      postMsg(INIT_DATA, { locale, allComponents: allComponent });
+    if (allComponent && frameWindow && slug) {
+      postMsg(INIT_DATA, { locale, allComponents: allComponent, slug, pageStructure });
     }
-  }, [allComponent, frameWindow]);
+  }, [allComponent, pageStructure, frameWindow, slug]);
 
   useEffect(() => {
     if (renderStructure && frameWindow) {
@@ -267,9 +287,12 @@ const Main: React.FC<Props> = (props) => {
         !!mockModeEnable && !objectEmptyCheck(renderStructureWithMock)
           ? renderStructureWithMock
           : renderStructure;
-      postMsg(SET_COMPONENT_STRUCTURE, { renderStructure: ignoreNodeByBlankNode(finalStructure) });
+      postMsg(SET_COMPONENT_STRUCTURE, {
+        renderStructure: ignoreNodeByBlankNode(finalStructure),
+        baseStructure,
+      });
     }
-  }, [renderStructure, frameWindow, mockModeEnable, renderStructureWithMock]);
+  }, [renderStructure, frameWindow, mockModeEnable, renderStructureWithMock, baseStructure]);
 
   useEffect(() => {
     if (frameWindow) {
@@ -323,29 +346,24 @@ const Main: React.FC<Props> = (props) => {
 
   const handleFrameLoad = (event) => {
     const iframeWindow = event.target.contentWindow;
-    dndHandler(iframeWindow);
     setFrameWindow(iframeWindow);
   };
 
   return (
     <>
       {(loading || !visualEditorReady) && <StyledSpin spinning={true} style={{ position: 'fixed' }} />}
-      {fileType === FileTypeEnum.page &&
-        !loading &&
-        visualEditorReady &&
-        structureLength === 0 &&
-        renderStructure.length === 0 && (
-          <SelectTemplateText>
-            <div
-              onClick={() => {
-                onOpenPagesModal(true);
-              }}>
-              {builder.selectPage}
-            </div>
-          </SelectTemplateText>
-        )}
+      {fileType === FileTypeEnum.page && !loading && visualEditorReady && pageStructure.length === 0 && (
+        <SelectTemplateText>
+          <div
+            onClick={() => {
+              onOpenPagesModal(true);
+            }}>
+            {builder.selectPage}
+          </div>
+        </SelectTemplateText>
+      )}
 
-      {previewHtmlURL && (
+      {previewHtmlURL && contentId && (
         <iframe
           key={contentId}
           title="main-view"
