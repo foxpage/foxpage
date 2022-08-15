@@ -3,41 +3,62 @@ import _ from 'lodash';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/projects/content';
-import { FileTypeEnum } from '@/constants/global';
-import { FileType } from '@/types/application/file';
-import { ProjectContentType } from '@/types/application/project';
+import { FileType } from '@/constants/index';
+import { ContentEntity, File, ProjectEntity } from '@/types/index';
 
 export type ProjectContentActionType = ActionType<typeof ACTIONS>;
 
 export type BaseContent = { id: string; name: string };
 
-interface StateType {
-  loading: boolean;
-  saveLoading: boolean;
-  editorDrawerOpen: boolean;
-  editContent?: Partial<ProjectContentType>;
-  contents: ProjectContentType[];
-  locales: string[];
-  fileDetail?: FileType;
-  baseContents: BaseContent[];
-  extendRecord: Record<string, string[]>;
-}
+const contents: ContentEntity[] = [];
+const editContent: Partial<ContentEntity> = {} as Partial<ContentEntity>;
+const baseContents: BaseContent[] = [];
+const extendRecord: Record<string, string[]> = {};
+const fileDetail: File = {} as File;
+const locales: string[] = [];
+const folder: ProjectEntity = {} as ProjectEntity;
 
 const initialState = {
   loading: false,
   saveLoading: false,
   editorDrawerOpen: false,
-  contents: [],
-  extendRecord: {},
-  locales: [],
-  baseContents: [],
+  contents,
+  editContent,
+  baseContents,
+  extendRecord,
+  fileDetail,
+  locales,
+  folder,
 };
 
-const reducer = (state: StateType = initialState, action: ProjectContentActionType) =>
+type InitialDataType = typeof initialState;
+
+const reducer = (state: InitialDataType = initialState, action: ProjectContentActionType) =>
   produce(state, (draft) => {
     switch (action.type) {
+      case getType(ACTIONS.clearAll): {
+        Object.assign(draft, { ...initialState });
+        break;
+      }
+
+      case getType(ACTIONS.updateLoading): {
+        draft.loading = action.payload.status;
+        break;
+      }
+
+      case getType(ACTIONS.updateSaveLoading): {
+        draft.saveLoading = action.payload.status;
+        break;
+      }
+
+      case getType(ACTIONS.updateFileOnlineStatus): {
+        const { online } = action.payload;
+        draft.fileDetail = Object.assign({}, draft.fileDetail, { online });
+        break;
+      }
+
       case getType(ACTIONS.updateEditDrawerOpen): {
-        const { open, editContent = {} as ProjectContentType } = action.payload;
+        const { open, editContent = {} as ContentEntity } = action.payload;
         draft.editorDrawerOpen = open;
         draft.editContent = editContent;
         break;
@@ -49,10 +70,11 @@ const reducer = (state: StateType = initialState, action: ProjectContentActionTy
         draft.editContent = Object.assign({}, editContent, { [key]: value });
         break;
       }
+
       case getType(ACTIONS.updateEditContentTags): {
         const { key, value } = action.payload;
         const editContent = draft.editContent;
-        const newEditContent: ProjectContentType = (_.cloneDeep(editContent) || {}) as ProjectContentType;
+        const newEditContent: ContentEntity = (_.cloneDeep(editContent) || {}) as ContentEntity;
         const { tags = [] } = newEditContent;
         const tagIndex = tags.findIndex((item) => key in item);
         if (tagIndex > -1) {
@@ -78,10 +100,10 @@ const reducer = (state: StateType = initialState, action: ProjectContentActionTy
             name: item.title,
           }));
         // sort for group
-        if (draft.fileDetail?.type === FileTypeEnum.page) {
-          const contentRecord: Record<string, ProjectContentType[]> = {};
-          const extendRecord: StateType['extendRecord'] = {};
-          const list: ProjectContentType[] = [];
+        if (draft.fileDetail?.type === FileType.page) {
+          const contentRecord: Record<string, ContentEntity[]> = {};
+          const extendRecord: Record<string, string[]> = {};
+          const list: ContentEntity[] = [];
 
           data.forEach((item) => {
             if (item.isBase || !item.extendId) {
@@ -91,6 +113,7 @@ const reducer = (state: StateType = initialState, action: ProjectContentActionTy
                 contentRecord[item.extendId] = [];
               }
               contentRecord[item.extendId].push(item);
+
               if (!extendRecord[item.extendId]) {
                 extendRecord[item.extendId] = [];
               }
@@ -115,18 +138,6 @@ const reducer = (state: StateType = initialState, action: ProjectContentActionTy
         break;
       }
 
-      case getType(ACTIONS.updateFetchLoading): {
-        const { value } = action.payload;
-        draft.loading = value;
-        break;
-      }
-
-      case getType(ACTIONS.setSaveLoading): {
-        const { loading } = action.payload;
-        draft.saveLoading = loading;
-        break;
-      }
-
       case getType(ACTIONS.pushLocales): {
         const { locales } = action.payload;
         draft.locales = locales;
@@ -139,14 +150,8 @@ const reducer = (state: StateType = initialState, action: ProjectContentActionTy
         break;
       }
 
-      case getType(ACTIONS.updateFileOnlineStatus): {
-        const { online } = action.payload;
-        draft.fileDetail = Object.assign({}, draft.fileDetail, { online });
-        break;
-      }
-
-      case getType(ACTIONS.clearAll): {
-        Object.assign(draft, { ...initialState });
+      case getType(ACTIONS.pushParentFiles): {
+        draft.folder = action.payload.folder;
         break;
       }
 

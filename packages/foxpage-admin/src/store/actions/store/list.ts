@@ -1,8 +1,9 @@
 import { createAction } from 'typesafe-actions';
 
-import { FileTypeEnum } from '@/constants/index';
+import { FileType } from '@/constants/index';
 import {
   Application,
+  ApplicationListFetchParams,
   GoodsAddParams,
   PaginationInfo,
   PaginationReqParams,
@@ -15,34 +16,31 @@ export const clearAll = createAction('STORE_CLEAR_ALL', () => ({}))();
 
 export const updateLoading = createAction('STORE__UPDATE_LOADING', (loading: boolean) => ({ loading }))();
 
-export const fetchStoreResources = createAction(
-  'STORE__FETCH_STORE_RESOURCE__LIST',
-  (params: StoreResourceSearchParams) => ({
-    ...params,
-  }),
-)();
+export const fetchResources = createAction('STORE__FETCH_RESOURCES', (params: StoreResourceSearchParams) => ({
+  ...params,
+}))();
 
-export const pushProjectStoreResources = createAction(
-  'STORE__PUSH_STORE_RESOURCE__LIST',
+export const pushProjectResources = createAction(
+  'STORE__PUSH_PROJECT_RESOURCES',
   (list: StoreProjectResource[], pageInfo: PaginationInfo) => ({
     list,
     pageInfo,
   }),
 )();
 
-export const pushPackageStoreResources = createAction(
-  'STORE__PUSH_STORE_PACKAGE_RESOURCE__LIST',
+export const pushPackageResources = createAction(
+  'STORE__PUSH_PACKAGE_RESOURCES',
   (list: StorePackageResource[], pageInfo: PaginationInfo) => ({
     list,
     pageInfo,
   }),
 )();
 
-export const updatePreviewModalVisible = createAction(
-  'STORE__UPDATE_PREVIEW_MODAL_VISIBLE',
-  (visible: boolean, resourceItem?: any) => ({
-    visible,
-    resourceItem,
+export const pushVariableResources = createAction(
+  'STORE__PUSH_VARIABLE_RESOURCES',
+  (list: StorePackageResource[], pageInfo: PaginationInfo) => ({
+    list,
+    pageInfo,
   }),
 )();
 
@@ -54,12 +52,30 @@ export const updateBuyModalVisible = createAction(
   }),
 )();
 
-export const updateProjectResourceItemChecked = createAction('STORE__UPDATE_RESOURCE_ITEM_CHECKED', (id: string) => ({
-  id,
-}))();
+export const updatePreviewModalVisible = createAction(
+  'STORE__UPDATE_PREVIEW_MODAL_VISIBLE',
+  (visible: boolean, resourceItem?: any) => ({
+    visible,
+    resourceItem,
+  }),
+)();
+
+export const updateProjectResourceItemChecked = createAction(
+  'STORE__UPDATE_RESOURCE_ITEM_CHECKED',
+  (id: string) => ({
+    id,
+  }),
+)();
 
 export const updatePackageResourceItemChecked = createAction(
   'STORE__UPDATE_PACKAGE_RESOURCE_ITEM_CHECKED',
+  (id: string) => ({
+    id,
+  }),
+)();
+
+export const updateVariableResourceItemChecked = createAction(
+  'STORE__UPDATE_VARIABLE_RESOURCE_ITEM_CHECKED',
   (id: string) => ({
     id,
   }),
@@ -73,13 +89,24 @@ export const updateSelectedAppIds = createAction('STORE__UPDATE_SELECTED_APP_IDS
   ids,
 }))();
 
-export const addGoods = createAction('STORE__ADD_GOODS', (params: GoodsAddParams) => ({
-  ...params,
-}))();
-
-export const updateType = createAction('STORE__UPDATE_TYPE', (type: FileTypeEnum) => ({
+export const updateType = createAction('STORE__UPDATE_TYPE', (type: FileType) => ({
   type,
 }))();
+
+// application relation
+export const fetchApplicationList = createAction(
+  'STORE__FETCH_APPLICATION_LIST',
+  (params: ApplicationListFetchParams) => ({
+    params,
+  }),
+)();
+
+export const pushApplicationList = createAction(
+  'STORE__PUSH_APPLICATION_LIST',
+  (list: Application[]) => ({
+    list,
+  }),
+)();
 
 export const fetchAllApplicationList = createAction(
   'STORE__FETCH_ALL_APPLICATION_LIST',
@@ -88,6 +115,14 @@ export const fetchAllApplicationList = createAction(
   }),
 )();
 
-export const pushAllApplicationList = createAction('STORE__PUSH_ALL_APPLICATION_LIST', (list: Application[]) => ({
-  list,
+export const pushAllApplicationList = createAction(
+  'STORE__PUSH_ALL_APPLICATION_LIST',
+  (list: Application[]) => ({
+    list,
+  }),
+)();
+
+// common goods
+export const addGoods = createAction('STORE__ADD_GOODS', (params: GoodsAddParams) => ({
+  ...params,
 }))();

@@ -2,20 +2,17 @@ import React, { useContext, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 
 import { EyeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Card, Checkbox, Col, Empty, Pagination, Row, Spin, Tabs } from 'antd';
+import { Card, Checkbox, Col, Empty, Pagination, Row, Spin, Tabs, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/store/list';
-import { FileTypeEnum } from '@/constants/index';
-import { Content, StyledLayout } from '@/pages/components';
-import getImageUrlByEnv from '@/utils/get-image-url-by-env';
+import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
+import { FileType, WIDTH_DEFAULT } from '@/constants/index';
+import { GlobalContext } from '@/pages/system';
+import { getImageUrlByEnv } from '@/utils/image-url-env';
 
-import GlobalContext from '../GlobalContext';
-
-import BuyModal from './buy/BuyModal';
-import PreviewModal from './preview/PreviewModal';
-import SelectTool from './SelectTool';
+import { BuyModal, PreviewModal, SelectTool } from './components';
 
 const { TabPane } = Tabs;
 const { Meta } = Card;
@@ -35,24 +32,26 @@ const PaginationWrapper = styled.div`
 const mapStateToProps = (store: RootState) => ({
   loading: store.store.list.loading,
   pageInfo: store.store.list.pageInfo,
-  projectResourceList: store.store.list.projectResourceList,
   packageResourceList: store.store.list.packageResourceList,
+  projectResourceList: store.store.list.projectResourceList,
+  variableResourceList: store.store.list.variableResourceList,
   searchText: store.store.list.searchText,
   selectedAppIds: store.store.list.selectedAppIds,
   type: store.store.list.type,
 });
 
 const mapDispatchToProps = {
-  updatePreviewModalVisible: ACTIONS.updatePreviewModalVisible,
-  fetchStoreResources: ACTIONS.fetchStoreResources,
+  clearAll: ACTIONS.clearAll,
+  fetchResources: ACTIONS.fetchResources,
+  fetchAllApplicationList: ACTIONS.fetchAllApplicationList,
+  updateType: ACTIONS.updateType,
   updateBuyModalVisible: ACTIONS.updateBuyModalVisible,
+  updatePreviewModalVisible: ACTIONS.updatePreviewModalVisible,
   updateProjectResourceItemChecked: ACTIONS.updateProjectResourceItemChecked,
   updatePackageResourceItemChecked: ACTIONS.updatePackageResourceItemChecked,
-  updateSelectedAppIds: ACTIONS.updateSelectedAppIds,
+  updateVariableResourceItemChecked: ACTIONS.updateVariableResourceItemChecked,
   updateSearchText: ACTIONS.updateSearchText,
-  updateType: ACTIONS.updateType,
-  fetchAllApplicationList: ACTIONS.fetchAllApplicationList,
-  clearAll: ACTIONS.clearAll,
+  updateSelectedAppIds: ACTIONS.updateSelectedAppIds,
 };
 
 type StoreResourceProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -61,38 +60,48 @@ const Store: React.FC<StoreResourceProps> = (props) => {
   const {
     loading,
     pageInfo,
-    projectResourceList,
     packageResourceList,
+    projectResourceList,
+    variableResourceList,
     searchText,
     selectedAppIds,
     type,
     clearAll,
-    updatePreviewModalVisible,
+    fetchResources,
+    fetchAllApplicationList,
+    updateType,
     updateBuyModalVisible,
-    fetchStoreResources,
+    updatePreviewModalVisible,
     updateProjectResourceItemChecked,
     updatePackageResourceItemChecked,
-    updateSelectedAppIds,
+    updateVariableResourceItemChecked,
     updateSearchText,
-    updateType,
-    fetchAllApplicationList,
+    updateSelectedAppIds,
   } = props;
+
+  // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, file } = locale.business;
+  const { global, file, variable, store } = locale.business;
 
   useEffect(() => {
-    fetchStoreResources({ page: pageInfo.page, size: pageInfo.size, search: '', type: FileTypeEnum.page });
+    // fetch page|template|package|variable list info
+    fetchResources({ page: pageInfo.page, size: pageInfo.size, search: '', type: FileType.page });
+
+    // fetch all application list
     fetchAllApplicationList({ page: 1, size: 1000 });
+
     return () => {
       clearAll();
     };
   }, []);
 
   const handleTabsChange = (data) => {
+    // clear interaction data
     updateSelectedAppIds([]);
     updateSearchText('');
     updateType(data);
-    fetchStoreResources({ page: pageInfo.page, size: pageInfo.size, search: '', type: data });
+
+    fetchResources({ page: pageInfo.page, size: pageInfo.size, search: '', type: data });
   };
 
   const handleClickView = (e, item) => {
@@ -106,13 +115,20 @@ const Store: React.FC<StoreResourceProps> = (props) => {
     e.stopPropagation();
     updateBuyModalVisible(
       true,
-      type === FileTypeEnum.package ? [item.id] : item.files.map((item) => item.id),
+      type === FileType.package || type === FileType.variable ? [item.id] : item.files.map((item) => item.id),
     );
   };
 
   const PageContent = useMemo(() => {
-    const isPageOrTemplate = type === FileTypeEnum.page || type === FileTypeEnum.template;
-    const resource = isPageOrTemplate ? projectResourceList : packageResourceList;
+    const isPageOrTemplate = type === FileType.page || type === FileType.template;
+    const isVariable = type === FileType.variable;
+    const _type = isPageOrTemplate ? 'default' : type;
+    const resourceMap = {
+      variable: variableResourceList,
+      package: packageResourceList,
+      default: projectResourceList,
+    };
+    const resource = resourceMap[_type];
 
     return (
       <Spin spinning={loading}>
@@ -145,6 +161,8 @@ const Store: React.FC<StoreResourceProps> = (props) => {
                     onClick={() => {
                       isPageOrTemplate
                         ? updateProjectResourceItemChecked(resource.id)
+                        : isVariable
+                        ? updateVariableResourceItemChecked(resource.id)
                         : updatePackageResourceItemChecked(resource.id);
                     }}
                     cover={
@@ -157,19 +175,24 @@ const Store: React.FC<StoreResourceProps> = (props) => {
                     hoverable
                     bordered>
                     <Meta
-                      title={resource.name}
-                      description={`${global.application}: ${resource.application.name}`}
+                      title={
+                        <Tooltip placement="topLeft" title={resource.name}>
+                          {resource.name}
+                        </Tooltip>
+                      }
+                      description={`${global.application}: ${resource.application?.name}`}
                     />
                     {isPageOrTemplate && (
                       <FileName>
                         {file.name}:
-                        {resource.files.map((item) => {
-                          return (
-                            <span key={item.id} style={{ marginLeft: 6 }}>
-                              {item.name}
-                            </span>
-                          );
-                        })}
+                        {resource.files &&
+                          resource.files.map((item) => {
+                            return (
+                              <span key={item.id} style={{ marginLeft: 6 }}>
+                                {item.name}
+                              </span>
+                            );
+                          })}
                       </FileName>
                     )}
                   </Card>
@@ -182,7 +205,7 @@ const Store: React.FC<StoreResourceProps> = (props) => {
         </Row>
       </Spin>
     );
-  }, [loading, type, projectResourceList, packageResourceList, global, file]);
+  }, [loading, type, projectResourceList, packageResourceList, variableResourceList, global, file]);
 
   const PaneContent = useMemo(() => {
     return (
@@ -197,7 +220,7 @@ const Store: React.FC<StoreResourceProps> = (props) => {
             pageSize={pageInfo.size}
             total={pageInfo.total}
             onChange={(page) => {
-              fetchStoreResources({
+              fetchResources({
                 page,
                 size: pageInfo.size,
                 search: searchText,
@@ -212,28 +235,43 @@ const Store: React.FC<StoreResourceProps> = (props) => {
   }, [type, PageContent]);
 
   return (
-    <StyledLayout>
+    <>
       <Content>
-        <Tabs
-          centered
-          size="large"
-          destroyInactiveTabPane
-          defaultActiveKey="page"
-          onChange={handleTabsChange}>
-          <TabPane tab={file.page} key={FileTypeEnum.page}>
-            {PaneContent}
-          </TabPane>
-          <TabPane tab={file.template} key={FileTypeEnum.template}>
-            {PaneContent}
-          </TabPane>
-          <TabPane tab={file.package} key={FileTypeEnum.package}>
-            {PaneContent}
-          </TabPane>
-        </Tabs>
+        <FoxPageContent
+          breadcrumb={
+            <FoxPageBreadcrumb
+              breadCrumb={[
+                {
+                  name: store.name,
+                },
+              ]}
+            />
+          }
+          style={{ maxWidth: WIDTH_DEFAULT, margin: '0 auto', overflow: 'unset' }}>
+          <Tabs
+            centered
+            size="large"
+            destroyInactiveTabPane
+            defaultActiveKey="page"
+            onChange={handleTabsChange}>
+            <TabPane tab={file.page} key={FileType.page}>
+              {PaneContent}
+            </TabPane>
+            <TabPane tab={file.template} key={FileType.template}>
+              {PaneContent}
+            </TabPane>
+            <TabPane tab={file.package} key={FileType.package}>
+              {PaneContent}
+            </TabPane>
+            <TabPane tab={variable.title} key={FileType.variable}>
+              {PaneContent}
+            </TabPane>
+          </Tabs>
+        </FoxPageContent>
       </Content>
-      <PreviewModal />
       <BuyModal />
-    </StyledLayout>
+      <PreviewModal />
+    </>
   );
 };
 

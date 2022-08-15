@@ -1,6 +1,10 @@
+export { default as ApplicationSelector } from './ApplicationSelector';
 export * from './authorize';
-export * from './JsonEditor';
-export * from './LocaleTag';
-export * from './LocalsView';
-export * from './OperationDrawer';
-export * from './ScrollBar';
+export { default as ComingSoon } from './ComingSoon';
+export { default as FileScopeSelector } from './FileScope';
+export * from './foxPage';
+export { default as LocaleView } from './LocaleView';
+export { default as OperationDrawer } from './OperationDrawer';
+export { default as OrganizationSelector } from './OrganizationSelector';
+export * from './project';
+export { default as ScopeSelector } from './ScopeSelector';

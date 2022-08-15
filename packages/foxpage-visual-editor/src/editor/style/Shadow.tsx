@@ -5,16 +5,16 @@ import { InputNumber, Radio, Tooltip } from 'antd';
 import { EditContext } from '@foxpage/foxpage-component-editor-context';
 import { ColorPicker } from '@foxpage/foxpage-component-editor-widgets';
 
-import viewerContext from '../../viewerContext';
+import { FoxContext } from '@/context/index';
 
 import { Col, colorPickerStyle, Label, RadioButton, Row } from './Common';
-import { ShadowType } from './index.d';
+import { ShadowType } from './interface';
 
 const Shadow: React.FC<ShadowType> = (props) => {
   const {
     boxShadow,
-    onChange = (_key: string, _val: string) => {},
-    onApplyState = (_key: string, _val: string) => {},
+    onChange = (_key: string, _val: string, _autoSave?: boolean) => {},
+    onApplyState = () => {},
   } = props;
   const [type, setType] = useState<string>('');
   const [offsetX, setOffsetX] = useState<number>(0);
@@ -22,7 +22,7 @@ const Shadow: React.FC<ShadowType> = (props) => {
   const [blur, setBlur] = useState<number>(0);
   const [speed, setSpeed] = useState<number>(0);
   const [color, setColor] = useState<string>('');
-  const { foxpageI18n } = useContext(viewerContext);
+  const { foxI18n } = useContext(FoxContext);
 
   useEffect(() => {
     if (boxShadow) {
@@ -60,7 +60,7 @@ const Shadow: React.FC<ShadowType> = (props) => {
     <React.Fragment>
       <Row>
         <Col sm={6}>
-          <Label>{foxpageI18n.shadowType}：</Label>
+          <Label>{foxI18n.shadowType}: </Label>
         </Col>
         <Col sm={18}>
           <Radio.Group
@@ -73,27 +73,22 @@ const Shadow: React.FC<ShadowType> = (props) => {
                 `${
                   e.target.value === 'inset' ? 'inset ' : ''
                 }${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
-              );
-              onApplyState(
-                'boxShadow',
-                `${
-                  e.target.value === 'inset' ? 'inset ' : ''
-                }${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
+                true,
               );
             }}>
             <RadioButton value="" style={{ width: '50%' }}>
-              <span>{foxpageI18n.shadowTypeOutset}</span>
+              <span>{foxI18n.shadowTypeOutset}</span>
             </RadioButton>
 
             <RadioButton value="inset" style={{ width: '50%' }}>
-              <span>{foxpageI18n.shadowTypeInset}</span>
+              <span>{foxI18n.shadowTypeInset}</span>
             </RadioButton>
           </Radio.Group>
         </Col>
       </Row>
       <Row>
         <Col sm={6}>
-          <Label>{foxpageI18n.color}：</Label>
+          <Label>{foxI18n.color}: </Label>
         </Col>
         <Col sm={18}>
           <EditContext.Provider
@@ -103,16 +98,10 @@ const Shadow: React.FC<ShadowType> = (props) => {
                 onChange(
                   'boxShadow',
                   `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${speed}px ${val}`,
+                  true,
                 );
               },
-              applyState: () => {
-                onApplyState(
-                  'boxShadow',
-                  `${
-                    type === 'inset' ? 'inset ' : ''
-                  }${offsetX}px ${offsetY}px ${blur}px ${speed}px ${color}`,
-                );
-              },
+              applyState: () => {},
               propsChange: () => {},
               onBindVariable: () => {},
             }}>
@@ -123,7 +112,7 @@ const Shadow: React.FC<ShadowType> = (props) => {
 
       <Row>
         <Col sm={9} offset="6">
-          <Tooltip title={foxpageI18n.shadowX}>
+          <Tooltip title={foxI18n.shadowX}>
             <InputNumber
               value={offsetX}
               size="small"
@@ -133,19 +122,14 @@ const Shadow: React.FC<ShadowType> = (props) => {
                   `${type === 'inset' ? 'inset ' : ''}${value}px ${offsetY}px ${blur}px ${speed}px ${color}`,
                 );
               }}
-              onBlur={(e: any) => {
-                onApplyState(
-                  'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${
-                    e.target.value
-                  }px ${offsetY}px ${blur}px ${speed}px ${color}`,
-                );
+              onBlur={() => {
+                onApplyState();
               }}
             />
           </Tooltip>
         </Col>
         <Col sm={9}>
-          <Tooltip title={foxpageI18n.shadowY}>
+          <Tooltip title={foxI18n.shadowY}>
             <InputNumber
               size="small"
               value={offsetY}
@@ -156,13 +140,8 @@ const Shadow: React.FC<ShadowType> = (props) => {
                   `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${value}px ${blur}px ${speed}px ${color}`,
                 );
               }}
-              onBlur={(e: any) => {
-                onApplyState(
-                  'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${
-                    e.target.value
-                  }px ${blur}px ${speed}px ${color}`,
-                );
+              onBlur={() => {
+                onApplyState();
               }}
             />
           </Tooltip>
@@ -170,7 +149,7 @@ const Shadow: React.FC<ShadowType> = (props) => {
       </Row>
       <Row>
         <Col sm={9} offset="6">
-          <Tooltip title={foxpageI18n.shadowBlur}>
+          <Tooltip title={foxI18n.shadowBlur}>
             <InputNumber
               value={blur}
               size="small"
@@ -182,19 +161,14 @@ const Shadow: React.FC<ShadowType> = (props) => {
                   }${offsetX}px ${offsetY}px ${value}px ${speed}px ${color}`,
                 );
               }}
-              onBlur={(e: any) => {
-                onApplyState(
-                  'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${
-                    e.target.value
-                  }px ${speed}px ${color}`,
-                );
+              onBlur={() => {
+                onApplyState();
               }}
             />
           </Tooltip>
         </Col>
         <Col sm={9}>
-          <Tooltip title={foxpageI18n.shadowSpeed}>
+          <Tooltip title={foxI18n.shadowSpeed}>
             <InputNumber
               value={speed}
               size="small"
@@ -207,13 +181,8 @@ const Shadow: React.FC<ShadowType> = (props) => {
                   }${offsetX}px ${offsetY}px ${blur}px ${value}px ${color}`,
                 );
               }}
-              onBlur={(e: any) => {
-                onApplyState(
-                  'boxShadow',
-                  `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${offsetY}px ${blur}px ${
-                    e.target.value
-                  }px ${color}`,
-                );
+              onBlur={() => {
+                onApplyState();
               }}
             />
           </Tooltip>

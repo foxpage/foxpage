@@ -1,4 +1,5 @@
-export enum FileTypeEnum {
+// FileTypeEnum
+export enum FileType {
   component = 'component',
   page = 'page',
   template = 'template',
@@ -8,5 +9,4 @@ export enum FileTypeEnum {
   package = 'package',
 }
 
-export const ZH_CN_STRING = 'zh-cn';
-export const EN_STRING = 'en';
+export const WIDTH_DEFAULT = 1136;

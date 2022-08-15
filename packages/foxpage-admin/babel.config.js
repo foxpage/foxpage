@@ -11,7 +11,6 @@ module.exports = (api) => {
     useBuiltIns: 'entry',
     corejs: 2,
     modules: isProduction ? false : 'commonjs',
-    // debug: true,
   };
 
   return {

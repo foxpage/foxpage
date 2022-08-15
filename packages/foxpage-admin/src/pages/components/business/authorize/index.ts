@@ -1,1 +1,1 @@
-export { default as AuthorizeDrawer } from './Main';
+export { default as AuthorizeDrawer } from './Drawer';

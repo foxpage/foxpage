@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 
 import {
@@ -6,20 +6,20 @@ import {
   ProfileOutlined,
   ProjectOutlined,
   RestOutlined,
+  StarFilled,
   SwitcherOutlined,
+  TeamOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, Tooltip } from 'antd';
 import styled from 'styled-components';
 
+import { GlobalContext } from '@/pages/system';
 import { getLoginUser } from '@/utils/login-user';
 
-import GlobalContext from '../GlobalContext';
-import Applications from '../group/application';
-
-import Dynamics from './dynamics/Main';
-import Projects from './projects/project/Index';
-import RecycleBin from './projects/recycleBin/Index';
-import TeamProjects from './projects/team/Index';
+import { Applications } from './applications';
+import { Dynamics } from './dynamics';
+import { MyProjects, RecycleBin, TeamProjects } from './projects';
 
 const { Sider } = Layout;
 
@@ -43,8 +43,10 @@ const MenuItemGroupTitle = styled.div`
 `;
 
 const WorkSpace = () => {
-  const [selectedKeys, setSelectedKeys] = useState<Array<string>>(['my-project']);
+  const [selectedKeys, setSelectedKeys] = useState<Array<string>>(['project']);
   const [siderCollapsed, setSiderCollapsed] = useState(false);
+
+  // route info
   const history = useHistory();
   const location = useLocation();
   const routeMatch = useRouteMatch();
@@ -54,9 +56,10 @@ const WorkSpace = () => {
   const { workspace, project, application, dynamic } = locale.business;
 
   // get user info
-  const userInfo = getLoginUser();
+  const { userInfo } = getLoginUser();
   const organizationId = userInfo?.organizationId;
 
+  // if organization id empty, back to login page
   if (!organizationId) {
     history.push({
       pathname: '/login',
@@ -73,16 +76,16 @@ const WorkSpace = () => {
     setSelectedKeys(newKey);
   }, [location]);
 
-  const handleClick = (e: any) => {
+  const handleClick = useCallback((e: any) => {
     const pathname = `/workspace/${e.keyPath.reverse().join('/')}`;
     history.push({
       pathname,
     });
-  };
+  }, []);
 
-  const handleBreakPoint = (broken) => {
+  const handleBreakPoint = useCallback((broken) => {
     setSiderCollapsed(broken);
-  };
+  }, []);
 
   return (
     <Layout hasSider style={{ height: '100%' }}>
@@ -94,7 +97,7 @@ const WorkSpace = () => {
         onBreakpoint={handleBreakPoint}
         style={{ height: '100%', overflow: 'auto' }}>
         <Tooltip title={workspace.name} placement="right">
-          <Location style={{ paddingLeft: siderCollapsed ? 8 : 24 }}>{workspace.name}</Location>
+          <Location style={{ paddingLeft: siderCollapsed ? 8 : 18 }}>{workspace.name}</Location>
         </Tooltip>
         <Menu
           mode="inline"
@@ -109,10 +112,18 @@ const WorkSpace = () => {
                 {project.name}
               </MenuItemGroupTitle>
             }>
-            <Menu.Item key="project" icon={<ProjectOutlined />}>
-              {project.myProject}
-            </Menu.Item>
-            <Menu.Item key="team-project" icon={<ProfileOutlined />}>
+            <Menu.SubMenu key="projects" title={project.myProject} icon={<ProjectOutlined />}>
+              <Menu.Item key="personal" icon={<UserOutlined />}>
+                {project.personal}
+              </Menu.Item>
+              <Menu.Item key="involved" icon={<TeamOutlined />}>
+                {project.involved}
+              </Menu.Item>
+              <Menu.Item key="starred" icon={<StarFilled />}>
+                {project.starred}
+              </Menu.Item>
+            </Menu.SubMenu>
+            <Menu.Item key="team-projects" icon={<ProfileOutlined />}>
               {project.teamProject}
             </Menu.Item>
             <Menu.Item key="recycle-bin" icon={<RestOutlined />}>
@@ -126,7 +137,7 @@ const WorkSpace = () => {
                 {application.name}
               </MenuItemGroupTitle>
             }>
-            <Menu.Item key="application" icon={<AppstoreOutlined />}>
+            <Menu.Item key="applications" icon={<AppstoreOutlined />}>
               {application.myApplication}
             </Menu.Item>
           </Menu.ItemGroup>
@@ -137,19 +148,20 @@ const WorkSpace = () => {
                 {dynamic.name}
               </MenuItemGroupTitle>
             }>
-            <Menu.Item key="dynamic" icon={<SwitcherOutlined />}>
+            <Menu.Item key="dynamics" icon={<SwitcherOutlined />}>
               {dynamic.myDynamic}
             </Menu.Item>
           </Menu.ItemGroup>
         </Menu>
       </Sider>
       <Switch>
-        <Route path="/workspace/project" component={Projects} />
-        <Route path="/workspace/team-project" component={TeamProjects} />
+        <Route path="/workspace/applications" component={Applications} />
+        <Route path="/workspace/projects" component={MyProjects} />
+        <Route path="/workspace/team-projects" component={TeamProjects} />
         <Route path="/workspace/recycle-bin" component={RecycleBin} />
-        <Route path="/workspace/application" component={Applications} />
-        <Route path="/workspace/dynamic" component={Dynamics} />
-        <Redirect from="/*" to="/workspace/project" />
+        <Route path="/workspace/dynamics" component={Dynamics} />
+
+        <Redirect from="/*" to="/workspace/projects" />
       </Switch>
     </Layout>
   );

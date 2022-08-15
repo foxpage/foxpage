@@ -5,27 +5,25 @@ import _ from 'lodash';
 import { EditContext } from '@foxpage/foxpage-component-editor-context';
 import * as widgets from '@foxpage/foxpage-component-editor-widgets';
 
-import { ComponentPropsType, ComponentStructure } from '@/types/component';
-
-import { Listeners } from '../components/listeners';
-import ViewerContext from '../viewerContext';
+import { Listeners } from '@/components/listeners';
+import { FoxContext } from '@/context/index';
+import { RenderStructureNode } from '@/types/index';
 
 interface EventListenerProps {
-  selectedComponent?: ComponentStructure;
-  updateEditorValue: (key: string, value: unknown) => void;
-  saveComponent: (isWrapper: boolean) => void;
+  component: RenderStructureNode;
+  updateEditorValue: (key: string, value: unknown, autoSave?: boolean) => void;
 }
 
 const EventListener: React.FC<EventListenerProps> = (props) => {
-  const { selectedComponent, saveComponent, updateEditorValue } = props;
-  const { loadedComponent, componentList, foxpageI18n } = useContext(ViewerContext);
+  const { loadedComponents, componentMap, structureList = [], foxI18n } = useContext(FoxContext);
+  const { updateEditorValue, component } = props;
 
   const handlePropChange = (keys: string, val: string) => {
-    if (selectedComponent) {
-      const componentProps = _.cloneDeep(selectedComponent.props) || {};
+    if (component) {
+      const componentProps = _.cloneDeep(component.props) || {};
       const keyPath: string[] = keys.split('.');
       const key = keyPath.pop() as string;
-      const props = keyPath.reduce((a: string | ComponentPropsType, c: string) => {
+      const props = keyPath.reduce((a: string | RenderStructureNode['props'], c: string) => {
         if (typeof a[c] !== 'undefined') return a[c];
         a[c] = {};
         return a[c];
@@ -36,70 +34,79 @@ const EventListener: React.FC<EventListenerProps> = (props) => {
         props[key] = val;
       }
 
-      updateEditorValue('props', componentProps);
-      saveComponent(false);
+      updateEditorValue('props', componentProps, true);
     }
   };
 
   const newComponentList = useMemo(() => {
-    return componentList
-      .filter((component) => {
-        const isWrapper =
-          component.children && component.children.length > 0 && component.children[0].wrapper
-            ? component.children[0].wrapper === component.id
-            : false;
-        return !isWrapper;
-      })
-      .map((component) => {
-        const editorEntry = component.resource?.['editor-entry'];
-        const editor = editorEntry && editorEntry.length > 0 ? editorEntry[0] : undefined;
-        if (editor) {
+    return (
+      structureList
+        // .filter((node) => {
+        //   const isWrapper =
+        //     node.children && node.children.length > 0 && node.children[0].wrapper
+        //       ? node.children[0].wrapper === node.id
+        //       : false;
+        //   return !isWrapper;
+        // })
+        .map((node) => {
+          const component = componentMap[node.name];
+          const editorEntry = component?.resource?.['editor-entry'];
+          const editor = editorEntry && editorEntry.length > 0 ? editorEntry[0] : undefined;
+          if (editor) {
+            return {
+              ...component,
+              ...node,
+              editor: loadedComponents[editor.name],
+            };
+          }
           return {
             ...component,
-            editor: loadedComponent[editor.name],
+            ...node,
           };
-        }
-        return component;
-      });
-  }, [componentList, loadedComponent]);
+        })
+    );
+  }, [structureList, loadedComponents]);
 
-  if (!selectedComponent) {
+  if (!component) {
     return null;
   }
 
   const editorParams = useMemo(() => {
     return {
-      componentProps: _.cloneDeep(selectedComponent.props) || {},
+      componentProps: _.cloneDeep(component.props) || {},
       editor: widgets,
       components: newComponentList,
       propChange: handlePropChange,
       applyState: () => {},
       propsChange: () => {},
     };
-  }, [selectedComponent, newComponentList]);
+  }, [component, newComponentList]);
 
-  const { schema } = selectedComponent;
+  const selectComponent = componentMap[component.name];
+  const { schema = {} } = selectComponent || {};
 
   const listeners: string[] = [];
   if (schema) {
-    const { properties = {} } = schema;
-    for (const key in properties) {
-      if (properties[key]?.description?.includes('function')) {
-        listeners.push(key);
+    if (schema instanceof Object) {
+      const { properties = {} } = schema;
+      for (const key in properties) {
+        if (properties[key]?.description?.includes('function')) {
+          listeners.push(key);
+        }
       }
     }
   }
 
   return (
-    <React.Fragment>
+    <div style={{ padding: 4 }}>
       {listeners.length > 0 ? (
         <EditContext.Provider value={editorParams as any}>
           <Listeners propKey={listeners} />
         </EditContext.Provider>
       ) : (
-        <div style={{ padding: '12px 16px' }}>{foxpageI18n.noListener}</div>
+        <div style={{ padding: '12px 16px' }}>{foxI18n.noListener}</div>
       )}
-    </React.Fragment>
+    </div>
   );
 };
 

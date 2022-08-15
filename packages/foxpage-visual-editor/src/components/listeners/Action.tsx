@@ -33,6 +33,7 @@ const Root = styled.div`
   border-radius: 4px;
 `;
 
+// @ts-ignore
 export class Action extends Component<any, any> {
   static contextType = EditContext;
 
@@ -47,7 +48,7 @@ export class Action extends Component<any, any> {
     }
   };
 
-  removeTarget = targetIdx => {
+  removeTarget = (targetIdx) => {
     const { event, actionIdx, removeTarget } = this.props;
     if (removeTarget) {
       removeTarget(event, actionIdx, targetIdx);
@@ -71,14 +72,13 @@ export class Action extends Component<any, any> {
           <div>
             <Label>Action</Label>
             <Select
-              onSelect={value => {
+              onSelect={(value) => {
                 if (changeActionType) {
                   changeActionType(event, actionIdx, value);
                 }
               }}
               style={{ width: '100%' }}
-              value={action.type}
-            >
+              value={action.type}>
               <Select.Option value="action.component.call">action.component.call</Select.Option>
               {/* <Select.Option value="action.tracking">action.tracking</Select.Option> */}
             </Select>
@@ -103,8 +103,7 @@ export class Action extends Component<any, any> {
                   if (addActionComponentCall) {
                     addActionComponentCall(event, actionIdx);
                   }
-                }}
-              >
+                }}>
                 <PlusOutlined />
                 Add Target
               </Button>
@@ -114,8 +113,7 @@ export class Action extends Component<any, any> {
         <RemoveBtn
           onClick={() => {
             removeAction(event, actionIdx);
-          }}
-        >
+          }}>
           <MinusOutlined />
         </RemoveBtn>
       </Root>

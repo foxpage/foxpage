@@ -8,11 +8,16 @@ import { FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD, TYPE } from '../../../config/constant';
-import { ComponentContentInfo } from '../../types/component-types';
+import { ComponentCategory,ComponentContentInfo } from '../../types/component-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppComponentsReq, AppComponentsRes } from '../../types/validates/component-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
+
+interface CompontentCells extends ComponentContentInfo {
+  components: ComponentContentInfo[];
+  category?: ComponentCategory;
+}
 
 @JsonController('components')
 export class GetAppComponentListInfos extends BaseController {
@@ -42,6 +47,7 @@ export class GetAppComponentListInfos extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
 
+      // Get App all components live info
       const contentList = await this.service.content.component.getComponentVersionLiveDetails({
         applicationId: params.applicationId,
         type: (params.type as FileTypes[]) || TYPE.COMPONENT,
@@ -50,72 +56,89 @@ export class GetAppComponentListInfos extends BaseController {
 
       const contentFileObject = await this.service.file.list.getContentFileByIds(
         _.map(contentList, (content) => content.package?.id || ''),
+        params.applicationId
       );
 
-      // TODO Need to consider optimization component data time, efficiency issues; processing the returned structure
       let components: ComponentContentInfo[] = [];
+      let componentCells: CompontentCells[] = [];
+      contentList.map(content => {
+        content.package && componentCells.push(content.package as CompontentCells);
+      });
+
+      let componentIds = this.service.content.component.getComponentResourceIds(componentCells);
+      const dependenciesIdVersions = this.service.component.getComponentEditorAndDependends(componentCells);
+
+      // Get component dependents editor or component
+      const [dependencies, fileContentObject, appDetail] = await Promise.all([
+        this.service.component.getComponentDetailByIdVersion(dependenciesIdVersions),
+        this.service.file.list.getContentFileByIds(_.map(dependenciesIdVersions, 'id'), params.applicationId),
+        this.service.application.getDetailById(params.applicationId),
+      ]);
+      
+      const dependenciesList = _.toArray(dependencies);
+      const dependComponentIds = this.service.content.component.getComponentResourceIds(
+        _.map(dependenciesList, 'content'),
+      );
+
+      // Get component's resource info
+      componentIds = componentIds.concat(dependComponentIds);
+      const [resourceObject, contentAllParents, fileObject] = await Promise.all([
+        this.service.content.resource.getResourceContentByIds(componentIds),
+        this.service.content.list.getContentAllParents(componentIds), 
+        this.service.file.list.getContentFileByIds(_.map(dependenciesList, 'contentId'), params.applicationId),
+      ]);
+
+      const appResource = await this.service.application.getAppResourceFromContent(contentAllParents);
+      const contentResource = this.service.content.info.getContentResourceTypeInfo(
+        appResource,
+        contentAllParents,
+      );
+
+      dependenciesList.forEach((depend) => {
+        depend.content.resource = this.service.version.component.assignResourceToComponent(
+          depend?.content?.resource || {},
+          resourceObject,
+          { contentResource },
+        );
+      });
+
+      const componentSettingObject = _.keyBy(appDetail.setting?.[TYPE.COMPONENT] || [], 'id');
       for (let content of contentList) {
-        const componentCell = (content.package || {}) as ComponentContentInfo & {
-          components: ComponentContentInfo[];
-        };
-        let componentIds = this.service.content.component.getComponentResourceIds([componentCell]);
-        const dependenciesIdVersions = this.service.component.getComponentEditorAndDependends([
-          content.package as ComponentContentInfo,
-        ]);
-        // TODO Obtain dependent components, need to be optimized for unified acquisition
-        const [dependencies, fileContentObject] = await Promise.all([
-          this.service.component.getComponentDetailByIdVersion(dependenciesIdVersions),
-          this.service.file.list.getContentFileByIds(_.map(dependenciesIdVersions, 'id')),
-        ]);
-        const dependComponentIds = this.service.content.component.getComponentResourceIds(
-          _.map(_.toArray(dependencies), 'content'),
-        );
-        componentIds = componentIds.concat(dependComponentIds);
-        const [resourceObject, contentAllParents] = await Promise.all([
-          this.service.content.resource.getResourceContentByIds(componentIds),
-          this.service.content.list.getContentAllParents(componentIds),
-        ]);
-
-        const appResource = await this.service.application.getAppResourceFromContent(contentAllParents);
-        const contentResource = this.service.content.info.getContentResourceTypeInfo(
-          appResource,
-          contentAllParents,
-        );
-
+        const componentCell = (content.package || {}) as CompontentCells;
+        componentCell.type = contentFileObject[componentCell.id]?.type || '';
+        componentCell.name = content.name;
+        componentCell.version = <string>content.version;
+        componentCell.components = [];
+        componentCell.category = (
+          componentSettingObject[contentFileObject[componentCell.id]?.id || '']?.category || {}
+        ) as ComponentCategory;
         componentCell.resource = this.service.version.component.assignResourceToComponent(
           componentCell.resource || {},
           resourceObject,
           { contentResource },
         );
 
-        componentCell.type = contentFileObject[componentCell.id]?.type || '';
-        componentCell.name = content.name;
-        componentCell.version = <string>content.version;
-        componentCell.components = [];
-
-        // Append the component name in edit-entry
         this.service.component.addNameToEditorAndDepends([componentCell], fileContentObject);
 
-        // Attach the resource details of the dependent component to the component
-        const dependenciesList = _.toArray(dependencies);
-        if (dependenciesList.length > 0) {
-          const fileObject = await this.service.file.list.getContentFileByIds(
-            _.map(dependenciesList, 'contentId'),
-          );
+        let dependIds = _.map(
+          _.concat(componentCell.resource['editor-entry'], componentCell.resource.dependencies),
+          'id'
+        );
 
-          dependenciesList.forEach((depend) => {
-            depend.content.resource = this.service.version.component.assignResourceToComponent(
-              depend?.content?.resource || {},
-              resourceObject,
-              { contentResource },
-            );
-          });
-          componentCell.components = dependenciesList.map((depend) => {
-            return Object.assign(
-              { name: fileObject?.[depend.contentId]?.name || '', versionId: depend.id },
-              depend?.content || {},
-            ) as ComponentContentInfo;
-          });
+        if (dependIds.length > 0) {          
+          for (const depend of dependenciesList) {
+            if(dependIds.indexOf(depend.contentId) !== -1) {
+              componentCell.components.push(Object.assign(
+                { name: fileObject?.[depend.contentId]?.name || '', versionId: depend.id },
+                depend?.content || {},
+              ) as ComponentContentInfo);
+              _.pull(dependIds, depend.contentId);
+            }
+
+            if (dependIds.length === 0) {
+              break;
+            }
+          }
         }
 
         // Guarantee to return id and name fields

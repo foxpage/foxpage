@@ -1,5 +1,3 @@
-import { getLeadingCommentRanges } from 'typescript';
-
 export type ContentBaseStatus = 'base';
 export type ContentDiscardStatus = 'discard';
 export type ContentAlphaStatus = 'alpha';
@@ -37,9 +35,7 @@ export interface AppResource {
 }
 
 export interface AppSetting {
-  preview: {
-    host: string;
-  };
+  [index: string]: any[];
 }
 
 export interface AppHost {
@@ -65,6 +61,7 @@ export interface Authorize extends CommonFields {
   targetId: string;
   mask: number;
   allow: boolean;
+  relation?: Record<string, any>;
 }
 
 export interface SchemaDirective {
@@ -82,7 +79,10 @@ export interface DslSchemas {
   children?: DslSchemas[];
   disable?: boolean;
   directive?: SchemaDirective;
-  parentId?: string;
+  extension?: {
+    parentId?: string;
+    extendId?: string;
+  };
   wrapper?: string;
   props?: Record<string, any>;
   style?: Record<string, any>;
@@ -279,6 +279,7 @@ export interface User {
   deleted: boolean;
   id?: string;
   changePwdStatus?: boolean;
+  defaultOrganizationId?: string;
   createTime?: Date;
   updateTime?: Date;
 }
@@ -323,8 +324,17 @@ export interface StoreOrdersCustomer {
 }
 
 export interface LogCategory {
-  id: string;
   type: LogCategoryType;
+  applicationId: string;
+  applicationName: string;
+  folderId?: string;
+  folderName?: string;
+  fileId?: string;
+  fileName?: string;
+  contentId?: string;
+  contentName?: string;
+  versionId?: string;
+  version?: string;
 }
 
 // Here before, after includes all data types
@@ -343,6 +353,7 @@ export interface LogContent {
 export interface Log {
   id: string;
   action: LogActionType;
+  actionType: string;
   operator: string;
   category: LogCategory;
   content: LogContent;
@@ -401,6 +412,7 @@ export type AppComponentType = 'component';
 export type AppLibraryType = 'library';
 export type AppResourceType = 'resource';
 export type AppFunctionType = 'function';
+export type AppSettingType = 'app_setting';
 export type AppFolderTypes =
   | AppProjectType
   | AppVariableType
@@ -408,7 +420,8 @@ export type AppFolderTypes =
   | AppComponentType
   | AppLibraryType
   | AppResourceType
-  | AppFunctionType;
+  | AppFunctionType
+  | AppSettingType;
 
 export type LangEn = 'en';
 export type LangCn = 'cn';

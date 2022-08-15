@@ -47,7 +47,7 @@ export class AddGoodsToStore extends BaseController {
       const [goodsDetail, fileDetail, fileContentList] = await Promise.all([
         this.service.store.goods.getDetailByTypeId(params.id),
         this.service.file.info.getDetailById(params.id),
-        this.service.content.list.getContentObjectByFileIds([params.id]),
+        this.service.content.list.getFileContentList([params.id]),
       ]);
 
       // online
@@ -59,7 +59,7 @@ export class AddGoodsToStore extends BaseController {
         return Response.warning(i18n.store.invalidTypeId, 2130102);
       }
 
-      const contentLiveNumbers = _.pull(_.map(fileContentList, 'liveVersionNumber'), 0);
+      const contentLiveNumbers = _.pull(_.map(fileContentList?.[params.id] || [], 'liveVersionNumber'), 0);
       if (contentLiveNumbers.length === 0) {
         return Response.warning(i18n.store.mustHasLiveVersion, 2130103);
       }
@@ -95,9 +95,19 @@ export class AddGoodsToStore extends BaseController {
 
       // Save log
       ctx.operations.push(
-        ...this.service.log.addLogItem(goodsDetail ? LOG.UPDATE : LOG.CREATE, newGoodsDetail, {
-          dataType: fileDetail.type,
-        }),
+        ...this.service.log.addLogItem(
+          [goodsDetail ? LOG.UPDATE : LOG.CREATE, TYPE.GOODS].join('_'),
+          newGoodsDetail,
+          {
+            actionType: '',
+            category: {
+              type: TYPE.FILE,
+              fileId: params.id,
+              folderId: fileDetail.folderId,
+              applicationId: fileDetail.applicationId,
+            },
+          },
+        ),
       );
 
       return Response.success(newGoodsDetail, 1130101);

@@ -50,17 +50,21 @@ export class AddAuthorizeDetail extends BaseController {
       }
 
       // check exist data
-      const existTargets = await this.service.auth.find({
-        type: params.type,
-        typeId: params.typeId,
-        targetId: { $in: params.targetIds },
-      });
+      const [existTargets, typeRelation] = await Promise.all([
+          this.service.auth.find({
+          type: params.type,
+          typeId: params.typeId,
+          targetId: { $in: params.targetIds },
+        }),
+        this.service.auth.getTargetRelation(params.type, [params.typeId])
+      ]);
 
       const authTargetIds = _.map(existTargets, 'targetId');
+      const newTargetIds = _.pullAll(params.targetIds, authTargetIds);
 
-      let typeAuthList: Authorize[] = [];
-      for (const targetId of params.targetIds) {
-        if (authTargetIds.indexOf(targetId) === -1) {
+      if (newTargetIds.length > 0) {
+        let typeAuthList: Authorize[] = [];
+        for (const targetId of newTargetIds) {
           typeAuthList.push({
             id: generationId(PRE.AUTH),
             type: params.type,
@@ -68,13 +72,10 @@ export class AddAuthorizeDetail extends BaseController {
             targetId: targetId,
             mask: params.mask || 0,
             allow: !_.isNil(params.allow) ? params.allow : true,
+            relation: typeRelation[params.typeId] || {},
             creator: ctx.userInfo.id || '',
           });
         }
-      }
-
-      // Add new auth data
-      if (typeAuthList.length > 0) {
         ctx.transactions.push(this.service.auth.addDetailQuery(typeAuthList));
       }
 

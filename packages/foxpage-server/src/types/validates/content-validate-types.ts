@@ -630,29 +630,6 @@ export class ContentChangeReq {
   timestamp: number;
 }
 
-export class VersionPublishStatus2Req {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  @Length(20, 20)
-  applicationId: string;
-
-  @JSONSchema({ description: 'Version ID, contentId or versionId must provider one of it' })
-  @IsString()
-  @Length(20, 20)
-  @IsOptional()
-  id: string;
-
-  @JSONSchema({ description: 'Content ID, contentId or versionId must provider one of it' })
-  @IsString()
-  @Length(20, 20)
-  @IsOptional()
-  contentId: string;
-
-  @JSONSchema({ description: 'Version status' })
-  @IsString()
-  status: ContentStatus;
-}
-
 export class VersionPublishStatusReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
@@ -667,6 +644,14 @@ export class VersionPublishStatusReq {
   @JSONSchema({ description: 'Version status' })
   @IsString()
   status: ContentStatus;
+}
+
+export class VersionPublishStatus2Req extends VersionPublishStatusReq {
+  @JSONSchema({ description: 'Content ID, contentId or versionId must provider one of it' })
+  @IsString()
+  @Length(20, 20)
+  @IsOptional()
+  contentId: string;
 }
 
 export class CloneContentReq {

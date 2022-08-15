@@ -39,6 +39,7 @@ const ActionBtn = styled.div`
   padding: 8px;
 `;
 
+// @ts-ignore
 export class ComponentCall extends Component<any, any> {
   static contextType = EditContext;
 
@@ -57,7 +58,7 @@ export class ComponentCall extends Component<any, any> {
     }
   }
 
-  getComponentById = id => {
+  getComponentById = (id) => {
     const { components } = this.context;
     if (components && components.length) {
       for (let i = 0; i < components.length; i++) {
@@ -69,7 +70,7 @@ export class ComponentCall extends Component<any, any> {
     return undefined;
   };
 
-  handleChangeTarget = id => {
+  handleChangeTarget = (id) => {
     const { changeTarget, targetIdx } = this.props;
     const component = this.getComponentById(id);
     this.setState({
@@ -147,13 +148,9 @@ export class ComponentCall extends Component<any, any> {
     return (
       <div style={{ marginBottom: 4 }}>
         <div style={{ display: 'flex' }}>
-          <Select
-            onSelect={this.handleChangeTarget}
-            style={{ width: 'calc(100% - 72px)', marginRight: 4 }}
-            value={value}
-          >
+          <Select onSelect={this.handleChangeTarget} style={{ width: '167px', marginRight: 4 }} value={value}>
             {components &&
-              components.map(item => (
+              components.map((item) => (
                 <Select.Option key={item.id} value={item.id}>
                   <Tooltip placement="top" title={item.label}>
                     {item.label}
@@ -165,16 +162,14 @@ export class ComponentCall extends Component<any, any> {
             style={{ marginRight: 4, padding: '4px 8px' }}
             onClick={() => {
               this.setState({ open: true });
-            }}
-          >
+            }}>
             <EditOutlined />
           </Button>
           <Button
             style={{ padding: '4px 8px' }}
             onClick={() => {
               removeTarget(targetIdx);
-            }}
-          >
+            }}>
             <MinusOutlined />
           </Button>
         </div>
@@ -191,8 +186,7 @@ export class ComponentCall extends Component<any, any> {
                 type="primary"
                 onClick={() => {
                   this.handleApplyPropsChange();
-                }}
-              >
+                }}>
                 Apply
               </Button>
             </ActionBtn>

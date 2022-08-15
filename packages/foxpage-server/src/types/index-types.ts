@@ -70,6 +70,7 @@ export interface Creator {
   id: string;
   account: string;
   nickName?: string;
+  email?: string;
 }
 
 export interface Header {
@@ -105,4 +106,10 @@ export interface NameVersion {
 export interface IdVersion {
   id: string;
   version: string;
+}
+
+export interface DBQuery{
+  type: string;
+  model: any;
+  data: any;
 }

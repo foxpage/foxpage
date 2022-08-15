@@ -1,0 +1,24 @@
+.foxpage-builder-header_popover {
+  padding: 0;
+}
+.foxpage-builder-header_popover .ant-popover-content .ant-popover-arrow {
+  display: none;
+}
+.foxpage-builder-header_popover .ant-popover-inner-content {
+  padding: 0;
+  max-height: 500px;
+  max-width: 250px;
+  overflow: auto;
+}
+
+.foxpage-builder-header_content_popover .ant-popover-inner-content {
+  padding: 0;
+  max-height: 400px;
+  max-width: 350px;
+  overflow: auto;
+}
+
+.foxpage-builder-header_preview_popover .ant-popover-inner-content {
+  max-width: 400px;
+  width: 400px;
+}

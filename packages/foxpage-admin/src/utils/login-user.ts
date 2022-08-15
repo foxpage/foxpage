@@ -1,18 +1,23 @@
-import { LoginUser } from '@/types/index';
+import { LoginReturn } from '@/types/user';
+
+import { decrypt, encrypt } from './crypt';
+
+const KEY = 'FOXPAGE.USER';
 
 export const getLoginUser = () => {
   try {
-    const userInfo = localStorage['foxpage_user'] ? JSON.parse(localStorage['foxpage_user']) : {};
-    return userInfo as LoginUser;
+    const cachedStr = localStorage.getItem(KEY);
+    const userInfo = cachedStr ? JSON.parse(decrypt(cachedStr)) : {};
+    return userInfo as LoginReturn;
   } catch (error) {
     console.error(error);
-    return {} as LoginUser;
+    return {} as LoginReturn;
   }
 };
 
-export const setLoginUser = (userInfo?: LoginUser) => {
+export const setLoginUser = (userInfo?: LoginReturn) => {
   try {
-    localStorage['foxpage_user'] = JSON.stringify(userInfo || {});
+    localStorage.setItem(KEY, encrypt(JSON.stringify(userInfo || {})));
   } catch (error) {
     console.error(error);
   }

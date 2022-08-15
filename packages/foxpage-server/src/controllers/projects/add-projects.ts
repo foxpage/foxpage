@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Folder } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { PRE, TYPE } from '../../../config/constant';
+import { LOG, PRE, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AddProjectDetailReq, ProjectDetailRes } from '../../types/validates/project-validate-types';
 import * as Response from '../../utils/response';
@@ -24,7 +24,7 @@ export class AddProjectDetail extends BaseController {
    * Create Project
    * 1, Get the parent folder Id of the project under the application
    * 2. Check if the project name is duplicated
-   * 3, Create
+   * 3, Create project
    * @param  {FolderDetailReq} params
    * @param  {Header} headers
    * @returns {Folder}
@@ -61,6 +61,7 @@ export class AddProjectDetail extends BaseController {
       const result = await this.service.folder.info.addTypeFolderDetail(folderDetail, {
         ctx,
         type: TYPE.PROJECT as AppFolderTypes,
+        actionType: [LOG.CREATE, TYPE.PROJECT].join('_'),
       });
 
       if (result.code === 1) {

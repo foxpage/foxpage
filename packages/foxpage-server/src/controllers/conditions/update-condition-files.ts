@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailRes, UpdateFileDetailReq } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
@@ -48,7 +48,10 @@ export class UpdateConditionDetail extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4101401);
       }
 
-      const result = await this.service.file.info.updateFileDetail(params, { ctx });
+      const result = await this.service.file.info.updateFileDetail(params, {
+        ctx,
+        actionType: [LOG.UPDATE, TYPE.CONDITION].join('_'),
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.condition.invalidConditionId, 2101402);

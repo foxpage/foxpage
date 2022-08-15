@@ -3,9 +3,9 @@ import React, { useContext } from 'react';
 import { InputNumber } from 'antd';
 import styled from 'styled-components';
 
-import viewerContext from '../../viewerContext';
+import { FoxContext } from '@/context/index';
 
-import { BoxType } from './index.d';
+import { BoxType } from './interface';
 
 const StyledInputNumber = styled(InputNumber)`
   position: absolute !important;
@@ -148,7 +148,7 @@ const HelpText = styled.div`
   transform: scale(0.75);
 `;
 
-const Box: React.FC<BoxType> = props => {
+const Box: React.FC<BoxType> = (props) => {
   const {
     paddingLeft,
     paddingRight,
@@ -159,9 +159,9 @@ const Box: React.FC<BoxType> = props => {
     marginTop,
     marginBottom,
     onChange = (_val: number | string) => {},
-    onApplyState = (_key: string, _val: string) => {},
+    onApplyState = () => {},
   } = props;
-  const { foxpageI18n } = useContext(viewerContext);
+  const { foxI18n } = useContext(FoxContext);
   return (
     <BoxContainer>
       <MarginTopDiv>
@@ -174,8 +174,8 @@ const Box: React.FC<BoxType> = props => {
           onChange={(val: number | string) => {
             onChange('marginTop', val);
           }}
-          onBlur={(e: any) => {
-            onApplyState('marginTop', e.target.value);
+          onBlur={() => {
+            onApplyState();
           }}
         />
       </MarginTopDiv>
@@ -189,13 +189,13 @@ const Box: React.FC<BoxType> = props => {
           onChange={(val: number | string) => {
             onChange('marginRight', val);
           }}
-          onBlur={(e: any) => {
-            onApplyState('marginRight', e.target.value);
+          onBlur={() => {
+            onApplyState();
           }}
         />
       </MarginRightDiv>
       <MarginBottomDiv>
-        <HelpText>{foxpageI18n.margin}</HelpText>
+        <HelpText>{foxI18n.margin}</HelpText>
         <StyledInputNumber
           style={{ top: 0 }}
           placeholder="0"
@@ -205,8 +205,8 @@ const Box: React.FC<BoxType> = props => {
           onChange={(val: number | string) => {
             onChange('marginBottom', val);
           }}
-          onBlur={(e: any) => {
-            onApplyState('marginBottom', e.target.value);
+          onBlur={() => {
+            onApplyState();
           }}
         />
       </MarginBottomDiv>
@@ -220,8 +220,8 @@ const Box: React.FC<BoxType> = props => {
           onChange={(val: number | string) => {
             onChange('marginLeft', val);
           }}
-          onBlur={(e: any) => {
-            onApplyState('marginLeft', e.target.value);
+          onBlur={() => {
+            onApplyState();
           }}
         />
       </MarginLeftDiv>
@@ -235,8 +235,8 @@ const Box: React.FC<BoxType> = props => {
           onChange={(val: number | string) => {
             onChange('paddingTop', val);
           }}
-          onBlur={(e: any) => {
-            onApplyState('paddingTop', e.target.value);
+          onBlur={() => {
+            onApplyState();
           }}
         />
       </PaddingTopDiv>
@@ -250,13 +250,13 @@ const Box: React.FC<BoxType> = props => {
           onChange={(val: number | string) => {
             onChange('paddingRight', val);
           }}
-          onBlur={(e: any) => {
-            onApplyState('paddingRight', e.target.value);
+          onBlur={() => {
+            onApplyState();
           }}
         />
       </PaddingRightDiv>
       <PaddingBottomDiv>
-        <HelpText>{foxpageI18n.padding}</HelpText>
+        <HelpText>{foxI18n.padding}</HelpText>
         <StyledInputNumber
           style={{ top: 0 }}
           placeholder="0"
@@ -266,8 +266,8 @@ const Box: React.FC<BoxType> = props => {
           onChange={(val: number | string) => {
             onChange('paddingBottom', val);
           }}
-          onBlur={(e: any) => {
-            onApplyState('paddingBottom', e.target.value);
+          onBlur={() => {
+            onApplyState();
           }}
         />
       </PaddingBottomDiv>
@@ -281,8 +281,8 @@ const Box: React.FC<BoxType> = props => {
           onChange={(val: number | string) => {
             onChange('paddingLeft', val);
           }}
-          onBlur={(e: any) => {
-            onApplyState('paddingLeft', e.target.value);
+          onBlur={() => {
+            onApplyState();
           }}
         />
       </PaddingLeftDiv>

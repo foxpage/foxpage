@@ -1,164 +1,180 @@
 import { message } from 'antd';
 import _ from 'lodash';
 
-import { FoxpageComponentType, loader } from '@foxpage/foxpage-js-sdk';
+import { loader } from '@foxpage/foxpage-js-sdk';
 import { BrowserModule } from '@foxpage/foxpage-types';
 
-import { ComponentSourceMapType, ComponentSourceType, ComponentStructure } from '@/types/component';
+import {
+  Component,
+  ComponentMap,
+  ComponentResource,
+  LoadedComponent,
+  LoadedComponents,
+  RenderStructureNode,
+} from '@/types/index';
 
-export interface LoadedData {
-  loadedComponent: Record<string, FoxpageComponentType<Record<string, unknown>>>;
-  noResourceComponentName: string[];
-  componentList: ComponentStructure[];
-}
+import { getFrameWin } from './common';
 
-const loadedComponent: Record<string, FoxpageComponentType> = {};
+const loadedComponent: LoadedComponents = {};
+
 /**
  * filter duplicates
- * @param {*} list component list
+ * @param {*} list structure list
  */
-export const removeDuplicates = (list: Array<ComponentStructure>) => {
-  const typeVersionStrs: Array<string> = [];
+export const removeDuplicates = (list: RenderStructureNode[] = []) => {
+  const keys: Array<string> = [];
   return list.filter((item) => {
     const { name, version } = item;
-    const typeVersionStr = name + version;
-    if (typeVersionStrs.indexOf(typeVersionStr) === -1) {
-      typeVersionStrs.push(typeVersionStr);
+    const key = name + version;
+    if (keys.indexOf(key) === -1) {
+      keys.push(key);
       return item;
     }
     return null;
   });
 };
 
-export const getComponentList = (renderStructure: ComponentStructure[]) => {
-  let list: ComponentStructure[] = [];
-  renderStructure?.forEach((treeItem: ComponentStructure) => {
-    if (treeItem.children && treeItem.children.length > 0) {
-      list = list.concat(getComponentList(treeItem.children));
+/**
+ * get structure list
+ * @param structure structure
+ * @returns list
+ */
+export const getStructureList = (structure: RenderStructureNode[] = []) => {
+  let list: RenderStructureNode[] = [];
+  structure.forEach((item) => {
+    if (item.children && item.children.length > 0) {
+      list = list.concat(getStructureList(item.children));
     }
-    if (treeItem.name) {
-      list.push(treeItem);
-    }
+    list.push({ ...item, children: [] });
   });
   return list;
 };
 
+export const initKey = (name: string, version?: string) => {
+  return version ? `${name}@${version}` : name;
+};
+
 /**
- * 组件content
- * @param component
+ * node content
+ * @param node
  * @returns
  */
-const getContent = (component: ComponentStructure, componentSource: ComponentSourceMapType) => {
-  const content = !component.version
-    ? componentSource[component.name]
-    : componentSource[`${component.name}@${component.version}`];
-  return content;
+const getContent = (node: RenderStructureNode, componentMap: ComponentMap) => {
+  const key = initKey(node.name, node.version);
+  return componentMap[key];
+};
+
+const findModule = (modules: BrowserModule[] = [], key: string) => {
+  return modules.find((item) => item.name === key);
 };
 
 /**
- * 递归push 依赖
- * @param loaderConfig
- * @param component
+ * update modules
  */
-const pushDependencyToConfig = (loaderConfig: BrowserModule[], component, componentSource) => {
-  if (component.name) {
-    const content = getContent(component, componentSource);
-    const componentResource = content?.resource;
-    if (componentResource) {
-      pushToConfig(loaderConfig, component, componentResource);
-    }
-    componentResource?.dependencies.forEach((item) => {
-      pushDependencyToConfig(loaderConfig, item, componentSource);
-    });
-  }
-};
+const updateModules = (
+  modules: BrowserModule[],
+  component: Component,
+  componentResource: Component['resource'],
+) => {
+  const { entry, dependencies = [] } = componentResource || {};
+  const { browser, css } = entry || {};
 
-const pushToConfig = (loaderConfig: BrowserModule[], component, componentResource: ComponentSourceType) => {
-  const entrySource = componentResource.entry;
-  if (!loaderConfig.find((item) => item.name === component.name) && entrySource?.browser) {
-    const { path, host } = entrySource.browser;
-    const meta = _.cloneDeep(component.meta);
-    if (entrySource.css) {
-      const { path: cssPath, host: cssHost } = entrySource.css;
+  if (!findModule(modules, initKey(component.name, component.version)) && browser) {
+    const { path, host } = browser || {};
+    const meta = _.cloneDeep(component.meta || {}) as BrowserModule['meta'];
+
+    if (css) {
+      const { path: cssPath, host: cssHost } = css;
       if (cssPath && cssHost) {
         meta.assets = [{ url: cssHost + cssPath }];
       }
     }
 
     if (host && path) {
-      loaderConfig.push({
+      modules.push({
         name: component.name,
+        version: component.version,
         url: host + path,
         meta,
-        version: '',
-        deps: componentResource.dependencies?.filter((item) => !!item.name).map((item) => item.name) || [],
+        deps: dependencies.filter((item) => !!item.name).map((item) => item.name) || [],
       });
     }
   }
 };
 
 /**
- * get load config
- * @param needLoadComponents component list
+ * update dependency modules
+ * @param modules
+ * @param dependencies {id, name}
+ * @param componentMap
+ */
+const updateDependencyModules = (
+  modules: BrowserModule[],
+  dependencies: ComponentResource['dependencies'] = [],
+  componentMap: ComponentMap,
+) => {
+  dependencies.forEach((item) => {
+    const key = initKey(item.name, '');
+    const content = componentMap[key];
+    const componentResource = content?.resource;
+
+    if (componentResource) {
+      updateModules(modules, content, componentResource);
+
+      if (componentResource.dependencies) {
+        updateDependencyModules(modules, componentResource?.dependencies, componentMap);
+      }
+    }
+  });
+};
+
+/**
+ * init browser modules for loader
+ * @param structures structure list
+ * @param componentMap component map
  * @returns BrowserModule array
  */
-const getComponentLoaderConfig = (
-  needLoadComponents: Array<ComponentStructure>,
-  componentSource: ComponentSourceMapType,
-): Array<BrowserModule> => {
-  const loaderConfig: BrowserModule[] = [];
+const initModules = (structures: RenderStructureNode[], componentMap: ComponentMap): Array<BrowserModule> => {
+  const modules: BrowserModule[] = [];
 
-  needLoadComponents.forEach((component) => {
-    const content = getContent(component, componentSource);
+  structures.forEach((item) => {
+    const content = getContent(item, componentMap);
     const componentResource = content?.resource;
     if (componentResource) {
       //browser
-      pushToConfig(loaderConfig, component, componentResource);
+      updateModules(modules, content, componentResource);
 
       // dependencies
       if (componentResource.dependencies) {
-        componentResource.dependencies.forEach((item) => {
-          pushDependencyToConfig(loaderConfig, item, componentSource);
-        });
+        updateDependencyModules(modules, componentResource.dependencies, componentMap);
       }
 
       //editor
       const editorEntrySource = componentResource['editor-entry'];
       editorEntrySource?.forEach((editor) => {
-        const editorContent = !editor.version
-          ? componentSource[editor.name]
-          : componentSource[`${editor.name}@${editor.version}`];
+        const editorContent = componentMap[initKey(editor.name, '')];
         const editorSource = editorContent?.resource;
         if (editorSource) {
-          pushToConfig(loaderConfig, editor, editorSource);
+          updateModules(modules, editorContent, editorSource);
         }
       });
     }
   });
-  return loaderConfig;
+
+  return modules;
 };
 
 const loadFramework = async () => {
+  const win = getFrameWin();
   const frameworkResources = {
     requirejsLink: 'https://www.unpkg.com/requirejs@2.3.6/require.js',
-    libs: {
-      // react: {
-      //   url: 'https://www.unpkg.com/react@16.14.0/umd/react.development.js',
-      //   injectWindow: 'React',
-      //   umdModuleName: 'react',
-      // },
-      // 'react-dom': {
-      //   url: 'https://www.unpkg.com/react-dom@16.14.0/umd/react-dom.development.js',
-      //   injectWindow: 'ReactDOM',
-      //   umdModuleName: 'react-dom',
-      // },
-    },
-    win: window,
+    libs: {},
+    win,
   };
 
-  if (typeof window.define === 'function') {
-    window.define('react', window.React);
-    window.define('react-dom', window.ReactDOM);
+  if (typeof win?.define === 'function') {
+    win.define('react', window.React);
+    win.define('react-dom', window.ReactDOM);
   }
 
   await loader.initFramework(frameworkResources);
@@ -166,74 +182,92 @@ const loadFramework = async () => {
 
 /**
  * load component
- * @param needLoadComponents  component list
+ * @param structures  structures
+ * @param componentMap  component map
  * @returns load result
  */
-const load = async (needLoadComponents: Array<ComponentStructure>, config: Array<BrowserModule>) => {
-  const promise: Array<Promise<FoxpageComponentType>> = [];
+const load = async (structures: RenderStructureNode[] = [], componentMap: ComponentMap) => {
+  const promise: Array<Promise<LoadedComponent>> = [];
   const keys: string[] = [];
-  const noResourceComponentName: string[] = [];
 
-  needLoadComponents.forEach((component) => {
-    if (!config.find((item) => item.name === component.name)) {
-      noResourceComponentName.push(component.name);
-    } else if (!loadedComponent[component.name]) {
-      keys.push(component.name);
-      promise.push(loader.loadComponent(component.name, ''));
-    }
+  structures.forEach((node) => {
+    const key = initKey(node.name, node.version);
+    const component = componentMap[key];
+    if (component) {
+      if (!loadedComponent[key] && component.type !== 'systemComponent') {
+        keys.push(node.name);
+        promise.push(loader.loadComponent(node.name, node.version));
+      }
 
-    const editorEntry = component.resource?.['editor-entry'] || [];
-    if (editorEntry.length > 0 && editorEntry[0].name) {
-      const name = editorEntry[0].name;
-      const componentConfig = config.find((item) => item.name === name);
-      if (!componentConfig) {
-        noResourceComponentName.push(name);
-      } else if (!loadedComponent[name]) {
-        promise.push(loader.loadComponent(editorEntry[0].name, ''));
-        keys.push(editorEntry[0].name);
+      const editorEntry = component.resource?.['editor-entry'] || [];
+      if (editorEntry.length > 0 && editorEntry[0].name) {
+        const name = editorEntry[0].name;
+        if (!loadedComponent[name]) {
+          keys.push(editorEntry[0].name);
+          promise.push(loader.loadComponent(editorEntry[0].name, ''));
+        }
       }
     }
   });
+
   try {
     const componentResource = await Promise.all(promise);
-    console.log('componentResource=', componentResource);
-
-    return {
-      noResourceComponentName,
-      componentResource,
-      keys,
-    };
+    keys.forEach((key, index: number) => {
+      loadedComponent[key] = componentResource[index];
+    });
   } catch (e) {
     message.error(e + '');
-    return {
-      noResourceComponentName: [],
-      componentResource: [],
-      keys: [],
-    };
   }
+
+  return loadedComponent;
 };
 
-export const loadComponent = async (
-  renderStructure: ComponentStructure[],
-  componentSource: ComponentSourceMapType,
-): Promise<LoadedData> => {
-  const componentList = getComponentList(renderStructure);
-  const needLoadComponents = removeDuplicates(componentList);
+/**
+ * to map components
+ * @param components components
+ * @returns mapped components
+ */
+export const mapComponent = (components: Component[] = []): ComponentMap => {
+  const map = {};
+
+  const toSet = (_map: ComponentMap = {}, item: Component) => {
+    if (item.isLiveVersion || item.isLiveVersion === undefined) {
+      // undefined is support old logic
+      _map[item.name] = item;
+    } else {
+      _map[initKey(item.name, item.version)] = item;
+    }
+  };
+
+  components.forEach((item) => {
+    toSet(map, item);
+    if (item.components) {
+      item.components.forEach((depItem) => {
+        toSet(map, depItem);
+      });
+    }
+  });
+  return map;
+};
+
+/**
+ * load components
+ * @param structures
+ * @param componentMap
+ * @returns loaded components
+ */
+export const loadComponents = async (
+  structures: RenderStructureNode[],
+  componentMap: ComponentMap,
+  _opt: { locale?: string },
+): Promise<LoadedComponents> => {
+  const needLoadComponents = removeDuplicates(structures);
 
   await loadFramework();
+  const modules = initModules(needLoadComponents, componentMap);
 
-  const componentLoadConfig = getComponentLoaderConfig(needLoadComponents, componentSource);
-  console.log('loadConfig=', componentLoadConfig);
-  loader.configComponent(componentLoadConfig);
+  loader.configComponent(modules);
 
-  const { keys, componentResource, noResourceComponentName } = await load(
-    needLoadComponents,
-    componentLoadConfig,
-  );
-
-  keys.forEach((key, index: number) => {
-    loadedComponent[key] = componentResource[index];
-  });
-
-  return { loadedComponent, noResourceComponentName, componentList };
+  const result = await load(needLoadComponents, componentMap);
+  return result;
 };

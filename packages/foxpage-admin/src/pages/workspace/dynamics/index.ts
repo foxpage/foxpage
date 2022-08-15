@@ -1,3 +1,1 @@
-import Dynamics from './Main';
-
-export default Dynamics;
+export { default as Dynamics } from './Main';

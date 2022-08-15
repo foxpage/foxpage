@@ -12,6 +12,7 @@ const dbConnect = () => {
     useUnifiedTopology: true,
     connectTimeoutMS: 60000,
     socketTimeoutMS: 60000,
+    replicaSet: 'foxpageRs'
   });
 
   const db = mongoose.connection;

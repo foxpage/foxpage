@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { Content, Log } from '@foxpage/foxpage-server-types';
 
-import { LOG, METHOD, PRE, RESPONSE_LEVEL, TYPE } from '../../config/constant';
+import { LOG, METHOD, PRE, TYPE } from '../../config/constant';
 import * as Model from '../models';
 import * as Service from '../services';
 import { FoxCtx, PageData } from '../types/index-types';
@@ -28,7 +28,7 @@ export class LogService extends BaseService<Log> {
    * Single instance
    * @returns LogService
    */
-  public static getInstance (): LogService {
+  public static getInstance(): LogService {
     this._instance || (this._instance = new LogService());
     return this._instance;
   }
@@ -37,7 +37,7 @@ export class LogService extends BaseService<Log> {
    * Save the change log of the current request
    * @returns Promise
    */
-  async saveChangeLogs (ctx: FoxCtx): Promise<void> {
+  async saveChangeLogs(ctx: FoxCtx): Promise<void> {
     if (ctx.operations.length > 0) {
       const allLogs: Log[] = [];
       const operator = ctx.userInfo.id;
@@ -49,27 +49,29 @@ export class LogService extends BaseService<Log> {
         log.content.id && logDataIds.push(log.content.id);
       });
 
-      const [fileObject, ...logDataList] = await Promise.all([
-        Service.file.list.getDetailObjectByIds(fileIds),
-        ...logDataIds.map((id) => this.getDataDetail(id)),
-      ]);
-
+      const [...logDataList] = await Promise.all([...logDataIds.map((id) => this.getDataDetail(id))]);
       const logDataObject = _.keyBy(logDataList, 'id');
 
+      // Get type all level ids
+      const itemIdObject = await this.getCategoryIds(ctx.operations);
       for (const log of ctx.operations) {
         if (!log.content.after && logDataObject[log.content.id]) {
           log.content.after = logDataObject[log.content.id];
         }
 
-        if (!log.content.dataType && log.content.fileId && fileObject[log.content.fileId]) {
-          log.content.dataType = fileObject[log.content.fileId]?.type || '';
-        }
+        log.category.versionId &&
+          (log.category.contentId = itemIdObject.version[log.category.versionId]?.contentId);
+        log.category.contentId &&
+          (log.category.fileId = itemIdObject.content[log.category.contentId]?.fileId);
+        log.category.fileId && (log.category.folderId = itemIdObject.file[log.category.fileId]?.folderId);
+        log.category.folderId &&
+          (log.category.applicationId = itemIdObject.folder[log.category.folderId]?.applicationId);
 
         allLogs.push(
           Object.assign({}, log, {
             transactionId: ctx.logAttr.transactionId,
             id: generationId(PRE.LOG),
-            category: _.isString(log.category) ? this.getLogCategory(log.category, ctx) : log.category,
+            category: log.category,
             operator: operator || 'anonymous',
             deleted: false,
           }),
@@ -85,55 +87,38 @@ export class LogService extends BaseService<Log> {
    * @param  {any} params
    * @returns Promise
    */
-  async saveRequest (params: any, options: { ctx: FoxCtx }): Promise<void> {
+  async saveRequest(options: { ctx: FoxCtx }): Promise<void> {
+    let content: Record<string, any> = options.ctx.log || {};
+
     // Set current real request method
-    params.content.realMethod = (
-      options.ctx.logAttr.method ||
-      params.content?.request?.method ||
-      METHOD.GET
-    ).toLowerCase();
-    // Do not save get query
-    if (params.content.realMethod !== METHOD.GET) {
+    content.realMethod = (options.ctx.logAttr.method || content?.request?.method || METHOD.GET).toLowerCase();
+
+    // Do not save query request
+    if (content.realMethod !== METHOD.GET) {
       // Set current operation id
-      params.content.id =
-        options.ctx.logAttr.id || params.content.request.body.id || params.content.request.query.id || '';
-      params.content.dataType = options.ctx.logAttr.type || undefined;
+      content.id = options.ctx.logAttr.id || content.request.body.id || content.request.query.id || '';
+      content.dataType = options.ctx.logAttr.type || undefined;
 
-      if (!_.isEmpty(params.content.request.query)) {
-        params.content.request.query = JSON.stringify(params.content.request.query);
+      if (!_.isEmpty(content.request.query)) {
+        content.request.query = JSON.stringify(content.request.query);
       }
 
-      if (!_.isEmpty(params.content.request.body)) {
-        params.content.request.body = JSON.stringify(this.filterSensitiveData(params.content.request.body));
+      if (!_.isEmpty(content.request.body)) {
+        content.request.body = JSON.stringify(this.filterSensitiveData(content.request.body));
       }
 
-      const logDetail: Log = Object.assign({}, params, {
+      const logDetail: Log = Object.assign({
         id: generationId(PRE.LOG),
         action: 'request',
         transactionId: options.ctx.logAttr.transactionId,
-        category: _.isString(params.category)
-          ? this.getLogCategory(params.category, options.ctx)
-          : params.category,
+        category: {},
         operator: options.ctx.userInfo?.id || '',
         deleted: false,
+        content,
       });
 
       await Model.log.addDetail(logDetail);
     }
-  }
-
-  /**
-   * Obtain log classification data
-   * @param  {string} type
-   */
-  getLogCategory (type: string, ctx: FoxCtx): Record<string, string> {
-    if (type === LOG.CATEGORY_APPLICATION) {
-      return { type, id: ctx.logAttr.applicationId || '' };
-    } else if (type === LOG.CATEGORY_ORGANIZATION) {
-      return { type, id: ctx.logAttr.organizationId || '' };
-    }
-
-    return {};
   }
 
   /**
@@ -151,7 +136,7 @@ export class LogService extends BaseService<Log> {
    * @param  {ContentChange} params
    * @returns Promise
    */
-  async getChangesContentList (params: ContentChange): Promise<Record<string, any>> {
+  async getChangesContentList(params: ContentChange): Promise<Record<string, any>> {
     // Get the log data of the specified action
     const changeList: any[] = await Model.log.find({
       createTime: { $gte: new Date(new Date(params.timestamp)) },
@@ -237,7 +222,7 @@ export class LogService extends BaseService<Log> {
    * @param  {string} id
    * @returns Promise
    */
-  async getDataDetail (id: string): Promise<any> {
+  async getDataDetail(id: string): Promise<any> {
     const idPre = id.split('_')[0] || '';
     let afterData: any = {};
 
@@ -269,10 +254,10 @@ export class LogService extends BaseService<Log> {
    * @param  {any} data
    * @returns void
    */
-  addLogItem<T extends { id: string; contentId?: string }> (
+  addLogItem<T extends { id: string; contentId?: string }>(
     action: string,
     data: T | T[],
-    options?: { dataType?: string; fileId?: string, category?: Record<string, string> },
+    options?: { dataType?: string; fileId?: string; actionType?: string; category?: Record<string, string> },
   ): any[] {
     !_.isArray(data) && (data = [data]);
 
@@ -281,13 +266,11 @@ export class LogService extends BaseService<Log> {
     data.forEach((cell) => {
       logData.push({
         action: action,
-        category: options?.category || LOG.CATEGORY_APPLICATION,
+        actionType: options?.actionType || '',
+        category: options?.category || {},
         content: {
           id: cell?.id || '',
-          contentId: cell?.contentId || '',
-          fileId: options?.fileId || undefined,
-          dataType: options?.dataType || undefined,
-          before: cell,
+          before: action.split('_')[0] === LOG.CREATE ? {} : cell,
         },
       });
     });
@@ -300,12 +283,12 @@ export class LogService extends BaseService<Log> {
    * @param  {UserOperationParams} params
    * @returns {list:Log[], count:number}
    */
-  async getUserOperationList (params: UserOperationParams): Promise<{ list: Log[]; count: number }> {
+  async getUserOperationList(params: UserOperationParams): Promise<{ list: Log[]; count: number }> {
     let applicationIds: string[] = [];
-    if (params.organizationId) {
+    if (params.organizationId && !params.applicationId) {
       const appList = await Service.application.find({
         organizationId: params.organizationId,
-        deleted: false
+        deleted: false,
       });
       applicationIds = _.map(appList, 'id');
     }
@@ -313,8 +296,8 @@ export class LogService extends BaseService<Log> {
     const skip = ((params.page || 1) - 1) * (params.size || 10);
     const searchParams: any = {
       operator: params.operator,
-      'content.realMethod': { $in: [METHOD.POST, METHOD.PUT, METHOD.DELETE] },
-      'content.response.code': RESPONSE_LEVEL.SUCCESS,
+      action: { $ne: 'request' },
+      // 'content.response.code': RESPONSE_LEVEL.SUCCESS,
       createTime: {
         $gte: new Date(new Date(params.startTime)),
         $lt: new Date(new Date(params.endTime)),
@@ -322,15 +305,11 @@ export class LogService extends BaseService<Log> {
     };
 
     if (applicationIds.length > 0) {
-      searchParams['category.id'] = { $in: applicationIds };
+      searchParams['category.applicationId'] = { $in: applicationIds };
     }
 
     if (params.applicationId) {
-      searchParams['content.applicationId'] = params.applicationId;
-    }
-
-    if (params.action) {
-      searchParams.action = params.action;
+      searchParams['category.applicationId'] = params.applicationId;
     }
 
     const [operationList, operationCount] = await Promise.all([
@@ -350,7 +329,7 @@ export class LogService extends BaseService<Log> {
    * @param  {string} transactionId
    * @returns Promise
    */
-  async getListByTransactionId (transactionId: string): Promise<Log[]> {
+  async getListByTransactionId(transactionId: string): Promise<Log[]> {
     return Model.log.find({ transactionId }, '-_id -category._id');
   }
 
@@ -359,7 +338,7 @@ export class LogService extends BaseService<Log> {
    * @param  {DataLogPage} params
    * @returns Promise
    */
-  async getDataHistory (params: DataLogPage): Promise<PageData<Log>> {
+  async getDataHistory(params: DataLogPage): Promise<PageData<Log>> {
     const [logList, logCount] = await Promise.all([
       Model.log.getDataPageList(params),
       Model.log.getDataPageCount(params),
@@ -372,7 +351,7 @@ export class LogService extends BaseService<Log> {
    * @param  {string[]} ids
    * @returns Promise
    */
-  async getLogDataInfo (ids: string[]): Promise<Record<string, any>> {
+  async getLogDataInfo(ids: string[]): Promise<Record<string, any>> {
     let typeIds: Record<string, string[]> = {};
     _.union(<string[]>_.pullAll(ids, ['', undefined, null])).forEach((id) => {
       const dataType = this.checkDataIdType(id);
@@ -410,7 +389,7 @@ export class LogService extends BaseService<Log> {
    * @param  {string} id
    * @returns string
    */
-  checkDataIdType (id: string): { id: string; type: string } {
+  checkDataIdType(id: string): { id: string; type: string } {
     const typeValue = {
       [PRE.ORGANIZATION]: TYPE.ORGANIZATION,
       [PRE.TEAM]: TYPE.TEAM,
@@ -426,13 +405,62 @@ export class LogService extends BaseService<Log> {
 
   /**
    * filter request sensitive data, pwd...
-   * @param data 
+   * @param data
    */
-  filterSensitiveData (data: any): any {
+  filterSensitiveData(data: any): any {
     if (data.password) {
       data.password = '********';
     }
 
     return data;
+  }
+
+  /**
+   * Get version, content file and folder parent ids
+   * @param categoryList
+   * @returns
+   */
+  async getCategoryIds(operationLogs: Record<string, any>[]): Promise<Record<string, any>> {
+    let versionIds: string[] = [];
+    let contentIds: string[] = [];
+    let fileIds: string[] = [];
+    let folderIds: string[] = [];
+
+    let versionObject: Record<string, any> = {};
+    let contentObject: Record<string, any> = {};
+    let fileObject: Record<string, any> = {};
+    let folderObject: Record<string, any> = {};
+
+    operationLogs.forEach((log) => {
+      log.category.versionId && versionIds.push(log.category.versionId);
+      log.category.contentId && contentIds.push(log.category.contentId);
+      log.category.fileId && fileIds.push(log.category.fileId);
+      log.category.folderId && folderIds.push(log.category.folderId);
+    });
+
+    if (versionIds.length > 0) {
+      const versionList = await Service.version.list.getDetailObjectByIds(versionIds, 'id contentId');
+      contentIds = contentIds.concat(_.map(versionList, 'contentId'));
+      versionObject = _.keyBy(versionList, 'id');
+    }
+
+    if (contentIds.length > 0) {
+      const contentList = await Service.content.list.getDetailObjectByIds(contentIds, 'id fileId');
+      fileIds = fileIds.concat(_.map(contentList, 'fileId'));
+      contentObject = _.keyBy(contentList, 'id');
+    }
+
+    if (fileIds.length > 0) {
+      const fileList = await Service.file.list.getDetailObjectByIds(fileIds, 'id folderId');
+      folderIds = folderIds.concat(_.map(fileList, 'folderId'));
+      fileObject = _.keyBy(fileList, 'id');
+    }
+
+    if (folderIds.length > 0) {
+      const folderList = await Service.folder.list.getDetailObjectByIds(folderIds, 'id applicationId ');
+      folderObject = _.keyBy(folderList, 'id');
+    }
+
+    return { version: versionObject, content: contentObject, file: fileObject, folder: folderObject };
   }
 }

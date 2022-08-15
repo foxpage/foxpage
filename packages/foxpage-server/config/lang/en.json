@@ -18,7 +18,10 @@
     "resourceDuplication": "Application resource name cannot be repeated",
     "resourceTypeUnEditable": "Application resource type cannot be modified",
     "invalidResourceIds": "Invalid Application Resource Type ID",
-    "invalidLocales": "Invalid or repeat locales"
+    "invalidLocales": "Invalid or repeat locales",
+    "updateSettingDetailSuccess": "Set application setting item detail success",
+    "updateSettingDetailFailed": "Failed to set application setting item detail",
+    "invalidSettingTypeId": "Invalid application setting item type id"
   },
   "auth": {
     "addAuthorizeDetailSuccess": "Create user authorized success",
@@ -209,6 +212,7 @@
     "invalidFileId": "Invalid Component ID",
     "invalidContentId": "Invalid component content ID",
     "invalidVersionId": "Invalid component version ID",
+    "invalidCategoryName":"Invalid component category name",
     "componentNotInApp": "Component not application",
     "invalidVersionStatus": "Invalid component version status",
     "updateComponentFileFailed": "Failed to update component details",
@@ -229,7 +233,12 @@
     "getAppComponentListFailed": "Failed to get the component list details",
     "getAppComponentFailed": "Failed to get the application component list",
     "saveRemoteComponentSuccess": "Save components detail success",
-    "saveRemoteComponentFailed": "Failed to save components detail"
+    "saveRemoteComponentFailed": "Failed to save components detail",
+    "setComponentCategorySuccess": "Save component category success",
+    "setComponentCategoryFailed": "Failed to set component category",
+    "getCategoryComponentsFailed": "Failed to get category components",
+    "getComponentsCategoryTypeFailed": "Failed to get component category types",
+    "removeComponentsCategoryFailed": "Failed to remove component category"
   },
   "variable": {
     "addNewVariableFailed": "Adding variable details failed",
@@ -406,7 +415,8 @@
     "invalidStructureNames": "Invalid schema structure name",
     "getWorkspaceDynamicListFailed": "Failed to get workspace dynamic list",
     "getWorkspaceRequestDetailFailed": "Failed to get workspace request detail",
-    "getWorkspaceDataHistoryFailed": "Failed to get workspace data history"
+    "getWorkspaceDataHistoryFailed": "Failed to get workspace data history",
+    "getPageBuilderItemFailed": "Failed to get page builder item list"
   },
   "store": {
     "getStorePageListFailed": "Failed to get product page data",
@@ -444,6 +454,9 @@
     "getAppDetail": "Get App Details",
     "getAppResources": "Get the resource type of the application",
     "getAppLocales": "Get all Locales under the application",
+    "appSettingList": "Add or update application setting items",
+    "getAppSettingItemList": "Get app builder setting item list",
+    "updateBuilderSetting": "Set application setting item detail",
     "userLoginKey": "Get user login encryption public key",
     "updateAppDetail": "Update App Details",
     "pageList": "Get a list of folders/files",
@@ -584,12 +597,17 @@
     "getAppPagesLiveInfo": "Get the live version details of the page under the app (including all relation details)",
     "getAppPagesBuildInfo": "Get details of the build version of the page under the application (including all relation details)",
     "getPageComponentsList": "Get Page Components List Data",
+    "getPageBuilderItemList": "Get Page builder item list",
+    "setComponentCategory": "Set component category",
+    "getCategoryComponents": "Get had set category's components",
+    "getComponentsCategoryTypes": "Get component category types",
     "getComponentPageVersionList": "Get Component Page Version List Data",
     "getComponentContentDetail": "Get component content detail data",
     "getComponentEditVersionDetail": "Get the detailed data of component editing",
     "getRemoteComponents": "Get remote component details",
     "getRemotePageComponents": "Get remote page component list",
     "saveRemoteComponents": "Batch save remote component details",
+    "removeComponentsCategory": "Delete Component category info",
     "updatePageDetail": "Update page file details",
     "updatePageVersionDetail": "Update page version details",
     "updatePageContentDetail": "Update the details of the page content",

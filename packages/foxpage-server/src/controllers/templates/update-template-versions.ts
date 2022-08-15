@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
@@ -35,7 +35,7 @@ export class UpdateTemplateVersionDetail extends BaseController {
     operationId: 'update-template-version-detail',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
     try {
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
@@ -57,12 +57,11 @@ export class UpdateTemplateVersionDetail extends BaseController {
       params.content = <any>_.omit(params.content || {}, ['extension']);
       let result: Record<string, any> = {};
       [result] = await Promise.all([
-        this.service.version.info.updateVersionDetail(params, { ctx }),
-        this.service.content.tag.updateExtensionTag(
-          params.id,
-          { mockId },
-          { ctx }
-        ),
+        this.service.version.info.updateVersionDetail(params, {
+          ctx,
+          actionType: [LOG.UPDATE, TYPE.TEMPLATE].join('_'),
+        }),
+        this.service.content.tag.updateExtensionTag(params.id, { mockId }, { ctx }),
       ]);
 
       if (result.code === 1) {
@@ -72,9 +71,15 @@ export class UpdateTemplateVersionDetail extends BaseController {
       } else if (result.code === 3) {
         return Response.warning(i18n.template.versionExist, 2071806);
       } else if (result.code === 4) {
-        return Response.warning(i18n.template.missingFields + ':' + (<string[]>result.data).join(','), 2071807);
+        return Response.warning(
+          i18n.template.missingFields + ':' + (<string[]>result.data).join(','),
+          2071807,
+        );
       } else if (result.code === 4) {
-        return Response.warning(i18n.template.invalidRelations + ':' + (<string[]>result.data).join(','), 2071808);
+        return Response.warning(
+          i18n.template.invalidRelations + ':' + (<string[]>result.data).join(','),
+          2071808,
+        );
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);

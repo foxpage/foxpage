@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
@@ -35,7 +35,7 @@ export class UpdatePageVersionDetail extends BaseController {
     operationId: 'update-page-version-detail',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
@@ -58,12 +58,11 @@ export class UpdatePageVersionDetail extends BaseController {
       params.content = <any>_.omit(params.content || {}, ['extension']);
       let result: Record<string, any> = {};
       [result] = await Promise.all([
-        this.service.version.info.updateVersionDetail(params, { ctx }),
-        this.service.content.tag.updateExtensionTag(
-          params.id,
-          { mockId },
-          { ctx }
-        ),
+        this.service.version.info.updateVersionDetail(params, {
+          ctx,
+          actionType: [LOG.UPDATE, TYPE.PAGE].join('_'),
+        }),
+        this.service.content.tag.updateExtensionTag(params.id, { mockId }, { ctx }),
       ]);
 
       if (result.code !== 0) {

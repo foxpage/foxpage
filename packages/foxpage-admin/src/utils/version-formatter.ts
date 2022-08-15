@@ -1,6 +1,6 @@
 const DIGITS = 3; // number of version displayed
 
-function formatter(version: string | number) {
+export const formatter = (version: string | number) => {
   let willSetNumber = DIGITS;
   if (typeof version === 'number') {
     willSetNumber = DIGITS - version.toString().length + 1;
@@ -9,6 +9,6 @@ function formatter(version: string | number) {
     willSetNumber = DIGITS - version.length + 1;
   }
   return Array(willSetNumber).join('0') + version.toString();
-}
+};
 
-export default formatter;
+export default { formatter };

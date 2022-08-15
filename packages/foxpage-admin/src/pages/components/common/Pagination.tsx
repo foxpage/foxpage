@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 
 import { Pagination as AntPagination } from 'antd';
 import styled from 'styled-components';
 
 const Root = styled.div`
   text-align: center;
-  padding: 11px 0 0;
+  padding: 12px 0 0;
 `;
 
 interface IProps {
+  hideOnSinglePage: boolean;
   size?: 'default' | 'small';
   current: number;
   total: number;
   pageSize: number;
-  onChange: (num: number) => void;
+  onChange: (page, pageSize) => void;
+  style?: CSSProperties;
 }
 
 export function Pagination(props: IProps) {

@@ -1,34 +1,40 @@
 import { createAction } from 'typesafe-actions';
 
-import { FileDetailFetchParams, FileType } from '@/types/application/file';
-import { ProjectContentType } from '@/types/application/project';
 import {
+  ContentEntity,
+  File,
+  FilesFetchParams,
   GoodsCommitParams,
   GoodsOfflineParams,
+  ParentFileFetchParams,
   ProjectContentDeleteParams,
-  ProjectContentSearchParams,
+  ProjectContentFetchParams,
+  ProjectEntity,
 } from '@/types/index';
+
+export const clearAll = createAction('PROJECTS_CONTENT__CLEAR_ALL', () => ({}))();
+
+export const updateLoading = createAction('PROJECTS_CONTENT__UPDATE_LOADING', (status: boolean) => ({
+  status,
+}))();
+
+export const updateSaveLoading = createAction('PROJECTS_CONTENT__UPDATE_SAVE_LOADING', (status: boolean) => ({
+  status,
+}))();
 
 export const fetchContentList = createAction(
   'PROJECTS_CONTENT__FETCH_CONTENT_LIST',
-  (params: ProjectContentSearchParams) => ({ ...params }),
-)();
-
-export const updateFetchLoading = createAction(
-  'PROJECTS_CONTENT__UPDATE_FETCH_LOADING',
-  (value: boolean) => ({
-    value,
-  }),
+  (params: ProjectContentFetchParams) => ({ ...params }),
 )();
 
 export const pushContentList = createAction(
   'PROJECTS_CONTENT__FETCH_CONTENT_LIST_SUCCESS',
-  (data: ProjectContentType[]) => ({ data }),
+  (data: ContentEntity[]) => ({ data }),
 )();
 
 export const updateEditDrawerOpen = createAction(
   'PROJECTS_CONTENT__UPDATE_EDIT_DRAWER_OPEN_STATUS',
-  (open: boolean, editContent?: Partial<ProjectContentType>) => ({ open, editContent }),
+  (open: boolean, editContent?: Partial<ContentEntity>) => ({ open, editContent }),
 )();
 
 export const updateEditContentValue = createAction(
@@ -43,7 +49,7 @@ export const updateEditContentTags = createAction(
 
 export const saveContent = createAction(
   'PROJECTS_CONTENT__SAVE_CONTENT',
-  (params: ProjectContentSearchParams) => ({ ...params }),
+  (params: ProjectContentFetchParams) => ({ ...params }),
 )();
 
 export const deleteContent = createAction(
@@ -59,32 +65,44 @@ export const pushLocales = createAction('PROJECTS_CONTENT__FETCH_LOCALES_SUCCESS
   locales,
 }))();
 
-export const commitFileToStore = createAction(
-  'PROJECTS_CONTENT__COMMIT_FILE_TO_STORE',
-  (params: GoodsCommitParams) => ({ ...params }),
-)();
-
-export const offlineFileFromStore = createAction(
-  'PROJECTS_CONTENT__REVOKE_FILE_FROM_STORE',
-  (params: GoodsOfflineParams) => ({ ...params }),
-)();
-
-export const fetchFileDetail = createAction(
-  'PROJECTS_CONTENT__FETCH_FILE_DETAIL',
-  (params: FileDetailFetchParams) => ({ ...params }),
-)();
-
-export const pushFileDetail = createAction('PROJECTS_CONTENT__PUSH_FILE_DETAIL', (data: FileType) => ({
-  data,
-}))();
-
 export const updateFileOnlineStatus = createAction(
   'PROJECTS_CONTENT__UPDATE_ONLINE_STATUS',
   (online: boolean) => ({ online }),
 )();
 
-export const setSaveLoading = createAction('PROJECTS_CONTENT__SET_SAVE_LOADING', (loading: boolean) => ({
-  loading,
+// store related
+export const commitFileToStore = createAction(
+  'PROJECTS_CONTENT__COMMIT_FILE_TO_STORE',
+  (params: GoodsCommitParams, cb?: () => void) => ({ params, cb }),
+)();
+
+export const offlineFileFromStore = createAction(
+  'PROJECTS_CONTENT__REVOKE_FILE_FROM_STORE',
+  (params: GoodsOfflineParams, cb?: () => void) => ({ params, cb }),
+)();
+
+// file detail related
+export const fetchFileDetail = createAction(
+  'PROJECTS_CONTENT__FETCH_FILE_DETAIL',
+  (params: FilesFetchParams) => ({ ...params }),
+)();
+
+export const pushFileDetail = createAction('PROJECTS_CONTENT__PUSH_FILE_DETAIL', (data: File) => ({
+  data,
 }))();
 
-export const clearAll = createAction('PROJECTS_CONTENT__CLEAR_ALL', () => ({}))();
+// parent file related
+export const fetchParentFiles = createAction(
+  'PROJECTS_CONTENT__FETCH_PARENT_FILES',
+  (params: ParentFileFetchParams, cb?: (folder) => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const pushParentFiles = createAction(
+  'PROJECTS_CONTENT__PUSH_PARENT_FILES',
+  (folder: ProjectEntity) => ({
+    folder,
+  }),
+)();

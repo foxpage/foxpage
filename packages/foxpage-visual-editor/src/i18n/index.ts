@@ -1,9 +1,9 @@
-import en from './language/en.json';
-import zhCN from './language/zh-cn.json';
+import en from './locales/en.json';
+import zhCN from './locales/zh-cn.json';
 
-const i18n = {
+const foxI18n = {
   'zh-cn': zhCN,
   en: en,
 };
 
-export default i18n;
+export default foxI18n;

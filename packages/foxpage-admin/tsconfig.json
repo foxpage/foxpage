@@ -6,6 +6,7 @@
     // syntax
     "strict": true,
     "alwaysStrict": true,
+    "declaration": true,
     "noImplicitAny": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -13,7 +14,7 @@
     "noUnusedLocals": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "resolveJsonModule": false,
+    "resolveJsonModule": true,
     "lib": [
       "dom",
       "es7",
@@ -28,9 +29,8 @@
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
-    // "declaration": true,
     "removeComments": false,
-    "sourceMap": true,
+    "sourceMap": false,
     "allowJs": true,
     "locale": "zh-cn",
     "outDir": "./lib",
@@ -38,9 +38,6 @@
     "paths": {
       "@/pages/*": [
         "src/pages/*"
-      ],
-      "@/configs/*": [
-        "src/configs/*"
       ],
       "@/apis/*": [
         "src/apis/*"
@@ -63,22 +60,22 @@
       "@/sagas/*": [
         "src/store/sagas/*"
       ],
-      "@/types/*": [
-        "typings/*"
-      ],
-      "@/services/*": [
-        "src/services/*"
-      ],
       "@/constants/*": [
         "src/constants/*"
+      ],
+      "@/foxI18n/*": [
+        "src/locales/*"
+      ],
+      "@/types/*": [
+        "typings/*"
       ],
     }
   },
   "include": [
+    "typings/*",
+    "typings/**/*",
     "src/*",
     "src/**/*",
-    "typings/*",
-    "typings/**/*"
   ],
   "exclude": [
     "node_modules"

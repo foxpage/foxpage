@@ -50,7 +50,7 @@ export class ApplicationModel extends BaseModel<Application> {
 
     return this.model
       .find(searchParams, this.ignoreFields)
-      .sort('createTime')
+      .sort({ '_id': -1 })
       .skip(from)
       .limit(size)
       .lean();

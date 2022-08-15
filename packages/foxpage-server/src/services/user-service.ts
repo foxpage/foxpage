@@ -9,7 +9,7 @@ import { LOG, PRE } from '../../config/constant';
 import * as Model from '../models';
 import thirdPartyLogin from '../third-parties/login';
 import { Creator, FoxCtx, Search } from '../types/index-types';
-import { LoginParams, NewUser, RegisterParams, UserAccountInfo } from '../types/user-types';
+import { LoginParams, NewUser, RegisterParams, UserAccountInfo, UserBase } from '../types/user-types';
 import { generationId } from '../utils/tools';
 
 import { BaseService } from './base-service';
@@ -164,9 +164,9 @@ export class UserService extends BaseService<User> {
    * @param  {string[]} userIds
    * @returns userList
    */
-  async getUserBaseObjectByIds(userIds: string[]): Promise<Record<string, Creator>> {
+  async getUserBaseObjectByIds(userIds: string[]): Promise<Record<string, UserBase>> {
     const userList = await this.getDetailByIds(userIds);
-    return _.keyBy(_.map(userList, (user) => _.pick(user, ['id', 'account'])) as Creator[], 'id');
+    return _.keyBy(_.map(userList, (user) => _.pick(user, ['id', 'account', 'email', 'nickName'])), 'id');
   }
 
   /**

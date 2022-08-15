@@ -1,16 +1,16 @@
 import React from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import Dynamic from './dynamic/Index';
+import Dynamics from './personal';
 
-function Dynamics() {
+function WorkspaceDynamics() {
   return (
     <Switch>
-      <Route path="/workspace/dynamic" component={Dynamic} />
+      <Route path="/workspace/dynamics" component={Dynamics} />
 
-      <Redirect from="/*" to="/workspace/dynamic" />
+      <Redirect from="/*" to="/workspace/dynamics" />
     </Switch>
   );
 }
 
-export default Dynamics;
+export default WorkspaceDynamics;

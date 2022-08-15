@@ -5,7 +5,7 @@ const {
   pathsToModuleNameMapper
 } = require('ts-jest/utils');
 
-// const paths = require('./tsconfig.path.json');
+const tsConfig = require('./tsconfig.json');
 
 module.exports = {
   verbose: true,
@@ -25,47 +25,9 @@ module.exports = {
       tsConfig: join(__dirname, 'tsconfig.json')
     },
   },
-  // TODO 与tsconfig合并
   moduleNameMapper: {
     '^.+\\.(css|less)$': 'identity-obj-proxy',
-    ...pathsToModuleNameMapper({
-      "@/pages/*": [
-        "src/pages/*"
-      ],
-      "@/configs/*": [
-        "src/configs/*"
-      ],
-      "@/apis/*": [
-        "src/apis/*"
-      ],
-      "@/components/*": [
-        "src/pages/components/*"
-      ],
-      "@/utils/*": [
-        "src/utils/*"
-      ],
-      "@/store/*": [
-        "src/store/*"
-      ],
-      "@/actions/*": [
-        "src/store/actions/*"
-      ],
-      "@/reducers/*": [
-        "src/store/reducers/*"
-      ],
-      "@/sagas/*": [
-        "src/store/sagas/*"
-      ],
-      "@/types/*": [
-        "typings/*"
-      ],
-      "@/services/*": [
-        "src/services/*"
-      ],
-      "@/constants/*": [
-        "src/constants/*"
-      ],
-    }, {
+    ...pathsToModuleNameMapper(tsConfig.compilerOptions.paths, {
       prefix: '<rootDir>/'
     }),
   },

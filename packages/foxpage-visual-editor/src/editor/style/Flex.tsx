@@ -3,7 +3,7 @@ import React from 'react';
 import { Input, InputNumber, Tooltip } from 'antd';
 
 import { Col, Row } from './Common';
-import { FlexType } from './index.d';
+import { FlexType } from './interface';
 
 const Flex: React.FC<FlexType> = (props) => {
   const { flexBasis, flexShrink, flexGrow, onChange } = props;

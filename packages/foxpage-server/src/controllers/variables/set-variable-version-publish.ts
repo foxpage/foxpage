@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
@@ -37,7 +37,10 @@ export class SetVersionPublishStatus extends BaseController {
     operationId: 'set-variable-version-public-status',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: VersionPublishStatus2Req): Promise<ResData<ContentVersion>> {
+  async index(
+    @Ctx() ctx: FoxCtx,
+    @Body() params: VersionPublishStatus2Req,
+  ): Promise<ResData<ContentVersion>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.VARIABLE });
 
@@ -52,7 +55,9 @@ export class SetVersionPublishStatus extends BaseController {
       }
 
       if (!params.id) {
-        const versionDetail = await this.service.version.info.getContentLatestVersion({ contentId: params.contentId });
+        const versionDetail = await this.service.version.info.getContentLatestVersion({
+          contentId: params.contentId,
+        });
         params.id = versionDetail.id;
       }
 
@@ -64,6 +69,7 @@ export class SetVersionPublishStatus extends BaseController {
       const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
         ctx,
         liveRelation: true,
+        actionType: [LOG.PUBLISH, TYPE.VARIABLE].join('_'),
       });
 
       if (result.code === 1) {

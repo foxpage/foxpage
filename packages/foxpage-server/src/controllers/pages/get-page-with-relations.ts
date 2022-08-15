@@ -101,9 +101,9 @@ export class GetAppPageLiveInfoList extends BaseController {
               version: <string>content.version,
               versionNumber: this.service.version.number.createNumberFromVersion(content.version || '0.0.1'),
               fileId: contentObject[content?.content?.id]?.fileId || '',
+              extension: contentMockObject[content.id]?.extension || {},
             }),
             mock: contentMockObject[content.id]?.mock || {},
-            extension: contentMockObject[content.id]?.extension || {},
           }
         ));
       });

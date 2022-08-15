@@ -3,10 +3,10 @@ import React, { useContext, useState } from 'react';
 import { Input, InputNumber, Select as AntdSelect, Tooltip } from 'antd';
 import styled from 'styled-components';
 
-import viewerContext from '../../viewerContext';
+import { FoxContext } from '@/context/index';
 
 import { Col, Label, Row } from './Common';
-import { PositionType } from './index.d';
+import { PositionType } from './interface';
 
 const { Option } = AntdSelect;
 
@@ -19,7 +19,7 @@ const Select = styled(AntdSelect)`
   }
 `;
 
-const Position: React.FC<PositionType> = props => {
+const Position: React.FC<PositionType> = (props) => {
   const {
     position,
     zIndex,
@@ -29,10 +29,10 @@ const Position: React.FC<PositionType> = props => {
     bottom,
     left,
     right,
-    onChange = (_val: number | string) => {},
-    onApplyState = (_key: string, _val: string) => {},
+    onChange = (_key: string, _val: number | string, _autoSave?: boolean) => {},
+    onApplyState = () => {},
   } = props;
-  const { foxpageI18n } = useContext(viewerContext);
+  const { foxI18n } = useContext(FoxContext);
   const [topUnit, setTopUnit] = useState<string>(top && top.includes('%') ? '%' : 'px');
   const [leftUnit, setLeftUnit] = useState<string>(left && left.includes('%') ? '%' : 'px');
   const [rightUnit, setRightUnit] = useState<string>(right && right.includes('%') ? '%' : 'px');
@@ -48,7 +48,7 @@ const Position: React.FC<PositionType> = props => {
     <React.Fragment>
       <Row>
         <Col sm={6}>
-          <Label>{foxpageI18n.position}：</Label>
+          <Label>{foxI18n.position}: </Label>
         </Col>
         <Col sm={18}>
           <AntdSelect
@@ -56,14 +56,12 @@ const Position: React.FC<PositionType> = props => {
             size="small"
             style={{ width: '100%' }}
             onChange={(value: string) => {
-              onChange('position', value);
-              onApplyState('position', value);
-            }}
-          >
-            <Option value="static">{foxpageI18n.static}</Option>
-            <Option value="relative">{foxpageI18n.relative}</Option>
-            <Option value="absolute">{foxpageI18n.absolute}</Option>
-            <Option value="fixed">{foxpageI18n.fixed}</Option>
+              onChange('position', value, true);
+            }}>
+            <Option value="static">{foxI18n.static}</Option>
+            <Option value="relative">{foxI18n.relative}</Option>
+            <Option value="absolute">{foxI18n.absolute}</Option>
+            <Option value="fixed">{foxI18n.fixed}</Option>
           </AntdSelect>
         </Col>
       </Row>
@@ -71,21 +69,20 @@ const Position: React.FC<PositionType> = props => {
         <React.Fragment>
           <Row>
             <Col sm={9} offset={6}>
-              <Tooltip title={foxpageI18n.top}>
+              <Tooltip title={foxI18n.top}>
                 <Input
                   size="small"
                   style={{ width: '97%' }}
                   addonAfter={
                     <Select
                       value={topUnit}
+                      // @ts-ignore
                       onChange={(value: string) => {
                         setTopUnit(value);
                         if (top) {
-                          onChange('top', `${top.replace(/px|%/g, '')}${value}`);
-                          onApplyState('top', `${top.replace(/px|%/g, '')}${value}`);
+                          onChange('top', `${top.replace(/px|%/g, '')}${value}`, true);
                         }
-                      }}
-                    >
+                      }}>
                       {positionOption}
                     </Select>
                   }
@@ -93,28 +90,27 @@ const Position: React.FC<PositionType> = props => {
                   onChange={(e: any) => {
                     onChange('top', `${e.target.value}${topUnit || 'px'}`);
                   }}
-                  onBlur={(e: any) => {
-                    onApplyState('top', `${e.target.value}${topUnit || 'px'}`);
+                  onBlur={() => {
+                    onApplyState();
                   }}
                 />
               </Tooltip>
             </Col>
             <Col sm={9}>
-              <Tooltip title={foxpageI18n.left}>
+              <Tooltip title={foxI18n.left}>
                 <Input
                   style={{ width: '97%', marginLeft: '3%' }}
                   size="small"
                   addonAfter={
                     <Select
                       value={leftUnit}
+                      // @ts-ignore
                       onChange={(value: string) => {
                         setLeftUnit(value);
                         if (left) {
-                          onChange('left', `${left.replace(/px|%/g, '')}${value}`);
-                          onApplyState('left', `${left.replace(/px|%/g, '')}${value}`);
+                          onChange('left', `${left.replace(/px|%/g, '')}${value}`, true);
                         }
-                      }}
-                    >
+                      }}>
                       {positionOption}
                     </Select>
                   }
@@ -122,8 +118,8 @@ const Position: React.FC<PositionType> = props => {
                   onChange={(e: any) => {
                     onChange('left', `${e.target.value}${leftUnit || 'px'}`);
                   }}
-                  onBlur={(e: any) => {
-                    onApplyState('left', `${e.target.value}${leftUnit || 'px'}`);
+                  onBlur={() => {
+                    onApplyState();
                   }}
                 />
               </Tooltip>
@@ -131,7 +127,7 @@ const Position: React.FC<PositionType> = props => {
           </Row>
           <Row>
             <Col sm={9} offset={6}>
-              <Tooltip title={foxpageI18n.bottom}>
+              <Tooltip title={foxI18n.bottom}>
                 <Input
                   style={{ width: '97%' }}
                   size="small"
@@ -139,14 +135,13 @@ const Position: React.FC<PositionType> = props => {
                     <Select
                       value={bottomUnit}
                       size="small"
+                      // @ts-ignore
                       onChange={(value: string) => {
                         setBottomUnit(value);
                         if (bottom) {
-                          onChange('bottom', `${bottom.replace(/px|%/g, '')}${value}`);
-                          onApplyState('bottom', `${bottom.replace(/px|%/g, '')}${value}`);
+                          onChange('bottom', `${bottom.replace(/px|%/g, '')}${value}`, true);
                         }
-                      }}
-                    >
+                      }}>
                       {positionOption}
                     </Select>
                   }
@@ -154,28 +149,27 @@ const Position: React.FC<PositionType> = props => {
                   onChange={(e: any) => {
                     onChange('bottom', `${e.target.value}${bottomUnit || 'px'}`);
                   }}
-                  onBlur={(e: any) => {
-                    onApplyState('bottom', `${e.target.value}${bottomUnit || 'px'}`);
+                  onBlur={() => {
+                    onApplyState();
                   }}
                 />
               </Tooltip>
             </Col>
             <Col sm={9}>
-              <Tooltip title={foxpageI18n.right}>
+              <Tooltip title={foxI18n.right}>
                 <Input
                   size="small"
                   style={{ width: '97%', marginLeft: '3%' }}
                   addonAfter={
                     <Select
                       value={rightUnit}
+                      // @ts-ignore
                       onChange={(value: string) => {
                         setRightUnit(value);
                         if (right) {
-                          onChange('right', `${right.replace(/px|%/g, '')}${value}`);
-                          onApplyState('right', `${right.replace(/px|%/g, '')}${value}`);
+                          onChange('right', `${right.replace(/px|%/g, '')}${value}`, true);
                         }
-                      }}
-                    >
+                      }}>
                       {positionOption}
                     </Select>
                   }
@@ -183,8 +177,8 @@ const Position: React.FC<PositionType> = props => {
                   onChange={(e: any) => {
                     onChange('right', `${e.target.value}${rightUnit || 'px'}`);
                   }}
-                  onBlur={(e: any) => {
-                    onApplyState('right', `${e.target.value}${rightUnit || 'px'}`);
+                  onBlur={() => {
+                    onApplyState();
                   }}
                 />
               </Tooltip>
@@ -194,7 +188,7 @@ const Position: React.FC<PositionType> = props => {
       )}
       <Row>
         <Col sm={6}>
-          <Label>{foxpageI18n.float}：</Label>
+          <Label>{foxI18n.float}: </Label>
         </Col>
         <Col sm={18}>
           <AntdSelect
@@ -202,19 +196,17 @@ const Position: React.FC<PositionType> = props => {
             value={float}
             style={{ width: '100%' }}
             onChange={(value: any) => {
-              onChange('float', value);
-              onApplyState('float', value);
-            }}
-          >
-            <Option value="none">{foxpageI18n.none}</Option>
-            <Option value="left">{foxpageI18n.left}</Option>
-            <Option value="right">{foxpageI18n.right}</Option>
+              onChange('float', value, true);
+            }}>
+            <Option value="none">{foxI18n.none}</Option>
+            <Option value="left">{foxI18n.left}</Option>
+            <Option value="right">{foxI18n.right}</Option>
           </AntdSelect>
         </Col>
       </Row>
       <Row>
         <Col sm={6}>
-          <Label>{foxpageI18n.clear}：</Label>
+          <Label>{foxI18n.clear}: </Label>
         </Col>
         <Col sm={18}>
           <AntdSelect
@@ -222,20 +214,18 @@ const Position: React.FC<PositionType> = props => {
             value={clear}
             style={{ width: '100%' }}
             onChange={(value: string) => {
-              onChange('clear', value);
-              onApplyState('clear', value);
-            }}
-          >
-            <Option value="none">{foxpageI18n.none}</Option>
-            <Option value="left">{foxpageI18n.left}</Option>
-            <Option value="right">{foxpageI18n.right}</Option>
-            <Option value="both">{foxpageI18n.both}</Option>
+              onChange('clear', value, true);
+            }}>
+            <Option value="none">{foxI18n.none}</Option>
+            <Option value="left">{foxI18n.left}</Option>
+            <Option value="right">{foxI18n.right}</Option>
+            <Option value="both">{foxI18n.both}</Option>
           </AntdSelect>
         </Col>
       </Row>
       <Row>
         <Col sm={6}>
-          <Label>{foxpageI18n.zIndex}：</Label>
+          <Label>{foxI18n.zIndex}: </Label>
         </Col>
         <Col sm={18}>
           <InputNumber
@@ -245,8 +235,8 @@ const Position: React.FC<PositionType> = props => {
             onChange={(value: string) => {
               onChange('zIndex', value);
             }}
-            onBlur={(e: any) => {
-              onApplyState('zIndex', e.target.value);
+            onBlur={() => {
+              onApplyState();
             }}
           />
         </Col>

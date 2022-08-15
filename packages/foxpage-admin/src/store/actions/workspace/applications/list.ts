@@ -1,41 +1,56 @@
 import { createAction } from 'typesafe-actions';
 
-import { Application, ApplicationFetchParams, ApplicationFetchResponse } from '@/types/index';
+import {
+  Application,
+  ApplicationListFetchParams,
+  AuthorizeAddParams,
+  AuthorizeDeleteParams,
+  AuthorizeListFetchParams,
+  AuthorizeListItem,
+  AuthorizeUserFetchParams,
+  PaginationInfo,
+  User,
+} from '@/types/index';
 
-export const clearAll = createAction('WORKSPACE_APPLICATION_LIST__CLEAR_ALL', () => ({}))();
-export const updateFetching = createAction(
-  'WORKSPACE_APPLICATION_LIST__UPDATE_FETCHING',
-  (status: boolean) => ({
-    status,
+export const clearAll = createAction('WORKSPACE_APPLICATIONS__CLEAR_ALL', () => ({}))();
+
+export const updateLoading = createAction('WORKSPACE_APPLICATIONS__UPDATE_LOADING', (loading: boolean) => ({
+  loading,
+}))();
+
+export const updateSaveLoading = createAction(
+  'WORKSPACE_APPLICATIONS__UPDATE_SAVE_LOADING',
+  (loading: boolean) => ({
+    loading,
   }),
 )();
-export const fetchList = createAction('APPLICATION_LISTS__FETCH_LIST', (params: ApplicationFetchParams) => ({
-  params,
-}))();
+
+export const fetchList = createAction(
+  'WORKSPACE_APPLICATIONS__FETCH_LIST',
+  (params: ApplicationListFetchParams) => ({
+    params,
+  }),
+)();
+
 export const pushList = createAction(
-  'WORKSPACE_APPLICATION_LIST__FETCH_LIST_SUCCEED',
-  (result: ApplicationFetchResponse) => ({
-    result,
+  'WORKSPACE_APPLICATIONS__PUSH_LIST',
+  (applicationList: Application[], pageInfo: PaginationInfo) => ({
+    applicationList,
+    pageInfo,
   }),
 )();
 
-// add
-export const updateSaving = createAction('WORKSPACE_APPLICATION_LIST__UPDATE_SAVING', (status: boolean) => ({
-  status,
-}))();
-
-export const updateDrawerVisible = createAction(
-  'WORKSPACE_APPLICATION_LIST__UPDATE_DRAWER_VISIBLE',
+// save related
+export const openEditDrawer = createAction(
+  'WORKSPACE_APPLICATIONS__OPEN_EDIT_DRAWER',
   (visible: boolean, app?: Application) => ({
     visible,
     app,
   }),
 )();
 
-export const saveApp = createAction('WORKSPACE_APPLICATION_LIST__SAVE_APP', () => ({}))();
-
 export const updateApp = createAction(
-  'WORKSPACE_APPLICATION_LIST__UPDATE_APP',
+  'WORKSPACE_APPLICATIONS__UPDATE_APP',
   (key: string, value: unknown) => ({
     key,
     value,
@@ -43,9 +58,65 @@ export const updateApp = createAction(
 )();
 
 export const updateValue = createAction(
-  'WORKSPACE_APPLICATION_LIST__UPDATE_VALUE',
+  'WORKSPACE_APPLICATIONS__UPDATE_VALUE',
   (key: string, value: unknown) => ({
     key,
     value,
   }),
 )();
+
+export const saveApp = createAction('WORKSPACE_APPLICATIONS__SAVE_APP', () => ({}))();
+
+// authorize related
+export const fetchAuthList = createAction(
+  'WORKSPACE_APPLICATIONS__FETCH_AUTH_LIST',
+  (params: AuthorizeListFetchParams) => ({ params }),
+)();
+
+export const pushAuthList = createAction(
+  'WORKSPACE_APPLICATIONS__PUSH_AUTH_LIST',
+  (list: AuthorizeListItem[]) => ({ list }),
+)();
+
+export const updateAuthListLoading = createAction(
+  'WORKSPACE_APPLICATIONS__UPDATE_AUTH_LIST_LOADING',
+  (status: boolean) => ({
+    status,
+  }),
+)();
+
+export const updateAuthDrawerVisible = createAction(
+  'WORKSPACE_APPLICATIONS__UPDATE_AUTH_DRAWER_VISIBLE',
+  (visible = false, editApp?: Application) => ({
+    visible,
+    editApp,
+  }),
+)();
+
+export const saveAuthUser = createAction(
+  'WORKSPACE_APPLICATIONS__SAVE_AUTH_USER',
+  (params: AuthorizeAddParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const deleteAuthUser = createAction(
+  'WORKSPACE_APPLICATIONS__DELETE_AUTH_USER',
+  (params: AuthorizeDeleteParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const fetchUserList = createAction(
+  'WORKSPACE_APPLICATIONS___FETCH_USER_LIST',
+  (params: AuthorizeUserFetchParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const pushUserList = createAction('WORKSPACE_APPLICATIONS___PUSH_USER_LIST', (list: User[]) => ({
+  list,
+}))();

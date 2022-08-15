@@ -13,6 +13,7 @@ import { AppContentListRes, AppTypeFilesReq } from '../../types/validates/page-v
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to files/get-page-type-items.ts
 @JsonController('mocks')
 export class GetPageMockList extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class GetPageMockList extends BaseController {
    * @param  {AppPageListCommonReq} params
    * @returns {ContentInfo}
    */
-  @Get('/file-searchs')
+  @Get('/file-searchs-migrations')
   @OpenAPI({
     summary: i18n.sw.getAppScopeMocks,
     description: '',

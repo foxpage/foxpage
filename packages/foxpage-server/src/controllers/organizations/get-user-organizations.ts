@@ -4,7 +4,8 @@ import { Ctx, Get, JsonController } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
-import { FoxCtx, IdName, ResData } from '../../types/index-types';
+import { FoxCtx, ResData } from '../../types/index-types';
+import { UserOrg } from '../../types/organization-types';
 import { OrgListRes } from '../../types/validates/org-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
@@ -17,7 +18,7 @@ export class GetUserOrgList extends BaseController {
 
   /**
    * Get the user authorized organization list
-   * @returns {IdName[]}
+   * @returns {UserOrg[]}
    */
   @Get('/by-user')
   @OpenAPI({
@@ -27,15 +28,24 @@ export class GetUserOrgList extends BaseController {
     operationId: 'get-user-organization-list',
   })
   @ResponseSchema(OrgListRes)
-  async index (@Ctx() ctx: FoxCtx): Promise<ResData<IdName[]>> {
+  async index (@Ctx() ctx: FoxCtx): Promise<ResData<UserOrg[]>> {
     try {
       if (!ctx.userInfo?.id) {
         return Response.warning(i18n.user.invalidUser, 2011001);
       }
 
-      const userOrgList = await this.service.org.getUserOrg(ctx.userInfo.id);
+      const [userInfo, userOrgList] = await Promise.all([
+        this.service.user.getDetailById(ctx.userInfo?.id),
+        this.service.org.getUserOrg(ctx.userInfo.id),
+      ]);
+      const defaultOrgId = userInfo.defaultOrganizationId || '';
 
-      return Response.success(userOrgList, 1011001);
+      return Response.success(
+        userOrgList.map(org => {
+          return Object.assign({}, org, {
+            default: org.id === defaultOrgId
+          });
+        }), 1011001);
     } catch (err) {
       return Response.error(err, i18n.org.getOrgListFailed, 3011001);
     }

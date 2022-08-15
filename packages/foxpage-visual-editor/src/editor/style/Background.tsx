@@ -5,10 +5,10 @@ import { Input, Select, Tooltip } from 'antd';
 import { EditContext } from '@foxpage/foxpage-component-editor-context';
 import { ColorPicker } from '@foxpage/foxpage-component-editor-widgets';
 
-import viewerContext from '../../viewerContext';
+import { FoxContext } from '@/context/index';
 
 import { Col, colorPickerStyle, Label, Row } from './Common';
-import { BackgroundType } from './index.d';
+import { BackgroundType } from './interface';
 
 const { Option } = Select;
 
@@ -20,16 +20,16 @@ const Background: React.FC<BackgroundType> = (props) => {
     backgroundPositionX,
     backgroundPositionY,
     backgroundRepeat,
-    onChange = (_key: string, _val: string) => {},
-    onApplyState = (_key: string, _val: string) => {},
+    onChange = (_key: string, _val: string, _autoSave?: boolean) => {},
+    onApplyState = () => {},
   } = props;
-  const { foxpageI18n } = useContext(viewerContext);
+  const { foxI18n } = useContext(FoxContext);
   return (
     <React.Fragment>
       <Row>
         <Col sm={6}>
-          <Tooltip title={foxpageI18n.backgroundColor}>
-            <Label>{foxpageI18n.color}：</Label>
+          <Tooltip title={foxI18n.backgroundColor}>
+            <Label>{foxI18n.color}: </Label>
           </Tooltip>
         </Col>
         <Col sm={18}>
@@ -37,11 +37,9 @@ const Background: React.FC<BackgroundType> = (props) => {
             value={{
               componentProps: { backgroundColor },
               propChange: (_prop: string, val: any) => {
-                onChange('backgroundColor', val);
+                onChange('backgroundColor', val, true);
               },
-              applyState: () => {
-                onApplyState('backgroundColor', backgroundColor as string);
-              },
+              applyState: () => {},
               propsChange: () => {},
               onBindVariable: () => {},
             }}>
@@ -51,22 +49,22 @@ const Background: React.FC<BackgroundType> = (props) => {
       </Row>
       <Row>
         <Col sm={6}>
-          <Tooltip title={foxpageI18n.backgroundImage}>
-            <Label>{foxpageI18n.image}：</Label>
+          <Tooltip title={foxI18n.backgroundImage}>
+            <Label>{foxI18n.image}: </Label>
           </Tooltip>
         </Col>
 
         <Col sm={18}>
-          <Tooltip title={foxpageI18n.backgroundImage}>
+          <Tooltip title={foxI18n.backgroundImage}>
             <Input
               size="small"
               value={backgroundImage?.replace(/url\(|\)/g, '')}
-              placeholder={foxpageI18n.backgroundImage}
+              placeholder={foxI18n.backgroundImage}
               onChange={(e: any) => {
                 onChange('backgroundImage', `url(${e.target.value})`);
               }}
-              onBlur={(e: any) => {
-                onApplyState('backgroundImage', `url(${e.target.value})`);
+              onBlur={() => {
+                onApplyState();
               }}
             />
           </Tooltip>
@@ -76,8 +74,8 @@ const Background: React.FC<BackgroundType> = (props) => {
         <React.Fragment>
           <Row>
             <Col sm={6}>
-              <Tooltip title={foxpageI18n.backgroundSize}>
-                <Label>{foxpageI18n.backgroundSizeLabel}：</Label>
+              <Tooltip title={foxI18n.backgroundSize}>
+                <Label>{foxI18n.backgroundSizeLabel}: </Label>
               </Tooltip>
             </Col>
             <Col sm={18}>
@@ -86,19 +84,18 @@ const Background: React.FC<BackgroundType> = (props) => {
                 value={backgroundSize}
                 style={{ width: '100%' }}
                 onChange={(value: any) => {
-                  onChange('backgroundSize', value);
-                  onApplyState('backgroundSize', value);
+                  onChange('backgroundSize', value, true);
                 }}>
-                <Option value="default">{foxpageI18n.backgroundSizeDefault}</Option>
-                <Option value="contain">{foxpageI18n.backgroundSizeContain}</Option>
-                <Option value="cover">{foxpageI18n.backgroundSizeCover}</Option>
+                <Option value="default">{foxI18n.backgroundSizeDefault}</Option>
+                <Option value="contain">{foxI18n.backgroundSizeContain}</Option>
+                <Option value="cover">{foxI18n.backgroundSizeCover}</Option>
               </Select>
             </Col>
           </Row>
           <Row>
             <Col sm={6}>
-              <Tooltip title={foxpageI18n.backgroundRepeat}>
-                <Label>{foxpageI18n.backgroundRepeatLabel}：</Label>
+              <Tooltip title={foxI18n.backgroundRepeat}>
+                <Label>{foxI18n.backgroundRepeatLabel}: </Label>
               </Tooltip>
             </Col>
             <Col sm={18}>
@@ -107,50 +104,49 @@ const Background: React.FC<BackgroundType> = (props) => {
                 value={backgroundRepeat}
                 style={{ width: '100%' }}
                 onChange={(value: any) => {
-                  onChange('backgroundRepeat', value);
-                  onApplyState('backgroundRepeat', value);
+                  onChange('backgroundRepeat', value, true);
                 }}>
-                <Option value="repeat">{foxpageI18n.backgroundRepeatDefault}</Option>
-                <Option value="repeat-x">{foxpageI18n.backgroundRepeatX}</Option>
-                <Option value="repeat-y">{foxpageI18n.backgroundRepeatY}</Option>
-                <Option value="no-repeat">{foxpageI18n.backgroundNoRepeat}</Option>
+                <Option value="repeat">{foxI18n.backgroundRepeatDefault}</Option>
+                <Option value="repeat-x">{foxI18n.backgroundRepeatX}</Option>
+                <Option value="repeat-y">{foxI18n.backgroundRepeatY}</Option>
+                <Option value="no-repeat">{foxI18n.backgroundNoRepeat}</Option>
               </Select>
             </Col>
           </Row>
           <Row>
             <Col sm={6}>
-              <Tooltip title={foxpageI18n.backgroundPosition}>
-                <Label>{foxpageI18n.backgroundPositionLabel}：</Label>
+              <Tooltip title={foxI18n.backgroundPosition}>
+                <Label>{foxI18n.backgroundPositionLabel}: </Label>
               </Tooltip>
             </Col>
 
             <Col sm={9}>
-              <Tooltip title={foxpageI18n.backgroundPositionXLabel}>
+              <Tooltip title={foxI18n.backgroundPositionXLabel}>
                 <Input
                   value={backgroundPositionX}
-                  placeholder={foxpageI18n.x}
+                  placeholder={foxI18n.x}
                   addonAfter="px"
                   onChange={(e: any) => {
                     onChange('backgroundPositionX', e.target.value);
                   }}
-                  onBlur={(e: any) => {
-                    onApplyState('backgroundPositionX', e.target.value);
+                  onBlur={() => {
+                    onApplyState();
                   }}
                 />
               </Tooltip>
             </Col>
             <Col sm={9}>
-              <Tooltip title={foxpageI18n.backgroundPositionYLabel}>
+              <Tooltip title={foxI18n.backgroundPositionYLabel}>
                 <Input
                   style={{ marginLeft: '3%' }}
                   value={backgroundPositionY}
-                  placeholder={foxpageI18n.x}
+                  placeholder={foxI18n.x}
                   addonAfter="px"
                   onChange={(e: any) => {
                     onChange('backgroundPositionY', e.target.value);
                   }}
-                  onBlur={(e: any) => {
-                    onApplyState('backgroundPositionY', e.target.value);
+                  onBlur={() => {
+                    onApplyState();
                   }}
                 />
               </Tooltip>

@@ -3,12 +3,13 @@ import 'reflect-metadata';
 import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+import { UserBase } from 'src/types/user-types';
 
 import { Application, StoreGoods } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD } from '../../../config/constant';
-import { Creator, FoxCtx, ResData } from '../../types/index-types';
+import { FoxCtx, ResData } from '../../types/index-types';
 import { GetFileListReq, GetPageTemplateListRes } from '../../types/validates/store-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
@@ -21,7 +22,7 @@ interface GoodsWithAppInfo extends StoreGoods {
     creator?: string;
   };
   application?: Record<string, any>;
-  creator: Creator;
+  creator: UserBase;
 }
 
 @JsonController('stores')

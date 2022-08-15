@@ -42,7 +42,9 @@ export class GetFileList extends BaseController {
         this.service.store.goods.getAppFileStatus(params.applicationId, params.ids),
       ]);
 
+      const userIds = _.map(fileList, 'creator');
       const goodsStatusObject: Record<string, StoreFileStatus> = _.keyBy(goodsStatusList, 'id');
+      const userBaseObject = await this.service.user.getUserBaseObjectByIds(userIds);
 
       let fileWithOnlineList: FileWithOnline[] = [];
       fileList.forEach((file) => {
@@ -50,9 +52,10 @@ export class GetFileList extends BaseController {
           Object.assign(
             {
               online: goodsStatusObject?.[file.id]?.status ? true : false,
+              creator: userBaseObject[file.creator] || {},
             },
-            file,
-          ),
+            _.omit(file, 'creator'),
+          ) as FileWithOnline,
         );
       });
 

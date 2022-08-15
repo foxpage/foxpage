@@ -3,20 +3,28 @@ import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
 import { DeleteOutlined, EditOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Divider, Popconfirm, Spin, Table } from 'antd';
+import { Button, Popconfirm, Table as AntTable } from 'antd';
+import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/teams/list';
-import { Content, StyledLayout } from '@/pages/components';
-import GlobalContext from '@/pages/GlobalContext';
-import { Team } from '@/types/team';
-import periodFormat from '@/utils/period-format';
+import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
+import { WIDTH_DEFAULT } from '@/constants/global';
+import { GlobalContext } from '@/pages/system';
+import { TeamEntity } from '@/types/team';
+import { periodFormat } from '@/utils/period-format';
 
 import EditDrawer from './components/EditDrawer';
 import MemberManagement from './components/MemberManagement';
 
+const Table = styled(AntTable)`
+  .ant-table-pagination.ant-pagination {
+    margin: 36px 0 0;
+  }
+`;
+
 const mapStateToProps = (store: RootState) => ({
-  organizationId: store.system.organizationId,
+  organizationId: store.system.user.organizationId,
   fetching: store.teams.list.fetching,
   list: store.teams.list.list,
   pageInfo: store.teams.list.pageInfo,
@@ -25,9 +33,9 @@ const mapStateToProps = (store: RootState) => ({
 const mapDispatchToProps = {
   clearAll: ACTIONS.clearAll,
   fetchTeamList: ACTIONS.fetchTeamList,
-  openDrawer: ACTIONS.openDrawer,
   deleteTeam: ACTIONS.deleteTeam,
-  updateUserManagementDrawerOpenStatus: ACTIONS.updateUserManagementDrawerOpenStatus,
+  openDrawer: ACTIONS.openDrawer,
+  openUserManagementDrawer: ACTIONS.openUserManagementDrawer,
 };
 
 type TeamListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -39,16 +47,17 @@ const Main: React.FC<TeamListType> = (props) => {
     list,
     pageInfo,
     fetchTeamList,
-    openDrawer,
     deleteTeam,
-    updateUserManagementDrawerOpenStatus,
+    openDrawer,
+    openUserManagementDrawer,
     clearAll,
   } = props;
 
-  // get multi-language
+  // i18n
   const { locale } = useContext(GlobalContext);
   const { global, team } = locale.business;
 
+  // go back to login page if organization id undefined
   const history = useHistory();
 
   if (!organizationId) {
@@ -68,7 +77,7 @@ const Main: React.FC<TeamListType> = (props) => {
     };
   }, [fetchTeamList, organizationId]);
 
-  const columns = [
+  const columns: any = [
     {
       title: global.nameLabel,
       dataIndex: 'name',
@@ -86,63 +95,76 @@ const Main: React.FC<TeamListType> = (props) => {
     {
       title: global.actions,
       dataIndex: 'updateTime',
-      width: 160,
-      render: (_text: string, record: Team) => {
-        return (
-          <React.Fragment>
-            <Button
-              type="default"
-              size="small"
-              shape="circle"
-              title={team.userManagement}
-              onClick={() => updateUserManagementDrawerOpenStatus(true, record)}>
-              <TeamOutlined />
-            </Button>
-            <Divider type="vertical" />
-            <Button
-              type="default"
-              size="small"
-              shape="circle"
-              title={global.edit}
-              onClick={() => openDrawer(record)}>
-              <EditOutlined />
-            </Button>
-            <Divider type="vertical" />
-            <Popconfirm
-              title={`${global.deleteMsg} ${record.name}?`}
-              onConfirm={() => {
-                deleteTeam(organizationId, record);
-              }}
-              okText={global.yes}
-              cancelText={global.no}>
-              <Button size="small" shape="circle" icon={<DeleteOutlined />} />
-            </Popconfirm>
-          </React.Fragment>
-        );
-      },
+      width: 130,
+      render: (_text: string, record: TeamEntity) => (
+        <React.Fragment>
+          <Button
+            type="default"
+            size="small"
+            shape="circle"
+            title={team.userManagement}
+            onClick={() => openUserManagementDrawer(true, record)}>
+            <TeamOutlined />
+          </Button>
+          <Button
+            type="default"
+            size="small"
+            shape="circle"
+            title={global.edit}
+            onClick={() => openDrawer(true, record)}
+            style={{ marginLeft: 8 }}>
+            <EditOutlined />
+          </Button>
+          <Popconfirm
+            title={`${global.deleteMsg} ${record.name}?`}
+            onConfirm={() => {
+              deleteTeam(organizationId, record);
+            }}
+            okText={global.yes}
+            cancelText={global.no}>
+            <Button size="small" shape="circle" icon={<DeleteOutlined />} style={{ marginLeft: 8 }} />
+          </Popconfirm>
+        </React.Fragment>
+      ),
     },
   ];
 
   return (
-    <Spin spinning={fetching}>
-      <StyledLayout>
-        <Content>
+    <>
+      <Content>
+        <FoxPageContent
+          breadcrumb={
+            <FoxPageBreadcrumb
+              breadCrumb={[
+                {
+                  name: global.team,
+                },
+              ]}
+            />
+          }
+          style={{ maxWidth: WIDTH_DEFAULT, margin: '0 auto', overflow: 'unset' }}>
           <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               type="primary"
               onClick={() => {
-                openDrawer();
+                openDrawer(true);
               }}>
               <PlusOutlined /> {team.add}
             </Button>
           </div>
           <Table
             rowKey="id"
-            dataSource={list}
+            loading={fetching}
             columns={columns}
+            dataSource={list}
             pagination={
               pageInfo.total > pageInfo.size
-                ? { current: pageInfo.page, pageSize: pageInfo.size, total: pageInfo.total }
+                ? {
+                    position: ['bottomCenter'],
+                    current: pageInfo.page,
+                    pageSize: pageInfo.size,
+                    total: pageInfo.total,
+                  }
                 : false
             }
             onChange={(pagination) => {
@@ -153,11 +175,11 @@ const Main: React.FC<TeamListType> = (props) => {
               });
             }}
           />
-        </Content>
-      </StyledLayout>
-      <EditDrawer organizationId={organizationId} />
+        </FoxPageContent>
+      </Content>
+      <EditDrawer />
       <MemberManagement organizationId={organizationId} />
-    </Spin>
+    </>
   );
 };
 

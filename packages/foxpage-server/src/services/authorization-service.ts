@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { FoxCtx } from 'src/types/index-types';
 
 import { Authorize } from '@foxpage/foxpage-server-types';
@@ -245,5 +246,47 @@ export class AuthService extends BaseService<Authorize> {
     }
 
     return false;
+  }
+
+  /**
+   * Get auth target relation ids
+   * @param type 
+   * @param targetIds 
+   * @returns 
+   */
+  async getTargetRelation(type: string, targetIds:string[]): Promise<Record<string, any>> {
+    let targetRelation: Record<string, any> = {};
+    if (type === TYPE.CONTENT) {
+      const contentList = await Service.content.list.getDetailByIds(targetIds);
+      const fileTargetRelation = await this.getTargetRelation(TYPE.FILE, _.map(contentList, 'fileId'));
+      contentList.map(content => {
+        targetRelation[content.id] = Object.assign(
+          { contentId: content.id }, 
+          fileTargetRelation[content.fileId] ||{}
+        );
+      });
+    } else if (type === TYPE.FILE) {
+      const fileList = await Service.file.list.getDetailByIds(targetIds);
+      const folderTargetRelation = await this.getTargetRelation(TYPE.FOLDER, _.map(fileList, 'folderId'));
+      fileList.map(file => { 
+        targetRelation[file.id] = Object.assign(
+          { fileId: file.id }, 
+          folderTargetRelation[file.folderId] || {}
+        );
+      });
+    } else if (type === TYPE.FOLDER) {
+      const folderList = await Service.folder.list.getDetailByIds(targetIds);
+      folderList.map(folder => {
+        targetRelation[folder.id] = {};
+        (folder.tags || []).forEach(tag => {
+          if (tag.type === TYPE.PROJECT_FOLDER) {
+            targetRelation[folder.id].projectId = folder.id;
+            targetRelation[folder.id].applicationId = folder.applicationId;
+          }
+        });
+      });
+    }
+
+    return targetRelation;
   }
 }

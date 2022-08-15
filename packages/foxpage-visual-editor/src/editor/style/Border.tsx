@@ -5,10 +5,10 @@ import { Input, Select, Tooltip } from 'antd';
 import { EditContext } from '@foxpage/foxpage-component-editor-context';
 import { ColorPicker } from '@foxpage/foxpage-component-editor-widgets';
 
-import viewerContext from '../../viewerContext';
+import { FoxContext } from '@/context/index';
 
 import { Col, colorPickerStyle, Label, Row } from './Common';
-import { BorderType } from './index.d';
+import { BorderType } from './interface';
 
 const { Option } = Select;
 
@@ -18,20 +18,20 @@ const Border: React.FC<BorderType> = (props) => {
     borderRadius,
     borderStyle,
     borderWidth,
-    onChange = (_key: string, _val: string) => {},
-    onApplyState = (_key: string, _val: string) => {},
+    onChange = (_key: string, _val: string, _autoSave?: boolean) => {},
+    onApplyState = () => {},
   } = props;
-  const { foxpageI18n } = useContext(viewerContext);
+  const { foxI18n } = useContext(FoxContext);
   return (
     <React.Fragment>
       <Row>
         <Col sm={6}>
-          <Tooltip title={foxpageI18n.borderRadius}>
-            <Label>{foxpageI18n.radius}：</Label>
+          <Tooltip title={foxI18n.borderRadius}>
+            <Label>{foxI18n.radius}: </Label>
           </Tooltip>
         </Col>
         <Col sm={18}>
-          <Tooltip title={foxpageI18n.borderRadius}>
+          <Tooltip title={foxI18n.borderRadius}>
             <Input
               size="small"
               value={borderRadius?.replace('px', '')}
@@ -39,8 +39,8 @@ const Border: React.FC<BorderType> = (props) => {
               onChange={(e: any) => {
                 onChange('borderRadius', `${e.target.value}px`);
               }}
-              onBlur={(e: any) => {
-                onApplyState('borderRadius', `${e.target.value}px`);
+              onBlur={() => {
+                onApplyState();
               }}
             />
           </Tooltip>
@@ -49,8 +49,8 @@ const Border: React.FC<BorderType> = (props) => {
 
       <Row>
         <Col sm={6}>
-          <Tooltip title={foxpageI18n.borderColor}>
-            <Label>{foxpageI18n.color}：</Label>
+          <Tooltip title={foxI18n.borderColor}>
+            <Label>{foxI18n.color}: </Label>
           </Tooltip>
         </Col>
 
@@ -59,11 +59,9 @@ const Border: React.FC<BorderType> = (props) => {
             value={{
               componentProps: { borderColor },
               propChange: (_prop: string, val: any) => {
-                onChange('borderColor', val);
+                onChange('borderColor', val, true);
               },
-              applyState: (_e: any) => {
-                onApplyState('borderColor', borderColor as string);
-              },
+              applyState: () => {},
               propsChange: () => {},
               onBindVariable: () => {},
             }}>
@@ -73,8 +71,8 @@ const Border: React.FC<BorderType> = (props) => {
       </Row>
       <Row>
         <Col sm={6}>
-          <Tooltip title={foxpageI18n.borderStyle}>
-            <Label>{foxpageI18n.style}：</Label>
+          <Tooltip title={foxI18n.borderStyle}>
+            <Label>{foxI18n.style}: </Label>
           </Tooltip>
         </Col>
         <Col sm={18}>
@@ -83,24 +81,23 @@ const Border: React.FC<BorderType> = (props) => {
             value={borderStyle}
             style={{ width: '100%' }}
             onChange={(value: any) => {
-              onChange('borderStyle', value);
-              onApplyState('borderStyle', value);
+              onChange('borderStyle', value, true);
             }}>
-            <Option value="none">{foxpageI18n.borderStyleNone}</Option>
-            <Option value="solid">{foxpageI18n.borderStyleSolid}</Option>
-            <Option value="dashed">{foxpageI18n.borderStyleDashed}</Option>
-            <Option value="dotted">{foxpageI18n.borderStyleDotted}</Option>
+            <Option value="none">{foxI18n.borderStyleNone}</Option>
+            <Option value="solid">{foxI18n.borderStyleSolid}</Option>
+            <Option value="dashed">{foxI18n.borderStyleDashed}</Option>
+            <Option value="dotted">{foxI18n.borderStyleDotted}</Option>
           </Select>
         </Col>
       </Row>
       <Row>
         <Col sm={6}>
-          <Tooltip title={foxpageI18n.borderWidth}>
-            <Label>{foxpageI18n.width}：</Label>
+          <Tooltip title={foxI18n.borderWidth}>
+            <Label>{foxI18n.width}: </Label>
           </Tooltip>
         </Col>
         <Col sm={18}>
-          <Tooltip title={foxpageI18n.borderWidth}>
+          <Tooltip title={foxI18n.borderWidth}>
             <Input
               size="small"
               value={borderWidth?.replace('px', '')}
@@ -108,8 +105,8 @@ const Border: React.FC<BorderType> = (props) => {
               onChange={(e: any) => {
                 onChange('borderWidth', `${e.target.value}px`);
               }}
-              onBlur={(e: any) => {
-                onApplyState('borderWidth', `${e.target.value}px`);
+              onBlur={() => {
+                onApplyState();
               }}
             />
           </Tooltip>

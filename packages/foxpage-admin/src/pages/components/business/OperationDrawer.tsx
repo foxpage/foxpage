@@ -1,12 +1,11 @@
-import React, { ReactChild, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 import { CloseOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Drawer as AntdDrawer, DrawerProps } from 'antd';
 import styled from 'styled-components';
 
+import { ScrollBar } from '@/components/common/styles';
 import shortId from '@/utils/short-id';
-
-import ScrollBar from './ScrollBar';
 
 const Drawer = styled(AntdDrawer)`
   .ant-drawer-wrapper-body {
@@ -51,14 +50,13 @@ const Content = styled(ScrollBar)`
 `;
 
 const Close = styled(CloseOutlined)`
-  display: inline-flex !important;
+  display: inline-flex;
   float: left;
   color: #666;
   position: relative;
   z-index: 1;
   height: 48px;
   width: 48px;
-  display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
@@ -106,32 +104,26 @@ const ExpendBtn = styled.div`
 
 interface OperationDrawerProps extends DrawerProps {
   open?: boolean;
-  destroyOnClose?: boolean;
   canExpend?: boolean;
-  maskClosable?: boolean;
-  anchor?: 'left' | 'right' | 'top' | 'bottom';
-  title?: string;
-  children: ReactChild;
-  actions?: ReactChild | null;
-  width?: number;
-  onClose?: (e: any) => void;
+  children: ReactNode;
+  actions?: ReactNode | null;
 }
 
-const OperationDrawer: React.FC<OperationDrawerProps> = props => {
+const OperationDrawer: React.FC<OperationDrawerProps> = (props) => {
   const [key] = useState(shortId());
   const [visible, setVisible] = useState(false);
   const [expendScreen, setExpendScreen] = useState(false);
   const {
-    anchor,
+    actions = null,
+    canExpend = false,
     children,
-    open = false,
-    onClose,
-    title,
-    actions,
-    width,
-    canExpend,
-    maskClosable,
     destroyOnClose,
+    maskClosable,
+    open = false,
+    placement = 'right',
+    title,
+    width = 640,
+    onClose,
     ...otherProps
   } = props;
 
@@ -149,21 +141,26 @@ const OperationDrawer: React.FC<OperationDrawerProps> = props => {
     setExpendScreen(!expendScreen);
   };
 
+  const handleClose = (e) => {
+    if (typeof onClose === 'function') {
+      onClose(e);
+    }
+  };
+
   return (
     <Drawer
       key={key}
-      placement={anchor}
+      placement={placement}
       closable={false}
       maskClosable={maskClosable}
       width={expendScreen ? '80%' : width}
-      onClose={onClose}
+      onClose={handleClose}
       visible={visible}
       destroyOnClose={destroyOnClose}
-      {...otherProps}
-    >
+      {...otherProps}>
       <Container data-id={key}>
         <TitBar>
-          <Close color="inherit" onClick={onClose} />
+          <Close color="inherit" onClick={handleClose} />
           {canExpend && (
             <ExpendContainer>
               <Line />
@@ -183,19 +180,6 @@ const OperationDrawer: React.FC<OperationDrawerProps> = props => {
       </Container>
     </Drawer>
   );
-};
-
-OperationDrawer.defaultProps = {
-  open: false,
-  anchor: 'right',
-  title: '',
-  actions: null,
-  children: '',
-  width: 640,
-  canExpend: false,
-  maskClosable: true,
-  destroyOnClose: false,
-  onClose: () => {},
 };
 
 export default OperationDrawer;

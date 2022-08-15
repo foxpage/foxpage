@@ -66,7 +66,7 @@ export class FileModel extends BaseModel<File> {
 
     return this.model
       .find(searchParams as mongoose.FilterQuery<File>, '-_id')
-      .sort(params.sort || { createTime: 1 })
+      .sort(params.sort || { _id: -1 })
       .skip(from)
       .limit(to - from)
       .lean();

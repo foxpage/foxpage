@@ -6,11 +6,10 @@ import { Button, message, Modal as AntdModal, Popconfirm, Select, Spin, Table } 
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
-import { fetchOrganizationUsers } from '@/actions/group/user';
 import * as ACTIONS from '@/actions/teams/list';
-import GlobalContext from '@/pages/GlobalContext';
-import { OrganizationUser } from '@/types/organization';
-import periodFormat from '@/utils/period-format';
+import { GlobalContext } from '@/pages/system/index';
+import { TeamMemberEntity } from '@/types/team';
+import { periodFormat } from '@/utils/period-format';
 
 const { Option } = Select;
 const PAGE_SIZE = 10000;
@@ -26,20 +25,20 @@ const Modal = styled(AntdModal)`
 `;
 
 const mapStateToProps = (store: RootState) => ({
-  users: store.group.user.users,
-  managementTeam: store.teams.list.managementTeam,
-  userManagementDrawerOpen: store.teams.list.userManagementDrawerOpen,
   pageInfo: store.teams.list.pageInfo,
+  managementTeam: store.teams.list.managementTeam,
   managementTeamLoading: store.teams.list.managementTeamLoading,
+  userManagementDrawerOpen: store.teams.list.userManagementDrawerOpen,
+  users: store.teams.list.organizationUsers,
 });
 
 const mapDispatchToProps = {
-  updateUserManagementDrawerOpenStatus: ACTIONS.updateUserManagementDrawerOpenStatus,
-  fetchOrganizationUsers: fetchOrganizationUsers,
   fetchTeamList: ACTIONS.fetchTeamList,
+  fetchTeamUsers: ACTIONS.fetchTeamUsers,
+  fetchOrganizationUsers: ACTIONS.fetchOrganizationUsers,
   deleteTeamUsers: ACTIONS.deleteTeamUsers,
   addTeamUsers: ACTIONS.addTeamUsers,
-  fetchTeamUsers: ACTIONS.fetchTeamUsers,
+  openUserManagementDrawer: ACTIONS.openUserManagementDrawer,
 };
 
 interface CProps {
@@ -56,14 +55,16 @@ const MemberManagement: React.FC<MemberManagementType> = (props) => {
     userManagementDrawerOpen,
     pageInfo,
     managementTeamLoading,
-    updateUserManagementDrawerOpenStatus,
-    fetchOrganizationUsers,
     fetchTeamList,
-    deleteTeamUsers,
-    addTeamUsers,
     fetchTeamUsers,
+    fetchOrganizationUsers,
+    addTeamUsers,
+    deleteTeamUsers,
+    openUserManagementDrawer,
   } = props;
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+
+  // i18n
   const { locale } = useContext(GlobalContext);
   const { global, team } = locale.business;
 
@@ -82,7 +83,7 @@ const MemberManagement: React.FC<MemberManagementType> = (props) => {
   };
 
   const handleClose = () => {
-    updateUserManagementDrawerOpenStatus(false);
+    openUserManagementDrawer(false);
     fetchTeamList({ organizationId, page: pageInfo.page, size: pageInfo.size });
   };
 
@@ -92,13 +93,15 @@ const MemberManagement: React.FC<MemberManagementType> = (props) => {
       return;
     }
 
-    addTeamUsers({
-      teamId: managementTeam?.id,
-      users: users?.filter((user) => selectedUserIds.includes(user.userId)),
-      onSuccess: () => {
+    addTeamUsers(
+      {
+        teamId: managementTeam?.id,
+        users: users?.filter((user) => selectedUserIds.includes(user.userId)),
+      },
+      () => {
         setSelectedUserIds([]);
       },
-    });
+    );
   };
 
   return (
@@ -174,7 +177,7 @@ const MemberManagement: React.FC<MemberManagementType> = (props) => {
               },
             },
           ]}
-          rowKey={(record: OrganizationUser): string => record.userId.toString()}
+          rowKey={(record: TeamMemberEntity): string => record.userId.toString()}
           dataSource={managementTeam?.members || []}
           pagination={false}
         />

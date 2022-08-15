@@ -59,6 +59,48 @@ export class GetAppComponentListByNameVersion extends BaseController {
         type: TYPE.COMPONENT,
       });
 
+      let contentPackags: Component[] = [];
+      for (const content of <any[]>contentList) {
+        if (params.type && params.type.length > 0 && params.type.indexOf(content.package?.type) === -1) {
+          continue;
+        }
+        
+        contentPackags.push(content?.package as Component);
+      }
+      
+      let componentIds = this.service.content.component.getComponentResourceIds(contentPackags);
+      const dependenciesIdVersions = this.service.component.getComponentEditorAndDependends(contentPackags);
+      const dependencies = await this.service.component.getComponentDetailByIdVersion(dependenciesIdVersions);
+      const dependenciesList = _.toArray(dependencies);
+      const dependComponentIds = this.service.content.component.getComponentResourceIds(
+        _.map(dependenciesList, 'content'),
+      );
+      componentIds = componentIds.concat(dependComponentIds);
+
+      const [resourceObject, contentAllParents] = await Promise.all([
+        this.service.content.resource.getResourceContentByIds(componentIds),
+        this.service.content.list.getContentAllParents(componentIds),
+      ]);
+
+      const [appResource, fileContentObject] = await Promise.all([
+        this.service.application.getAppResourceFromContent(contentAllParents),
+        this.service.file.list.getContentFileByIds(_.map(dependenciesList, 'contentId')),
+      ]);
+
+      const contentResource = this.service.content.info.getContentResourceTypeInfo(
+        appResource,
+        contentAllParents,
+      );
+
+      dependenciesList.forEach((depend) => {
+        depend.content.resource = this.service.version.component.assignResourceToComponent(
+          depend?.content?.resource || {},
+          resourceObject,
+          { contentResource },
+        );
+      });
+      const dependenceObject = _.keyBy(dependenciesList, 'contentId');
+
       let components: Component[] = [];
       for (const content of <any[]>contentList) {
         if (!content.package) {
@@ -70,76 +112,36 @@ export class GetAppComponentListByNameVersion extends BaseController {
           continue;
         }
 
-        let componentIds = this.service.content.component.getComponentResourceIds(
-          _.map(contentList, (content) => content?.package as Component),
-        );
-
-        const dependenciesIdVersions = this.service.component.getComponentEditorAndDependends([
-          content?.package as Component,
-        ]);
-
-        const dependencies = await this.service.component.getComponentDetailByIdVersion(
-          dependenciesIdVersions,
-        );
-
-        const dependComponentIds = this.service.content.component.getComponentResourceIds(
-          _.map(_.toArray(dependencies), 'content'),
-        );
-        componentIds = componentIds.concat(dependComponentIds);
-
         // The default setting, you need to replace it from other returned data later
         content.package.isLive = true;
         content.package.components = [];
-
-        const [resourceObject, contentAllParents] = await Promise.all([
-          this.service.content.resource.getResourceContentByIds(componentIds),
-          this.service.content.list.getContentAllParents(componentIds),
-        ]);
-
-        const appResource = await this.service.application.getAppResourceFromContent(contentAllParents);
-        const contentResource = this.service.content.info.getContentResourceTypeInfo(
-          appResource,
-          contentAllParents,
-        );
-
         content.package.resource = this.service.version.component.assignResourceToComponent(
           content?.package?.resource || {},
           resourceObject,
           { contentResource },
         );
 
-        // Attach the resource details of the dependent component to the component
-        const dependenciesList = _.toArray(dependencies);
-        if (dependenciesList.length > 0) {
-          const fileContentObject = await this.service.file.list.getContentFileByIds(
-            _.map(dependenciesList, 'contentId'),
-          );
+        const editorDependences = _.concat(
+          content.package.resource?.['editor-entry'] || [],
+          content.package.resource?.dependencies || [],
+        );
 
+        // Attach the resource details of the dependent component to the component
+        if (editorDependences.length > 0) {
           // Append the name of the dependency to dependencies
           this.service.component.addNameToEditorAndDepends([content.package], fileContentObject);
-
-          dependenciesList.forEach((depend) => {
-            depend.content.resource = this.service.version.component.assignResourceToComponent(
-              depend?.content?.resource || {},
-              resourceObject,
-              { contentResource },
+          for (const editorDepend of editorDependences) {
+            content.package.components.push(
+              Object.assign(
+                {
+                  name: fileContentObject?.[editorDepend.id]?.name || '',
+                  id: editorDepend.id,
+                  versionId:  dependenceObject[editorDepend.id]?.id || '',
+                  version:  dependenceObject[editorDepend.id]?.version || '',
+                },
+                dependenceObject[editorDepend.id]?.content || {},
+              ) as Component,
             );
-          });
-
-          for (const depend of dependenciesList) {
-            if (params.type?.indexOf(fileContentObject?.[depend.contentId]?.type) !== -1) {
-              content.package.components.push(
-                Object.assign(
-                  {
-                    name: fileContentObject?.[depend.contentId]?.name || '',
-                    id: depend.contentId,
-                    versionId: depend.id,
-                    version: depend.version || '',
-                  },
-                  depend?.content || {},
-                ) as Component,
-              );
-            }
           }
         }
 

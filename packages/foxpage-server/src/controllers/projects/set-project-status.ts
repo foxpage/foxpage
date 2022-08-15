@@ -63,7 +63,7 @@ export class SetFolderStatus extends BaseController {
       allChildren.folders.push(folderDetail);
 
       // Set status, currently only allow deletion
-      this.service.folder.info.batchSetFolderDeleteStatus(allChildren.folders, { ctx });
+      this.service.folder.info.batchSetFolderDeleteStatus(allChildren.folders, { ctx, type: TYPE.PROJECT });
       this.service.file.info.batchSetFileDeleteStatus(allChildren.files, { ctx });
       this.service.content.info.batchSetContentDeleteStatus(allChildren.contents, { ctx });
       this.service.version.info.batchSetVersionDeleteStatus(allChildren.versions, { ctx });

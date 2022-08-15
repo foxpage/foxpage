@@ -6,3 +6,5 @@ export enum EditorInputEnum {
   Object = 'object',
   HtmlString = 'html-string',
 }
+
+export const VariableTypes = Object.freeze(['data.static', 'data.function.call']);

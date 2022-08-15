@@ -118,7 +118,6 @@ lib/
 /yarn-error.json
 /yarn.lock
 /packages/foxpage-server/nodemon.json
-/packages/foxpage-server/src/third-parties/login/trip-login.ts
 /packages/foxpage-server/static/swagger/swagger.json
 /packages/foxpage-server.npmrc
 /packages/foxpage-server/src/controllers/users/keys.ts

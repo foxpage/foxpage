@@ -1,3 +1,3 @@
-import Projects from './Projects';
-
-export default Projects;
+export * from './mine';
+export * from './recycleBin';
+export * from './team';

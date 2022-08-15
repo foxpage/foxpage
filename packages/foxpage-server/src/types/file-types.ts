@@ -1,6 +1,7 @@
 import {
   AppFolderTypes,
   AppResource,
+  Content,
   ContentVersion,
   File,
   FileTypes,
@@ -11,6 +12,7 @@ import {
 import { AppBaseInfo } from './app-types';
 import { ContentInfo } from './content-types';
 import { Creator, FoxCtx, Search } from './index-types';
+import { UserBase } from './user-types';
 
 export type FolderInfo = Exclude<Folder, 'creator' | 'applicationId'> & { creator: Creator } & {
   application: AppBaseInfo;
@@ -33,11 +35,16 @@ export type FileContent = File & { content?: any; contentId?: string };
 export type FileContentInfo = File & { contents?: ContentInfo[] };
 export type FileFolderContentChildren = { folders: FolderChildren[]; files: FileContent[] };
 export type FolderResourceGroup = Folder & { groups: AppResource };
+export type FileContents = File & { contents: Content[] };
 export type FileAssoc = FileUserInfo & {
   folderName: string;
   content: ContentVersion;
   contentId?: string;
   online?: boolean;
+  version?: {
+    base?: string;
+    live?: string;
+  }
 };
 export type FilePathSearch = FolderPathSearch & { fileName: string };
 export type FilePageSearch = Exclude<FolderPageSearch, 'parentFolderId'> & {
@@ -46,7 +53,7 @@ export type FilePageSearch = Exclude<FolderPageSearch, 'parentFolderId'> & {
   sort?: Record<string, number>;
 };
 
-export type FileWithOnline = File & { online: boolean };
+export type FileWithOnline = _.Omit<File, 'creator'> & { online: boolean, creator: UserBase};
 
 export type ResourceFolderChildren = Folder & {
   newVersion?: NewResourceDetail;
@@ -196,6 +203,8 @@ export interface AppTypeFileParams {
   applicationId: string;
   type: string;
   deleted: boolean;
+  scope?: string;
+  scopeId?: string;
   search?: string;
 }
 

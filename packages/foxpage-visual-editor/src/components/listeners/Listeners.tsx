@@ -6,6 +6,7 @@ import { EditContext } from '@foxpage/foxpage-component-editor-context';
 
 import { Listener } from './Listener';
 
+// @ts-ignore
 export class Listeners extends Component<any, any> {
   static contextType = EditContext;
 
@@ -28,7 +29,7 @@ export class Listeners extends Component<any, any> {
     }
   }
 
-  handleAddAction = event => {
+  handleAddAction = (event) => {
     const { componentProps, propChange } = this.context;
     const listensers = componentProps['__listeners'] || {};
     const listenser = listensers[event] || [];
@@ -105,27 +106,27 @@ export class Listeners extends Component<any, any> {
       }
     }
 
+    if (noListener) {
+      return null;
+    }
+
     return (
       <>
-        {!noListener && (
-          <>
-            {Object.keys(listensers).map((event, idx) => (
-              <Listener
-                event={event}
-                idx={idx}
-                actions={listensers[event]}
-                key={event}
-                changeActionType={this.handleChangeActionType}
-                addAction={this.handleAddAction}
-                removeAction={this.handleRemoveAction}
-                addActionComponentCall={this.handleAddActionComponentCall}
-                changeTarget={this.handleChangeTarget}
-                removeTarget={this.handleRemoveTarget}
-                applyTargetPropsChange={this.handleTargetApplyPropsChange}
-              />
-            ))}
-          </>
-        )}
+        {Object.keys(listensers).map((event, idx) => (
+          <Listener
+            event={event}
+            idx={idx}
+            actions={listensers[event]}
+            key={event}
+            changeActionType={this.handleChangeActionType}
+            addAction={this.handleAddAction}
+            removeAction={this.handleRemoveAction}
+            addActionComponentCall={this.handleAddActionComponentCall}
+            changeTarget={this.handleChangeTarget}
+            removeTarget={this.handleRemoveTarget}
+            applyTargetPropsChange={this.handleTargetApplyPropsChange}
+          />
+        ))}
       </>
     );
   }

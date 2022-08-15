@@ -7,12 +7,20 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Log } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG } from '../../../config/constant';
 import { FoxCtx, PageData, ResData } from '../../types/index-types';
 import { DynamicListRes, WorkspaceDynamicListReq } from '../../types/validates/log-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
+import { UserBase } from '../../../src/types/user-types';
 
+type DynamicItem = Log & {
+  dataType: {
+    scope: string;
+    action: string;
+    type: string;
+  };
+  creator: UserBase;
+};
 @JsonController('workspaces')
 export class GetWorkspaceDynamicList extends BaseController {
   constructor() {
@@ -33,10 +41,10 @@ export class GetWorkspaceDynamicList extends BaseController {
     operationId: 'get-workspace-dynamic-list',
   })
   @ResponseSchema(DynamicListRes)
-  async index (
+  async index(
     @Ctx() ctx: FoxCtx,
     @QueryParams() params: WorkspaceDynamicListReq,
-  ): Promise<ResData<PageData<Log>>> {
+  ): Promise<ResData<PageData<DynamicItem>>> {
     try {
       const creator = ctx.userInfo.id;
       if (!creator) {
@@ -45,18 +53,21 @@ export class GetWorkspaceDynamicList extends BaseController {
 
       const orgDetail = await this.service.org.getDetail({
         id: params.organizationId,
-        members: { $elemMatch: { userId: ctx.userInfo.id, status: true } }
+        members: { $elemMatch: { userId: ctx.userInfo.id, status: true } },
       });
 
       if (!orgDetail || _.isEmpty(orgDetail)) {
-        return Response.success({
-          pageInfo: {
-            page: params.page,
-            size: params.size,
-            total: 0,
+        return Response.success(
+          {
+            pageInfo: {
+              page: params.page,
+              size: params.size,
+              total: 0,
+            },
+            data: [],
           },
-          data: [],
-        }, 1140202);
+          1140202,
+        );
       }
 
       this.service.folder.info.setPageSize(params);
@@ -68,30 +79,65 @@ export class GetWorkspaceDynamicList extends BaseController {
       }
 
       const operationResult = await this.service.log.getUserOperationList(
-        Object.assign({ operator: creator, organizationId: orgDetail.id, action: LOG.REQUEST }, params),
+        Object.assign({ operator: creator, organizationId: orgDetail.id }, params),
       );
 
       // Get operation data base info, include app name
-      let dataIds: string[] = [];
+      let versionIds: string[] = [];
+      let contentIds: string[] = [];
+      let fileIds: string[] = [];
+      let folderIds: string[] = [];
       let applicationIds: string[] = [];
+      let userIds: string[] = [];
       operationResult.list.forEach((data) => {
-        data.content?.id && dataIds.push(data.content.id);
-        data.content?.applicationId && applicationIds.push(data.content?.applicationId);
+        data.category?.versionId && versionIds.push(data.category.versionId);
+        data.category?.contentId && contentIds.push(data.category.contentId);
+        data.category?.fileId && fileIds.push(data.category.fileId);
+        data.category?.folderId && folderIds.push(data.category.folderId);
+        data.category?.applicationId && applicationIds.push(data.category?.applicationId);
+        userIds.push(data.operator);
       });
 
-      if (dataIds.length > 0) {
-        const [dataInfoObject, appObject] = await Promise.all([
-          this.service.log.getLogDataInfo(dataIds),
-          this.service.application.getDetailObjectByIds(_.uniq(applicationIds)),
-        ]);
+      const [
+        versionObject,
+        contentObject,
+        fileObject,
+        folderObject,
+        appObject,
+        userObject,
+      ] = await Promise.all([
+        this.service.version.info.getDetailObjectByIds(_.uniq(versionIds)),
+        this.service.content.info.getDetailObjectByIds(_.uniq(contentIds)),
+        this.service.file.info.getDetailObjectByIds(_.uniq(fileIds)),
+        this.service.folder.info.getDetailObjectByIds(_.uniq(folderIds)),
+        this.service.application.getDetailObjectByIds(_.uniq(applicationIds)),
+        this.service.user.getUserBaseObjectByIds(userIds),
+      ]);
 
-        operationResult.list.forEach((log) => {
-          log.content.name =
-            dataInfoObject[log.content.id]?.name || dataInfoObject[log.content.id]?.title || '';
-          log.content.dataLevel = this.service.log.checkDataIdType(log.content.id).type || '';
-          log.content.applicationName = appObject[<string>log.content?.applicationId]?.name || '';
-        });
-      }
+      let dynamicList: DynamicItem[] = [];
+      operationResult.list.forEach((log) => {
+        log.category.versionId &&
+          (log.category.version = versionObject[log.category.versionId]?.version || '');
+        log.category.contentId &&
+          (log.category.contentName = contentObject[log.category.contentId]?.title || '');
+        log.category.fileId && (log.category.fileName = fileObject[log.category.fileId]?.name || '');
+        log.category.folderId && (log.category.folderName = folderObject[log.category.folderId]?.name || '');
+        log.category.applicationId &&
+          (log.category.applicationName = appObject[log.category.applicationId]?.name || '');
+
+        const actionArr = log.action.split('_');
+        const actionTypeArr = log.actionType.split('_');
+        dynamicList.push(
+          Object.assign({}, log, {
+            dataType: {
+              scope: actionArr[0] || '',
+              type: actionTypeArr[1] || '',
+              action: actionTypeArr[0] || '',
+            },
+            creator: userObject[log.operator] || {},
+          }) as DynamicItem,
+        );
+      });
 
       return Response.success(
         {
@@ -100,7 +146,7 @@ export class GetWorkspaceDynamicList extends BaseController {
             size: params.size,
             total: operationResult.count,
           },
-          data: operationResult.list,
+          data: dynamicList,
         },
         1140201,
       );

@@ -30,7 +30,7 @@ export class FileInfoService extends BaseService<File> {
    * Single instance
    * @returns ContentInfoService
    */
-  public static getInstance (): FileInfoService {
+  public static getInstance(): FileInfoService {
     this._instance || (this._instance = new FileInfoService());
     return this._instance;
   }
@@ -41,7 +41,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {Partial<File>} params
    * @returns File
    */
-  create (params: Partial<File>, options: { ctx: FoxCtx }): File {
+  create(params: Partial<File>, options: { ctx: FoxCtx; actionType?: string }): File {
     const fileDetail: File = {
       id: params.id || generationId(PRE.FILE),
       applicationId: params.applicationId || '',
@@ -56,7 +56,15 @@ export class FileInfoService extends BaseService<File> {
 
     options.ctx.transactions.push(Model.file.addDetailQuery(fileDetail));
     options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.CREATE, fileDetail, { dataType: fileDetail.type }),
+      ...Service.log.addLogItem(LOG.CREATE, fileDetail, {
+        actionType: options.actionType || [LOG.CREATE, TYPE.FILE].join('_'),
+        category: {
+          type: TYPE.FILE,
+          fileId: fileDetail.id,
+          folderId: params.folderId || '',
+          applicationId: params.applicationId || '',
+        },
+      }),
     );
 
     return fileDetail;
@@ -67,9 +75,9 @@ export class FileInfoService extends BaseService<File> {
    * @param  {NewFileInfo} params
    * @returns Record
    */
-  async addFileDetail (
+  async addFileDetail(
     params: NewFileInfo,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number | (File & { contentId: string })>> {
     const newFileCheck = _.pick(params, ['applicationId', 'folderId', 'name', 'type', 'suffix']) as FileCheck;
     newFileCheck.deleted = false;
@@ -109,7 +117,17 @@ export class FileInfoService extends BaseService<File> {
     };
 
     options.ctx.transactions.push(Model.file.addDetailQuery(fileDetail));
-    options.ctx.operations.push(...Service.log.addLogItem(LOG.CREATE, fileDetail, { dataType: params.type }));
+    options.ctx.operations.push(
+      ...Service.log.addLogItem(LOG.CREATE, fileDetail, {
+        actionType: options.actionType || [LOG.CREATE, TYPE.FILE].join('_'),
+        category: {
+          type: TYPE.FILE,
+          fileId: fileDetail.id,
+          folderId: params.folderId || '',
+          applicationId: params.applicationId,
+        },
+      }),
+    );
 
     const fileContentDetail = Object.assign({}, fileDetail, { contentId: '' });
     // Create content details
@@ -130,9 +148,9 @@ export class FileInfoService extends BaseService<File> {
    * @param  {AppTypeFileUpdate} params
    * @returns Promise
    */
-  async updateFileDetail (
+  async updateFileDetail(
     params: AppTypeFileUpdate,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number>> {
     const fileDetail = await this.getDetailById(params.id);
     if (!fileDetail || fileDetail.deleted) {
@@ -167,7 +185,15 @@ export class FileInfoService extends BaseService<File> {
       // Record file update log
       if (params.tags && params.tags !== fileDetail.tags) {
         options.ctx.operations.push(
-          ...Service.log.addLogItem(LOG.FILE_TAG, fileDetail, { fileId: fileDetail.id }),
+          ...Service.log.addLogItem(LOG.FILE_TAG, fileDetail, {
+            actionType: options.actionType || [LOG.FILE_TAG, TYPE.FILE].join('_'),
+            category: {
+              type: TYPE.FILE,
+              fileId: fileDetail.id,
+              folderId: fileDetail.folderId,
+              applicationId: fileDetail.applicationId,
+            },
+          }),
         );
       }
     }
@@ -185,7 +211,10 @@ export class FileInfoService extends BaseService<File> {
 
     // Save logs
     options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.FILE_UPDATE, fileDetail, { dataType: fileDetail.type }),
+      ...Service.log.addLogItem(LOG.FILE_UPDATE, fileDetail, {
+        actionType: options.actionType || [LOG.UPDATE, TYPE.FILE].join('_'),
+        category: { type: TYPE.FILE, fileId: fileDetail.id, applicationId: fileDetail.applicationId },
+      }),
     );
 
     return { code: 0 };
@@ -197,7 +226,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateFileItem (id: string, params: Partial<File>, options: { ctx: FoxCtx }): void {
+  updateFileItem(id: string, params: Partial<File>, options: { ctx: FoxCtx }): void {
     options.ctx.transactions.push(Model.file.updateDetailQuery(id, params));
     options.ctx.operations.push(
       ...Service.log.addLogItem(LOG.FILE_UPDATE, Object.assign({ id }, params), { fileId: params.id }),
@@ -211,7 +240,10 @@ export class FileInfoService extends BaseService<File> {
    * @param  {TypeStatus} params
    * @returns Promise
    */
-  async setFileDeleteStatus (params: TypeStatus, options: { ctx: FoxCtx }): Promise<Record<string, number>> {
+  async setFileDeleteStatus(
+    params: TypeStatus,
+    options: { ctx: FoxCtx; actionType?: string },
+  ): Promise<Record<string, number>> {
     const fileDetail = await this.getDetailById(params.id);
     if (!fileDetail) {
       return { code: 1 }; // Invalid file information
@@ -238,9 +270,13 @@ export class FileInfoService extends BaseService<File> {
 
     // Save logs
     options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.FILE_REMOVE, [fileDetail], { dataType: fileDetail.type }),
+      ...Service.log.addLogItem(LOG.FILE_REMOVE, [fileDetail], {
+        actionType: options.actionType || [LOG.DELETE, TYPE.FILE].join('_'),
+        category: { type: TYPE.FILE, fileId: params.id, applicationId: fileDetail.applicationId },
+      }),
       ...Service.log.addLogItem(LOG.CONTENT_REMOVE, contentVersion?.contentList || [], {
-        dataType: fileDetail.type,
+        actionType: options.actionType || [LOG.DELETE, TYPE.CONTENT].join('_'),
+        category: { type: TYPE.CONTENT, fileId: params.id, applicationId: fileDetail.applicationId },
       }),
     );
 
@@ -252,10 +288,18 @@ export class FileInfoService extends BaseService<File> {
    * @param  {File[]} fileList
    * @returns void
    */
-  batchSetFileDeleteStatus (fileList: File[], options: { ctx: FoxCtx; status?: boolean }): void {
-    const status = options.status === false ? false : true;
+  batchSetFileDeleteStatus(
+    fileList: File[],
+    options: { ctx: FoxCtx; status?: boolean; actionType?: string },
+  ): void {
+    const status = !(options.status === false);
     options.ctx.transactions.push(this.setDeleteStatus(_.map(fileList, 'id'), status));
-    options.ctx.operations.push(...Service.log.addLogItem(LOG.FILE_REMOVE, fileList || []));
+    options.ctx.operations.push(
+      ...Service.log.addLogItem(LOG.FILE_REMOVE, fileList || [], {
+        actionType: options.actionType || [LOG.DELETE, TYPE.FILE].join('_'),
+        category: { type: TYPE.FILE },
+      }),
+    );
   }
 
   /**
@@ -263,7 +307,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {FileNameSearch} params
    * @returns {File[]} Promise
    */
-  async getFileIdByNames (params: FileNameSearch): Promise<File[]> {
+  async getFileIdByNames(params: FileNameSearch): Promise<File[]> {
     return Model.file.getDetailByNames(params);
   }
 
@@ -273,7 +317,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {boolean=false} createNew
    * @returns Promise
    */
-  async getFileDetailByNames (
+  async getFileDetailByNames(
     params: FilePathSearch,
     options: { ctx: FoxCtx; createNew?: boolean },
   ): Promise<Partial<File>> {
@@ -322,7 +366,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {File} params
    * @returns Promise
    */
-  createFileContentVersion (params: File, options: FileContentVersion): Record<string, string> {
+  createFileContentVersion(params: File, options: FileContentVersion): Record<string, string> {
     // Create page content information
     const contentId = generationId(PRE.CONTENT);
     const contentDetail: Content = {
@@ -359,7 +403,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {{folders:FolderChildren[];files:File[]}} params
    * @returns string
    */
-  getFileIdFromResourceRecursive (params: { folders: FolderChildren[]; files: File[] }): string[] {
+  getFileIdFromResourceRecursive(params: { folders: FolderChildren[]; files: File[] }): string[] {
     const { folders = [], files = [] } = params;
     let fileIds = _.map(files, 'id');
     folders.forEach((folder) => {
@@ -378,7 +422,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {Record<string} versionObject
    * @returns FileFolderContentChildren
    */
-  addContentToFileRecursive (
+  addContentToFileRecursive(
     params: FileFolderContentChildren,
     contentObject: Record<string, Content>,
     versionObject: Record<string, ContentVersion>,
@@ -407,7 +451,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {string} pathName
    * @returns Promise
    */
-  async getFileDetailByPathname (applicationId: string, pathName: string): Promise<Partial<File>> {
+  async getFileDetailByPathname(applicationId: string, pathName: string): Promise<Partial<File>> {
     // Get files that match the pathname tag
     let fileDetail: File | undefined;
     const fileList = await Service.file.list.find({
@@ -441,7 +485,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {string} options?
    * @returns Promise
    */
-  async copyFile (
+  async copyFile(
     sourceFileId: string,
     targetApplicationId: string,
     options: {
@@ -478,7 +522,8 @@ export class FileInfoService extends BaseService<File> {
 
     // Get the version details of all content
     const contentVersionList = await Service.version.live.getContentAndRelationVersion(
-      _.map(contentList, 'id'), true
+      _.map(contentList, 'id'),
+      true,
     );
 
     let relationsContentIds: string[] = [];
@@ -504,15 +549,18 @@ export class FileInfoService extends BaseService<File> {
     // Create a new file, and file associated data file
     for (const file of fileList) {
       if (!options.relations[file.id]) {
-        // Remove some tags in file tags
-        file.tags = this.removeTags(file.tags || [], [TAG.CLONE, TAG.COPY]);
         const newFileDetail = Service.file.info.create(
           {
             applicationId: targetApplicationId,
             name: options.type === CONT_STORE ? file.name : [file.name, randStr(4)].join('_'),
             intro: file.intro,
             suffix: file.suffix,
-            tags: file.tags?.concat({ [options.type === CONT_STORE ? TAG.COPY : TAG.CLONE]: file.id }),
+            tags: [
+              {
+                type: TAG.DELIVERY_CLONE,
+                clone: { id: file.id, applicationId: file.applicationId },
+              },
+            ],
             type: file.type,
             folderId: options.folderId || '',
           },
@@ -521,6 +569,17 @@ export class FileInfoService extends BaseService<File> {
         options.relations[file.id] = { newId: newFileDetail.id };
       }
     }
+
+    // Add copy file to app setting
+    Service.application.addAppSetting(
+      {
+        applicationId: targetApplicationId,
+        type: fileDetail.type,
+        typeId: options.relations[fileDetail.id]?.newId || '',
+        typeName: fileDetail.name || '',
+      },
+      { ctx: options.ctx },
+    );
 
     // Pre-match content Id
     let tempRelations: Record<string, Record<string, string>> = {};
@@ -534,16 +593,72 @@ export class FileInfoService extends BaseService<File> {
     }
 
     // Create file content
+    let idMaps: Record<string, string> = {};
     for (const content of contentList) {
-      options.relations = Service.content.info.copyContent(content, contentDSLObject[content.id] || {}, {
-        ctx: options.ctx,
-        relations: options.relations,
-        tempRelations: {},
-        setLive: options.setLive || false,
-      });
+      const relationAndIdMaps = Service.content.info.copyContent(
+        content,
+        contentDSLObject[content.id] || {},
+        {
+          ctx: options.ctx,
+          relations: options.relations || {},
+          tempRelations: {},
+          setLive: options.setLive || false,
+          idMaps,
+        },
+      );
+      options.relations = relationAndIdMaps.relations;
+      idMaps = relationAndIdMaps.idMaps;
     }
 
-    return options.relations;
+    return options.relations || {};
+  }
+
+  /**
+   * add reference file
+   * check file exist, if not, create it
+   * @param sourceFileId
+   * @param sourceApplicationId
+   * @param options
+   * @returns
+   */
+  async referenceFile(
+    sourceFileId: string,
+    sourceApplicationId: string,
+    options: {
+      ctx: FoxCtx;
+      targetApplicationId: string;
+      targetFolderId: string;
+      fileName?: string;
+      type?: string;
+    },
+  ): Promise<File> {
+    // Check reference file has in folder or not
+    let fileDetail = await this.getDetail({
+      folderId: options.targetFolderId,
+      deleted: false,
+      tags: { $elemMatch: { $and: [{ type: TAG.DELIVERY_REFERENCE, 'reference.id': sourceFileId }] } },
+    });
+
+    // create reference file
+    if (!fileDetail || _.isEmpty(fileDetail)) {
+      fileDetail = Service.file.info.create(
+        {
+          applicationId: options.targetApplicationId,
+          name: options.fileName,
+          type: options.type as FileTypes,
+          folderId: options.targetFolderId,
+          tags: [
+            {
+              type: TAG.DELIVERY_REFERENCE,
+              reference: { id: sourceFileId, applicationId: sourceApplicationId },
+            },
+          ],
+        },
+        { ctx: options.ctx },
+      );
+    }
+
+    return fileDetail;
   }
 
   /**
@@ -551,7 +666,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {string[]} tagIndexes
    * @returns any
    */
-  removeTags (tagList: any[], tagIndexes: string[]): any[] {
+  removeTags(tagList: any[], tagIndexes: string[]): any[] {
     tagList.forEach((tag, index) => {
       tag = _.omit(tag, tagIndexes);
 
@@ -561,5 +676,22 @@ export class FileInfoService extends BaseService<File> {
     });
 
     return tagList;
+  }
+
+  /**
+   * filter reference file map
+   * @param fileList
+   * @returns
+   */
+  filterReferenceFile(fileList: File[]): Record<string, string> {
+    let referenceFileMap: Record<string, string> = {};
+    fileList.map((file) => {
+      const tag = Service.content.tag.getTagsByKeys(file.tags as any, ['reference']);
+      if (tag.reference?.id) {
+        referenceFileMap[tag.reference.id] = file.id;
+      }
+    });
+
+    return referenceFileMap;
   }
 }

@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { LOG, METHOD, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentStatusReq, ContentVersionDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -43,7 +43,10 @@ export class SetFunctionVersionStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4091101);
       }
 
-      const result = await this.service.version.info.setVersionDeleteStatus(params, { ctx });
+      const result = await this.service.version.info.setVersionDeleteStatus(params, {
+        ctx,
+        actionType: [LOG.DELETE, TYPE.FUNCTION].join('_'),
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.function.invalidVersionId, 2091101);

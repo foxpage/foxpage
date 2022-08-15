@@ -13,6 +13,8 @@ import {
 } from '@foxpage/foxpage-server-types';
 
 import { LOG, TAG, TYPE } from '../../config/constant';
+import * as Model from '../models';
+import { AppItemSearch } from '../types/app-types';
 import { ComponentContentInfo } from '../types/component-types';
 import { UpdateContentVersion } from '../types/content-types';
 
@@ -158,11 +160,16 @@ export class ComponentService {
    * @param  {ContentVersion[]} versionList
    * @returns IdVersion
    */
-  getComponentEditorAndDependends (versionList: Component[]): IdVersion[] {
+   getComponentEditorAndDependends (versionList: Component[], types?:string[]): IdVersion[] {
     let componentIdVersion: IdVersion[] = [];
     versionList.forEach((version) => {
-      componentIdVersion = componentIdVersion.concat(version?.resource?.['editor-entry'] || []);
-      componentIdVersion = componentIdVersion.concat(version?.resource?.dependencies || []);
+      if (!types || types.indexOf('editor-entry') !== -1) {
+        componentIdVersion = componentIdVersion.concat(version?.resource?.['editor-entry'] || []);
+      }
+
+      if (!types || types.indexOf('dependencies') !== -1) {
+        componentIdVersion = componentIdVersion.concat(version?.resource?.dependencies || []);
+      }
     });
     return _.uniqWith(componentIdVersion, _.isEqual);
   }
@@ -306,5 +313,45 @@ export class ComponentService {
         }),
       );
     });
+  }
+
+  /**
+   * Get category components list
+   * @param params 
+   * @returns 
+   */
+  async getPageCategoryComponents(params: AppItemSearch): Promise<{list: File[], count: number}> {
+    const { page, size } = Service.file.info.setPageSize(params);
+    const searchParams: any = {
+      applicationId: params.applicationId,
+      deleted: false,
+      type: TYPE.COMPONENT,
+      'tags.type': TAG.COMPONENT_CATEGORY
+    };
+
+    if (params.search) {
+      searchParams['$or'] = [
+      {
+        'name': { $regex: new RegExp(params.search, 'i') }
+      },
+      {
+        'tags.type': TAG.COMPONENT_CATEGORY,
+        '$or': [{
+          'tags.name': { $regex: new RegExp(params.search, 'i') }
+        }, { 
+          'tags.categoryName': { $regex: new RegExp(params.search, 'i') }
+        }, {
+          'tags.groupName': { $regex: new RegExp(params.search, 'i') }
+        }] 
+      }];
+    }
+
+    const skip = (page - 1) * size;
+    const [list, count] = await Promise.all([
+      Model.file.find(searchParams, '', { sort: { createTime: 1 }, skip, limit: size }),
+      Model.file.getCountDocuments(searchParams),
+    ]);
+
+    return { list, count };
   }
 }

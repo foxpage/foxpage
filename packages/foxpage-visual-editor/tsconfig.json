@@ -6,6 +6,7 @@
     // syntax
     "strict": true,
     "alwaysStrict": true,
+    "declaration": true,
     "noImplicitAny": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -30,7 +31,7 @@
     "moduleResolution": "node",
     // "declaration": true,
     "removeComments": false,
-    "sourceMap": true,
+    "sourceMap": false,
     "allowJs": true,
     "locale": "zh-cn",
     "outDir": "./lib",
@@ -38,15 +39,48 @@
     "paths": {
       "@/types/*": [
         "typings/*"
+      ],
+      "@/apis/*": [
+        "src/events/*"
+      ],
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/constant/*": [
+        "src/constant/*"
+      ],
+      "@/context/*": [
+        "src/context/*"
+      ],
+      "@/dnd/*": [
+        "src/dnd/*"
+      ],
+      "@/editor/*": [
+        "src/editor/*"
+      ],
+      "@/i18n/*": [
+        "src/i18n/*"
+      ],
+      "@/mock/*": [
+        "src/mock/*"
+      ],
+      "@/sidebar/*": [
+        "src/sidebar/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/viewer/*": [
+        "src/viewer/*"
       ]
     }
   },
   "include": [
+    "typings/*",
+    "typings/**/*",
     "src/*",
     "src/**/*",
-    "typings/*",
-    "typings/**/*"
-    ],
+  ],
   "exclude": [
     "node_modules"
   ]

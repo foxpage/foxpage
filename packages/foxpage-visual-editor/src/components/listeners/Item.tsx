@@ -31,6 +31,7 @@ const Root = styled.div`
 `;
 
 // TODO 类型调整
+// @ts-ignore
 export class Item extends Component<any, any> {
   static contextType = EditContext;
   onEventSelect: ((value: any, option) => void) | undefined;
@@ -44,7 +45,7 @@ export class Item extends Component<any, any> {
     };
   }
 
-  getComponentNameAndTypeById = id => {
+  getComponentNameAndTypeById = (id) => {
     const { components } = this.context;
     for (let i = 0; i < components.length; i++) {
       if (id === components[i].id) {
@@ -57,7 +58,7 @@ export class Item extends Component<any, any> {
     return {};
   };
 
-  getComponentEditorById = id => {
+  getComponentEditorById = (id) => {
     const { components } = this.context;
     for (let i = 0; i < components.length; i++) {
       if (id === components[i].id) {
@@ -73,7 +74,7 @@ export class Item extends Component<any, any> {
     });
   };
 
-  onTargetChange = id => {
+  onTargetChange = (id) => {
     const { name, type } = this.getComponentNameAndTypeById(id);
     this.setState({
       props: {
@@ -144,8 +145,7 @@ export class Item extends Component<any, any> {
             <button
               onClick={() => {
                 this.setState({ open: true });
-              }}
-            >
+              }}>
               Config
             </button>
           </div>
@@ -157,7 +157,7 @@ export class Item extends Component<any, any> {
           <div>
             <Select onSelect={this.onTargetChange} style={{ width: '100%' }} value={props.id}>
               {components &&
-                components.map(component => (
+                components.map((component) => (
                   <Select.Option key={component.id} value={component.id}>
                     {component.name}
                   </Select.Option>
@@ -165,7 +165,10 @@ export class Item extends Component<any, any> {
             </Select>
             {editor && (
               <EditContext.Provider value={editorParams}>
-                {React.createElement(editor, editorParams)}
+                {
+                  // @ts-ignore
+                  <>{React.createElement(editor, editorParams)}</>
+                }
               </EditContext.Provider>
             )}
           </div>

@@ -3,14 +3,14 @@ import React, { useContext } from 'react';
 import { Collapse as AntdCollapse } from 'antd';
 import styled from 'styled-components';
 
-import viewerContext from '../../viewerContext';
+import { FoxContext } from '@/context/index';
 
 import Background from './Background';
 import Border from './Border';
 import Box from './Box';
 import Display from './Display';
 import Font from './Font';
-import { StyleType } from './index.d';
+import { StyleType } from './interface';
 import Position from './Position';
 import Shadow from './Shadow';
 
@@ -32,42 +32,41 @@ const Title = styled.div`
   color: #656565ad;
 `;
 
-const Style: React.FC<StyleType> = props => {
+const Style: React.FC<StyleType> = (props) => {
   const { onChange, onApplyState } = props;
-  const { foxpageI18n } = useContext(viewerContext);
+  const { foxI18n } = useContext(FoxContext);
   return (
     <Collapse
       bordered={false}
-      defaultActiveKey={['display', 'box', 'font', 'position', 'background', 'border', 'shadow']}
-    >
+      defaultActiveKey={['display', 'box', 'font', 'position', 'background', 'border', 'shadow']}>
       <Container>
-        <Title>{foxpageI18n.display}</Title>
-        <Display {...props} onChange={onChange} onApplyState={onApplyState} />
+        <Title>{foxI18n.display}</Title>
+        <Display {...props} onChange={onChange} onApplyState={() => onApplyState()} />
       </Container>
       <Container>
-        <Title>{foxpageI18n.box}</Title>
-        <Box {...props} onChange={onChange} onApplyState={onApplyState} />
+        <Title>{foxI18n.box}</Title>
+        <Box {...props} onChange={onChange} onApplyState={() => onApplyState()} />
       </Container>
       <Container>
-        <Title>{foxpageI18n.font}</Title>
-        <Font {...props} onChange={onChange} onApplyState={onApplyState} />
+        <Title>{foxI18n.font}</Title>
+        <Font {...props} onChange={onChange} onApplyState={() => onApplyState()} />
       </Container>
 
       <Container>
-        <Title>{foxpageI18n.position}</Title>
-        <Position {...props} onChange={onChange} onApplyState={onApplyState} />
+        <Title>{foxI18n.position}</Title>
+        <Position {...props} onChange={onChange} onApplyState={() => onApplyState()} />
       </Container>
       <Container>
-        <Title>{foxpageI18n.background}</Title>
-        <Background {...props} onChange={onChange} onApplyState={onApplyState} />
+        <Title>{foxI18n.background}</Title>
+        <Background {...props} onChange={onChange} onApplyState={() => onApplyState()} />
       </Container>
       <Container>
-        <Title>{foxpageI18n.border}</Title>
-        <Border {...props} onChange={onChange} onApplyState={onApplyState} />
+        <Title>{foxI18n.border}</Title>
+        <Border {...props} onChange={onChange} onApplyState={() => onApplyState()} />
       </Container>
       <Container>
-        <Title>{foxpageI18n.shadow}</Title>
-        <Shadow {...props} onChange={onChange} onApplyState={onApplyState} />
+        <Title>{foxI18n.shadow}</Title>
+        <Shadow {...props} onChange={onChange} onApplyState={() => onApplyState()} />
       </Container>
       {/* <Panel header="Flex" key="flex">
         <Flex {...props} onChange={onChange} />

@@ -3,63 +3,57 @@ import _ from 'lodash';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/teams/list';
-import { PaginationInfo } from '@/types/index';
-import { Team } from '@/types/team';
+import { PaginationInfo, TeamEntity, TeamMemberEntity } from '@/types/index';
 
 export type TeamsActionType = ActionType<typeof ACTIONS>;
 
-const list: Team[] = [];
-const defaultEditTeam: Team = {} as Team;
+const list: TeamEntity[] = [];
+const defaultEditTeam: TeamEntity = {} as TeamEntity;
 const pageInfo: PaginationInfo = { page: 1, size: 10, total: 0 };
+const organizationUsers: TeamMemberEntity[] = [];
 
-const initialData = {
+const initialState = {
   fetching: false,
+  pageInfo,
   list,
   editTeam: defaultEditTeam,
   editDrawerOpen: false,
   userManagementDrawerOpen: false,
-  pageInfo,
   managementTeam: defaultEditTeam,
   managementTeamLoading: false,
+  organizationUsers,
 };
 
-type initialDataType = typeof initialData;
+type InitialDataType = typeof initialState;
 
-const conditionReducer = (state: initialDataType = initialData, action: TeamsActionType) =>
+const conditionReducer = (state: InitialDataType = initialState, action: TeamsActionType) =>
   produce(state, (draft) => {
     switch (action.type) {
       case getType(ACTIONS.clearAll): {
-        Object.assign(draft, { ...initialData });
+        Object.assign(draft, { ...initialState });
         break;
       }
+
       case getType(ACTIONS.updateLoading): {
         draft.fetching = action.payload.status;
         break;
       }
+
       case getType(ACTIONS.pushTeamList): {
-        const { list, pageInfo } = action.payload;
-        draft.list = list;
-        draft.pageInfo = pageInfo;
+        draft.list = action.payload.list;
+        draft.pageInfo = action.payload.pageInfo;
         break;
       }
 
       case getType(ACTIONS.openDrawer): {
-        const { team } = action.payload;
-        draft.editTeam = team || defaultEditTeam;
-        draft.editDrawerOpen = true;
+        draft.editDrawerOpen = action.payload.status;
+        draft.editTeam = action.payload?.team || defaultEditTeam;
         break;
       }
 
-      case getType(ACTIONS.updateUserManagementDrawerOpenStatus): {
-        const { open, team } = action.payload;
-        draft.managementTeam = team || defaultEditTeam;
-        draft.userManagementDrawerOpen = open;
-        break;
-      }
-
-      case getType(ACTIONS.closeDrawer): {
-        draft.editTeam = defaultEditTeam;
-        draft.editDrawerOpen = false;
+      case getType(ACTIONS.openUserManagementDrawer): {
+        draft.managementTeam = action.payload?.team || defaultEditTeam;
+        draft.userManagementDrawerOpen = action.payload.open;
         break;
       }
 
@@ -97,9 +91,14 @@ const conditionReducer = (state: initialDataType = initialData, action: TeamsAct
         draft.managementTeamLoading = false;
         break;
       }
+
       case getType(ACTIONS.updateTeamManagementLoading): {
-        const { loading } = action.payload;
-        draft.managementTeamLoading = loading;
+        draft.managementTeamLoading = action.payload.loading;
+        break;
+      }
+
+      case getType(ACTIONS.pushOrganizationUsers): {
+        draft.organizationUsers = action.payload.users;
         break;
       }
 

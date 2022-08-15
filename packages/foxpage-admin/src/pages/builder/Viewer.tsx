@@ -1,273 +1,187 @@
-import React, { CSSProperties, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
-import { Modal } from 'antd';
+import { Spin } from 'antd';
+import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
-import { updateLoadingStatus, updateRequireLoadStatus } from '@/actions/builder/component-load';
-import { updateConditionBindDrawerVisible } from '@/actions/builder/condition';
-import { selectContent } from '@/actions/builder/page';
-import * as ACTIONS from '@/actions/builder/template';
-import { setVariableBindModalVisibleStatus } from '@/actions/builder/variable';
-import { EditorInputEnum } from '@/constants/variable';
+import * as ACTIONS from '@/actions/builder/events';
+import { selectComponent } from '@/actions/builder/main';
+import { EDITOR_ENV_PATH, EDITOR_PATH, STYLE_CONTAINER } from '@/constants/index';
+import { findStructureByExtendId, findStructureById } from '@/sagas/builder/utils';
+import { FoxBuilderEvents, RenderStructureNode, StructureNode } from '@/types/index';
+import { getGlobalLocale } from '@/utils/global';
 
-import GlobalContext from '../GlobalContext';
+import { listeners, posters } from './events';
 
-import Condition from './editor/condition/Condition';
-import {
-  ADD_COMPONENT,
-  COPY_COMPONENT,
-  DELETE_COMPONENT,
-  LOAD_FINISH,
-  OPEN_CONDITION_BIND,
-  OPEN_VARIABLE_BIND,
-  REQUIRE_LOAD_COMPONENT,
-  SAVE_COMPONENT,
-  SELECT_COMPONENT,
-  SELECT_CONTENT,
-  SET_COMPONENT_STRUCTURE,
-  SET_CONTAINER_STYLE,
-  SET_FOXPAGE_LOCALE,
-  SET_SELECT_COMPONENT,
-  SET_VIEWER_CONTAINER_STYLE,
-  SET_ZOOM,
-  UPDATE_EDITOR_VALUE,
-  UPDATE_SELECT_COMPONENT_LABEL,
-  UPDATE_WRAPPER_PROPS,
-  viewModelHeight,
-  viewModelWidth,
-} from './constant';
+const Content = styled.div`
+  height: 100%;
+  background: #f2f2f2;
+`;
 
-interface IProps {
-  containerStyle?: CSSProperties;
-}
 const mapStateToProps = (store: RootState) => ({
-  applicationId: store.builder.page.applicationId,
-  contentId: store.builder.page.contentId,
-  fileId: store.builder.page.fileId,
-  folderId: store.builder.page.folderId,
-  fileType: store.builder.page.fileType,
-  renderStructure: store.builder.template.parsedRenderStructure,
-  componentSource: store.builder.template.componentSourceMap,
-  selectedComponent: store.builder.template.selectedComponent,
-  selectedWrapperComponent: store.builder.template.selectedWrapperComponent,
-  requireLoad: store.builder.viewer.requireLoad,
-  relations: store.builder.template.relations,
-  versionChange: store.builder.template.versionChange,
-  zoom: store.builder.template.zoom,
-  viewModel: store.builder.template.viewModel,
+  components: store.builder.component.components,
+  application: store.builder.main.application,
+  selectedNode: store.builder.main.selectedNode,
+  state: store.builder.main.formattedData,
+  mock: store.builder.main.mock,
+  pageLocale: store.builder.header.locale,
+  file: store.builder.main.file,
+  pageNode: store.builder.main.pageNode,
 });
 
 const mapDispatchToProps = {
-  updateLoadingStatus: updateLoadingStatus,
-  updateRequireLoadStatus: updateRequireLoadStatus,
-  setSelectedComponent: ACTIONS.setSelectedComponent,
-  deleteComponent: ACTIONS.deleteComponent,
+  selectComponent,
+  updateComponent: ACTIONS.updateComponent,
+  removeComponent: ACTIONS.removeComponent,
   copyComponent: ACTIONS.copyComponent,
-  selectContent: selectContent,
-  insertComponent: ACTIONS.insertComponent,
-  appendComponent: ACTIONS.appendComponent,
-  saveComponent: ACTIONS.saveComponentEditorValue,
-  updateEditorValue: ACTIONS.updateEditorValue,
-  updateWrapperValue: ACTIONS.updateWrapperProps,
-  setVariableBindModalVisibleStatus,
-  updateConditionBindDrawerVisible,
+  dropComponent: ACTIONS.dropComponent,
 };
 
-type Props = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
+type IProps = ReturnType<typeof mapStateToProps> &
+  typeof mapDispatchToProps & {
+    loading: boolean;
+    changeWindow: FoxBuilderEvents['onWindowChange'];
+  };
 
-const Main: React.FC<Props> = (props) => {
+const Viewer = (props: IProps) => {
+  const [frameLoaded, setFrameLoaded] = useState(false);
   const {
-    zoom = 1,
-    applicationId,
-    contentId,
-    folderId,
-    renderStructure,
-    componentSource,
-    requireLoad,
-    selectedComponent,
-    selectedWrapperComponent,
-    relations = [],
-    containerStyle,
-    versionChange,
-    fileType,
-    viewModel,
-    updateLoadingStatus,
-    updateRequireLoadStatus,
-    setSelectedComponent,
-    selectContent,
+    loading,
+    state,
+    components = [],
+    application,
+    mock,
+    file,
+    pageNode,
+    pageLocale,
+    selectedNode,
+    selectComponent,
+    updateComponent,
+    removeComponent,
     copyComponent,
-    deleteComponent,
-    insertComponent,
-    appendComponent,
-    saveComponent,
-    updateEditorValue,
-    updateWrapperValue,
-    setVariableBindModalVisibleStatus,
-    updateConditionBindDrawerVisible,
+    dropComponent,
+    changeWindow,
   } = props;
-  const [frameWindow, setFrameWindow] = useState<Window | undefined>();
-  const { locale } = useContext(GlobalContext);
-  const messageListener = (event) => {
-    const { data } = event;
-    const { type } = data;
-    switch (type) {
-      case LOAD_FINISH:
-        const { noResourceComponentName } = data;
-        if (noResourceComponentName.length > 0) {
-          Modal.warning({
-            title: 'Please add these component to your application',
-            content: noResourceComponentName.map((name) => <p>{name}</p>),
-          });
-        }
-        updateLoadingStatus(false);
-        updateRequireLoadStatus(false);
-        break;
-      case SELECT_COMPONENT:
-        setSelectedComponent(data.id);
-        break;
-      case DELETE_COMPONENT:
-        deleteComponent(applicationId, data.id);
-        break;
-      case COPY_COMPONENT:
-        copyComponent(applicationId, data.id);
-        break;
-      case SELECT_CONTENT:
-        selectContent({ applicationId, contentId: relations[0].id, locale: '', fileType: 'template' });
-        break;
-      case ADD_COMPONENT:
-        const { addType, componentId, desc, parentId, pos } = data;
-        addType === 'insert'
-          ? insertComponent(applicationId, componentId, pos, desc, parentId)
-          : appendComponent(applicationId, componentId, desc);
-        break;
-      case SAVE_COMPONENT:
-        const { isWrapper } = data;
-        saveComponent({ applicationId, folderId, isWrapper });
-        break;
-      case UPDATE_EDITOR_VALUE:
-        updateEditorValue(data.key, data.value);
-        break;
-      case UPDATE_WRAPPER_PROPS:
-        updateWrapperValue(data.key, data.value);
-        break;
-      case OPEN_VARIABLE_BIND:
-        setVariableBindModalVisibleStatus({
-          open: true,
-          type: data.opt?.type || EditorInputEnum.Text,
-          keys: data.keys,
-        });
-        break;
-      case OPEN_CONDITION_BIND:
-        updateConditionBindDrawerVisible(true);
-        break;
+  const { host = [], slug = '' } = application;
+  const { formattedSchemas: structure } = state;
+  const locale = getGlobalLocale() || 'en';
+  const history = useHistory();
+  const isPage = file.type === 'page';
+  // @ts-ignore
+  const previewHtmlURL = __DEV__
+    ? 'http://localhost:3003'
+    : host[0] && slug
+    ? `${host[0]?.url}/${slug}${EDITOR_PATH}`
+    : '';
 
-      default:
-        break;
-    }
+  const handleLinkChange = (target: string, _opt?: {}) => {
+    history.push(target);
+  };
+
+  const handleFrameLoaded = (_opt?: {}) => {
+    setFrameLoaded(true);
+  };
+
+  // listeners handlers
+  const handlers: FoxBuilderEvents = {
+    onSelectComponent: selectComponent,
+    onUpdateComponent: updateComponent,
+    onRemoveComponent: removeComponent,
+    onCopyComponent: copyComponent,
+    onDropComponent: dropComponent,
+    onWindowChange: changeWindow,
+    onLinkChange: handleLinkChange,
+    onFrameLoaded: handleFrameLoaded,
+  };
+
+  const onListeners = (event: MessageEvent) => {
+    listeners.listener(event, handlers);
   };
 
   useEffect(() => {
-    window.addEventListener('message', messageListener, false);
+    window.addEventListener('message', onListeners, false);
     return () => {
-      window.removeEventListener('message', messageListener);
+      window.removeEventListener('message', onListeners);
     };
-  }, [applicationId, relations]);
+  }, []);
 
   useEffect(() => {
-    if (requireLoad) {
-      updateLoadingStatus(true);
-      if (frameWindow) {
-        postMessage(REQUIRE_LOAD_COMPONENT, {
-          requireLoad,
-          componentSource,
-          renderStructure,
-          fileType,
-        });
+    if (posters.handleInit && application.id && structure) {
+      const sysConfig = {
+        locale,
+        mockable: !!mock?.enable,
+        // @ts-ignore
+        visualFrameSrc: __DEV__ ? '/environment.html' : slug ? `/${slug}${EDITOR_ENV_PATH}` : '',
+      };
+      const pageConfig = {
+        locale: pageLocale,
+      };
+      // get select node
+      let selectNode: StructureNode | null = null;
+      if (selectedNode) {
+        selectNode = findStructureById(structure, selectedNode.id);
+        if (!selectNode) {
+          selectNode = findStructureByExtendId(structure, selectedNode.id);
+        }
+        // TODO: style logic, need to general
+        if (selectNode) {
+          const { children = [] } = selectNode;
+          const isStyleContainer = children.length === 1 && selectNode.name === STYLE_CONTAINER;
+          if (isStyleContainer) {
+            selectNode = children[0];
+          }
+        }
       }
-    }
-  }, [requireLoad, frameWindow, renderStructure, componentSource]);
 
-  useEffect(() => {
-    if (renderStructure && frameWindow) {
-      postMessage(SET_COMPONENT_STRUCTURE, { renderStructure });
-    }
-  }, [renderStructure, frameWindow]);
+      // root node
+      const rootNode = pageNode
+        ? (({
+            ...pageNode,
+            __editorConfig: {
+              templateBind: isPage,
+              disableTemplateBind: isPage && !!pageNode.extension?.extendId,
+            },
+          } as unknown) as RenderStructureNode)
+        : null;
 
-  useEffect(() => {
-    if (frameWindow) {
-      postMessage(SET_SELECT_COMPONENT, { selectedComponent, selectedWrapperComponent });
-    }
-  }, [selectedComponent, frameWindow]);
-
-  useEffect(() => {
-    if (frameWindow && containerStyle) {
-      postMessage(SET_CONTAINER_STYLE, { containerStyle });
-    }
-  }, [frameWindow, containerStyle]);
-
-  useEffect(() => {
-    if (frameWindow) {
-      postMessage(SET_ZOOM, { zoom: zoom || 1 });
-    }
-  }, [frameWindow, zoom]);
-
-  useEffect(() => {
-    if (frameWindow && versionChange) {
-      postMessage(UPDATE_SELECT_COMPONENT_LABEL, {});
-    }
-  }, [frameWindow, versionChange]);
-
-  useEffect(() => {
-    if (frameWindow && viewModel) {
-      postMessage(SET_VIEWER_CONTAINER_STYLE, {
-        style: {
-          width: viewModelWidth[viewModel],
-          height: viewModelHeight[viewModel],
+      posters.handleInit({
+        components,
+        structure,
+        selectNode: selectNode as RenderStructureNode,
+        rootNode,
+        config: {
+          sys: sysConfig,
+          app: {
+            appId: application.id,
+          },
+          page: pageConfig,
         },
       });
     }
-  }, [frameWindow, viewModel]);
-
-  useEffect(() => {
-    if (frameWindow && locale) {
-      postMessage(SET_FOXPAGE_LOCALE, {
-        locale: locale.locale,
-      });
-    }
-  }, [frameWindow, locale]);
-
-  const handleFrameLoad = (event) => {
-    const iframeWindow = event.target.contentWindow;
-    setFrameWindow(iframeWindow);
-  };
-
-  const postMessage = (type: string, data: Record<string, unknown>) => {
-    if (frameWindow) {
-      frameWindow.postMessage({
-        type,
-        ...data,
-      });
-    }
-  };
+  }, [frameLoaded, structure, components, pageLocale, application.id]);
 
   return (
-    <>
-      <iframe
-        key={contentId}
-        title="main-view"
-        name="main-view"
-        id="main-view"
-        // @ts-ignore
-        src={__DEV__ ? '/environment.html' : `${APP_CONFIG.slug}/dist/environment.html`}
-        frameBorder="0"
-        scrolling="yes"
-        width="100%"
-        height="100%"
-        onLoad={handleFrameLoad}
-      />
-      <Condition />
-    </>
+    <Spin spinning={loading || !frameLoaded}>
+      {structure ? (
+        <Content>
+          <iframe
+            title="main-view"
+            name="main-view"
+            id="main-view"
+            src={previewHtmlURL}
+            frameBorder="0"
+            scrolling="yes"
+            width="100%"
+            height="100%"
+            style={{ display: 'block', visibility: 'visible' }}
+            onLoad={handleFrameLoaded}
+          />
+        </Content>
+      ) : null}
+    </Spin>
   );
 };
-export default connect(mapStateToProps, mapDispatchToProps)(Main);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Viewer);

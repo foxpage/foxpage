@@ -34,7 +34,7 @@ export class AddApplicationDetail extends BaseController {
     operationId: 'add-application-detail',
   })
   @ResponseSchema(AppDetailWithFolderRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AddAppDetailReq): Promise<ResData<AppWithFolder>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AddAppDetailReq): Promise<ResData<AppWithFolder>> {
     try {
       const validOrg = await this.service.org.checkOrgValid(params.organizationId);
       if (!validOrg) {
@@ -73,6 +73,7 @@ export class AddApplicationDetail extends BaseController {
         TYPE.COMPONENT,
         TYPE.LIBRARY,
         TYPE.RESOURCE,
+        TYPE.FUNCTION,
       ];
       for (const name of folderTypes) {
         this.service.folder.info.create(

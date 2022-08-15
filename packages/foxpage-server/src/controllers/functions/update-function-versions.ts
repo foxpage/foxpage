@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
@@ -42,7 +42,10 @@ export class UpdateFunctionVersionDetail extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4091401);
       }
 
-      const result = await this.service.version.info.updateVersionDetail(params, { ctx });
+      const result = await this.service.version.info.updateVersionDetail(params, {
+        ctx,
+        actionType: [LOG.UPDATE, TYPE.FUNCTION].join('_'),
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.function.invalidVersionId, 2091401);

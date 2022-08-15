@@ -13,6 +13,7 @@ import { AppContentListRes, AppTypeFilesReq } from '../../types/validates/page-v
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to files/get-page-type-items.ts
 @JsonController('templates')
 export class GetAppTemplateFileList extends BaseController {
   constructor() {
@@ -27,7 +28,7 @@ export class GetAppTemplateFileList extends BaseController {
    * @param  {AppTypeFilesReq} params
    * @returns {PageContentData[]}
    */
-  @Get('/file-searchs')
+  @Get('/file-searchs-migration')
   @OpenAPI({
     summary: i18n.sw.getAppTypeFileList,
     description: '',

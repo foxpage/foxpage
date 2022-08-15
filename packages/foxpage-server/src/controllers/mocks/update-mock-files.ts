@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailRes, UpdateFileDetailReq } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
@@ -33,7 +33,7 @@ export class UpdateMockFileDetail extends BaseController {
     operationId: 'update-mock-file-detail',
   })
   @ResponseSchema(FileDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: UpdateFileDetailReq): Promise<ResData<File>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateFileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
       return Response.warning(i18n.mock.invalidMockName, 2191301);
@@ -46,7 +46,10 @@ export class UpdateMockFileDetail extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4191301);
       }
 
-      const result = await this.service.file.info.updateFileDetail(params, { ctx });
+      const result = await this.service.file.info.updateFileDetail(params, {
+        ctx,
+        actionType: [LOG.UPDATE, TYPE.MOCK].join('_'),
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.mock.invalidMockId, 2191302);

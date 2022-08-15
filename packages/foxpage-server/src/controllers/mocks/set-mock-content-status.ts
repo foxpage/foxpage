@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { LOG, METHOD, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentStatusReq, ContentDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -32,7 +32,7 @@ export class SetMockContentStatus extends BaseController {
     operationId: 'set-mock-content-status',
   })
   @ResponseSchema(ContentDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentStatusReq): Promise<ResData<Content>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentStatusReq): Promise<ResData<Content>> {
     params.status = true; // Currently it is mandatory to only allow delete operations
 
     try {
@@ -42,7 +42,10 @@ export class SetMockContentStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4190701);
       }
 
-      const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
+      const result = await this.service.content.info.setContentDeleteStatus(params, {
+        ctx,
+        actionType: [LOG.DELETE, TYPE.MOCK].join('_'),
+      });
       if (result.code === 1) {
         return Response.warning(i18n.content.invalidContentId, 4190702);
       } else if (result.code === 2) {

@@ -1,6 +1,10 @@
 import moment from 'moment';
 
-const periodFormat = (start: moment.MomentInput, end: moment.MomentInput, format = 'YYYY-MM-DD, HH:mm:ss') => {
+export const periodFormat = (
+  start: moment.MomentInput,
+  end: moment.MomentInput,
+  format = 'YYYY-MM-DD, HH:mm:ss',
+) => {
   let from = start === 'unknown' ? '' : moment(start).format(format);
   let to = end === 'unknown' ? '' : moment(end).format(format);
   if (!to) {
@@ -16,4 +20,4 @@ const periodFormat = (start: moment.MomentInput, end: moment.MomentInput, format
   return `${from} ~ ${to}`;
 };
 
-export default periodFormat;
+export default { periodFormat };

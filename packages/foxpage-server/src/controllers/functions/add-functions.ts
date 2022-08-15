@@ -6,7 +6,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { NewFileInfo } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailRes, FileVersionDetailReq } from '../../types/validates/file-validate-types';
@@ -63,7 +63,10 @@ export class AddFunctionDetail extends BaseController {
       }
 
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: TYPE.FUNCTION });
-      const result = await this.service.file.info.addFileDetail(newFileDetail, { ctx });
+      const result = await this.service.file.info.addFileDetail(newFileDetail, {
+        ctx,
+        actionType: [LOG.CREATE, TYPE.FUNCTION].join('_'),
+      });
 
       // Check the validity of the application ID
       if (result.code === 1) {

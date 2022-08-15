@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentLiveReq, ContentDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -32,7 +32,7 @@ export class SetMockLiveVersions extends BaseController {
     operationId: 'set-mock-live-versions',
   })
   @ResponseSchema(ContentDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentLiveReq): Promise<ResData<Content>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentLiveReq): Promise<ResData<Content>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.MOCK });
       const hasAuth = await this.service.auth.content(params.id, { ctx, mask: 8 });
@@ -40,7 +40,10 @@ export class SetMockLiveVersions extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4190901);
       }
 
-      const result = await this.service.content.live.setLiveVersion(params, { ctx });
+      const result = await this.service.content.live.setLiveVersion(params, {
+        ctx,
+        actionType: [LOG.LIVE, TYPE.MOCK].join('_'),
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.content.invalidVersionId, 2190901);

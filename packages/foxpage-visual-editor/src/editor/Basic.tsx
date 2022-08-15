@@ -3,8 +3,9 @@ import React, { useContext } from 'react';
 import { Input, Select } from 'antd';
 import styled from 'styled-components';
 
+import { FoxContext } from '@/context/index';
+
 import { Field, Label } from '../components/group';
-import viewerContext from '../viewerContext';
 
 const Group = styled.div`
   background: #fafafa;
@@ -12,17 +13,18 @@ const Group = styled.div`
 
 const { Option } = Select;
 
-interface BasicProps {
+interface IProps {
   id: string;
   label: string;
   name: string;
   version: string;
   onChange: (key: string, val: string) => void;
-  onApplyState: (key: string, val: string) => void;
+  onApplyState: () => void;
 }
-const Basic: React.FC<BasicProps> = props => {
+
+const Basic = (props: IProps) => {
   const { id, label, name, version, onChange, onApplyState } = props;
-  const { foxpageI18n } = useContext(viewerContext);
+  const { foxI18n } = useContext(FoxContext);
 
   return (
     <div style={{ padding: 12 }}>
@@ -33,26 +35,26 @@ const Basic: React.FC<BasicProps> = props => {
         </Field>
 
         <Field>
-          <Label>{foxpageI18n.label}</Label>
+          <Label>{foxI18n.label}</Label>
           <Input
             value={label}
             maxLength={30}
             placeholder="Label"
-            onChange={e => {
+            onChange={(e) => {
               onChange('label', e.target.value);
             }}
-            onBlur={e => {
-              onApplyState('label', e.target.value);
+            onBlur={() => {
+              onApplyState();
             }}
           />
         </Field>
 
         <Field>
-          <Label>{foxpageI18n.name}</Label>
+          <Label>{foxI18n.name}</Label>
           <Input value={name} disabled />
         </Field>
         <Field>
-          <Label>{foxpageI18n.version}</Label>
+          <Label>{foxI18n.version}</Label>
           <Select disabled value={version} style={{ width: '100%' }}>
             <Option value={version}>{version}</Option>
           </Select>

@@ -22,7 +22,7 @@ export class ContentInfoService extends BaseService<Content> {
    * Single instance
    * @returns ContentInfoService
    */
-  public static getInstance (): ContentInfoService {
+  public static getInstance(): ContentInfoService {
     this._instance || (this._instance = new ContentInfoService());
     return this._instance;
   }
@@ -33,7 +33,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Partial<Content>} params
    * @returns Content
    */
-  create (params: Partial<Content>, options: { ctx: FoxCtx }): Content {
+  create(params: Partial<Content>, options: { ctx: FoxCtx; actionType?: string }): Content {
     const contentDetail: Content = {
       id: params.id || generationId(PRE.CONTENT),
       title: _.trim(params?.title) || '',
@@ -44,16 +44,16 @@ export class ContentInfoService extends BaseService<Content> {
     };
 
     options.ctx.transactions.push(Model.content.addDetailQuery(contentDetail));
-    options.ctx.operations.push({
-      action: LOG.CREATE,
-      category: LOG.CATEGORY_APPLICATION,
-      content: {
-        id: contentDetail.id,
-        contentId: contentDetail.id,
-        fileId: params.fileId,
-        after: contentDetail,
-      },
-    });
+    options.ctx.operations.push(
+      ...Service.log.addLogItem(LOG.CREATE, contentDetail, {
+        actionType: options.actionType || [LOG.CREATE, TYPE.CONTENT].join('_'),
+        category: {
+          type: TYPE.CONTENT,
+          contentId: contentDetail.id,
+          fileId: params.fileId || '',
+        },
+      }),
+    );
 
     return contentDetail;
   }
@@ -65,15 +65,15 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {any} content?
    * @returns Content
    */
-  addContentDetail (
+  addContentDetail(
     params: Partial<Content>,
-    options: { ctx: FoxCtx; type: FileTypes; content?: any },
+    options: { ctx: FoxCtx; type: FileTypes; content?: any; actionType?: string },
   ): Content {
-    const contentDetail = this.create(params, { ctx: options.ctx });
+    const contentDetail = this.create(params, { ctx: options.ctx, actionType: options.actionType });
     if ([TYPE.COMPONENT, TYPE.EDITOR, TYPE.LIBRARY].indexOf(options.type) === -1) {
       Service.version.info.create(
         { contentId: contentDetail.id, content: options?.content || {} },
-        { ctx: options.ctx, fileId: params.fileId },
+        { ctx: options.ctx, fileId: params.fileId, actionType: options.actionType },
       );
     }
 
@@ -85,9 +85,9 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {UpdateTypeContent} params
    * @returns Promise
    */
-  async updateContentDetail (
+  async updateContentDetail(
     params: UpdateTypeContent,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number>> {
     const contentDetail = await this.getDetailById(params.id);
     if (!contentDetail || contentDetail.deleted) {
@@ -115,25 +115,32 @@ export class ContentInfoService extends BaseService<Content> {
       Model.content.updateDetailQuery(params.id, _.pick(params, ['title', 'tags'])),
     );
 
-    const content = {
-      id: contentDetail.id,
-      contentId: contentDetail.id,
-      dataType: fileDetail.type,
-      before: contentDetail,
-    };
-    options.ctx.operations.push({
-      action: LOG.CONTENT_UPDATE,
-      category: LOG.CATEGORY_APPLICATION,
-      content: content,
-    });
+    options.ctx.operations.push(
+      ...Service.log.addLogItem(LOG.CONTENT_UPDATE, [contentDetail], {
+        actionType: options.actionType || [LOG.UPDATE, TYPE.CONTENT].join('_'),
+        category: {
+          type: TYPE.CONTENT,
+          contentId: contentDetail.id,
+          fileId: contentDetail.fileId,
+          folderId: fileDetail.folderId,
+          applicationId: fileDetail.applicationId,
+        },
+      }),
+    );
 
     // tag update log
     if (contentDetail.liveVersionNumber > 0 && params.tags !== contentDetail.tags) {
-      options.ctx.operations.push({
-        action: LOG.CONTENT_TAG,
-        category: LOG.CATEGORY_APPLICATION,
-        content: content,
-      });
+      options.ctx.operations.push(
+        ...Service.log.addLogItem(LOG.CONTENT_TAG, [contentDetail], {
+          actionType: options.actionType || [LOG.CONTENT_TAG, TYPE.CONTENT].join('_'),
+          category: {
+            type: TYPE.CONTENT,
+            contentId: contentDetail.id,
+            fileId: contentDetail.fileId,
+            folderId: fileDetail.folderId,
+          },
+        }),
+      );
     }
 
     return { code: 0 };
@@ -145,10 +152,17 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateContentItem (id: string, params: Partial<Content>, options: { ctx: FoxCtx; fileId?: string }): void {
+  updateContentItem(
+    id: string,
+    params: Partial<Content>,
+    options: { ctx: FoxCtx; fileId?: string; actionType?: string },
+  ): void {
     options.ctx.transactions.push(Model.content.updateDetailQuery(id, params));
     options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.UPDATE, Object.assign({ id }, params), { fileId: options?.fileId }),
+      ...Service.log.addLogItem(LOG.UPDATE, Object.assign({ id }, params), {
+        actionType: options.actionType || [LOG.UPDATE, TYPE.CONTENT].join('_'),
+        category: { type: TYPE.CONTENT, contentId: id, fileId: options?.fileId || '' },
+      }),
     );
   }
 
@@ -157,9 +171,9 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {string} contentId
    * @returns Promise
    */
-  async setContentDeleteStatus (
+  async setContentDeleteStatus(
     params: TypeStatus,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number>> {
     // Get content details
     const contentDetail = await this.getDetailById(params.id);
@@ -185,8 +199,14 @@ export class ContentInfoService extends BaseService<Content> {
 
     // Save logs
     options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.CONTENT_REMOVE, [contentDetail], { fileId: contentDetail?.fileId }),
-      ...Service.log.addLogItem(LOG.VERSION_REMOVE, versionList, { fileId: contentDetail?.fileId }),
+      ...Service.log.addLogItem(LOG.CONTENT_REMOVE, [contentDetail], {
+        actionType: options.actionType || [LOG.DELETE, TYPE.CONTENT].join('_'),
+        category: { type: TYPE.CONTENT, contentId: params.id, fileId: contentDetail?.fileId },
+      }),
+      ...Service.log.addLogItem(LOG.VERSION_REMOVE, versionList, {
+        actionType: options.actionType || [LOG.DELETE, TYPE.VERSION].join('_'),
+        category: { type: TYPE.VERSION, contentId: params.id, fileId: contentDetail?.fileId },
+      }),
     );
 
     return { code: 0 };
@@ -197,10 +217,18 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Content[]} contentList
    * @returns void
    */
-  batchSetContentDeleteStatus (contentList: Content[], options: { ctx: FoxCtx; status?: boolean }): void {
-    const status = options.status === false ? false : true;
+  batchSetContentDeleteStatus(
+    contentList: Content[],
+    options: { ctx: FoxCtx; status?: boolean; actionType?: string },
+  ): void {
+    const status = !(options.status === false);
     options.ctx.transactions.push(this.setDeleteStatus(_.map(contentList, 'id'), status));
-    options.ctx.operations.push(...Service.log.addLogItem(LOG.CONTENT_REMOVE, contentList));
+    options.ctx.operations.push(
+      ...Service.log.addLogItem(LOG.CONTENT_REMOVE, contentList, {
+        actionType: options.actionType || [LOG.DELETE, TYPE.CONTENT].join('_'),
+        category: { type: TYPE.CONTENT },
+      }),
+    );
   }
 
   /**
@@ -210,7 +238,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {} FolderFileContent[]>
    * @returns Record
    */
-  getContentResourceTypeInfo (
+  getContentResourceTypeInfo(
     appResource: AppResource[],
     contentParentObject: Record<string, FolderFileContent[]>,
   ): Record<string, AppResource> {
@@ -243,7 +271,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {} string>}
    * @returns Record
    */
-  copyContent (
+  copyContent(
     sourceContentInfo: Content,
     sourceContentVersion: DSL,
     options: {
@@ -251,8 +279,9 @@ export class ContentInfoService extends BaseService<Content> {
       relations: Record<string, Record<string, string>>;
       tempRelations: Record<string, Record<string, string>>;
       setLive?: boolean;
+      idMaps?: Record<string, string>;
     },
-  ): Record<string, Record<string, string>> {
+  ): Record<string, any> {
     // Create new content page information
     const contentId =
       options.relations[sourceContentInfo.id]?.newId ||
@@ -266,6 +295,19 @@ export class ContentInfoService extends BaseService<Content> {
         options.tempRelations[sourceContentInfo.id]?.title || [sourceContentInfo.title, randStr(4)].join('_'),
     };
 
+    // extendId
+    const extendTag = Service.content.tag.getTagsByKeys(sourceContentInfo.tags, ['extendId']);
+
+    if (extendTag.extendId) {
+      if (!options.relations[extendTag.extendId]) {
+        options.relations[extendTag.extendId] = { newId: generationId(PRE.CONTENT) };
+      }
+      sourceContentInfo.tags = sourceContentInfo.tags.filter((tag) => {
+        return !tag.extendId;
+      });
+      sourceContentInfo.tags.push({ extendId: options.relations[extendTag.extendId]?.newId });
+    }
+
     Service.content.info.create(
       {
         id: contentId,
@@ -278,13 +320,13 @@ export class ContentInfoService extends BaseService<Content> {
     );
 
     // Create new content version information
-    options.relations = Service.version.info.copyContentVersion(
+    const relationsAndIdMaps = Service.version.info.copyContentVersion(
       sourceContentVersion,
       contentId,
       Object.assign({ create: true }, options),
     );
 
-    return options.relations;
+    return { relations: relationsAndIdMaps.relations, idMaps: relationsAndIdMaps.idMaps };
   }
 
   /**
@@ -292,12 +334,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param contentDetail
    * @returns
    */
-  getContentExtension (contentDetail: Content, extensionName: string[] = ['extendId']) {
-    let extendInfo: Record<string, any> = {};
-    (contentDetail?.tags || []).forEach(tag => {
-      extendInfo = _.merge(extendInfo, _.pick(tag, extensionName));
-    });
-
-    return extendInfo;
+  getContentExtension(contentDetail: Content, extensionName: string[] = ['extendId']) {
+    return Service.content.tag.getTagsByKeys(contentDetail?.tags || [], extensionName);
   }
 }

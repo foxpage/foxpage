@@ -3,60 +3,66 @@ import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/projects/content';
-import { getAppDetail } from '@/apis/group/application/list';
-import { fetchFileDetail } from '@/apis/group/file';
-import * as API from '@/apis/group/project/content';
-import { commitToStore, offlineFromStore } from '@/apis/store/list';
-import { FileTypeEnum } from '@/constants/index';
-import { getBusinessI18n } from '@/pages/locale';
+import * as APPLICATION_API from '@/apis/application';
+import * as BUILDER_API from '@/apis/builder';
+import * as API from '@/apis/project';
+import { FileType } from '@/constants/index';
+import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectContentActionType } from '@/reducers/projects/content';
 import { store } from '@/store/index';
 import {
+  FilesFetchParams,
   GoodsCommitParams,
   GoodsOfflineParams,
+  ParentFileFetchParams,
   ProjectContentDeleteParams,
-  ProjectContentSearchParams,
-  ProjectFileDetailFetchParams,
+  ProjectContentFetchParams,
 } from '@/types/index';
+import shortId from '@/utils/short-id';
 
 function* handleFetchList(action: ProjectContentActionType) {
-  const { applicationId, fileId, fileType } = action.payload as ProjectContentSearchParams;
-  const {
-    content: { fetchFailed },
-  } = getBusinessI18n();
-  yield put(ACTIONS.updateFetchLoading(true));
+  yield put(ACTIONS.updateLoading(true));
+
+  const { applicationId, fileId, fileType } = action.payload as ProjectContentFetchParams;
   const res = yield call(fileType === 'page' ? API.fetchPageContents : API.fetchTemplateContents, {
     applicationId,
     fileId,
   });
+
   if (res.code === 200) {
     yield put(ACTIONS.pushContentList(res.data));
   } else {
+    const {
+      content: { fetchFailed },
+    } = getBusinessI18n();
+
     message.error(res.msg || fetchFailed);
   }
 
-  yield put(ACTIONS.updateFetchLoading(false));
+  yield put(ACTIONS.updateLoading(false));
 }
 
-function* save(action: ProjectContentActionType) {
-  const { applicationId, fileId, fileType } = action.payload as ProjectContentSearchParams;
-  const {
-    global: { saveSuccess, saveFailed, nameError },
-  } = getBusinessI18n();
+function* handleSave(action: ProjectContentActionType) {
+  const { applicationId, fileId, fileType } = action.payload as ProjectContentFetchParams;
   const state = store.getState().projects.content;
   const content = state.editContent;
+
+  const {
+    global: { saveSuccess, saveFailed, nameError, addFailed },
+  } = getBusinessI18n();
 
   if (!content?.title) {
     message.warn(nameError);
     return;
   }
 
-  yield put(ACTIONS.setSaveLoading(true));
+  yield put(ACTIONS.updateSaveLoading(true));
+
   const saveApi = content.id
-    ? fileType === FileTypeEnum.page
+    ? fileType === FileType.page
       ? API.updatePageContent
       : API.updateTemplateContent
-    : fileType === FileTypeEnum.page
+    : fileType === FileType.page
     ? API.addPageContent
     : API.addTemplateContent;
   const res = yield call(saveApi, {
@@ -65,118 +71,172 @@ function* save(action: ProjectContentActionType) {
     fileId,
     applicationId,
   });
+
   if (res.code === 200) {
     message.success(saveSuccess);
+
     yield put(ACTIONS.updateEditDrawerOpen(false));
     yield put(ACTIONS.fetchContentList({ applicationId, fileId, fileType }));
+
+    // add root as default for content new base page/new locale page without extend
+    if (
+      fileType === FileType.page &&
+      !content.id &&
+      (content.isBase || (!content.isBase && !content.extendId))
+    ) {
+      // TODO: need to clean
+      const addRootRes = yield call(BUILDER_API.updatePageDsl, {
+        applicationId,
+        content: {
+          id: res.data.id,
+          relation: {},
+          schemas: [
+            {
+              children: [],
+              id: `stru_${shortId(15)}`,
+              name: 'page',
+              props: { width: '100%', height: '100%' },
+              type: 'page',
+            },
+          ],
+        },
+        id: res.data.id,
+      });
+
+      if (addRootRes.code !== 200) {
+        message.error(addRootRes.msg || addFailed);
+      }
+    }
   } else {
     message.error(res.msg || saveFailed);
   }
 
-  yield put(ACTIONS.setSaveLoading(false));
+  yield put(ACTIONS.updateSaveLoading(false));
 }
 
-function* deleteContent(action: ProjectContentActionType) {
-  const { applicationId, id, fileId, fileType } = action.payload as ProjectContentDeleteParams;
-  const {
-    global: { deleteSuccess, deleteFailed },
-  } = getBusinessI18n();
+function* handleDelete(action: ProjectContentActionType) {
+  const { applicationId, id, status, fileId, fileType } = action.payload as ProjectContentDeleteParams;
   const res = yield call(fileType === 'page' ? API.deletePageContent : API.deleteTemplateContent, {
     applicationId,
     id,
-    status: true,
+    status,
   });
+
+  const {
+    global: { deleteSuccess, deleteFailed },
+  } = getBusinessI18n();
+
   if (res.code === 200) {
     message.success(deleteSuccess);
-    yield put(ACTIONS.fetchContentList({ applicationId, fileId, fileType }));
+
+    // refresh content list
+    yield put(
+      ACTIONS.fetchContentList({ applicationId: applicationId || '', fileId: fileId || '', fileType }),
+    );
   } else {
     message.error(res.msg || deleteFailed);
   }
-
-  yield put(ACTIONS.updateFetchLoading(false));
 }
 
-function* fetchLocales(action: ProjectContentActionType) {
+function* handleFetchLocales(action: ProjectContentActionType) {
   const { applicationId } = action.payload as { applicationId: string };
-  const {
-    application: { fetchLocalesFailed },
-  } = getBusinessI18n();
-  const res = yield call(getAppDetail, {
+  const res = yield call(APPLICATION_API.fetchAppDetail, {
     applicationId,
   });
+
   if (res.code === 200) {
     yield put(ACTIONS.pushLocales(res.data.locales));
   } else {
+    const {
+      application: { fetchLocalesFailed },
+    } = getBusinessI18n();
+
     message.error(res.msg || fetchLocalesFailed);
   }
 }
 
 function* handleCommitFileToStore(action: ProjectContentActionType) {
-  const { id, applicationId, type, intro, onSuccess } = action.payload as GoodsCommitParams;
+  const { params, cb } = action.payload as { params: GoodsCommitParams; cb?: () => void };
+  const res = yield call(API.commitToStore, params);
+
   const {
     global: { commitSuccess, commitFailed },
   } = getBusinessI18n();
-  const rs = yield call(commitToStore, {
-    id,
-    applicationId,
-    type,
-    intro,
-  });
-  if (rs.code === 200) {
+
+  if (res.code === 200) {
     message.success(commitSuccess);
-    if (typeof onSuccess === 'function') {
-      onSuccess();
-    }
+
+    if (typeof cb === 'function') cb();
   } else {
-    message.error(rs.msg || commitFailed);
+    message.error(res.msg || commitFailed);
   }
 }
 
 function* handleOfflineFileToStore(action: ProjectContentActionType) {
-  const { id, applicationId, onSuccess } = action.payload as GoodsOfflineParams;
+  const { params, cb } = action.payload as { params: GoodsOfflineParams; cb?: () => void };
+  const res = yield call(API.offlineFromStore, params);
+
   const {
     global: { revokeSuccess, revokeFailed },
   } = getBusinessI18n();
-  const rs = yield call(offlineFromStore, {
-    id,
-    applicationId,
-  });
-  if (rs.code === 200) {
+
+  if (res.code === 200) {
     message.success(revokeSuccess);
-    if (typeof onSuccess === 'function') {
-      onSuccess();
-    }
+
+    if (typeof cb === 'function') cb();
   } else {
-    message.error(rs.msg || revokeFailed);
+    message.error(res.msg || revokeFailed);
   }
 }
 
 function* handleFetchFileDetail(action: ProjectContentActionType) {
-  const { applicationId, ids } = action.payload as ProjectFileDetailFetchParams;
-  yield put(ACTIONS.updateFetchLoading(true));
-  const {
-    file: { fetchDetailFailed },
-  } = getBusinessI18n();
-  const rs = yield call(fetchFileDetail, {
+  yield put(ACTIONS.updateLoading(true));
+
+  const { applicationId, ids } = action.payload as FilesFetchParams;
+  const res = yield call(API.fetchFileDetail, {
     applicationId,
     ids,
   });
-  if (rs.code === 200 && rs.data?.length > 0) {
-    yield put(ACTIONS.pushFileDetail(rs.data[0]));
+
+  if (res.code === 200 && res.data?.length > 0) {
+    yield put(ACTIONS.pushFileDetail(res.data[0]));
   } else {
-    message.error(rs.msg || fetchDetailFailed);
+    const {
+      file: { fetchDetailFailed },
+    } = getBusinessI18n();
+
+    message.error(res.msg || fetchDetailFailed);
   }
-  yield put(ACTIONS.updateFetchLoading(false));
+
+  yield put(ACTIONS.updateLoading(false));
+}
+
+function* handleFetchParentFiles(action: ProjectContentActionType) {
+  const { params, cb } = action.payload as { params: ParentFileFetchParams; cb?: (folder) => void };
+  const res = yield call(API.fetchParentFiles, params);
+
+  if (res.code === 200) {
+    yield put(ACTIONS.pushParentFiles(res.data));
+
+    if (typeof cb === 'function') cb(res.data?.[0]);
+  } else {
+    const {
+      global: { fetchListFailed },
+    } = getBusinessI18n();
+
+    message.error(res.msg || fetchListFailed);
+  }
 }
 
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchContentList), handleFetchList);
-  yield takeLatest(getType(ACTIONS.saveContent), save);
-  yield takeLatest(getType(ACTIONS.deleteContent), deleteContent);
-  yield takeLatest(getType(ACTIONS.fetchLocales), fetchLocales);
+  yield takeLatest(getType(ACTIONS.saveContent), handleSave);
+  yield takeLatest(getType(ACTIONS.deleteContent), handleDelete);
+  yield takeLatest(getType(ACTIONS.fetchLocales), handleFetchLocales);
   yield takeLatest(getType(ACTIONS.commitFileToStore), handleCommitFileToStore);
   yield takeLatest(getType(ACTIONS.offlineFileFromStore), handleOfflineFileToStore);
   yield takeLatest(getType(ACTIONS.fetchFileDetail), handleFetchFileDetail);
+  yield takeLatest(getType(ACTIONS.fetchParentFiles), handleFetchParentFiles);
 }
 
 export default function* rootSaga() {

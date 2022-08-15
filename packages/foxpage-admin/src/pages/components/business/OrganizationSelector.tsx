@@ -7,8 +7,8 @@ import { Dropdown, Menu } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
-import * as ACTIONS from '@/actions/system';
-import { getLoginUser, setLoginUser } from '@/utils/login-user';
+import * as ACTIONS from '@/actions/system/user';
+import { getLoginUser, setLoginUser } from '@/utils/index';
 
 const MenuGroupTitle = styled.a`
   display: flex;
@@ -48,7 +48,7 @@ const MenuItem = styled.div`
 `;
 
 const mapStateToProps = (state: RootState) => ({
-  list: state.system.organizations,
+  list: state.system.user.organizations,
 });
 
 const mapDispatchToProps = {
@@ -62,7 +62,7 @@ function OrganizationSelector(props: IProps) {
   const { list, fetchList, updateOrganizationId } = props;
   const [currOrg, setCurrOrg] = useState<string | undefined>('');
 
-  const userInfo = getLoginUser();
+  const { token, userInfo, languagePrefer, organizationPrefer } = getLoginUser();
   const organizationId = userInfo?.organizationId;
 
   useEffect(() => {
@@ -71,12 +71,18 @@ function OrganizationSelector(props: IProps) {
 
   useEffect(() => {
     const defaultOrg =
-      organizationId && list && list.length > 0
-        ? list.find((item) => item.id === organizationId)?.name || ''
-        : list?.[0]?.name || '';
+      list && list.length > 0 && organizationPrefer
+        ? list.find((item) => item.id === organizationPrefer)
+        : list.find((item) => item.default) || list?.[0];
 
-    setCurrOrg(defaultOrg);
-  }, [organizationId, list]);
+    if (defaultOrg && defaultOrg?.id === organizationId) {
+      setCurrOrg(defaultOrg?.name || '');
+    } else {
+      handleMenuClick({
+        key: defaultOrg?.name,
+      });
+    }
+  }, [list]);
 
   const handleMenuClick = useCallback(
     (item) => {
@@ -86,8 +92,13 @@ function OrganizationSelector(props: IProps) {
 
       if (newOrganizationId) {
         setLoginUser({
-          ...userInfo,
-          organizationId: newOrganizationId,
+          token,
+          userInfo: {
+            ...userInfo,
+            organizationId: newOrganizationId,
+          },
+          languagePrefer,
+          organizationPrefer: newOrganizationId,
         });
 
         // push new organization id to store

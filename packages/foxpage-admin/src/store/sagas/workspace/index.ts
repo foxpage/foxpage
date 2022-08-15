@@ -1,6 +1,6 @@
 import { fork } from 'redux-saga/effects';
 
-import dynamics from './dynamics/dynamics';
+import dynamics from './dynamics/list';
 import applications from './applications';
 import projects from './projects';
 

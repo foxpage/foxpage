@@ -1,3 +1,1 @@
-import Teams from './Main';
-
-export default Teams;
+export { default } from './Main';

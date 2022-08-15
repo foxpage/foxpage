@@ -46,6 +46,7 @@ export const TYPE = {
   MOCK: 'mock',
 
   GOODS: 'goods',
+  INVOLVE: 'involve',
 };
 
 export const LOG = {
@@ -56,6 +57,7 @@ export const LOG = {
   LIVE: 'live',
   LOGIN: 'login',
   LOGOUT: 'logout',
+  SET: 'set',
 
   VERSION_UPDATE: 'version_update',
   VERSION_REMOVE: 'version_remove',
@@ -66,6 +68,7 @@ export const LOG = {
   FILE_REMOVE: 'file_remove',
   FILE_TAG: 'file_tag',
   META_UPDATE: 'meta_update',
+  VERSION_STATUS: 'version_status',
   REQUEST: 'request',
 
   CATEGORY_SYSTEM: 'system',
@@ -88,6 +91,7 @@ export const DELIVERY_CLONE = 'clone';
 export const DELIVERY_REFERENCE = 'reference';
 
 export const TAG = {
+  COMPONENT_CATEGORY: 'componentCategory',
   CLONE: 'cloneFrom',
   COPY: 'copyFrom',
   RESOURCE_GROUP: 'resourceGroup',

@@ -1,25 +1,13 @@
 import { combineReducers } from 'redux';
 
-import componentList from './component-list';
-import condition from './condition';
-import fn from './function';
-import more from './more';
-import page from './page';
-import template from './template';
-import templateSelect from './template-select';
-import variable from './variable';
-import viewer from './viewer';
+import component from './component';
+import header from './header';
+import main from './main';
 
 const reducers = combineReducers({
-  viewer,
-  template,
-  componentList,
-  page,
-  variable,
-  condition,
-  fn,
-  templateSelect,
-  more,
+  component,
+  header,
+  main,
 });
 
 export default reducers;

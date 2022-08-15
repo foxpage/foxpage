@@ -52,7 +52,7 @@ export class FolderModel extends BaseModel<Folder> {
 
     return this.model
       .find(filter, '-_id -tags._id')
-      .sort(params.sort || { createTime: 1 })
+      .sort(params.sort || { _id: -1 })
       .skip((page - 1) * size)
       .limit(size)
       .lean();
@@ -159,7 +159,7 @@ export class FolderModel extends BaseModel<Folder> {
 
     return this.model
       .find(searchParams, '-_id -tags._id')
-      .sort(params.sort || { createTime: -1 })
+      .sort(params.sort || { _id: -1 })
       .skip((page - 1) * size)
       .limit(size)
       .lean();

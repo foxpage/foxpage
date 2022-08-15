@@ -34,7 +34,7 @@ export class ContentListService extends BaseService<Content> {
    * @returns {Content} Promise
    */
   async getAppContentList(params: AppFileType): Promise<Content[]> {
-    let contentList: Content[] = [];
+    let contentObject: Record<string, Content> = {};
 
     // Get all files id of the specified type under the App
     const fileList: File[] = await Service.file.list.getAppTypeFileList(params);
@@ -60,10 +60,26 @@ export class ContentListService extends BaseService<Content> {
         promises.push(limit(() => Model.content.getDetailByFileIds(fileIds)));
       });
 
-      contentList = _.flatten(await Promise.all(promises));
+      contentObject = _.keyBy(_.flatten(await Promise.all(promises)), 'id');
+
+      // replace referenced file id, use fileId as key is to avoid has multi same reference content id
+      if (referenceIds.length > 0) {
+        let referenceContentObject:Record<string, Content> = _.pick(contentObject, referenceIds);
+        contentObject = _.omit(contentObject, referenceIds);
+        
+        for (const fileId in referenceFileObject) {
+          if (referenceContentObject[referenceFileObject[fileId]]) {
+            contentObject[fileId] = Object.assign(
+              {}, 
+              referenceContentObject[referenceFileObject[fileId]], 
+              { fileId }
+            );
+          }
+        }
+      }
     }
 
-    return contentList;
+    return _.toArray(contentObject);
   }
 
   /**
@@ -80,6 +96,40 @@ export class ContentListService extends BaseService<Content> {
       versionList = await Service.version.list.getDetailByIds(_.map(contentList, 'id'));
     }
     return { contentList: contentList, versionList };
+  }
+
+  /**
+   * Get file content list
+   * @param fileIds 
+   * @returns 
+   */
+   async getFileContentList(
+     fileIds: string[], 
+     options?: { fileList?: File[]}
+    ): Promise<Record<string, Content[]>> {
+    if (fileIds.length === 0) {
+      return {};
+    }
+
+    let fileList = options?.fileList || [];
+    if (!fileList || fileList.length === 0) {
+      fileList = await Service.file.list.getDetailByIds(fileIds);
+    }
+
+    // Get reference file ids
+    const referenceFileMap = Service.file.info.filterReferenceFile(fileList);
+    const contentList = await Service.content.file.getContentByFileIds(
+      _.concat(fileIds, _.keys(referenceFileMap))
+    );
+
+    let fileContentList: Record<string, Content[]> = {};
+    contentList.forEach(content => {
+      const fileId = referenceFileMap[content.fileId] || content.fileId;
+      !fileContentList[fileId] && (fileContentList[fileId] = []);
+      fileContentList[fileId].push(Object.assign({}, content, { fileId }));
+    });
+
+    return fileContentList;
   }
 
   /**
@@ -139,5 +189,31 @@ export class ContentListService extends BaseService<Content> {
     }
 
     return contentParents;
+  }
+
+  /**
+   * Get content id, and get the content reference file id
+   * then, set the content info's fileId to reference file id
+   * @param contentList 
+   * @returns 
+   */
+   async setContentReferenceFileId(applicationId: string, contentList: Content[]): Promise<Content[]>{
+    const fileIds = _.map(contentList, 'fileId');
+    const fileContentObject = _.keyBy(contentList, 'fileId');
+    if (fileIds.length > 0) {
+      const fileList = await Service.file.list.find({ 
+        applicationId, 
+        deleted: false, 
+        'tags.reference.id' : { $in: fileIds } 
+      });
+      (fileList || []).forEach(file => {
+        const referenceFileTag = _.find(file.tags, { type: TAG.DELIVERY_REFERENCE });
+        if (referenceFileTag?.reference?.id && fileContentObject[referenceFileTag.reference.id]) {
+          fileContentObject[referenceFileTag.reference.id].fileId = file.id;
+        }
+      });
+    }
+
+    return _.toArray(fileContentObject);
   }
 }
