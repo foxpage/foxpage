@@ -1,5 +1,0 @@
-{
-  "extends": "./tsconfig",
-  "include": ["./jest.config.ts", "test/**/*", "src/**/__mocks__/**/*"],
-  "exclude": []
-}
