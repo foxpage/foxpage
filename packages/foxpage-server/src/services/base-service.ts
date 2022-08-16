@@ -53,9 +53,13 @@ export class BaseService<T> {
    * @param  {any} params
    * @returns Promise
    */
-  async find(params: any, projection?: string, options?: object): Promise<T[]> {
+  async find(params: any, projection?: string, options?: Record<string, any>): Promise<T[]> {
     if (!options) {
-      options = { sort: { createTime: -1 } };
+      options = {};
+    }
+
+    if (!options.sort) {
+      options.sort = { _id: -1 };
     }
 
     return this.model.find(params, projection, options);
@@ -70,6 +74,8 @@ export class BaseService<T> {
     if (objectIds.length === 0) {
       return [];
     }
+
+    objectIds = _.uniq(objectIds);
 
     // Batch query, 1 concurrent request, 200 ids each time
     let promises: any[] = [];

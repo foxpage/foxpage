@@ -105,6 +105,21 @@ export class ContentTagService extends BaseService<Content> {
   }
 
   /**
+   * Get tags key values
+   * @param tags 
+   * @param keys 
+   * @returns 
+   */
+  getTagsByKeys(tags: Record<string, any>[], keys: string[]): Record<string, any> {
+    let extendInfo: Record<string, any> = {};
+    (tags || []).forEach(tag => {
+      extendInfo = _.merge(extendInfo, _.pick(tag, keys));
+    });
+
+    return extendInfo;
+  }
+
+  /**
    * update content tag, if exist, update it, or add tag
    * @param contentId 
    * @param tag 

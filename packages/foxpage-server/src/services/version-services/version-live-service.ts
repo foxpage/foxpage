@@ -5,7 +5,7 @@ import { Content, ContentStatus, ContentVersion, DSL, FileTypes } from '@foxpage
 import { DSL_VERSION, LOG, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { AppTypeContent, PageContentRelationInfos, VersionPublish } from '../../types/content-types';
-import { FoxCtx } from '../../types/index-types';
+import { DBQuery, FoxCtx } from '../../types/index-types';
 import { BaseService } from '../base-service';
 import * as Service from '../index';
 
@@ -20,7 +20,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * Single instance
    * @returns VersionLiveService
    */
-  public static getInstance (): VersionLiveService {
+  public static getInstance(): VersionLiveService {
     this._instance || (this._instance = new VersionLiveService());
     return this._instance;
   }
@@ -30,7 +30,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * @param  {AppTypeContent} params
    * @returns {ContentVersion[]} Promise
    */
-  async getContentLiveDetails (params: AppTypeContent): Promise<ContentVersion[]> {
+  async getContentLiveDetails(params: AppTypeContent): Promise<ContentVersion[]> {
     const contentIds = params.contentIds || [];
     if (contentIds.length === 0) {
       return [];
@@ -53,9 +53,9 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * @param  {boolean} liveRelation, Mark whether to publish and set the relation associated with the version of live
    * @returns Promise
    */
-  async setVersionPublishStatus (
+  async setVersionPublishStatus(
     params: VersionPublish,
-    options: { ctx: FoxCtx; liveRelation?: boolean },
+    options: { ctx: FoxCtx; liveRelation?: boolean; actionType?: string },
   ): Promise<Record<string, any>> {
     const liveRelation = options.liveRelation || false;
 
@@ -124,7 +124,10 @@ export class VersionLiveService extends BaseService<ContentVersion> {
     );
 
     options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.PUBLISH, versionDetail, { fileId: contentDetail?.fileId }),
+      ...Service.log.addLogItem(LOG.PUBLISH, versionDetail, {
+        actionType: options.actionType || [LOG.LIVE, TYPE.CONTENT].join('_'),
+        category: { type: TYPE.CONTENT, contentId: contentDetail.id, fileId: contentDetail?.fileId },
+      }),
     );
 
     return { code: 0, data: versionDetail };
@@ -135,11 +138,28 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * @param  {string[]} versionIds
    * @returns void
    */
-  bulkSetVersionStatus (versionIds: string[], status: ContentStatus): any {
+  bulkSetVersionStatus(
+    versionIds: string[],
+    status: ContentStatus,
+    options?: { ctx: FoxCtx },
+  ): Partial<DBQuery> {
+    let query: Partial<DBQuery> = {};
     if (versionIds.length > 0) {
-      return Model.version.batchUpdateDetailQuery({ id: { $in: versionIds } }, { status } as any);
+      query = Model.version.batchUpdateDetailQuery({ id: { $in: versionIds } }, { status } as any);
+      if (options?.ctx) {
+        options.ctx.transactions.push(query);
+        versionIds.forEach((versionId) => {
+          options.ctx.operations.push(
+            ...Service.log.addLogItem(LOG.VERSION_STATUS, {} as ContentVersion, {
+              actionType: LOG.VERSION_STATUS,
+              category: { versionId: versionId },
+            }),
+          );
+        });
+      }
     }
-    return {};
+
+    return query;
   }
   /**
    * Get the version details of the specified contentIds and the corresponding relation details
@@ -148,7 +168,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
    * @param  {boolean=false} isBuild Whether to take the live version
    * @returns string
    */
-  async getContentAndRelationVersion (
+  async getContentAndRelationVersion(
     contentIds: string[],
     isBuild: boolean = false,
   ): Promise<PageContentRelationInfos[]> {

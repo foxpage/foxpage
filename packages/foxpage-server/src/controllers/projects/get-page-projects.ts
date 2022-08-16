@@ -74,17 +74,26 @@ export class GetProjectPageList extends BaseController {
         userIds = [ctx.userInfo.id];
       }
 
-      // Get the id of the specified default folder under the application
-      const folderIds = await this.service.folder.info.getAppDefaultFolderIds({
-        applicationIds: appIds,
-        type: TYPE.PROJECT as AppFolderTypes,
-      });
-
       let orgFolderData: PageData<FolderInfo> = { list: [], count: 0 };
-      if (folderIds.size > 0) {
-        orgFolderData = await this.service.folder.list.getFolderChildrenList(
-          Object.assign(_.pick(params, ['page', 'size', 'search']), { userIds, parentFolderIds: [...folderIds] }),
+      if (params.type === TYPE.INVOLVE) {
+        orgFolderData = await this.service.folder.list.getInvolveProject(
+          Object.assign(
+            _.pick(params, ['page', 'size', 'search']), 
+            { userId: ctx.userInfo.id, appIds }
+          )
         );
+      } else {
+        // Get the id of the specified default folder under the application
+        const folderIds = await this.service.folder.info.getAppDefaultFolderIds({
+          applicationIds: appIds,
+          type: TYPE.PROJECT as AppFolderTypes,
+        });
+
+        if (folderIds.size > 0) {
+          orgFolderData = await this.service.folder.list.getFolderChildrenList(
+            Object.assign(_.pick(params, ['page', 'size', 'search']), { userIds, parentFolderIds: [...folderIds] }),
+          );
+        }
       }
       return Response.success(
         {

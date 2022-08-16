@@ -1,4 +1,4 @@
-import { Component } from '@foxpage/foxpage-server-types';
+import { Component, File } from '@foxpage/foxpage-server-types';
 
 import { NameVersion } from './index-types';
 
@@ -23,4 +23,24 @@ export interface ComponentNameVersion {
 export interface ContentPath {
   contentId: string;
   path: string;
+}
+
+export interface ComponentCategory {
+  name:string;
+  categoryName: string;
+  groupName:string;
+  sort?: number;
+  rank?: number;
+  props?: Record<string, any>;
+  description?: string;
+  screenshot?: string;
+}
+
+export interface ComponentWithCategory extends File {
+  category: ComponentCategory
+}
+
+export interface ComponentCategoryTypes {
+  categoryName: string;
+  groupNames: string[];
 }

@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { Application, AppResource, LogActionType, LogCategoryType } from '@foxpage/foxpage-server-types';
+import { Application, AppResource } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { LOG, PRE, TYPE } from '../../../config/constant';
@@ -88,14 +88,18 @@ export class UpdateApplicationDetail extends BaseController {
         });
       }
       await this.service.application.updateDetail(params.applicationId, appInfo);
-
       const newAppDetail = await this.service.application.getDetailById(params.applicationId);
 
       // Save logs
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.applicationId, type: TYPE.APPLICATION });
       ctx.operations.push({
-        action: LOG.UPDATE as LogActionType,
-        category: { id: params.applicationId, type: LOG.CATEGORY_APPLICATION as LogCategoryType },
+        action: LOG.UPDATE,
+        actionType: [LOG.UPDATE, TYPE.APPLICATION].join('_'),
+        category: {
+          type: LOG.CATEGORY_APPLICATION,
+          applicationId: params.applicationId,
+          organizationId: appDetail.organizationId,
+        },
         content: { id: params.applicationId, before: appDetail, after: newAppDetail },
       });
 

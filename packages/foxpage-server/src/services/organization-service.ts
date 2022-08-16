@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Member, Organization } from '@foxpage/foxpage-server-types';
 
 import * as Model from '../models';
-import { FoxCtx, MemberInfo, PageList, Search } from '../types/index-types';
+import { FoxCtx, IdName, MemberInfo, PageList, Search } from '../types/index-types';
 import { OrgBaseInfo, OrgInfo } from '../types/organization-types';
 
 import { BaseService } from './base-service';
@@ -30,7 +30,7 @@ export class OrgService extends BaseService<Organization> {
    * @param userId 
    * @returns 
    */
-  async getUserOrg (userId: string): Promise<any> {
+  async getUserOrg (userId: string): Promise<IdName[]> {
     const orgList = await this.find({ 'members.userId': userId, 'members.status': true });
     return _.map(orgList, org => _.pick(org, ['id', 'name']));
   }

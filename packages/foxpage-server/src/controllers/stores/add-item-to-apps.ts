@@ -9,7 +9,10 @@ import { AppFolderTypes, StoreOrder } from '@foxpage/foxpage-server-types';
 import { i18n } from '../../../app.config';
 import { PRE, TAG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
-import { AddGoodsItemTpApplicationReq, GetPageTemplateListRes } from '../../types/validates/store-validate-types';
+import {
+  AddGoodsItemTpApplicationReq,
+  GetPageTemplateListRes,
+} from '../../types/validates/store-validate-types';
 import * as Response from '../../utils/response';
 import { generationId } from '../../utils/tools';
 import { BaseController } from '../base-controller';
@@ -33,15 +36,20 @@ export class AddStorePageItemToApplication extends BaseController {
     operationId: 'add-store-pages-item-to-applications',
   })
   @ResponseSchema(GetPageTemplateListRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AddGoodsItemTpApplicationReq): Promise<ResData<StoreOrder[]>> {
+  async index(
+    @Ctx() ctx: FoxCtx,
+    @Body() params: AddGoodsItemTpApplicationReq,
+  ): Promise<ResData<StoreOrder[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.RESOURCE });
 
       // Check permission
-      // const hasAuth = await Promise.all(params.appIds.map((appId) => this.service.auth.application(appId, { ctx })));
-      // if (hasAuth.indexOf(false) !== -1) {
-      //   return Response.accessDeny(i18n.system.accessDeny);
-      // }
+      const hasAuth = await Promise.all(
+        params.appIds.map((appId) => this.service.auth.application(appId, { ctx })),
+      );
+      if (hasAuth.indexOf(false) !== -1) {
+        return Response.accessDeny(i18n.system.accessDeny);
+      }
 
       // Check the status of the goods
       const goodsList = await this.service.store.goods.getDetailByIds(params.goodsIds);
@@ -63,7 +71,7 @@ export class AddStorePageItemToApplication extends BaseController {
       const goodsFileList = await this.service.file.list.getDetailByIds(goodsFileIds);
       const appTypeFolderObject = await this.service.folder.info.getAppsTypeFolderId({
         applicationIds: params.appIds,
-        type: params.type as AppFolderTypes
+        type: params.type as AppFolderTypes,
       });
 
       // Add the file corresponding to the goods to the application

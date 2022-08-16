@@ -95,7 +95,7 @@ export class AddStorePackageToApplication extends BaseController {
                 name: file.name,
                 intro: file.intro,
                 suffix: file.suffix,
-                type: TYPE.COMPONENT as FileTypes,
+                type: file.type as FileTypes,
                 folderId: appFolders[appId] || '',
                 tags: [{ type: params.delivery, reference: fileObject[file.id] || {} }],
                 creator: ctx.userInfo.id,

@@ -1,0 +1,11 @@
+{
+  // "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "declaration": true,
+    "lib": ["DOM", "ESNext"],
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["package.json", "src/*"],
+  "exclude": []
+}

@@ -384,4 +384,68 @@ export class FolderListService extends BaseService<Folder> {
   async folderAggregate (aggregate: any[]): Promise<any> {
     return this.model.aggregate(aggregate);
   }
+
+  
+
+  /**
+   * Get user involve project
+   * @param params 
+   * @returns 
+   */
+   async getInvolveProject(params: any): Promise<any> {
+    const { userId = '', appIds = [] } = params;
+    const pageSize = this.setPageSize(params);
+    const aggregateObject: any[] = [
+      {
+        $lookup: {
+          from: 'fp_application_folder',
+          localField: 'relation.projectId',
+          foreignField: 'id',
+          as: 'project'
+        }
+      }, {
+        $match: {
+          'targetId': userId,
+          'allow': true,
+          'relation.projectId': { $exists: true },
+          'relation.applicationId': { $in: appIds },
+          'project.deleted': false,
+        }
+      }, {
+        $project: {'relation.projectId': 1}
+      }
+    ];
+
+    if (params.search) {
+      aggregateObject[1]['$match']['project.name'] = { $regex: new RegExp(params.search, 'i') };
+    }
+    
+    const involveProjects: Folder[] = await Model.auth.aggregate(aggregateObject);
+
+    const pageProject = (_.chunk(involveProjects, pageSize.size))[pageSize.page - 1] || [];
+    
+    const involveProjectList: FolderInfo[] = [];
+
+    if (pageProject.length > 0) {
+      // Get project detail
+      const projectList = await Service.folder.list.getDetailByIds(_.map(pageProject, 'relation.projectId'));
+      const [userObject, appList] = await Promise.all([
+        Service.user.getUserBaseObjectByIds(_.map(projectList, 'creator')),
+        Service.application.getDetailByIds(_.map(projectList, 'applicationId')),
+      ]);
+
+      const appObject = _.keyBy(appList, 'id');
+      projectList.forEach((project) => {
+        involveProjectList.push(
+          Object.assign(
+            _.omit(project, ['creator', 'applicationId']),
+            { creator: userObject[project.creator] },
+            { application: _.pick(appObject[project.applicationId], ['id', 'name']) },
+          ) as FolderInfo,
+        );
+      });
+    }
+
+    return { list: involveProjectList, count: involveProjects.length || 0 };
+  }
 }

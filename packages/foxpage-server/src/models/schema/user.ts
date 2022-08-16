@@ -11,6 +11,7 @@ const userSchema = new Schema<User>(
     email: { type: String, maxLength: 100, default: '' },
     registerType: { type: Number, required: true, min: 1, max: 10, default: 1 },
     changePwdStatus: { type: Boolean, default: false },
+    defaultOrganizationId: { type: String, default: '' },
     createTime: { type: Date, required: true, default: Date.now },
     updateTime: { type: Date, required: true, default: Date.now },
     deleted: { type: Boolean, required: true, default: false },

@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { LOG, METHOD, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentStatusReq, ContentVersionDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -32,7 +32,7 @@ export class SetMockVersionStatus extends BaseController {
     operationId: 'set-mock-version-status',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentStatusReq): Promise<ResData<ContentVersion>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentStatusReq): Promise<ResData<ContentVersion>> {
     params.status = true; // Currently it is mandatory to only allow delete operations
 
     try {
@@ -42,7 +42,10 @@ export class SetMockVersionStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4191101);
       }
 
-      const result = await this.service.version.info.setVersionDeleteStatus(params, { ctx });
+      const result = await this.service.version.info.setVersionDeleteStatus(params, {
+        ctx,
+        actionType: [LOG.DELETE, TYPE.MOCK].join('_'),
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.mock.invalidVersionId, 2191101);

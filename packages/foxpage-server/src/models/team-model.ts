@@ -48,7 +48,7 @@ export class TeamModel extends BaseModel<Team> {
 
     return this.model
       .find(searchParams, '-_id -members._id')
-      .sort('createTime')
+      .sort({_id: -1})
       .skip(from)
       .limit(size)
       .lean();

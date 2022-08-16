@@ -1,40 +1,27 @@
 {
   "compilerOptions": {
-    // editor
-    "charset": "utf-8",
-    "newLine": "LF",
-
-    // syntax
-    "strict": true,
-    "alwaysStrict": true,
+    "module": "commonjs",
+    "target": "es2017",
     "noImplicitAny": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUnusedParameters": true,
-    "noUnusedLocals": true,
+    "moduleResolution": "node",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
     "esModuleInterop": true,
-    "jsx": "react",
-    "lib": ["dom", "esnext"],
-
-    // compile
-    "skipLibCheck": true,
-    "target": "ES2017",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "removeComments": false,
-    "declaration": true
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "alwaysStrict": true,
+    "strictPropertyInitialization": false,
+    "types": ["node", "reflect-metadata", "jest"],
+    "paths": {},
+    "resolveJsonModule": true
   },
-  "exclude": [
-    "node_modules",
-    "lib",
-    "dist",
-    "es",
-    "__mocks__/*",
-    "__mocks__/**/*",
-    ".cache",
-    "__*",
-    "commitlint.config.js"
-  ]
+  "include": [
+    "packages/**/*",
+  ],
+  "exclude": ["node_modules"]
 }

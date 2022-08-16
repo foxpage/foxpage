@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { Content, File, FileTypes, Folder } from '@foxpage/foxpage-server-types';
 
-import { TAG, TYPE } from '../../../config/constant';
+import { TAG, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { FileContentAndVersion } from '../../types/content-types';
 import {
@@ -29,7 +29,7 @@ export class FileListService extends BaseService<File> {
    * Single instance
    * @returns FileListService
    */
-  public static getInstance (): FileListService {
+  public static getInstance(): FileListService {
     this._instance || (this._instance = new FileListService());
     return this._instance;
   }
@@ -40,7 +40,7 @@ export class FileListService extends BaseService<File> {
    * @param  {Partial<File>} options
    * @returns Promise
    */
-  async getFileListByFolderId (folderId: string, options: Partial<File>): Promise<File[]> {
+  async getFileListByFolderId(folderId: string, options: Partial<File>): Promise<File[]> {
     return this.model.find(Object.assign({ folderId, deleted: false }, options));
   }
 
@@ -49,7 +49,7 @@ export class FileListService extends BaseService<File> {
    * @param  {AppTypeContent} params
    * @returns {string[]} Promise
    */
-  async getAppTypeFileList (params: AppFileType): Promise<File[]> {
+  async getAppTypeFileList(params: AppFileType): Promise<File[]> {
     return Model.file.getAppFileList(params);
   }
 
@@ -58,7 +58,7 @@ export class FileListService extends BaseService<File> {
    * @param  {AppTypeContent} params
    * @returns {string[]} Promise
    */
-  async getAppFileList (params: AppFileList): Promise<File[]> {
+  async getAppFileList(params: AppFileList): Promise<File[]> {
     return this.find({ applicationId: params.applicationId, id: { $in: params.ids }, deleted: false });
   }
 
@@ -67,7 +67,7 @@ export class FileListService extends BaseService<File> {
    * @param  {FilePageSearch} params
    * @returns {FileUserInfo} Promise
    */
-  async getPageData (params: FilePageSearch): Promise<PageData<FileUserInfo>> {
+  async getPageData(params: FilePageSearch): Promise<PageData<FileUserInfo>> {
     const [fileList, fileCount] = await Promise.all([
       Model.file.getPageList(params),
       Model.file.getCount(params),
@@ -84,12 +84,20 @@ export class FileListService extends BaseService<File> {
    * @param  {string[]} contentIds
    * @returns Promise
    */
-  async getContentFileByIds (contentIds: string[]): Promise<Record<string, File>> {
+  async getContentFileByIds(contentIds: string[], applicationId?: string): Promise<Record<string, File>> {
     if (!contentIds || contentIds.length === 0) {
       return {};
     }
 
-    const contentList = await Service.content.list.getDetailByIds(contentIds);
+    let contentList = await Service.content.list.getDetailByIds(contentIds);
+    // get and set content file id to reference id
+    if (applicationId) {
+      contentList = await Service.content.list.setContentReferenceFileId(
+        applicationId as string,
+        contentList,
+      );
+    }
+
     const fileList = await this.getDetailByIds(_.uniq(_.map(contentList, 'fileId')));
     const fileObject = _.keyBy(fileList, 'id');
 
@@ -107,9 +115,8 @@ export class FileListService extends BaseService<File> {
    * @param  {Partial<PageSize>={}} page
    * @returns File
    */
-  async getAppTypeFilePageList (params: AppTypeFileParams, pageInfo: PageSize): Promise<PageData<File>> {
-    const skip = (pageInfo.page - 1) * pageInfo.size;
-    const filter: AppTypeFileParams & { $and?: any } = {
+  async getAppTypeFilePageList(params: AppTypeFileParams, pageInfo: PageSize): Promise<PageData<File>> {
+    const filter: Record<string, any> = {
       applicationId: params.applicationId,
       type: params.type,
       deleted: false,
@@ -120,9 +127,19 @@ export class FileListService extends BaseService<File> {
       filter['$and'].push({ name: { $regex: new RegExp(params.search, 'i') } });
     }
 
+    // filter application or the special folder items
+    if (params.scopeId) {
+      filter.folderId =
+        !params.scope || params.scope === TYPE.APPLICATION ? params.scopeId : { $ne: params.scopeId };
+    }
+
     const [fileCount, fileList] = await Promise.all([
       this.getCount(filter),
-      this.find(filter, '', { sort: { createTime: -1 }, skip, limit: pageInfo.size }),
+      this.find(filter, '', {
+        sort: { _id: -1 },
+        skip: (pageInfo.page - 1) * pageInfo.size,
+        limit: pageInfo.size,
+      }),
     ]);
 
     return { count: fileCount, list: fileList };
@@ -135,7 +152,7 @@ export class FileListService extends BaseService<File> {
    * @param  {{type:string}} options Optional parameters of the file, type: file type
    * @returns Promise
    */
-  async getFileAssocInfo (fileList: File[], options?: { type: string }): Promise<FileAssoc[]> {
+  async getFileAssocInfo(fileList: File[], options?: { type: string }): Promise<FileAssoc[]> {
     const fileType = options?.type || '';
 
     if (fileList.length === 0) {
@@ -177,6 +194,15 @@ export class FileListService extends BaseService<File> {
           content: contentObject[file.id]?.content || {},
           creator: creatorObject[file.creator] || {},
           online: !!fileOnlineObject[file.id],
+          version: {
+            base:
+              contentObject[file.id]?.contentId && contentObject[file.id].status === VERSION.STATUS_BASE
+                ? contentObject[file.id].version
+                : '',
+            live: contentObject[file.id]?.contentId
+              ? ''
+              : Service.version.number.getVersionFromNumber(contentObject[file.id]?.liveVersionNumber || 0),
+          },
         }) as FileAssoc,
       );
     });
@@ -190,7 +216,11 @@ export class FileListService extends BaseService<File> {
    * @param  {string[]} fileIds
    * @returns Promise
    */
-  async getReferencedByIds (applicationId: string, fileIds: string[], type?: string): Promise<Record<string, File>> {
+  async getReferencedByIds(
+    applicationId: string,
+    fileIds: string[],
+    type?: string,
+  ): Promise<Record<string, File>> {
     const fileList = await this.find({
       applicationId,
       deleted: false,
@@ -210,15 +240,18 @@ export class FileListService extends BaseService<File> {
   /**
    * Get app item (variable, condition, function) list or project item list
    * if params.type is 'live' then get has live version's item
-   * 
+   *
    * response file, content and version detail, include relations detail
    * @param params {applicationId, folderId?, search?, type?, page?, size?}
-   * @param type 
-   * @returns 
+   * @param type
+   * @returns
    */
-  async getItemFileContentDetail (params: any, type: FileTypes): Promise<{
-    list: FileContentAndVersion[],
-    counts: number
+  async getItemFileContentDetail(
+    params: any,
+    type: FileTypes,
+  ): Promise<{
+    list: FileContentAndVersion[];
+    counts: number;
   }> {
     let filter: Record<string, any> = { type };
 
@@ -233,7 +266,7 @@ export class FileListService extends BaseService<File> {
     let fileContentList: Content[] = [];
     const contentList = await Service.content.file.getContentByFileIds(fileIds);
     if (params.type === 'live') {
-      contentList.forEach(content => {
+      contentList.forEach((content) => {
         if (content.liveVersionNumber === 0) {
           _.pull(fileIds, content.fileId);
         } else {
@@ -245,16 +278,14 @@ export class FileListService extends BaseService<File> {
     }
 
     // filter valid file list
-    fileList = _.filter(fileList, file => fileIds.indexOf(file.id) !== -1);
+    fileList = _.filter(fileList, (file) => fileIds.indexOf(file.id) !== -1);
 
     let fileVersion: FileContentAndVersion[] = [];
     const pageFileList = _.chunk(fileList, params.size)[params.page - 1] || [];
 
     if (fileIds.length > 0) {
       // Get the live details of the content of the file
-      let versionObject = await Service.version.list.getContentMaxVersionDetail(
-        _.map(fileContentList, 'id'),
-      );
+      let versionObject = await Service.version.list.getContentMaxVersionDetail(_.map(fileContentList, 'id'));
       const [versionItemRelation, contentGoodsList] = await Promise.all([
         Service.version.list.getVersionListRelations(_.toArray(versionObject), params.type === 'live'),
         Service.store.goods.getAppFileStatus(params.applicationId, _.map(pageFileList, 'id')),
@@ -262,26 +293,88 @@ export class FileListService extends BaseService<File> {
       const goodsStatusObject = _.keyBy(contentGoodsList, 'id');
 
       // Splicing combination returns data
-      const fileObject = _.keyBy(pageFileList, 'id');
-      for (const content of fileContentList) {
+      const fileContentObject = _.keyBy(fileContentList, 'fileId');
+      for (const file of pageFileList) {
+        const content = fileContentObject[file.id] || {};
         const itemRelations = await Service.relation.formatRelationDetailResponse(
           versionItemRelation[content.id],
         );
 
         fileVersion.push({
-          id: fileObject?.[content.fileId]?.id,
-          name: fileObject?.[content.fileId]?.name,
-          type: fileObject?.[content.fileId]?.type,
+          id: file.id,
+          name: file.name,
+          type: file.type,
           version: versionObject?.[content.id]?.version || '',
           versionNumber: content.liveVersionNumber || versionObject?.[content.id]?.versionNumber,
           contentId: content.id,
           content: versionObject?.[content.id]?.content || {},
           relations: itemRelations,
-          online: goodsStatusObject[content.fileId]?.status ? true : false
+          online: goodsStatusObject[content.fileId]?.status ? true : false,
         });
       }
     }
 
     return { list: fileVersion, counts: fileList.length };
+  }
+
+  /**
+   * get user involve file list
+   * @param params
+   * @returns
+   */
+  async getUserInvolveFiles(params: {
+    applicationId: string;
+    type: string;
+    userId: string;
+    skip?: number;
+    limit?: number;
+  }): Promise<{ counts: number; list: File[] }> {
+    const { applicationId = '', userId = '' } = params;
+
+    const userInvoloveItems = await Service.auth.find(
+      {
+        targetId: userId,
+        allow: true,
+        'relation.applicationId': applicationId,
+        'relation.projectId': { $exists: true },
+      },
+      'relation',
+    );
+
+    let projectIds: string[] = [];
+    let fileIds: string[] = [];
+    userInvoloveItems.forEach((item) => {
+      if (item.relation?.fileId) {
+        fileIds.push(item.relation.fileId);
+      } else if (item.relation?.projectId) {
+        projectIds.push(item.relation.projectId);
+      }
+    });
+
+    const fileParams: Record<string, any> = {
+      $or: [],
+      creator: { $ne: userId },
+      type: params.type,
+      deleted: false,
+    };
+
+    if (fileIds.length > 0) {
+      fileParams['$or'].push({ fileId: { $in: _.uniq(fileIds) } });
+    }
+
+    if (projectIds.length > 0) {
+      fileParams['$or'].push({ folderId: { $in: _.uniq(projectIds) } });
+    }
+
+    let counts = 0;
+    let fileList: File[] = [];
+    if (fileParams['$or'].length > 0) {
+      [counts, fileList] = await Promise.all([
+        this.getCount(fileParams),
+        this.find(fileParams, '', { skip: params.skip || 0, limit: params.limit || 10 }),
+      ]);
+    }
+
+    return { counts, list: fileList };
   }
 }

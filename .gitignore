@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+.DS_Store
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -117,6 +119,7 @@ lib/
 /lerna-log.json
 /yarn-error.json
 /yarn.lock
+/packages/foxpage-server/.env
 /packages/foxpage-server/nodemon.json
 /packages/foxpage-server/src/third-parties/login/trip-login.ts
 /packages/foxpage-server/static/swagger/swagger.json

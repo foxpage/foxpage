@@ -33,7 +33,7 @@ export class GetConditionList extends BaseController {
     operationId: 'get-condition-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (@QueryParams() params: AppTypePageListCommonReq): Promise<ResData<FileContentAndVersion[]>> {
+  async index(@QueryParams() params: AppTypePageListCommonReq): Promise<ResData<FileContentAndVersion[]>> {
     try {
       this.service.folder.info.setPageSize(params);
 
@@ -49,7 +49,10 @@ export class GetConditionList extends BaseController {
         });
       }
 
-      const fileInfo = await this.service.file.list.getItemFileContentDetail(params, <FileTypes>TYPE.CONDITION);
+      const fileInfo = await this.service.file.list.getItemFileContentDetail(
+        params,
+        <FileTypes>TYPE.CONDITION,
+      );
 
       return Response.success(
         {

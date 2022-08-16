@@ -4,6 +4,8 @@ import _ from 'lodash';
 import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
+import { Content } from '@foxpage/foxpage-server-types';
+
 import { i18n } from '../../../app.config';
 import { TYPE } from '../../../config/constant';
 import { ContentInfo } from '../../types/content-types';
@@ -13,6 +15,7 @@ import { AppContentListRes, AppTypeFilesReq } from '../../types/validates/page-v
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to files/get-page-type-items.ts
 @JsonController('conditions')
 export class GetAppPageConditionList extends BaseController {
   constructor() {
@@ -25,7 +28,7 @@ export class GetAppPageConditionList extends BaseController {
    * @param  {AppPageListCommonReq} params
    * @returns {ContentInfo}
    */
-  @Get('/file-searchs')
+  @Get('/file-searchs-migrations')
   @OpenAPI({
     summary: i18n.sw.getAppScopeConditions,
     description: '',
@@ -44,9 +47,22 @@ export class GetAppPageConditionList extends BaseController {
 
       // Get the folder name of the file and the content information of the file
       let fileList = result.list as FileAssoc[];
-      if (result?.list.length > 0) {
-        fileList = await this.service.file.list.getFileAssocInfo(result.list, { type: TYPE.CONDITION });
-      }
+      let contentObject: Record<string, Content> = {};
+      const fileIds = _.map(fileList, 'id') as string[];
+      [fileList, contentObject] = await Promise.all([
+        this.service.file.list.getFileAssocInfo(result?.list || [], { type: TYPE.CONDITION }),
+        this.service.content.list.getContentObjectByFileIds(fileIds)
+      ]);
+
+      fileList.forEach(condition => {
+        if(!condition.version) {
+          condition.version = {};
+        }
+
+        if (contentObject[condition.id]) {
+          condition.version.live = this.service.version.number.getVersionFromNumber(contentObject[condition.id].liveVersionNumber);
+        }
+      });
 
       return Response.success(
         {

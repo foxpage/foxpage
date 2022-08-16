@@ -6,7 +6,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { NewFileInfo } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailReq, FileDetailRes } from '../../types/validates/file-validate-types';
@@ -52,7 +52,10 @@ export class AddPageDetail extends BaseController {
       }
 
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: TYPE.PAGE });
-      const result = await this.service.file.info.addFileDetail(newFileDetail, { ctx });
+      const result = await this.service.file.info.addFileDetail(newFileDetail, {
+        ctx,
+        actionType: [LOG.CREATE, TYPE.PAGE].join('_'),
+      });
 
       // Check the validity of the application ID
       if (result.code === 1) {

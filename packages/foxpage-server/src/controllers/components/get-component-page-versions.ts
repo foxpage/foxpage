@@ -57,20 +57,21 @@ export class GetComponentPageVersionList extends BaseController {
         deleted: false,
       });
 
+      const versionContents = _.map(versionList, version => version.content);
+      const componentIds = this.service.content.component.getComponentResourceIds(versionContents);
+      const [resourceObject, contentAllParents] = await Promise.all([
+        this.service.content.resource.getResourceContentByIds(componentIds),
+        this.service.content.list.getContentAllParents(componentIds),
+      ]);
+
+      const appResource = await this.service.application.getAppResourceFromContent(contentAllParents);
+      const contentResource = this.service.content.info.getContentResourceTypeInfo(
+        appResource,
+        contentAllParents,
+      );
+
       let contentVersionList: ContentVersionWithLive[] = [];
       for (const version of versionList) {
-        const componentIds = this.service.content.component.getComponentResourceIds([version.content]);
-        const [resourceObject, contentAllParents] = await Promise.all([
-          this.service.content.resource.getResourceContentByIds(componentIds),
-          this.service.content.list.getContentAllParents(componentIds),
-        ]);
-
-        const appResource = await this.service.application.getAppResourceFromContent(contentAllParents);
-        const contentResource = this.service.content.info.getContentResourceTypeInfo(
-          appResource,
-          contentAllParents,
-        );
-
         version.content.resource = this.service.version.component.assignResourceToComponent(
           version?.content?.resource || {},
           resourceObject,

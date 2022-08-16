@@ -105,6 +105,7 @@ export class PublishProjectPage extends BaseController {
       this.service.version.live.bulkSetVersionStatus(
         releaseStatusIds,
         VERSION.STATUS_RELEASE as ContentStatus,
+        { ctx },
       );
 
       // The data of relation is set to live state, excluding data that is already live

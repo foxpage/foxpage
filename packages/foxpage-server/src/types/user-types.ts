@@ -2,7 +2,7 @@ import { User } from '@foxpage/foxpage-server-types';
 
 import { ServiceRes } from './index-types';
 
-export type UserBase = Pick<User, 'id' | 'account'>;
+export type UserBase = Pick<User, 'id' | 'account' | 'nickName' | 'email'>;
 export type NewUser = User & { password: string }; // 保存新用户数据字段
 export type AddUserResData = Pick<User, 'account' | 'email' | 'password'>;
 export type RegisterParams = LoginParams & {

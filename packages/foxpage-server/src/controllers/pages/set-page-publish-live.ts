@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content, ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
@@ -53,6 +53,7 @@ export class SetPageVersionPublishAndLiveStatus extends BaseController {
       const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
         ctx,
         liveRelation: true,
+        actionType: [LOG.LIVE, TYPE.PAGE].join('_'),
       });
 
       if (result.code === 1) {
@@ -68,6 +69,7 @@ export class SetPageVersionPublishAndLiveStatus extends BaseController {
         this.service.content.live.setLiveContent(result?.data?.contentId, result?.data?.versionNumber, {
           ctx,
           content: { id: result?.data?.contentId } as Content,
+          actionType: [LOG.LIVE, TYPE.PAGE].join('_'),
         });
       }
 

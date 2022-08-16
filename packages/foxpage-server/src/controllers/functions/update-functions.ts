@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE, VERSION } from '../../../config/constant';
+import { LOG, TYPE, VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailRes, UpdateTypeFileDetailReq } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
@@ -66,7 +66,10 @@ export class UpdateFunctionDetail extends BaseController {
         versionNumber = versionDetail.versionNumber || 1;
       }
 
-      const result = await this.service.file.info.updateFileDetail(params, { ctx });
+      const result = await this.service.file.info.updateFileDetail(params, {
+        ctx,
+        actionType: [LOG.UPDATE, TYPE.FUNCTION].join('_'),
+      });
       if (result.code === 1) {
         return Response.warning(i18n.function.invalidFileId, 2091502);
       }
@@ -75,9 +78,17 @@ export class UpdateFunctionDetail extends BaseController {
         return Response.warning(i18n.function.nameExist, 2091503);
       }
 
-      this.service.content.info.updateContentItem(contentId, { title: contentName }, { ctx });
+      this.service.content.info.updateContentItem(
+        contentId,
+        { title: contentName },
+        { ctx, actionType: [LOG.UPDATE, TYPE.FUNCTION].join('_') },
+      );
       if (versionStatus === VERSION.STATUS_BASE) {
-        this.service.version.info.updateVersionItem(versionId, { content: params.content }, { ctx });
+        this.service.version.info.updateVersionItem(
+          versionId,
+          { content: params.content },
+          { ctx, actionType: [LOG.UPDATE, TYPE.FUNCTION].join('_') },
+        );
       } else {
         // Add new version
         const version = this.service.version.number.getVersionFromNumber(++versionNumber);

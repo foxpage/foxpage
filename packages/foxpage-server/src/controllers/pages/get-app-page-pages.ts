@@ -13,6 +13,7 @@ import { AppContentListRes, AppTypeFilesReq } from '../../types/validates/page-v
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to files/get-page-type-items.ts
 @JsonController('pages')
 export class GetAppPageFileList extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class GetAppPageFileList extends BaseController {
    * @param  {AppTypeFilesReq} params
    * @returns {PageContentData[]}
    */
-  @Get('/file-searchs')
+  @Get('/file-searchs/migration')
   @OpenAPI({
     summary: i18n.sw.getAppTypeFileList,
     description: '',
@@ -41,6 +42,7 @@ export class GetAppPageFileList extends BaseController {
       let fileList = result.list as FileAssoc[];
       if (result?.list.length > 0) {
         fileList = await this.service.file.list.getFileAssocInfo(result.list);
+        fileList = fileList.map(file => _.omit(file, 'version'));
       }
 
       return Response.success(

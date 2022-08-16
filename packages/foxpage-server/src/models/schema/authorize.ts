@@ -10,6 +10,7 @@ const authorizeSchema = new Schema<Authorize>(
     targetId: { type: String, required: true },
     mask: { type: Number, required: true }, // 0: no auth, 1: admin, 2: editor, 4: delete, 8: publish, 16: view
     allow: { type: Boolean, default: true },
+    relation: { type: Object, default: {} },
     creator: { type: String, required: true, length: 20 },
     createTime: { type: Date, default: Date.now, required: true },
     updateTime: { type: Date, default: Date.now, required: true },

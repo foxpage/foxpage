@@ -36,7 +36,7 @@ export class AddResourceGroupDetail extends BaseController {
     operationId: 'add-resource-group-detail',
   })
   @ResponseSchema(FolderDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AddTypeFolderDetailReq): Promise<ResData<Folder>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AddTypeFolderDetailReq): Promise<ResData<Folder>> {
     params.name = _.trim(params.name);
 
     // Check the validity of the name
@@ -71,7 +71,11 @@ export class AddResourceGroupDetail extends BaseController {
       const result = await this.service.folder.info.addTypeFolderDetail(folderDetail, {
         ctx,
         type: TYPE.RESOURCE as AppFolderTypes,
-        distinctParams: { 'tags.type': TAG.RESOURCE_CONFIG, 'tags.resourceId': resourceTag.resourceId }
+        distinctParams: {
+          'tags.type': TAG.RESOURCE_CONFIG,
+          'tags.resourceId': resourceTag.resourceId,
+          name: folderDetail.name,
+        },
       });
 
       if (result.code === 1) {

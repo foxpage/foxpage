@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { ContentDetailRes, UpdateContentReq } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -32,7 +32,7 @@ export class UpdateMockContentDetail extends BaseController {
     operationId: 'update-mock-content-detail',
   })
   @ResponseSchema(ContentDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: UpdateContentReq): Promise<ResData<Content>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateContentReq): Promise<ResData<Content>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.MOCK });
 
@@ -43,7 +43,7 @@ export class UpdateMockContentDetail extends BaseController {
 
       const result = await this.service.content.info.updateContentDetail(
         Object.assign({}, params, { type: <FileTypes>TYPE.MOCK }),
-        { ctx },
+        { ctx, actionType: [LOG.UPDATE, TYPE.MOCK].join('_') },
       );
 
       if (result.code === 1) {

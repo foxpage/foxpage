@@ -13,6 +13,7 @@ import { AppContentListRes, AppTypeFilesReq } from '../../types/validates/page-v
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to files/get-page-type-items.ts
 @JsonController('variables')
 export class GetPageVariableList extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class GetPageVariableList extends BaseController {
    * @param  {AppPageListCommonReq} params
    * @returns {ContentInfo}
    */
-  @Get('/file-searchs')
+  @Get('/file-searchs-migration')
   @OpenAPI({
     summary: i18n.sw.getAppScopeVariables,
     description: '',
@@ -48,13 +49,25 @@ export class GetPageVariableList extends BaseController {
 
       // get reference variable version detail
       let referenceMap = this.service.content.tag.getContentCopyTags(
-        _.map(fileList, item => _.pick(item, 'id', 'tags')) as {id:string, tags: any[]}[], 
+        _.map(fileList, item => _.pick(item, 'id', 'tags')) as { id:string, tags: any[] }[], 
         TAG.COPY
       );
-      const referVersionObject = await this.service.version.list.getReferVersionList(referenceMap);
+      const [referVersionObject, contentList] = await Promise.all([
+        this.service.version.list.getReferVersionList(referenceMap),
+        this.service.content.list.getDetailByIds(_.map(fileList, 'contentId') as string[]),
+      ]);
+      const contentObject = _.keyBy(contentList, 'id');
       fileList.forEach(variable => {
+        if(!variable.version) {
+          variable.version = {};
+        }
+
         if (referVersionObject[variable.id]) {
           variable.content = referVersionObject[variable.id]?.content || {};
+        }
+
+        if (contentObject[variable.content.id]) {
+          variable.version.live = this.service.version.number.getVersionFromNumber(contentObject[variable.content.id].liveVersionNumber);
         }
       });
 

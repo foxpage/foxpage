@@ -2,14 +2,23 @@ import { model, Schema } from 'mongoose';
 
 import { Log } from '@foxpage/foxpage-server-types';
 
-const stringTypeSchema = new Schema({ id: String, type: String });
+const categorySchema = new Schema({
+  type: String,
+  organizationId: String,
+  applicationId: String,
+  folderId: String,
+  fileId: String,
+  contentId: String,
+  versionId: String,
+});
 const logSchema = new Schema<Log>(
   {
     id: { type: String, required: true, length: 20, unique: true },
     transactionId: { type: String, required: true, length: 20 },
     action: { type: String, required: true },
-    operator: { type: String, required: true, length: 20 },
-    category: { type: stringTypeSchema, default: {} },
+    actionType: { type: String, default: '' },
+    operator: { type: String, length: 20 },
+    category: { type: categorySchema, default: {} },
     content: { type: Object, required: true, default: {} },
     createTime: { type: Date, default: Date.now, required: true },
     updateTime: { type: Date, default: Date.now, required: true },

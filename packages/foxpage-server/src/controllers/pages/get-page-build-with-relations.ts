@@ -53,7 +53,10 @@ export class GetAppPageBuildInfoList extends BaseController {
       }
 
       // Get the live details of the specified contentIds and the relation details
-      const contentVersionList = await this.service.version.live.getContentAndRelationVersion(validContentIds, true);
+      const [contentList, contentVersionList] = await Promise.all([
+        this.service.content.list.getDetailByIds(validContentIds),
+        this.service.version.live.getContentAndRelationVersion(validContentIds, true),
+      ]);
 
       let templateIds: string[] = [];
       contentVersionList.forEach(content => {
@@ -71,6 +74,7 @@ export class GetAppPageBuildInfoList extends BaseController {
       let dependMissing: string[] = [];
       let recursiveItem: string[] = [];
       let contentAndRelation: PageContentRelationsAndExternal[] = [];
+      const contentObject = _.keyBy(contentList, 'id');
       contentVersionList.forEach((content) => {
         const dependMissing: string[] = [];
         if (content.dependMissing && content.dependMissing.length > 0) {
@@ -97,6 +101,7 @@ export class GetAppPageBuildInfoList extends BaseController {
             {},
             content.content || {},
             {
+              extension: this.service.content.info.getContentExtension(contentObject[content.id], ['extendId', 'mock']),
               dslVersion: content.dslVersion || DSL_VERSION,
             }
           ),

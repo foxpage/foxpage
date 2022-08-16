@@ -133,12 +133,10 @@ export class AppComponentListReq {
 export class AppComponentVersionListReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
-  @Length(20, 20)
   applicationId: string;
 
   @JSONSchema({ description: 'Component file ID' })
   @IsString()
-  @Length(20, 20)
   id: string;
 
   @JSONSchema({ description: 'Search characters, component name and ID' })
@@ -494,6 +492,64 @@ export class RemotePagePackageReq extends PagingReq {
   name: string;
 }
 
+export class ComponentCategory {
+  @JSONSchema({ description: 'Component nick name' })
+  @IsString()
+  name:string;
+
+  @JSONSchema({ description: 'Component category name' })
+  @IsString()
+  categoryName:string;
+
+  @JSONSchema({ description: 'Component group name' })
+  @IsString()
+  groupName:string;
+
+  @JSONSchema({ description: 'Component Sort' })
+  @IsNumber()
+  @IsOptional()
+  sort?: number;
+
+  @JSONSchema({ description: 'Component Rank' })
+  @IsNumber()
+  @IsOptional()
+  rank?: number;
+
+  @JSONSchema({ description: 'Component Props' })
+  @IsObject()
+  @IsOptional()
+  props?: Record<string, any>;
+
+  @JSONSchema({ description: 'Component category description' })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @JSONSchema({ description: 'Component category screenshot image url' })
+  @IsString()
+  @IsOptional()
+  screenshot?: string;
+}
+
+export class DeleteComponentCategoryReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'Component File ID' })
+  @IsString()
+  @Length(20, 20)
+  id: string;
+}
+
+export class SetComponentCategoryReq extends DeleteComponentCategoryReq {
+  @JSONSchema({ description: 'Resource category detail' })
+  @ValidateNested()
+  @Type(() => ComponentCategory)
+  category: ComponentCategory;
+}
+
 export class RemotePagePackageRes extends ResponsePageBase {
   @ValidateNested({ each: true })
   data: Array<BatchComponentResource>;
@@ -508,4 +564,32 @@ export class BatchLiveReq {
   @ValidateNested({ each: true })
   @IsArray()
   idVersions: ContentIdVersion[]
+}
+
+export class GetCategoryComponentReq extends PagingReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'Component name or id' })
+  @IsString()
+  @IsOptional()
+  search: string;
+}
+
+export class ComponentCategoryTypes {
+  @JSONSchema({ description: 'Component category name' })
+  @IsString()
+  categoryName: string;
+
+  @JSONSchema({ description: 'Component category group names' })
+  @IsArray()
+  groupNames: Array<string>;
+}
+
+export class ComponentCategoryTypesRes extends ResponseBase {
+  @ValidateNested({ each: true })
+  @Type(() => ComponentCategoryTypes)
+  data: Array<ComponentCategoryTypes>;
 }

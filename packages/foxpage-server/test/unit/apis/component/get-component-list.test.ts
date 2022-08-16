@@ -39,12 +39,12 @@ describe('Get: /components/live-versions', () => {
       .spyOn(ComponentContentService.prototype, 'getComponentVersionLiveDetails')
       .mockResolvedValue(<any>Data.content.nameVersionComponent);
     jest.spyOn(FileListService.prototype, 'getContentFileByIds').mockResolvedValue(<Record<string, File>>{
-      cont_X3oHESmT7lQebHz: Object.assign(Data.file.list[0], { type: 'component' }),
+      'cont_X3oHESmT7lQebHz': Object.assign(Data.file.list[0], { type: 'component' }),
     });
     jest.spyOn(ComponentService.prototype, 'getComponentDetailByIdVersion').mockResolvedValue(<
       Record<string, ContentVersion>
     >{
-      cont_X3oHESmT7lQebHz: Object.assign(Data.version.list[0], { contentId: 'cont_X3oHESmT7lQebHz' }),
+      'cont_X3oHESmT7lQebHz': Object.assign(Data.version.list[0], { contentId: 'cont_X3oHESmT7lQebHz' }),
     });
     jest.spyOn(ResourceContentService.prototype, 'getResourceContentByIds').mockResolvedValue({});
     jest.spyOn(ContentListService.prototype, 'getContentAllParents').mockResolvedValue({});
@@ -61,12 +61,12 @@ describe('Get: /components/live-versions', () => {
       .spyOn(ComponentContentService.prototype, 'getComponentVersionLiveDetails')
       .mockResolvedValue(<any>Data.content.nameVersionComponent);
     jest.spyOn(FileListService.prototype, 'getContentFileByIds').mockResolvedValue(<Record<string, File>>{
-      cont_X3oHESmT7lQebHz: Object.assign(Data.file.list[0], { type: 'component' }),
+      'cont_X3oHESmT7lQebHz': Object.assign(Data.file.list[0], { type: 'component' }),
     });
     jest.spyOn(ComponentService.prototype, 'getComponentDetailByIdVersion').mockResolvedValue(<
       Record<string, ContentVersion>
     >{
-      cont_X3oHESmT7lQebHz: Object.assign(Data.version.list[0], { contentId: 'cont_X3oHESmT7lQebHz' }),
+      'cont_X3oHESmT7lQebHz': Object.assign(Data.version.list[0], { contentId: 'cont_X3oHESmT7lQebHz' }),
     });
     jest.spyOn(ResourceContentService.prototype, 'getResourceContentByIds').mockResolvedValue({});
     jest.spyOn(ContentListService.prototype, 'getContentAllParents').mockResolvedValue({});

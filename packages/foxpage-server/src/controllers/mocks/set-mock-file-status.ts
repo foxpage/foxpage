@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { LOG, METHOD, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentStatusReq } from '../../types/validates/content-validate-types';
 import { FileDetailRes } from '../../types/validates/file-validate-types';
@@ -33,7 +33,7 @@ export class SetMockFileStatus extends BaseController {
     operationId: 'set-mock-file-status',
   })
   @ResponseSchema(FileDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentStatusReq): Promise<ResData<File>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentStatusReq): Promise<ResData<File>> {
     params.status = true; // Currently it is mandatory to only allow delete operations
 
     try {
@@ -43,7 +43,10 @@ export class SetMockFileStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4190801);
       }
 
-      const result = await this.service.file.info.setFileDeleteStatus(params, { ctx });
+      const result = await this.service.file.info.setFileDeleteStatus(params, {
+        ctx,
+        actionType: [LOG.DELETE, TYPE.MOCK].join('_'),
+      });
       if (result.code === 1) {
         return Response.warning(i18n.file.invalidFileId, 2190801);
       } else if (result.code === 2) {

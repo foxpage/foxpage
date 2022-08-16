@@ -150,10 +150,13 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {ContentVersion[]} componentList
    * @returns Promise
    */
-  getComponentResourceIds (componentList: Component[]): string[] {
+   getComponentResourceIds (componentList: Component[], types?: string[]): string[] {
     let componentIds: string[] = [];
     componentList.forEach((component) => {
-      const item = <Record<string, string>>component?.resource?.entry || {};
+      let item = <Record<string, string>>component?.resource?.entry || {};
+      if (types && types.length > 0) {
+        item= _.pick(item, types || []);
+      }
       componentIds = componentIds.concat(_.pull(_.values(item), ''));
     });
 

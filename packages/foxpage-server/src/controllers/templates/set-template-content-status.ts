@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { LOG, METHOD, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentStatusReq, ContentDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -42,7 +42,10 @@ export class SetTemplateContentStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4071001);
       }
 
-      const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
+      const result = await this.service.content.info.setContentDeleteStatus(params, {
+        ctx,
+        actionType: [LOG.DELETE, TYPE.TEMPLATE].join('_'),
+      });
       if (result.code === 1) {
         return Response.warning(i18n.content.invalidContentId, 2071001);
       } else if (result.code === 2) {

@@ -1,0 +1,83 @@
+{
+  "compilerOptions": {
+    // editor
+    "charset": "utf-8",
+    "newLine": "LF",
+    // syntax
+    "strict": true,
+    "alwaysStrict": true,
+    "declaration": true,
+    "noImplicitAny": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "lib": [
+      "dom",
+      "es7",
+      "esnext"
+    ],
+    "jsx": "react",
+    // compile
+    "rootDirs": [
+      "."
+    ],
+    "skipLibCheck": true,
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "removeComments": false,
+    "sourceMap": false,
+    "allowJs": true,
+    "locale": "zh-cn",
+    "outDir": "./lib",
+    "baseUrl": ".",
+    "paths": {
+      "@/pages/*": [
+        "src/pages/*"
+      ],
+      "@/apis/*": [
+        "src/apis/*"
+      ],
+      "@/components/*": [
+        "src/pages/components/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/store/*": [
+        "src/store/*"
+      ],
+      "@/actions/*": [
+        "src/store/actions/*"
+      ],
+      "@/reducers/*": [
+        "src/store/reducers/*"
+      ],
+      "@/sagas/*": [
+        "src/store/sagas/*"
+      ],
+      "@/constants/*": [
+        "src/constants/*"
+      ],
+      "@/foxI18n/*": [
+        "src/locales/*"
+      ],
+      "@/types/*": [
+        "typings/*"
+      ],
+    }
+  },
+  "include": [
+    "typings/*",
+    "typings/**/*",
+    "src/*",
+    "src/**/*",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

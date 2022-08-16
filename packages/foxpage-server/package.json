@@ -30,8 +30,8 @@
   "license": "MIT",
   "dependencies": {
     "@foxpage/foxpage-plugin": "^0.2.5",
-    "@foxpage/foxpage-plugin-unpkg": "^0.3.7",
-    "@foxpage/foxpage-server-types": "^0.3.9",
+    "@foxpage/foxpage-plugin-unpkg": "^0.3.8",
+    "@foxpage/foxpage-server-types": "^0.3.15",
     "@foxpage/foxpage-shared": "^0.5.2",
     "@foxpage/foxpage-types": "^0.5.1",
     "@types/jsonwebtoken": "^8.5.1",
@@ -48,6 +48,7 @@
     "class-transformer": "0.4.0",
     "class-validator": "^0.13.1",
     "class-validator-jsonschema": "^3.0.1",
+    "dotenv": "^16.0.1",
     "jsonwebtoken": "^8.5.1",
     "kcors": "^2.2.2",
     "koa": "^2.7.0",

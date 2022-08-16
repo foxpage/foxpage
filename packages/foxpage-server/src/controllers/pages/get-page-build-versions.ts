@@ -86,7 +86,6 @@ export class GetPageBuildVersionDetail extends BaseController {
       versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockRelations);
       versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockTemplateRelations);
 
-
       const pageBuildVersion: PageBuildVersion = Object.assign({}, versionDetail, {
         relations: versionInfo.relations || {},
         mock: versionInfo.mockObject[params.id]?.mock || {},

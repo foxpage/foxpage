@@ -13,7 +13,7 @@ import {
 
 import { LOG, PRE, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
-import { ComponentContentInfo, } from '../../types/component-types';
+import { ComponentContentInfo } from '../../types/component-types';
 import {
   ContentVersionNumber,
   NameVersion,
@@ -42,7 +42,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * Single instance
    * @returns VersionInfoService
    */
-  public static getInstance (): VersionInfoService {
+  public static getInstance(): VersionInfoService {
     this._instance || (this._instance = new VersionInfoService());
     return this._instance;
   }
@@ -53,7 +53,10 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {Partial<ContentVersion>} params
    * @returns ContentVersion
    */
-  create (params: Partial<ContentVersion>, options: { ctx: FoxCtx; fileId?: string }): ContentVersion {
+  create(
+    params: Partial<ContentVersion>,
+    options: { ctx: FoxCtx; fileId?: string; actionType?: string },
+  ): ContentVersion {
     const invalidRelations = Service.version.check.relation(params.content?.relation || {});
     if (invalidRelations.length > 0) {
       throw new Error('Invalid content relation:' + invalidRelations.join(', '));
@@ -70,16 +73,16 @@ export class VersionInfoService extends BaseService<ContentVersion> {
     };
 
     options.ctx.transactions.push(Model.version.addDetailQuery(versionDetail));
-    options.ctx.operations.push({
-      action: LOG.CREATE,
-      category: LOG.CATEGORY_APPLICATION,
-      content: {
-        id: versionDetail.id,
-        contentId: params.contentId,
-        fileId: options?.fileId,
-        after: versionDetail,
-      },
-    });
+    options.ctx.operations.push(
+      ...Service.log.addLogItem(LOG.CREATE, versionDetail, {
+        actionType: options.actionType || [LOG.CREATE, TYPE.VERSION].join('_'),
+        category: {
+          type: TYPE.VERSION,
+          versionId: versionDetail.id,
+          contentId: params.contentId || '',
+        },
+      }),
+    );
 
     return versionDetail;
   }
@@ -92,9 +95,9 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {UpdateContentVersion} params
    * @returns Promise
    */
-  async updateVersionDetail (
+  async updateVersionDetail(
     params: UpdateContentVersion,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number | string | string[]>> {
     if (params.content && (<DSL>params.content).relation) {
       const invalidRelations = Service.version.check.relation((<DSL>params.content).relation || {});
@@ -149,7 +152,15 @@ export class VersionInfoService extends BaseService<ContentVersion> {
 
     // Save logs
     options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.VERSION_UPDATE, versionDetail, { fileId: contentDetail.fileId }),
+      ...Service.log.addLogItem(LOG.VERSION_UPDATE, versionDetail, {
+        actionType: options.actionType || [LOG.UPDATE, TYPE.VERSION].join('_'),
+        category: {
+          type: TYPE.VERSION,
+          versionId: versionDetail.id,
+          contentId: contentDetail.id,
+          fileId: contentDetail.fileId,
+        },
+      }),
     );
 
     return { code: 0, data: versionId };
@@ -161,10 +172,10 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateVersionItem (
+  updateVersionItem(
     id: string,
     params: Partial<ContentVersion>,
-    options: { ctx: FoxCtx; fileId?: string },
+    options: { ctx: FoxCtx; fileId?: string; actionType?: string },
   ): void {
     if ((<DSL>params.content).relation) {
       const invalidRelations = Service.version.check.relation((<DSL>params.content).relation || {});
@@ -176,7 +187,13 @@ export class VersionInfoService extends BaseService<ContentVersion> {
     options.ctx.transactions.push(Model.version.updateDetailQuery(id, params));
     options.ctx.operations.push(
       ...Service.log.addLogItem(LOG.VERSION_UPDATE, Object.assign({ id }, params), {
-        fileId: options?.fileId,
+        actionType: options.actionType || [LOG.UPDATE, TYPE.VERSION].join('_'),
+        category: {
+          type: TYPE.VERSION,
+          versionId: id,
+          contentId: params.contentId || '',
+          fileId: options.fileId || '',
+        },
       }),
     );
   }
@@ -188,7 +205,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {boolean=false} createNew
    * @returns Promise
    */
-  async getMaxContentVersionDetail (
+  async getMaxContentVersionDetail(
     contentId: string,
     options: { ctx: FoxCtx; createNew?: boolean },
   ): Promise<ContentVersion> {
@@ -209,7 +226,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {string} contentId
    * @returns Promise
    */
-  async getMaxBaseContentVersionDetail (contentId: string): Promise<ContentVersion> {
+  async getMaxBaseContentVersionDetail(contentId: string): Promise<ContentVersion> {
     return Model.version.getMaxVersionDetailById(contentId, { status: VERSION.STATUS_BASE as ContentStatus });
   }
 
@@ -220,7 +237,10 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @returns {Promise<ContentVersion>}
    * @memberof VersionService
    */
-  async createNewContentVersion (contentId: string, options: { ctx: FoxCtx }): Promise<ContentVersion> {
+  async createNewContentVersion(
+    contentId: string,
+    options: { ctx: FoxCtx; actionType?: string },
+  ): Promise<ContentVersion> {
     const newVersionDetail = (await this.getContentLatestVersion({ contentId })) || {};
 
     // Set new version information
@@ -236,7 +256,13 @@ export class VersionInfoService extends BaseService<ContentVersion> {
 
     // Save
     options.ctx.transactions.push(Model.version.addDetailQuery(newVersionDetail));
-    return newVersionDetail;
+    options.ctx.operations.push(
+      ...Service.log.addLogItem(LOG.CREATE, newVersionDetail, {
+        actionType: options.actionType || [LOG.CREATE, TYPE.VERSION].join('_'),
+        category: { type: TYPE.VERSION, versionId: newVersionDetail.id, contentId },
+      }),
+    );
+    return _.cloneDeep(newVersionDetail);
   }
 
   /**
@@ -245,9 +271,9 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {TypeStatus} params
    * @returns Promise
    */
-  async setVersionDeleteStatus (
+  async setVersionDeleteStatus(
     params: TypeStatus,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number>> {
     const versionDetail = await this.getDetailById(params.id);
     if (!versionDetail) {
@@ -264,7 +290,10 @@ export class VersionInfoService extends BaseService<ContentVersion> {
     // Set the enabled state
     options.ctx.transactions.push(this.setDeleteStatus(params.id, params.status));
     options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.VERSION_REMOVE, [versionDetail], { fileId: contentDetail?.fileId }),
+      ...Service.log.addLogItem(LOG.VERSION_REMOVE, [versionDetail], {
+        actionType: options.actionType || [LOG.DELETE, TYPE.VERSION].join('_'),
+        fileId: contentDetail?.fileId,
+      }),
     );
 
     return { code: 0 };
@@ -275,13 +304,18 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} versionList
    * @returns void
    */
-  batchSetVersionDeleteStatus (
+  batchSetVersionDeleteStatus(
     versionList: ContentVersion[],
-    options: { ctx: FoxCtx; status?: boolean },
+    options: { ctx: FoxCtx; status?: boolean; actionType?: string },
   ): void {
-    const status = options.status === false ? false : true;
+    const status = !(options.status === false);
     options.ctx.transactions.push(this.setDeleteStatus(_.map(versionList, 'id'), status));
-    options.ctx.operations.push(...Service.log.addLogItem(LOG.VERSION_REMOVE, versionList));
+    options.ctx.operations.push(
+      ...Service.log.addLogItem(LOG.VERSION_REMOVE, versionList, {
+        actionType: options.actionType || [LOG.DELETE, TYPE.VERSION].join('_'),
+        category: { type: TYPE.VERSION },
+      }),
+    );
   }
 
   /**
@@ -292,7 +326,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {NameVersion[]} nameVersions
    * @returns Promise
    */
-  async getVersionDetailByFileNameVersion (
+  async getVersionDetailByFileNameVersion(
     applicationId: string,
     type: string,
     nameVersions: NameVersion[],
@@ -343,7 +377,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {SearchLatestVersion} params
    * @returns {ContentVersion} Promise
    */
-  async getContentLatestVersion (params: SearchLatestVersion): Promise<ContentVersion> {
+  async getContentLatestVersion(params: SearchLatestVersion): Promise<ContentVersion> {
     const version = await Model.version.getLatestVersionInfo(params);
     return version as ContentVersion;
   }
@@ -353,7 +387,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {ContentVersionNumber} params
    * @returns Promise
    */
-  async getContentVersionDetail (params: ContentVersionNumber): Promise<ContentVersion> {
+  async getContentVersionDetail(params: ContentVersionNumber): Promise<ContentVersion> {
     const { versionNumber = 0, contentId } = params;
 
     let versionDetail: ContentVersion;
@@ -364,7 +398,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
       const contentDetail = await Service.content.info.getDetailById(contentId);
       versionDetail = await Service.version.number.getContentByNumber({
         contentId,
-        versionNumber: contentDetail?.liveVersionNumber || 0,
+        versionNumber: contentDetail?.liveVersionNumber || 1,
       });
     }
 
@@ -380,7 +414,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} contentVersionList
    * @returns StringObject
    */
-  mappingContentVersionInfo (
+  mappingContentVersionInfo(
     contentList: Content[],
     contentVersionList: ContentVersion[],
   ): Record<string, ContentVersion> {
@@ -405,7 +439,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {ContentVersion} pageVersion
    * @returns Promise
    */
-  async getTemplateDetailFromPage (
+  async getTemplateDetailFromPage(
     applicationId: string,
     pageVersion: ContentVersion,
     options?: { isLive: boolean },
@@ -449,7 +483,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * versionId: when create is false, then update this version id's detail
    * @returns
    */
-  copyContentVersion (
+  copyContentVersion(
     sourceContentVersion: DSL,
     contentId: string,
     options: {
@@ -459,12 +493,18 @@ export class VersionInfoService extends BaseService<ContentVersion> {
       create?: boolean;
       versionId?: string;
       setLive?: boolean;
+      idMaps?: Record<string, string>;
     },
-  ): Record<string, Record<string, string>> {
+  ): Record<string, any> {
     const dsl = _.cloneDeep(sourceContentVersion);
     dsl.id = contentId;
     // Process the structureId value in schemes and replace the content id value in relation
-    dsl.schemas = this.changeDSLStructureIdRecursive(sourceContentVersion.schemas);
+    const dslSchemaAndIdMap = this.changeDSLStructureIdRecursive(
+      sourceContentVersion.schemas,
+      options.idMaps,
+    );
+    dsl.schemas = dslSchemaAndIdMap.schemas;
+    const idMaps = dslSchemaAndIdMap.idMaps || {};
 
     if (dsl.relation) {
       for (const key in dsl.relation) {
@@ -510,7 +550,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
       );
     }
 
-    return options.relations;
+    return { relations: options.relations, idMaps };
   }
 
   /**
@@ -518,12 +558,34 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {DslSchemas[]} schemas
    * @returns DslSchemas
    */
-  changeDSLStructureIdRecursive (schemas: DslSchemas[], parentId?: string): DslSchemas[] {
+  changeDSLStructureIdRecursive(
+    schemas: DslSchemas[],
+    idMaps: Record<string, string> = {},
+    parentId?: string,
+  ): { schemas: DslSchemas[]; idMaps: Record<string, string> } {
     // TODO structure id in props need to replace too
     (schemas || []).forEach((structure) => {
-      structure.id = generationId(PRE.STRUCTURE);
-      if (structure.parentId) {
-        structure.parentId = parentId;
+      if (!idMaps[structure.id]) {
+        const newStructureId = generationId(PRE.STRUCTURE);
+        idMaps[structure.id] = newStructureId;
+        structure.id = newStructureId;
+      } else {
+        structure.id = idMaps[structure.id];
+      }
+
+      if (structure.extension?.parentId) {
+        if (!idMaps[structure.extension.parentId]) {
+          idMaps[structure.extension.parentId] = generationId(PRE.STRUCTURE);
+        }
+        structure.extension.parentId = idMaps[structure.extension.parentId] || parentId;
+      }
+
+      if (structure.extension?.extendId) {
+        if (!idMaps[structure.extension.extendId]) {
+          idMaps[structure.extension.extendId] = generationId(PRE.STRUCTURE);
+        }
+
+        structure.extension.extendId = idMaps[structure.extension.extendId] || '';
       }
 
       if (structure.wrapper) {
@@ -531,11 +593,11 @@ export class VersionInfoService extends BaseService<ContentVersion> {
       }
 
       if (structure.children && structure.children.length > 0) {
-        this.changeDSLStructureIdRecursive(structure.children, structure.id);
+        this.changeDSLStructureIdRecursive(structure.children, idMaps, idMaps[structure.id]);
       }
     });
 
-    return schemas;
+    return { schemas, idMaps };
   }
 
   /**
@@ -545,7 +607,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {Record<string,Record<string,string>>} relations
    * @returns
    */
-  replaceVersionSchemaRelationNames (
+  replaceVersionSchemaRelationNames(
     schemas: DslSchemas[] = [],
     relation: Record<string, DslRelation> = {},
     relations: Record<string, Record<string, string>> = {},
@@ -559,6 +621,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
         const matchArr = matchStr.split(':');
         const matchRelationName = matchArr[0] || '';
         if (matchRelationName) {
+          const matchReg = _.replace(match, /\$/g, '\\$');
           for (const key in relations) {
             if (
               [TYPE.TEMPLATE, TYPE.CONDITION, TYPE.FUNCTION].indexOf(relation[matchStr]?.type) !== -1 &&
@@ -567,7 +630,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
               matchArr[1] = relations[key].newId;
               schemasString = _.replace(
                 schemasString,
-                new RegExp(match, 'gm'),
+                new RegExp(matchReg, 'gm'),
                 '{{' + matchArr.join(':') + '}}',
               );
               break;
@@ -575,7 +638,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
               matchArr[0] = relations[key].newName;
               schemasString = _.replace(
                 schemasString,
-                new RegExp(match, 'gm'),
+                new RegExp(matchReg, 'gm'),
                 '{{' + matchArr.join(':') + '}}',
               );
               break;
@@ -611,22 +674,22 @@ export class VersionInfoService extends BaseService<ContentVersion> {
 
   /**
    * Get the version's relation and component details
-   * @param versionDetail 
-   * @param options 
-   * @returns 
+   * @param versionDetail
+   * @param options
+   * @returns
    */
-  async getPageVersionInfo (
+  async getPageVersionInfo(
     versionDetail: ContentVersion,
-    options: { applicationId: string, isLive?: boolean }
+    options: { applicationId: string; isLive?: boolean },
   ): Promise<Record<string, any>> {
     const versionSchemas = versionDetail?.content?.schemas || [];
     let componentDetailList: Component[] = [];
     let mockObject: Record<string, any> = [];
     [mockObject, componentDetailList] = await Promise.all([
-      !options.isLive ?
-        Service.content.mock.getMockBuildVersions([versionDetail.contentId as string]) :
-        Service.content.mock.getMockLiveVersions([versionDetail.contentId as string]),
-      Service.content.component.getComponentsFromDSL(options.applicationId, versionSchemas)
+      !options.isLive
+        ? Service.content.mock.getMockBuildVersions([versionDetail.contentId as string])
+        : Service.content.mock.getMockLiveVersions([versionDetail.contentId as string]),
+      Service.content.component.getComponentsFromDSL(options.applicationId, versionSchemas),
     ]);
 
     let componentList = _.flatten(componentDetailList);
@@ -649,10 +712,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
     ]);
 
     const appResource = await Service.application.getAppResourceFromContent(contentAllParents);
-    const contentResource = Service.content.info.getContentResourceTypeInfo(
-      appResource,
-      contentAllParents,
-    );
+    const contentResource = Service.content.info.getContentResourceTypeInfo(appResource, contentAllParents);
 
     // Add the resource to the component, add the editor-entry and the name of the dependencies in the component
     componentList = Service.component.addNameToEditorAndDepends(

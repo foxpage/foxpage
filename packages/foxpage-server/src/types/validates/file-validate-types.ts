@@ -121,6 +121,63 @@ export class FileDetail {
   deleted?: Boolean;
 }
 
+export class FileBaseDetail {
+  @JSONSchema({ description: 'File ID' })
+  @IsString()
+  @IsOptional()
+  id?: string;
+
+  @JSONSchema({ description: 'File name' })
+  @IsString()
+  @IsOptional()
+  @Length(1, 100)
+  name: string;
+
+  @JSONSchema({ description: 'File introduction' })
+  @IsString()
+  @IsOptional()
+  intro: string;
+
+  @JSONSchema({ description: 'Application to which the file belongs' })
+  @IsString()
+  application: string;
+
+  @JSONSchema({ description: 'File type' })
+  @IsString()
+  @IsOptional()
+  type: string;
+
+  @JSONSchema({ description: 'File suffix' })
+  @IsString()
+  @IsOptional()
+  suffix: string;
+
+  @JSONSchema({ description: 'File parent folder ID' })
+  @IsString()
+  @IsOptional()
+  @Length(0, 20)
+  folderId: string;
+
+  @JSONSchema({ description: 'File creator' })
+  @IsString()
+  creator: string;
+
+  @JSONSchema({ description: 'Created time' })
+  @IsDate()
+  @IsOptional()
+  createTime?: Date;
+
+  @JSONSchema({ description: 'Update time' })
+  @IsDate()
+  @IsOptional()
+  updateTime?: Date;
+
+  @JSONSchema({ description: 'Delete status' })
+  @IsBoolean()
+  @IsOptional()
+  deleted?: Boolean;
+}
+
 export class FolderAndFileDetail {
   @ValidateNested({ each: true })
   @IsArray()

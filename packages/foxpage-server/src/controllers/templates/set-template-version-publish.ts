@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
@@ -50,6 +50,7 @@ export class SetPageVersionPublishStatus extends BaseController {
       const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
         ctx,
         liveRelation: true,
+        actionType: [LOG.PUBLISH, TYPE.TEMPLATE].join('_'),
       });
 
       if (result.code === 1) {

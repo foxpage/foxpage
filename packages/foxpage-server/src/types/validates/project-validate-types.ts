@@ -116,7 +116,7 @@ export class ProjectListReq {
   @Length(20, 20)
   organizationId: string;
 
-  @JSONSchema({ description: 'Project type, user, team, organization, default is organization' })
+  @JSONSchema({ description: 'Project type, user, involve, team, organization, default is organization' })
   @IsString()
   @IsOptional()
   type: string;

@@ -100,7 +100,7 @@ export class VersionModel extends BaseModel<ContentVersion> {
     options: Partial<ContentVersion> = {},
   ): Promise<ContentVersion> {
     return this.findOne(Object.assign({ contentId, deleted: false }, options), '', {
-      sort: { versionNumber: 'desc' },
+      sort: { versionNumber: -1 },
     });
   }
 }

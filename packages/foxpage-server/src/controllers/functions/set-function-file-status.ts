@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { LOG, METHOD, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentStatusReq } from '../../types/validates/content-validate-types';
 import { FileDetailRes } from '../../types/validates/file-validate-types';
@@ -44,7 +44,10 @@ export class SetFunctionFileStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4090801);
       }
 
-      const result = await this.service.file.info.setFileDeleteStatus(params, { ctx });
+      const result = await this.service.file.info.setFileDeleteStatus(params, {
+        ctx,
+        actionType: [LOG.DELETE, TYPE.FUNCTION].join('_'),
+      });
       if (result.code === 1) {
         return Response.warning(i18n.file.invalidFileId, 2090801);
       } else if (result.code === 2) {

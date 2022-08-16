@@ -3,12 +3,11 @@ import { FoxCtx } from 'src/types/index-types';
 
 import { Content, ContentVersion } from '@foxpage/foxpage-server-types';
 
-import { LOG, VERSION } from '../../../config/constant';
+import { LOG, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { AppTypeContent, ContentVersionNumber, LiveContentVersion } from '../../types/content-types';
 import { BaseService } from '../base-service';
 import * as Service from '../index';
-
 
 export class ContentLiveService extends BaseService<Content> {
   private static _instance: ContentLiveService;
@@ -21,7 +20,7 @@ export class ContentLiveService extends BaseService<Content> {
    * Single instance
    * @returns ContentLiveService
    */
-  public static getInstance (): ContentLiveService {
+  public static getInstance(): ContentLiveService {
     this._instance || (this._instance = new ContentLiveService());
     return this._instance;
   }
@@ -31,7 +30,7 @@ export class ContentLiveService extends BaseService<Content> {
    * @param  {string[]} contentIds
    * @returns Promise
    */
-  async getContentLiveIdByIds (contentIds: string[]): Promise<ContentVersionNumber[]> {
+  async getContentLiveIdByIds(contentIds: string[]): Promise<ContentVersionNumber[]> {
     const contentLiveNumbers = await Model.content.getLiveNumberByIds(contentIds);
     return contentLiveNumbers.map((item) => {
       return { contentId: item.id, versionNumber: item.liveVersionNumber };
@@ -43,7 +42,7 @@ export class ContentLiveService extends BaseService<Content> {
    * @param  {AppTypeContent} params
    * @returns {ContentVersion[]} Promise
    */
-  async getContentLiveDetails (params: AppTypeContent): Promise<ContentVersion[]> {
+  async getContentLiveDetails(params: AppTypeContent): Promise<ContentVersion[]> {
     const contentIds = params.contentIds || [];
     if (contentIds.length === 0) {
       return [];
@@ -70,9 +69,9 @@ export class ContentLiveService extends BaseService<Content> {
    * @param  {LiveContentVersion} params
    * @returns Promise
    */
-  async setLiveVersion (
+  async setLiveVersion(
     params: LiveContentVersion,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number | string>> {
     const versionDetail = await Service.version.info.getDetail({
       contentId: params.id,
@@ -97,6 +96,7 @@ export class ContentLiveService extends BaseService<Content> {
       this.setLiveContent(versionDetail.contentId, versionDetail.versionNumber, {
         ctx: options.ctx,
         content: contentDetail,
+        actionType: options.actionType,
       });
       return { code: 0 };
     } else {
@@ -111,15 +111,20 @@ export class ContentLiveService extends BaseService<Content> {
    * @param  {Content} contentDetail
    * @returns void
    */
-  setLiveContent (
+  setLiveContent(
     contentId: string,
     versionNumber: number,
-    options: { ctx: FoxCtx; content?: Content },
+    options: { ctx: FoxCtx; content?: Content; actionType?: string },
   ): void {
     options.ctx.transactions.push(this.updateDetailQuery(contentId, { liveVersionNumber: versionNumber }));
     options.ctx.operations.push(
       ...Service.log.addLogItem(LOG.LIVE, options.content || ({} as Content), {
-        fileId: options.content?.fileId,
+        actionType: options.actionType || [LOG.LIVE, TYPE.CONTENT].join('_'),
+        category: {
+          type: TYPE.CONTENT,
+          fileId: options.content?.fileId as string,
+          contentId,
+        },
       }),
     );
   }
@@ -130,7 +135,7 @@ export class ContentLiveService extends BaseService<Content> {
    * @param  {} number>
    * @returns void
    */
-  bulkSetContentLiveVersion (contentIdNumber: Record<string, number>): void {
+  bulkSetContentLiveVersion(contentIdNumber: Record<string, number>): void {
     Object.keys(contentIdNumber).forEach((contentId) => {
       this.updateDetailQuery(contentId, { liveVersionNumber: contentIdNumber[contentId] });
     });

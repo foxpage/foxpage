@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
@@ -35,14 +35,17 @@ export class UpdateMockVersionDetail extends BaseController {
     operationId: 'update-mock-version-detail',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
     try {
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4191401);
       }
 
-      const result = await this.service.version.info.updateVersionDetail(params, { ctx });
+      const result = await this.service.version.info.updateVersionDetail(params, {
+        ctx,
+        actionType: [LOG.UPDATE, TYPE.MOCK].join('_'),
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.mock.invalidVersionId, 2191401);

@@ -1,10 +1,18 @@
 import _ from 'lodash';
+import moment from 'moment';
 
 import { Application, AppResource, Folder, Organization } from '@foxpage/foxpage-server-types';
 
 import { LOG, PRE, TYPE } from '../../config/constant';
 import * as Model from '../models';
-import { AppInfo, AppOrgInfo, AppSearch, AppWithFolder } from '../types/app-types';
+import {
+  AddAppSetting,
+  AppInfo,
+  AppOrgInfo,
+  AppSearch,
+  AppWithFolder,
+  UpdateAppSetting,
+} from '../types/app-types';
 import { FolderFileContent } from '../types/content-types';
 import { FoxCtx, PageList } from '../types/index-types';
 import { AppHostInfo } from '../types/validates/app-validate-types';
@@ -24,7 +32,7 @@ export class ApplicationService extends BaseService<Application> {
    * Single instance
    * @returns ApplicationService
    */
-  public static getInstance (): ApplicationService {
+  public static getInstance(): ApplicationService {
     this._instance || (this._instance = new ApplicationService());
     return this._instance;
   }
@@ -34,7 +42,7 @@ export class ApplicationService extends BaseService<Application> {
    * @param  {Partial<Content>} params
    * @returns Content
    */
-  create (params: Partial<Application>, options: { ctx: FoxCtx }): Application {
+  create(params: Partial<Application>, options: { ctx: FoxCtx }): Application {
     const appDetail: Application = {
       id: params.id || generationId(PRE.APP),
       intro: params.intro || '',
@@ -45,13 +53,19 @@ export class ApplicationService extends BaseService<Application> {
       name: _.trim(params.name) || '',
       creator: params.creator || options.ctx.userInfo.id,
       resources: params.resources || [],
+      setting: {},
     };
 
     options.ctx.transactions.push(Model.application.addDetailQuery(appDetail));
     options.ctx.operations.push({
       action: LOG.CREATE,
-      category: { type: LOG.CATEGORY_ORGANIZATION, id: params.organizationId },
-      content: { id: appDetail.id, dataType: TYPE.APPLICATION, after: appDetail },
+      actionType: [LOG.CREATE, TYPE.APPLICATION].join('_'),
+      category: {
+        type: LOG.CATEGORY_APPLICATION,
+        applicationId: appDetail.id,
+        organizationId: params.organizationId,
+      },
+      content: { after: appDetail },
     });
 
     return appDetail;
@@ -62,7 +76,7 @@ export class ApplicationService extends BaseService<Application> {
    * @param  {string} applicationId
    * @returns {AppWithFolder}
    */
-  async getAppDetailWithFolder (applicationId: string): Promise<AppWithFolder> {
+  async getAppDetailWithFolder(applicationId: string): Promise<AppWithFolder> {
     // Get application details and folders under the root node
     const [appDetail, folderList] = await Promise.all([
       this.getDetailById(applicationId),
@@ -78,7 +92,7 @@ export class ApplicationService extends BaseService<Application> {
    * @param  {AppSearch} params
    * @returns Promise
    */
-  async getPageListWithOrgInfo (params: AppSearch): Promise<PageList<AppOrgInfo>> {
+  async getPageListWithOrgInfo(params: AppSearch): Promise<PageList<AppOrgInfo>> {
     let appOrgList: AppOrgInfo[] = [];
     const [appList, total] = await Promise.all([
       Model.application.getAppList(params),
@@ -110,7 +124,7 @@ export class ApplicationService extends BaseService<Application> {
    * @param  {AppSearch} params
    * @returns {AppInfo} Promise
    */
-  async getPageList (params: AppSearch): Promise<PageList<AppInfo>> {
+  async getPageList(params: AppSearch): Promise<PageList<AppInfo>> {
     const [appList, total] = await Promise.all([
       Model.application.getAppList(params),
       Model.application.getTotal(params),
@@ -144,7 +158,7 @@ export class ApplicationService extends BaseService<Application> {
    * @param  {any} params: {applicationId, resourceId}
    * @returns Promise
    */
-  async getAppResourceDetail (params: any): Promise<Partial<AppResource>> {
+  async getAppResourceDetail(params: any): Promise<Partial<AppResource>> {
     const appDetail = await this.getDetailById(params.applicationId);
     return appDetail?.resources?.find((resource) => resource.id === params.id) || {};
   }
@@ -158,7 +172,7 @@ export class ApplicationService extends BaseService<Application> {
    * @param  {AppResource[]} resources
    * @returns string
    */
-  checkAppResourceUpdate (
+  checkAppResourceUpdate(
     appResource: AppResource[],
     resources: AppResource[],
   ): { code: number; data: string[] } {
@@ -215,7 +229,7 @@ export class ApplicationService extends BaseService<Application> {
    * @param  {} FolderFileContent[]>
    * @returns Promise
    */
-  async getAppResourceFromContent (
+  async getAppResourceFromContent(
     contentAllParents: Record<string, FolderFileContent[]>,
   ): Promise<AppResource[]> {
     let contentAppIds: string[] = [];
@@ -231,18 +245,18 @@ export class ApplicationService extends BaseService<Application> {
    * concat app page preview locales url
    * if the host is not {url:'', locales: []} format
    * default to host fields is url
-   * @param hostList 
-   * @param pathname 
-   * @param slug 
+   * @param hostList
+   * @param pathname
+   * @param slug
    */
-  getAppHostLocaleUrl (hostList: AppHostInfo[], pathname: string, slug?: string): Record<string, string> {
+  getAppHostLocaleUrl(hostList: AppHostInfo[], pathname: string, slug?: string): Record<string, string> {
     let hostUrls: Record<string, string> = {};
-    hostList.forEach(host => {
+    hostList.forEach((host) => {
       if (_.isString(host) && !hostUrls['base']) {
         hostUrls['base'] = mergeUrl(host, pathname, slug || '');
       } else {
         if (host.locales.length > 0) {
-          host.locales.forEach(locale => {
+          host.locales.forEach((locale) => {
             if (!hostUrls[locale]) {
               hostUrls[locale] = mergeUrl(host.url, pathname, slug || '');
             }
@@ -254,5 +268,88 @@ export class ApplicationService extends BaseService<Application> {
     });
 
     return hostUrls;
+  }
+
+  /**
+   * filter the special item in app settings
+   * @param setting
+   * @param type
+   * @param typeId
+   * @returns
+   */
+  getAppSettingItem(setting: Record<string, any[]>, type: string, typeIds: string[]): Record<string, any> {
+    let typeInfo: Record<string, any> = {};
+    if (setting[type] && setting[type].length > 0) {
+      typeInfo = _.keyBy(
+        _.filter(setting[type], (item) => typeIds.indexOf(item.id) !== -1),
+        'id',
+      );
+    }
+    return typeInfo || {};
+  }
+
+  /**
+   * Add app setting item values
+   * @param params
+   * @returns
+   */
+  addAppSetting(params: AddAppSetting, options: { ctx: FoxCtx }): void {
+    // Add copy file to app setting
+    const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+    const pushData = {
+      ['setting.' + params.type]: {
+        id: params.typeId || '',
+        name: params.typeName || '',
+        status: params.typeStatus || false,
+        category: params.category || {},
+        createTime: currentTime,
+        updateTime: currentTime,
+      },
+    };
+    options.ctx.transactions.push(
+      Model.application.updateDetailQuery(params.applicationId, { $push: pushData } as any),
+    );
+
+    options.ctx.operations.push({
+      action: LOG.UPDATE,
+      actionType: [LOG.SET, params.type].join('_'),
+      category: { type: TYPE.APPLICATION, applicationId: params.applicationId },
+      content: { after: pushData },
+    });
+  }
+
+  /**
+   * Update app setting item values
+   * @param params
+   * @param options
+   */
+  updateAppSetting(
+    params: UpdateAppSetting,
+    itemDetail: Record<string, any>,
+    options: { ctx: FoxCtx },
+  ): void {
+    options.ctx.transactions.push(
+      Model.application.batchUpdateDetailQuery(
+        {
+          id: params.applicationId,
+          ['setting.' + params.type + '.id']: params.typeId,
+        } as any,
+        {
+          $set: {
+            ['setting.' + params.type + '.$.name']: params.setting.name,
+            ['setting.' + params.type + '.$.status']: params.setting.status || false,
+            ['setting.' + params.type + '.$.category']: params.setting.category || {},
+            ['setting.' + params.type + '.$.updateTime']: moment().format('YYYY-MM-DD HH:mm:ss'),
+          },
+        } as any,
+      ),
+    );
+
+    options.ctx.operations.push({
+      action: LOG.UPDATE,
+      actionType: [LOG.SET, params.type].join('_'),
+      category: { type: TYPE.APPLICATION, applicationId: params.applicationId },
+      content: { before: itemDetail, after: params.setting },
+    });
   }
 }

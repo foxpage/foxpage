@@ -7,12 +7,12 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
-  VersionPublishStatusReq,
+  VersionPublishStatus2Req,
 } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
@@ -37,23 +37,43 @@ export class SetFunctionPublishStatus extends BaseController {
     operationId: 'set-variable-version-public-status',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: VersionPublishStatusReq): Promise<ResData<ContentVersion>> {
+  async index(
+    @Ctx() ctx: FoxCtx,
+    @Body() params: VersionPublishStatus2Req,
+  ): Promise<ResData<ContentVersion>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.FUNCTION });
+
+      // one of content id or version id must valid
+      if (!params.id && !params.contentId) {
+        return Response.warning(i18n.function.invalidFunctionId, 2091001);
+      }
 
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4091001);
       }
 
+      if (!params.id) {
+        const versionDetail = await this.service.version.info.getContentLatestVersion({
+          contentId: params.contentId,
+        });
+        params.id = versionDetail.id;
+      }
+
+      if (!params.id) {
+        return Response.warning(i18n.function.invalidFunctionId, 2091002);
+      }
+
       // Set publishing status
       const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
         ctx,
         liveRelation: true,
+        actionType: [LOG.PUBLISH, TYPE.FUNCTION].join('_'),
       });
 
       if (result.code === 1) {
-        return Response.warning(i18n.function.functionVersionHasPublished, 2091001);
+        return Response.warning(i18n.function.functionVersionHasPublished, 2091003);
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);

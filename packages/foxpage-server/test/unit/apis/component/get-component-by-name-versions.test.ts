@@ -58,7 +58,7 @@ describe('Get: /components/version-infos', () => {
       .spyOn(VersionComponentService.prototype, 'assignResourceToComponent')
       .mockReturnValueOnce(<Resources>{});
     jest.spyOn(FileListService.prototype, 'getContentFileByIds').mockResolvedValue(<Record<string, File>>{
-      cont_cuREMD9zcUZEcVU: Object.assign(Data.file.list[0], { type: 'component' }),
+      'cont_cuREMD9zcUZEcVU': Object.assign(Data.file.list[0], { type: 'component' }),
     });
     jest
       .spyOn(ComponentService.prototype, 'addNameToEditorAndDepends')
@@ -92,7 +92,7 @@ describe('Get: /components/version-infos', () => {
       .mockReturnValueOnce(<Resources>{});
     jest
       .spyOn(FileListService.prototype, 'getContentFileByIds')
-      .mockResolvedValue(<Record<string, File>>{ cont_cuREMD9zcUZEcVU: Data.file.list[0] });
+      .mockResolvedValue(<Record<string, File>>{ 'cont_cuREMD9zcUZEcVU': Data.file.list[0] });
     jest
       .spyOn(ComponentService.prototype, 'addNameToEditorAndDepends')
       .mockReturnValueOnce(<ComponentContentInfo[]>[]);

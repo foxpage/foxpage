@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { AppFolderTypes, StoreOrder } from '@foxpage/foxpage-server-types';
+import { AppFolderTypes, Folder, StoreOrder } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { PRE, TAG, TYPE } from '../../../config/constant';
@@ -77,33 +77,60 @@ export class AddStorePageToApplication extends BaseController {
       let goodsOrders: StoreOrder[] = [];
       for (const file of goodsFileList) {
         for (const appId of params.appIds) {
+          let newFileId = '';
           if (!projectIdMap.has(file.folderId)) {
             const sourceFolderDetail = folderObject[file.folderId] || {};
             const projectId = generationId(PRE.FOLDER);
             const folderName = [sourceFolderDetail.name, randStr(4)].join('_');
-            projectIdMap.set(file.folderId, projectId);
+            const distinctParams = params.delivery === TAG.DELIVERY_REFERENCE 
+            ? { tags: { $elemMatch: { $and: [{type: TAG.DELIVERY_REFERENCE, 'reference.id': file.folderId }]}} }
+            : {};
 
             // Create project folder
-            await this.service.folder.info.addTypeFolderDetail(
+            const newProjectTags = [
+              { type: TYPE.PROJECT },
+              { 
+                type: params.delivery, 
+                [params.delivery]: { 
+                  id: file.folderId, 
+                  applicationId: file.applicationId,
+                }
+              }
+            ];
+            const newProjectDetail = await this.service.folder.info.addTypeFolderDetail(
               {
                 id: projectId,
                 name: folderName,
                 intro: sourceFolderDetail.intro || '',
                 applicationId: appId,
                 folderPath: formatToPath(folderName),
-                tags: (sourceFolderDetail?.tags || [])?.concat({ copyFrom: file.folderId }),
+                tags: newProjectTags,
               },
-              { ctx, type: TYPE.PROJECT as AppFolderTypes },
+              { ctx, type: TYPE.PROJECT as AppFolderTypes, distinctParams },
             );
+            projectIdMap.set(file.folderId, (newProjectDetail.data as Folder)?.id as string);
           }
 
-          // Create file, content, version
-          await this.service.file.info.copyFile(file.id, appId, {
-            ctx,
-            folderId: <string>projectIdMap.get(file.folderId),
-            hasLive: true,
-            setLive: true,
-          });
+          if (params.delivery === TAG.DELIVERY_CLONE) {
+            // Create file, content, version
+            const idMap = await this.service.file.info.copyFile(file.id, appId, {
+              ctx,
+              folderId: <string>projectIdMap.get(file.folderId),
+              hasLive: true,
+              setLive: true,
+            });
+            newFileId = idMap[file.id].newId;
+          } else {
+            // create reference file
+            const newFileIDetail = await this.service.file.info.referenceFile(file.id, file.applicationId, {
+              ctx,
+              targetApplicationId: appId,
+              targetFolderId: <string>projectIdMap.get(file.folderId),
+              fileName: file.name,
+              type: file.type,
+            });
+            newFileId = newFileIDetail.id;
+          }
 
           // Add goods order
           goodsOrders.push({
@@ -111,18 +138,18 @@ export class AddStorePageToApplication extends BaseController {
             goodsId: goodsFileObject?.[file.id]?.id || '',
             goodsVersionId: '',
             customer: {
-              id: file.id,
+              id: newFileId || '',
               applicationId: appId,
               projectId: projectIdMap.get(file.folderId) || '',
               userId: ctx.userInfo.id,
             },
-            delivery: TAG.DELIVERY_CLONE,
+            delivery: params.delivery,
           });
         }
       }
 
       if (goodsOrders.length > 0) {
-        this.service.store.order.addDetailQuery(goodsOrders);
+        ctx.transactions.push(this.service.store.order.addDetailQuery(goodsOrders));
       }
 
       await this.service.store.goods.runTransaction(ctx.transactions);

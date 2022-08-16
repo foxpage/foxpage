@@ -5,7 +5,7 @@ import { LangEnums } from '@foxpage/foxpage-server-types';
 import { createLogger } from '@foxpage/foxpage-shared';
 
 import { config, i18n } from '../../app.config';
-import { LOG, LOGGER_LEVEL, PRE, RESPONSE_LEVEL } from '../../config/constant';
+import { LOGGER_LEVEL, PRE, RESPONSE_LEVEL } from '../../config/constant';
 import * as Service from '../services';
 import { FoxCtx } from '../types/index-types';
 import { generationId } from '../utils/tools';
@@ -14,7 +14,7 @@ const logger = createLogger('server');
 
 @Middleware({ type: 'before' })
 export class LoggerMiddleware implements KoaMiddlewareInterface {
-  async use (ctx: FoxCtx, next: (err?: any) => Promise<any>): Promise<any> {
+  async use(ctx: FoxCtx, next: (err?: any) => Promise<any>): Promise<any> {
     const params = !_.isEmpty(ctx.request.body) ? ctx.request.body : ctx.request.query;
     ctx.operations = [];
     ctx.transactions = [];
@@ -68,9 +68,7 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
       // Save log to db
       if (config.env !== 'test' && ctx.request.url !== '/healthcheck') {
         try {
-          let categoryType: string = ctx.logAttr.applicationId ? LOG.CATEGORY_APPLICATION : '';
-          !categoryType && ctx.logAttr.organizationId && (categoryType = LOG.CATEGORY_ORGANIZATION);
-          Service.log.saveRequest({ category: categoryType, content: ctx.log }, { ctx });
+          Service.log.saveRequest({ ctx });
         } catch (err) {
           console.log('Save log error:' + (err as any).message);
         }
@@ -82,14 +80,32 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
           (<any>ctx.body).code === RESPONSE_LEVEL.SUCCESS
             ? LOGGER_LEVEL.INFO
             : (<any>ctx.body).code < RESPONSE_LEVEL.ERROR
-              ? LOGGER_LEVEL.WARN
-              : LOGGER_LEVEL.ERROR;
+            ? LOGGER_LEVEL.WARN
+            : LOGGER_LEVEL.ERROR;
         logger.log(logLevel, (<any>ctx.body).msg || '', [
           ctx.request.method,
           ctx.request.path,
           (<any>ctx.body).code || 0,
           ctx.log.tooks + 'ms',
         ]);
+
+        const mmry = process.memoryUsage();
+        const heapTotal = Math.round((mmry.heapTotal / (1024 * 1024)) * 100) / 100 + ' Mb';
+        const heapUsed = Math.round((mmry.heapUsed / (1024 * 1024)) * 100) / 100 + ' Mb';
+        const rss = Math.round((mmry.rss / (1024 * 1024)) * 100) / 100 + ' Mb';
+        console.log(
+          ctx.request.method + ' ' + ctx.request.path,
+          'heapTotal: ' +
+            heapTotal +
+            ', heapUsed: ' +
+            heapUsed +
+            ', rss: ' +
+            rss +
+            ', tooks: ' +
+            ctx.log.tooks +
+            ', status: ' +
+            (<any>ctx.body).code,
+        );
       }
     }
   }

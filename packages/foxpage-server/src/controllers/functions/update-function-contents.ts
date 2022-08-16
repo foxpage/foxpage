@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { ContentDetailRes, UpdateContentReq } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -43,7 +43,7 @@ export class UpdateFunctionContentDetail extends BaseController {
 
       const result = await this.service.content.info.updateContentDetail(
         Object.assign({}, params, { type: TYPE.VARIABLE as FileTypes }),
-        { ctx },
+        { ctx, actionType: [LOG.UPDATE, TYPE.FUNCTION].join('_') },
       );
 
       if (result.code === 1) {
