@@ -1,9 +1,9 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
 import { DeleteOutlined, EditOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Table as AntTable } from 'antd';
+import { Button, Input, Popconfirm, Table as AntTable } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -16,6 +16,10 @@ import { periodFormat } from '@/utils/period-format';
 
 import EditDrawer from './components/EditDrawer';
 import MemberManagement from './components/MemberManagement';
+
+const { Search } = Input;
+
+const PAGE_NUM = 1;
 
 const Table = styled(AntTable)`
   .ant-table-pagination.ant-pagination {
@@ -52,6 +56,8 @@ const Main: React.FC<TeamListType> = (props) => {
     openUserManagementDrawer,
     clearAll,
   } = props;
+  const [pageNum, setPageNum] = useState<number>(pageInfo.page);
+  const [search, setSearch] = useState<string | undefined>();
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -68,14 +74,21 @@ const Main: React.FC<TeamListType> = (props) => {
   }
 
   useEffect(() => {
-    if (organizationId) {
-      fetchTeamList({ organizationId, page: pageInfo.page, size: pageInfo.size });
-    }
-
     return () => {
       clearAll();
     };
-  }, [fetchTeamList, organizationId]);
+  }, []);
+
+  useEffect(() => {
+    if (organizationId) {
+      fetchTeamList({
+        organizationId,
+        page: pageNum,
+        size: pageInfo.size,
+        search: search || '',
+      });
+    }
+  }, [fetchTeamList, organizationId, pageNum, search]);
 
   const columns: any = [
     {
@@ -85,6 +98,7 @@ const Main: React.FC<TeamListType> = (props) => {
     {
       title: team.userCount,
       dataIndex: 'memberCount',
+      width: 150,
     },
     {
       title: global.createTime,
@@ -129,6 +143,12 @@ const Main: React.FC<TeamListType> = (props) => {
     },
   ];
 
+  const handleSearch = (search) => {
+    setPageNum(PAGE_NUM);
+
+    setSearch(search);
+  };
+
   return (
     <>
       <Content>
@@ -144,6 +164,12 @@ const Main: React.FC<TeamListType> = (props) => {
           }
           style={{ maxWidth: WIDTH_DEFAULT, margin: '0 auto', overflow: 'unset' }}>
           <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
+            <Search
+              placeholder={global.inputSearchText}
+              defaultValue={search}
+              onSearch={handleSearch}
+              style={{ width: 250, marginRight: 12 }}
+            />
             <Button
               type="primary"
               onClick={() => {
@@ -172,6 +198,7 @@ const Main: React.FC<TeamListType> = (props) => {
                 organizationId,
                 page: pagination.current || 1,
                 size: pagination.pageSize || 10,
+                search: search || '',
               });
             }}
           />

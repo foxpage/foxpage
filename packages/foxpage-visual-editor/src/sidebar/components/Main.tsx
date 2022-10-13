@@ -39,7 +39,7 @@ const ComponentList = () => {
   const { onLinkChange } = events;
 
   const showList = components
-    .filter((item) => !!item.category?.categoryName)
+    .filter((item) => item.status && !!item.category?.categoryName)
     .sort((a, b) => (a.category?.sort || 0) - (b.category?.sort || 0));
 
   useEffect(() => {

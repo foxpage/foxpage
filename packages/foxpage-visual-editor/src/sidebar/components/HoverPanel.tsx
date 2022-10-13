@@ -45,7 +45,7 @@ const ImageContent = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: move;
+  cursor: ${(props: { disabled?: boolean}) => (props.disabled ? 'not-allowed' : 'move') };
   :hover {
     div[data-type='hover-toolbar'] {
       display: block;
@@ -65,6 +65,7 @@ const DragPanel = styled.div`
   text-align: center;
   padding: 12px 0px;
   text-shadow: 1px 1px #b7b7b7;
+  line-height: 38px;
 `;
 
 export const Overflow = styled.div`
@@ -72,8 +73,14 @@ export const Overflow = styled.div`
   text-overflow: ellipsis;
   white-space: nowrap;
   position: relative;
-  width: 200px;
+  width: 280px;
   white-space: pre-wrap;
+  color: ${(props: { disabled?: boolean }) => props.disabled ? '#00000040' : '#000'}
+`;
+
+const DragForbidden = styled.div`
+  cursor: not-allowed;
+  user-select: none;
 `;
 
 interface IProps {
@@ -90,13 +97,15 @@ const HoverPanel = (props: IProps) => {
         const { id, name, category } = item;
         const { description, screenshot, name: label } = category || {};
         const mark = `component_view_${id}`;
+        const disabled = item?.__extentions?.disabled;
+        const DragContainer = disabled ? DragForbidden : DragContent;
         return (
           <Popover
             key={name}
             placement="right"
             content={
-              <div>
-                <ImageContent style={{ width: 200, height: 100 }}>
+              !disabled && <div>
+                <ImageContent style={{ width: 280, height: 140 }}>
                   {screenshot && <img src={screenshot} alt="" width="100%" />}
                   <DragPanel></DragPanel>
                 </ImageContent>
@@ -117,14 +126,14 @@ const HoverPanel = (props: IProps) => {
               </div>
             }>
             <Item key={id} id={mark}>
-              <DragContent component={item}>
-                <ImageContent>
+              <DragContainer component={item}>
+                <ImageContent disabled={disabled}>
                   {screenshot ? <img src={screenshot} alt="" width="100%" /> : <DragPanel>{label}</DragPanel>}
                 </ImageContent>
-              </DragContent>
+              </DragContainer>
               <div>
                 <Title>
-                  <Overflow style={{ width: 110 }}>{label || name}</Overflow>
+                  <Overflow style={{ width: 110 }} disabled={disabled}>{label || name}</Overflow>
                 </Title>
               </div>
             </Item>

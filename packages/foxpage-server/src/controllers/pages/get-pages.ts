@@ -7,14 +7,14 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { DSL_VERSION, METHOD, TYPE } from '../../../config/constant';
+import { DSL_VERSION, METHOD } from '../../../config/constant';
 import { PageContentData, VersionWithExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController()
 export class GetPageLivesList extends BaseController {
   constructor() {
     super();
@@ -25,7 +25,9 @@ export class GetPageLivesList extends BaseController {
    * @param  {AppContentVersionReq} params
    * @returns {PageContentData[]}
    */
-  @Post('/lives')
+  @Post('pages/lives')
+  @Post('templates/lives')
+  @Post('blocks/lives')
   @OpenAPI({
     summary: i18n.sw.getAppPages,
     description: '',
@@ -33,13 +35,15 @@ export class GetPageLivesList extends BaseController {
     operationId: 'get-page-live-version-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<PageContentData[]>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<PageContentData[]>> {
     try {
+      const apiType = this.getRoutePath(ctx.request.url);
+
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
       const [pageList, contentList] = await Promise.all([
         this.service.content.live.getContentLiveDetails({
           applicationId: params.applicationId,
-          type: TYPE.PAGE as FileTypes,
+          type: apiType as FileTypes,
           contentIds: params.ids || [],
         }),
         this.service.content.list.getDetailByIds(params.ids),
@@ -50,14 +54,15 @@ export class GetPageLivesList extends BaseController {
       const mockObject = await this.service.content.mock.getMockLiveVersions(contentIds);
 
       let pageVersions: VersionWithExternal[] = [];
-      pageList.forEach(item => {
+      pageList.forEach((item) => {
         const mockRelations = mockObject[item.contentId]?.relations || {};
-        item.content.relations = this.service.version.relation.moveMockRelations(item.content.relations, mockRelations);
+        item.content.relations = this.service.version.relation.moveMockRelations(
+          item.content.relations,
+          mockRelations,
+        );
 
-        pageVersions.push(Object.assign(
-          {},
-          item.content || {},
-          {
+        pageVersions.push(
+          Object.assign({}, item.content || {}, {
             dslVersion: item.dslVersion || DSL_VERSION,
             name: contentObject[item.contentId]?.title || '',
             version: item.version || '',
@@ -65,8 +70,8 @@ export class GetPageLivesList extends BaseController {
             fileId: contentObject[item.contentId]?.fileId || '',
             mock: mockObject[item.contentId]?.mock || {},
             extension: mockObject[item.contentId]?.extension || {},
-          }
-        ));
+          }),
+        );
       });
 
       return Response.success(pageVersions, 1051001);

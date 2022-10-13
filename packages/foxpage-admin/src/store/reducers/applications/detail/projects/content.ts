@@ -12,7 +12,7 @@ export type BaseContent = { id: string; name: string };
 
 const fileDetail: File = {} as File;
 const contents: ContentEntity[] = [];
-const editContent: Partial<ContentEntity> = {};
+const editContent: Partial<ContentEntity> & { oneLocale?: boolean } = {};
 const baseContents: BaseContent[] = [];
 const extendRecord: Record<string, string[]> = {};
 const locales: string[] = [];

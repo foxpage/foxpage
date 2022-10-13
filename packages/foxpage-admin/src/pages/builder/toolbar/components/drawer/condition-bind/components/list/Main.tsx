@@ -29,8 +29,8 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
   const columns = [
     {
       title: global.nameLabel,
-      dataIndex: 'name',
-      key: 'id',
+      dataIndex: '',
+      key: '',
       render: (_text: string, record: ConditionEntity) => record.content.schemas[0].name,
     },
     {
@@ -40,7 +40,7 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
       width: 60,
       render: (_text: string, record) => (
         <Popconfirm
-          title={`${global.deleteMsg}${record.name}`}
+          title={`${global.deleteMsg} ${record?.content?.schemas?.[0]?.name || ''}`}
           okText={global.yes}
           cancelText={global.no}
           onConfirm={() =>

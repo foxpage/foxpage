@@ -35,6 +35,10 @@ export class GetContentChanges extends BaseController {
     try {
       const currentTimeStamp: number = Date.now();
 
+      if (!params.timestamp || params.timestamp < Date.now() - 86400000) {
+        params.timestamp = Date.now() - 86400000; // one day before
+      }
+
       // Get all content data that has changed
       const logChanges = await this.service.log.getChangesContentList(params);
 

@@ -2,14 +2,16 @@ import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Table, Tag } from 'antd';
+import { ArrowDownOutlined, ArrowUpOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, Popconfirm, Table, Tag, Tooltip } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/settings/builder/template';
-import { StoreGoodsPurchaseType } from '@/constants/store';
+import { StoreGoodsPurchaseType, suffixTagColor } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ApplicationSettingBuilderComponent } from '@/types/index';
+
+const TYPE = 'template';
 
 const mapStateToProps = (store: RootState) => ({
   loading: store.applications.detail.settings.builder.templates.loading,
@@ -18,6 +20,7 @@ const mapStateToProps = (store: RootState) => ({
 });
 
 const mapDispatchToProps = {
+  remove: ACTIONS.deleteCategory,
   save: ACTIONS.saveCategory,
   updatePageNum: ACTIONS.updatePageNum,
 };
@@ -25,13 +28,13 @@ const mapDispatchToProps = {
 type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const ComponentList = (props: IProps) => {
-  const { loading, templates = [], pageInfo, save, updatePageNum } = props;
+  const { loading, templates = [], pageInfo, remove, save, updatePageNum } = props;
 
   const { applicationId } = useParams<{ applicationId: string }>();
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, store } = locale.business;
+  const { builder, global, store, version } = locale.business;
 
   const columns = [
     {
@@ -39,57 +42,83 @@ const ComponentList = (props: IProps) => {
       dataIndex: 'name',
       render: (name: string, record: ApplicationSettingBuilderComponent) => (
         <>
-          <span>{name}</span>
-          {record?.status && (
-            <Tag color="cyan" style={{ margin: '0 0 0 4px' }}>
-              Live
+          {record.delivery === StoreGoodsPurchaseType.reference && (
+            <Tag color={suffixTagColor.refer} style={{ zoom: 0.8 }}>
+              refer
             </Tag>
           )}
+          <span>{name}</span>
         </>
       ),
     },
     {
-      title: global.idLabel,
-      dataIndex: 'id',
+      title: version.status,
+      dataIndex: 'status',
+      width: 100,
+      render: (status: boolean) => status && <Tag color="cyan">Live</Tag>,
     },
     {
-      title: global.type,
-      dataIndex: 'delivery',
-      render: (delivery: string) =>
-        delivery === StoreGoodsPurchaseType.clone ? (
-          <Tag color="blue">{store.clone}</Tag>
-        ) : (
-          <Tag color="green">{store.refer}</Tag>
-        ),
+      title: global.idLabel,
+      dataIndex: 'id',
+      width: 300,
     },
     {
       title: global.actions,
       key: '',
       width: 100,
       render: (_text: string, record: ApplicationSettingBuilderComponent) => (
-        <Popconfirm
-          cancelText={global.no}
-          okText={global.yes}
-          placement="topLeft"
-          title={record?.status ? store.revokeTitle : store.commitTitle}
-          onConfirm={() => handleCommitRevoke(record)}>
-          <Button
-            type="default"
-            size="small"
-            shape="circle"
-            title={record?.status ? store.revoke : store.commit}
-            style={{ marginLeft: 8 }}>
-            {record?.status ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
-          </Button>
-        </Popconfirm>
+        <>
+          <Popconfirm
+            cancelText={global.no}
+            okText={global.yes}
+            placement="topLeft"
+            title={record?.status ? store.revokeTitle : store.commitTitle}
+            onConfirm={() => handleCommitRevoke(record)}>
+            <Button
+              type="default"
+              size="small"
+              shape="circle"
+              title={record?.status ? store.revoke : store.commit}>
+              {record?.status ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
+            </Button>
+          </Popconfirm>
+          <Popconfirm
+            title={`${global.deleteMsg} ${record?.name || ''}?`}
+            disabled={record.status}
+            onConfirm={() => {
+              handleDelete(record.id);
+            }}
+            okText={global.yes}
+            cancelText={global.no}>
+            <Tooltip title={record.status ? builder.deleteTips : ''}>
+              <Button
+                size="small"
+                shape="circle"
+                icon={<DeleteOutlined />}
+                disabled={record.status}
+                style={{ marginLeft: 8 }}
+              />
+            </Tooltip>
+          </Popconfirm>
+        </>
       ),
     },
   ];
 
+  const handleDelete = (id: string) => {
+    if (applicationId && id) {
+      remove({
+        applicationId,
+        type: TYPE,
+        fileIds: id,
+      });
+    }
+  };
+
   const handleCommitRevoke = (template) => {
     save({
       applicationId,
-      type: 'template',
+      type: TYPE,
       setting: [
         {
           category: template.category,
@@ -108,7 +137,7 @@ const ComponentList = (props: IProps) => {
       columns={columns}
       loading={loading}
       pagination={
-        pageInfo.total > pageInfo.size
+        pageInfo?.total && pageInfo.total > pageInfo.size
           ? {
               position: ['bottomCenter'],
               current: pageInfo.page,

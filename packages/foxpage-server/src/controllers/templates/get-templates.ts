@@ -14,6 +14,7 @@ import { AppContentListRes, AppContentVersionReq } from '../../types/validates/p
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/get-pages.ts
 @JsonController('templates')
 export class GetAppTemplateList extends BaseController {
   constructor() {
@@ -25,7 +26,7 @@ export class GetAppTemplateList extends BaseController {
    * @param  {AppContentVersionReq} params
    * @returns {PageContentData[]}
    */
-  @Post('/lives')
+  @Post('/lives-migrations')
   @OpenAPI({
     summary: i18n.sw.getAppTemplates,
     description: '',
@@ -33,7 +34,7 @@ export class GetAppTemplateList extends BaseController {
     operationId: 'get-template-live-version-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<PageContentData[]>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<PageContentData[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
       const [pageList, contentList] = await Promise.all([
@@ -50,14 +51,15 @@ export class GetAppTemplateList extends BaseController {
       const mockObject = await this.service.content.mock.getMockLiveVersions(contentIds);
 
       let pageVersions: VersionWithExternal[] = [];
-      pageList.forEach(item => {
+      pageList.forEach((item) => {
         const mockRelations = mockObject[item.contentId]?.relations || {};
-        item.content.relations = this.service.version.relation.moveMockRelations(item.content.relations, mockRelations);
+        item.content.relations = this.service.version.relation.moveMockRelations(
+          item.content.relations,
+          mockRelations,
+        );
 
-        pageVersions.push(Object.assign(
-          {},
-          item.content || {},
-          {
+        pageVersions.push(
+          Object.assign({}, item.content || {}, {
             dslVersion: item.dslVersion || DSL_VERSION,
             name: contentObject[item.contentId]?.title || '',
             version: item.version || '',
@@ -65,8 +67,8 @@ export class GetAppTemplateList extends BaseController {
             fileId: contentObject[item.contentId]?.fileId || '',
             mock: mockObject[item.contentId]?.mock || {},
             extension: mockObject[item.contentId]?.extension || {},
-          }
-        ));
+          }),
+        );
       });
 
       return Response.success(pageVersions, 1070901);

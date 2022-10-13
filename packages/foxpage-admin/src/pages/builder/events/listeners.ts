@@ -14,7 +14,6 @@ const call = (fn: any, ...data: any[]) => {
  */
 export const listener = (event: MessageEvent, handlers: FoxBuilderEvents) => {
   const { type, data } = event.data || {};
-  // console.log('[ LISTENER ]',type, data);
   switch (type) {
     case ACTIONS.INIT: {
       call(handlers.onInit, data);
@@ -57,6 +56,16 @@ export const listener = (event: MessageEvent, handlers: FoxBuilderEvents) => {
     case ACTIONS.FRAME_LOADED: {
       const { opt } = data as { opt?: {} };
       call(handlers.onFrameLoaded, opt);
+      break;
+    }
+    case ACTIONS.PAGE_CAPTURE: {
+      const { opt } = data as { opt?: {} };
+      call(handlers.onPageCapture, opt);
+      break;
+    }
+    case ACTIONS.PAGE_CAPTURED: {
+      const { opt } = data as { opt?: {} };
+      call(handlers.onPageCaptured, opt);
       break;
     }
     default:

@@ -2,7 +2,7 @@ import {
   AppFolderTypes,
   AppResource,
   Content,
-  ContentVersion,
+  DSL,
   File,
   FileTypes,
   Folder,
@@ -38,13 +38,13 @@ export type FolderResourceGroup = Folder & { groups: AppResource };
 export type FileContents = File & { contents: Content[] };
 export type FileAssoc = FileUserInfo & {
   folderName: string;
-  content: ContentVersion;
+  content: DSL;
   contentId?: string;
   online?: boolean;
   version?: {
     base?: string;
     live?: string;
-  }
+  };
 };
 export type FilePathSearch = FolderPathSearch & { fileName: string };
 export type FilePageSearch = Exclude<FolderPageSearch, 'parentFolderId'> & {
@@ -53,7 +53,7 @@ export type FilePageSearch = Exclude<FolderPageSearch, 'parentFolderId'> & {
   sort?: Record<string, number>;
 };
 
-export type FileWithOnline = _.Omit<File, 'creator'> & { online: boolean, creator: UserBase};
+export type FileWithOnline = _.Omit<File, 'creator'> & { online: boolean; creator: UserBase };
 
 export type ResourceFolderChildren = Folder & {
   newVersion?: NewResourceDetail;
@@ -68,6 +68,7 @@ export type ResourceFolderContentChildren = {
 export interface AppFileType {
   applicationId: string;
   type: string | string[];
+  search?: string;
 }
 
 export interface FileCheck {
@@ -98,7 +99,7 @@ export interface WorkspaceFolderSearch extends Search {
   creator: string;
   types: string[];
   organizationId?: string;
-  applicationIds?: string[],
+  applicationIds?: string[];
   sort?: Record<string, number>;
 }
 
@@ -126,9 +127,18 @@ export interface AppFolderSearch extends Search {
 }
 
 export interface FolderChildrenSearch extends Search {
-  parentFolderIds: string[];
-  userIds?: string[],
+  types?: string[];
+  applicationIds?: string[];
+  folderIds?: string[];
+  userIds?: string[];
+  searchType?: string;
   sort?: Record<string, number>;
+}
+
+export interface UserFileFolderSearch extends Search {
+  types?: string[];
+  userId?: string;
+  applicationIds?: string[];
 }
 
 export interface AppFolderSearchByName {
@@ -168,6 +178,7 @@ export interface NewFileInfo {
   name: string;
   applicationId: string;
   type: FileTypes;
+  componentType?: string;
   creator?: string;
   folderId?: string;
   suffix?: string;

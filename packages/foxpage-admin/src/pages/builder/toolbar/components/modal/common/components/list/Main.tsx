@@ -1,6 +1,13 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  BugFilled,
+  BugOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import { Button, Input, Popconfirm, Radio, Table as AntTable } from 'antd';
 import styled from 'styled-components';
 
@@ -15,6 +22,10 @@ enum TabEnum {
   application,
 }
 
+const { Search } = Input;
+
+const PAGE_NUM = 1;
+
 const Container = styled.div`
   padding: 24px 24px 0;
 `;
@@ -28,17 +39,19 @@ const Header = styled.div`
 
 const Table = styled(AntTable)`
   .ant-table-pagination.ant-pagination {
-    margin: 12px 0 0;
+    margin: 16px 0 0;
   }
 `;
 
 interface Type {
-  type: string;
   applicationId: string;
-  folderId: string;
   button: string;
-  paginationInfo: Record<string, PaginationInfo>;
   dataSource: any;
+  folderId: string;
+  loadingInfo: Record<string, boolean>;
+  mock: any;
+  paginationInfo: Record<string, PaginationInfo>;
+  type: string;
   onDelete: (id: string, params: any) => void;
   onEdit: (type: string, entity?: any) => void;
   onFetch: (params: any) => void;
@@ -46,18 +59,21 @@ interface Type {
 
 const Main: React.FC<Type> = (props) => {
   const {
-    type,
     applicationId,
-    folderId,
     button,
-    paginationInfo,
     dataSource,
+    folderId,
+    loadingInfo,
+    mock,
+    paginationInfo,
+    type,
     onDelete,
     onEdit,
     onFetch,
   } = props;
   const [tab, setTab] = useState(TabEnum.project);
-  const [search, setSearch] = useState<string>('');
+  const [pageNum, setPageNum] = useState<number>(paginationInfo[type || 'condition'].page);
+  const [search, setSearch] = useState('');
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -75,12 +91,14 @@ const Main: React.FC<Type> = (props) => {
     },
   ];
 
+  const loading = useMemo(() => loadingInfo[type || 'condition'], [type, loadingInfo]);
+
   const pageInfo = useMemo(() => paginationInfo[type || 'condition'], [type, paginationInfo]);
 
   const params = useMemo(() => {
     let params: any = {
       applicationId,
-      page: pageInfo?.page,
+      page: pageNum,
       size: pageInfo?.size,
       search,
     };
@@ -98,7 +116,7 @@ const Main: React.FC<Type> = (props) => {
     }
 
     return params;
-  }, [applicationId, folderId, pageInfo, tab, search]);
+  }, [applicationId, folderId, pageInfo.size, pageNum, search, tab]);
 
   const handleFetchList = useCallback(
     (page?: number, size?: number) => {
@@ -117,6 +135,12 @@ const Main: React.FC<Type> = (props) => {
   useEffect(() => {
     handleFetchList();
   }, [tab, search]);
+
+  const handleSearch = (search) => {
+    setPageNum(PAGE_NUM);
+
+    setSearch(search);
+  };
 
   const handleGenerateType = useCallback(
     (entity) => {
@@ -148,6 +172,19 @@ const Main: React.FC<Type> = (props) => {
       title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
+      render: (name: string, record: ConditionEntity | FuncEntity | VariableEntity) => (
+        <>
+          {name}
+          {!!mock?.enable && !!mock?.schemas?.find((schema) => schema.id === record.contentId) && (
+            <BugFilled style={{ color: '#FF5918', fontSize: 12, marginLeft: 4 }} />
+          )}
+        </>
+      ),
+    },
+    {
+      title: global.idLabel,
+      dataIndex: 'id',
+      key: 'id',
     },
     {
       title: global.type,
@@ -160,7 +197,7 @@ const Main: React.FC<Type> = (props) => {
       title: global.actions,
       dataIndex: '',
       key: '',
-      width: 100,
+      width: 130,
       render: (_text: string, record: ConditionEntity | FuncEntity | VariableEntity) => (
         <>
           {tab === TabEnum.project ? (
@@ -170,14 +207,13 @@ const Main: React.FC<Type> = (props) => {
                 shape="circle"
                 icon={<EditOutlined />}
                 onClick={() => onEdit('edit', record)}
-                style={{ marginRight: 8 }}
               />
               <Popconfirm
                 title={`${global.deleteMsg}${record.name}?`}
                 okText={global.yes}
                 cancelText={global.no}
                 onConfirm={() => handleDelete(record.id)}>
-                <Button size="small" shape="circle" icon={<DeleteOutlined />} />
+                <Button size="small" shape="circle" icon={<DeleteOutlined />} style={{ margin: '0 8px' }} />
               </Popconfirm>
             </>
           ) : (
@@ -186,6 +222,15 @@ const Main: React.FC<Type> = (props) => {
               shape="circle"
               icon={<EyeOutlined />}
               onClick={() => onEdit('view', record)}
+              style={{ marginRight: 8 }}
+            />
+          )}
+          {mock?.enable && type === ModalTypeEnum.variable && (
+            <Button
+              size="small"
+              shape="circle"
+              icon={<BugOutlined />}
+              onClick={() => onEdit('mock', record)}
             />
           )}
         </>
@@ -204,16 +249,20 @@ const Main: React.FC<Type> = (props) => {
           onChange={(e) => setTab(e.target.value)}
         />
         <div>
-          <Input
-            allowClear
+          <Search
             size="small"
             placeholder={global.inputSearchText}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ width: 200, marginRight: 8 }}
+            defaultValue={search}
+            onSearch={handleSearch}
+            style={{ width: 200 }}
           />
           {tab === TabEnum.project && (
-            <Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => onEdit('new')}>
+            <Button
+              type="primary"
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={() => onEdit('new')}
+              style={{ marginLeft: 8 }}>
               {button}
             </Button>
           )}
@@ -222,11 +271,12 @@ const Main: React.FC<Type> = (props) => {
       {dataSource && (
         <Table
           bordered={false}
+          loading={loading}
           rowKey={(record: any) => record.contentId}
           columns={columns}
           dataSource={dataSource}
           pagination={
-            pageInfo.total > pageInfo.size
+            pageInfo?.total && pageInfo.total > pageInfo.size
               ? {
                   position: ['bottomCenter'],
                   current: pageInfo.page,

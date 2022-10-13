@@ -3,7 +3,7 @@ import { StructureNode } from '@/types/index';
 import { pickNode } from './node';
 
 export const mapToTree = <T extends StructureNode>(record: Record<string, T>) => {
-  function dfs(list: T[], parentId: string) {
+  function dfs(list: T[], parentId?: string) {
     const result: T[] = [];
 
     list.forEach((item) => {
@@ -15,9 +15,13 @@ export const mapToTree = <T extends StructureNode>(record: Record<string, T>) =>
         children = children.concat(childIds?.map((id) => record[id]).filter((it) => !!it));
       }
       let node = pickNode(item);
+      const _extension = { ...node.extension };
+      if (!_extension.extendId) {
+        _extension.parentId = node.extension?.parentId || parentId;
+      }
       node = {
         ...node,
-        extension: { ...node.extension, parentId: node.extension?.parentId || parentId },
+        extension: _extension,
         children: children.length > 0 ? dfs(children as T[], node.id) : [],
       };
       result.push(node);

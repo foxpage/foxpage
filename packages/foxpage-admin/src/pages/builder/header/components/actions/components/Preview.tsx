@@ -7,7 +7,7 @@ import { Empty, Popover, Spin } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
-import { DEBUG_PATH, PREVIEW_PATH } from '@/constants/index';
+import { DEBUG_PATH, FileType, PREVIEW_PATH } from '@/constants/index';
 import { IconMsg, StyledIcon } from '@/pages/builder/header/Main';
 import { GlobalContext } from '@/pages/system';
 
@@ -29,11 +29,12 @@ const MoreItem = styled.div`
 `;
 
 const mapStateToProps = (store: RootState) => ({
+  contentId: store.builder.header.contentId,
+  pageType: store.builder.header.fileType,
+  pageLocale: store.builder.header.locale,
   appInfo: store.builder.main.application,
   mock: store.builder.main.mock,
-  contentId: store.builder.header.contentId,
-  pageLocale: store.builder.header.locale,
-  pageType: store.builder.header.fileType,
+  pageContent: store.builder.main.pageContent,
 });
 
 const mapDispatchToProps = {};
@@ -41,7 +42,7 @@ const mapDispatchToProps = {};
 type PreviewType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Main: React.FC<PreviewType> = (props) => {
-  const { appInfo, contentId, mock, pageLocale, pageType } = props;
+  const { appInfo, contentId, mock, pageContent, pageLocale, pageType } = props;
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -88,7 +89,7 @@ const Main: React.FC<PreviewType> = (props) => {
 
   return (
     <>
-      {pageType === 'page' && (
+      {pageType === FileType.page && (
         <Popover
           placement="bottomLeft"
           overlayClassName="foxpage-builder-header_popover foxpage-builder-header_preview_popover"
@@ -116,14 +117,16 @@ const Main: React.FC<PreviewType> = (props) => {
                           {mockUrl}
                         </MoreItem>
                       ))}
-                      {debugs.map((debugUrl) => (
-                        <MoreItem key={debugUrl} onClick={() => handleClick(debugUrl)}>
-                          <span style={{ color: '#ff6a5b' }}>
-                            [ <ThunderboltOutlined /> ]
-                          </span>{' '}
-                          {debugUrl}
-                        </MoreItem>
-                      ))}
+                      {pageContent?.versionNumber &&
+                        pageContent.versionNumber > 1 &&
+                        debugs.map((debugUrl) => (
+                          <MoreItem key={debugUrl} onClick={() => handleClick(debugUrl)}>
+                            <span style={{ color: '#ff6a5b' }}>
+                              [ <ThunderboltOutlined /> ]
+                            </span>{' '}
+                            {debugUrl}
+                          </MoreItem>
+                        ))}
                     </>
                   ) : (
                     <MoreItem key="unknown">

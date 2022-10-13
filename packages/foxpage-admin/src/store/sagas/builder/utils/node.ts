@@ -1,5 +1,5 @@
-import { REACT_COMPONENT_TYPE } from '@/constants/index';
-import { Component, StructureNode } from '@/types/index';
+import { REACT_COMPONENT_TYPE, PAGE_COMPONENT_NAME, BLOCK_COMPONENT_NAME } from '@/constants/index';
+import { Component, RenderStructureNode, StructureNode, Content } from '@/types/index';
 
 import { generateStructureId } from './common';
 
@@ -8,12 +8,13 @@ import { generateStructureId } from './common';
  * @returns node
  */
 export const initNode = (component: Component) => {
+  const { category, label, name, defaultValue, componentType } = component;
   return {
     id: generateStructureId(),
-    label: component.category?.name || component.label || component.name,
-    name: component.name,
-    type: REACT_COMPONENT_TYPE,
-    props: {},
+    label: category?.name || label || name,
+    name: name,
+    type: componentType || REACT_COMPONENT_TYPE,
+    props: defaultValue?.props || {},
     children: [],
     extension: {
       sort: 100,
@@ -21,6 +22,57 @@ export const initNode = (component: Component) => {
     version: '',
   } as StructureNode;
 };
+
+export const initStructure = (structure: RenderStructureNode) => {
+  Object.assign(structure, {
+      id: generateStructureId(),
+      extension: {
+        sort: 100,
+      },
+      version: ''
+    });
+  structure.children?.map(initStructure)
+  return structure
+};
+
+/**
+ * init root node
+ * @returns node
+ */
+ export const initRootContentNode = (component: Component) => {
+  return {
+    id: '',
+    schemas: [initNode(component)],
+    extension: {}
+  } as Content;
+};
+
+/**
+ * get pagenode from structure
+ * @param node 
+ * @returns 
+ */
+ export const getRootNode = (nodes: StructureNode[] = []) => {
+  return nodes.find(item => isPageNode(item) || isBlockNode(item));
+}
+
+/**
+ * is pagenode
+ * @param node 
+ * @returns 
+ */
+export const isPageNode = (node: StructureNode) => {
+  return node.name === PAGE_COMPONENT_NAME;
+}
+
+/**
+ * is blocknode
+ * @param node 
+ * @returns 
+ */
+export const isBlockNode = (node: StructureNode) => {
+  return node.name === BLOCK_COMPONENT_NAME;
+}
 
 /**
  * init mock node

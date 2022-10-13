@@ -1,6 +1,9 @@
-import { Component, FormattedData } from '@/types/index';
+import { FileType } from '@/constants/global';
+import { Component, FormattedData, RenderStructureNode } from '@/types/index';
+import { store } from '@/store/index';
+import { initNode, initStructure, initStyleWrapper } from '../utils';
 
-import { initNode, initStyleWrapper } from '../utils';
+import { cloneDeep } from 'lodash';
 
 /**
  * add component
@@ -8,13 +11,18 @@ import { initNode, initStyleWrapper } from '../utils';
  * @returns new node
  */
 export const addComponent = (component: Component, opt: { componentMap: FormattedData['componentMap'] }) => {
-  const node = initNode(component);
-
-  const nodeComponent = opt.componentMap[node.name] || {};
-  // if use style editor ,will wrapper a styleContainer
-  if (nodeComponent.useStyleEditor) {
-    return initStyleWrapper(node, opt.componentMap);
+  if (component.type === FileType.block) {
+    const blockDSLMap = store.getState().builder.component.blockDSLMap;
+    const blockStructure = blockDSLMap[component.id]?.schemas[0];
+    const copyedStructure = cloneDeep(blockStructure) as RenderStructureNode;
+    return initStructure(copyedStructure);
+  } else {
+    const node = initNode(component);
+    const nodeComponent = opt.componentMap[node.name] || {};
+    // if use style editor ,will wrapper a styleContainer
+    if (nodeComponent.useStyleEditor) {
+      return initStyleWrapper(node, opt.componentMap);
+    }
+    return node;
   }
-
-  return node;
 };

@@ -89,6 +89,9 @@
     "personal": "个人",
     "permission": "共享",
     "noValidContent": "无可用内容",
+    "mode": "模式",
+    "searchPlaceholder": "输入名称或编号搜索",
+    "props": "属性",
     "level": "级"
   },
   "workspace": {
@@ -127,11 +130,13 @@
     "registerFailed": "注册失败"
   },
   "project": {
+    "id": "项目编号",
     "name": "项目",
     "add": "新增项目",
     "edit": "编辑项目",
+    "delete": "删除项目",
     "nameLabel": "项目名称",
-    "deleteMessage": "是否确定删除？",
+    "deleteMessage": "确定删除当前项目？请确保所有页面均已下线",
     "all": "全部",
     "authorized": "我参与的",
     "involved": "我参与的",
@@ -194,7 +199,8 @@
     "deleteMessage": "是否确定删除",
     "relPath": "文件路径",
     "fetchDetailFailed": "查询文件详情失败",
-    "fetchPageListFailed": "查询列表失败"
+    "fetchPageListFailed": "查询列表失败",
+    "block": "块"
   },
   "content": {
     "name": "内容",
@@ -208,6 +214,8 @@
     "nameLabel": "内容名称",
     "deleteMessage": "确定删除",
     "query": "链接参数",
+    "addMultipleContent": "创建多个内容",
+    "localeTips": "请选择至少一个语言",
     "fetchFailed": "查询内容失败"
   },
   "team": {
@@ -291,7 +299,10 @@
     "republish": "重新发布",
     "live": "激活",
     "componentVersion": "组件版本",
-    "syncTitle": "从云端同步"
+    "componentType": "组件类型",
+    "syncTitle": "从云端同步",
+    "selectComponentType": "选择组件类型",
+    "componentTypeNoneEmpty": "请选择组件类型"
   },
   "resource": {
     "group": "资源组",
@@ -331,7 +342,11 @@
     "builderSetting": "搭建页面窗口设置",
     "builderStoreModalPage": "页面窗口",
     "builderStoreModalTemplate": "模板窗口",
-    "componentBar": "组件栏"
+    "componentBar": "组件窗口",
+    "page": "页面窗口",
+    "template": "模板窗口",
+    "componentTab": "组件",
+    "blockTab": "块"
   },
   "builder": {
     "componentList": "组件列表",
@@ -364,6 +379,8 @@
     "parsePageFailed": "解析页面失败",
     "relationMatchError": "绑定失败",
     "saveTips": "请先进行保存操作",
+    "deleteTips": "请先将该条目撤回，再尝试删除",
+    "commitTips": "请先设置分类信息，再尝试上架",
     "previewUrlEmptyTips": "请先配置应用域名"
   },
   "variable": {
@@ -372,6 +389,7 @@
     "name": "变量",
     "title": "变量",
     "edit": "编辑变量",
+    "mock": "模拟变量",
     "args": "参数",
     "value": "值",
     "selectFunction": "选择方法",
@@ -384,6 +402,7 @@
     "content": "内容"
   },
   "authorize": {
+    "name": "授权",
     "user": "用户",
     "role": "角色",
     "admin": "管理员",
@@ -406,6 +425,7 @@
     "category": "分类",
     "label": "别名",
     "sort": "排序",
+    "cover": "封面",
     "rank": "火热程度",
     "addComponent": "添加组件",
     "addPage": "添加页面",

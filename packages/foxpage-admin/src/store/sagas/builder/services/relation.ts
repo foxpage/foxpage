@@ -3,12 +3,19 @@ import { message } from 'antd';
 import { searchVariable } from '@/apis/application';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { store } from '@/store/index';
-import { Content, RelationDetails, ResponseBody, VariableEntity, VariableSearchParams } from '@/types/index';
+import {
+  Content,
+  RelationDetails,
+  RelationSearchOption,
+  ResponseBody,
+  VariableEntity,
+  VariableSearchParams,
+} from '@/types/index';
 
 import { initRelation, initVariableRelation } from '../utils';
 
-export async function getRelation(content: Content, relations: RelationDetails) {
-  let serverVariables: VariableEntity[] = [];
+export async function getRelation(content: Content, relations: RelationDetails, opt?: RelationSearchOption) {
+  let serverVariables: RelationDetails['variables'] = [];
   // init & check relation (current only variables)
   const { relation, invalids } = initRelation(content, relations);
   const realInvalids: string[] = [];
@@ -16,21 +23,25 @@ export async function getRelation(content: Content, relations: RelationDetails) 
     const { application, file } = store.getState().builder.main;
     const map = {};
     const invalidNames = invalids.map((item) => {
-      const name = item.split(':')[0];
+      const name = item.split(':')[0]?.split('[')[0];
       map[item] = name;
       return name;
     });
 
     const result: ResponseBody<VariableEntity[]> = await searchVariable(({
-      applicationId: application?.id,
+      applicationId: application?.id || opt?.applicationId,
       id: file.folderId,
-      names: invalidNames,
+      names: Array.from(new Set(invalidNames)),
       size: 100,
     } as unknown) as VariableSearchParams);
 
     // init invalids
     if (result.code === 200) {
-      serverVariables = result.data || [];
+      serverVariables = (result.data || []).map((item) => ({
+        name: item.name,
+        ...item.content,
+        id: item.id,
+      }));
       invalids.forEach((item) => {
         const initd = initVariableRelation(map[item], result.data);
         if (initd) {

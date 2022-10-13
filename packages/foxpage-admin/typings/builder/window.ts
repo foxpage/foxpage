@@ -1,6 +1,14 @@
 import { RenderStructureNode } from './structure';
 
-export type BuilderWindow = 'variable' | 'variableBind' | 'condition' | 'conditionBind' | 'function' | 'page' | 'templateBind';
+export type BuilderWindow =
+  | 'variable'
+  | 'variableBind'
+  | 'condition'
+  | 'conditionBind'
+  | 'function'
+  | 'page'
+  | 'templateBind'
+  | 'mockDelete';
 
 export interface WindowVisible {
   status?: boolean;
@@ -13,6 +21,7 @@ export interface VariableBindParams extends WindowVisible {
   keys: string;
   // options
   opt: {};
+  isMock?: boolean;
 }
 
 export interface ConditionBindParams extends WindowVisible {
@@ -20,4 +29,12 @@ export interface ConditionBindParams extends WindowVisible {
   component: RenderStructureNode;
 }
 
-export type BuilderWindowChangeOptions = VariableBindParams | ConditionBindParams | WindowVisible;
+export interface ComponentMockDeleteParams {
+  id: string;
+}
+
+export type BuilderWindowChangeOptions =
+  | VariableBindParams
+  | ConditionBindParams
+  | WindowVisible
+  | ComponentMockDeleteParams;

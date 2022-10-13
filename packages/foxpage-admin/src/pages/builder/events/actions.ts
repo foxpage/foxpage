@@ -9,3 +9,5 @@ export const DROP_COMPONENT = 'DROP_COMPONENT';
 export const WINDOW_CHANGE = 'WINDOW_CHANGE';
 export const LINK_JUMP = 'LINK_JUMP';
 export const FRAME_LOADED = 'FRAME_LOADED';
+export const PAGE_CAPTURE = 'PAGE_CAPTURE';
+export const PAGE_CAPTURED = 'PAGE_CAPTURED';

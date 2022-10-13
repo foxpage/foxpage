@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/projects/file';
+import { deleteProject, saveProject } from '@/actions/projects/folder';
 import { ProjectFile } from '@/components/index';
 
 const mapStateToProps = (store: RootState) => ({
@@ -23,6 +24,8 @@ const mapDispatchToProps = {
   updateEditFile: ACTIONS.updateEditFileValue,
   saveFile: ACTIONS.saveFile,
   deleteFile: ACTIONS.deleteFile,
+  deleteProject,
+  saveProject,
 };
 
 type FileListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -42,6 +45,8 @@ const Main: React.FC<FileListType> = (props) => {
     updateEditFile,
     saveFile,
     deleteFile,
+    deleteProject,
+    saveProject,
   } = props;
 
   useEffect(() => {
@@ -65,6 +70,8 @@ const Main: React.FC<FileListType> = (props) => {
       updateEditFile={updateEditFile}
       saveFile={saveFile}
       deleteFile={deleteFile}
+      deleteProject={deleteProject}
+      saveProject={saveProject}
     />
   );
 };

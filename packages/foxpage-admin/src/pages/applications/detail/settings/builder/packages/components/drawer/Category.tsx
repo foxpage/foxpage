@@ -72,9 +72,11 @@ function Category(props: IProps) {
               value={categoryName}
               placeholder="Select category"
               onChange={(value) => handleChange('categoryName', value)}>
-              {categories.map((item) => (
-                <Option key={item.categoryName}>{item.categoryName}</Option>
-              ))}
+              {categories
+                .filter((category) => !!category.categoryName)
+                .map((item) => (
+                  <Option key={item.categoryName}>{item.categoryName}</Option>
+                ))}
             </Select>
           ) : (
             <Input

@@ -2,6 +2,7 @@ import { createAction } from 'typesafe-actions';
 
 import {
   Application,
+  BuilderWindowChangeOptions,
   ContentFetchedRes,
   ContentFetchParams,
   FilesFetchedResponse,
@@ -9,9 +10,9 @@ import {
   FormattedData,
   Mock,
   PageContent,
+  RelationDetails,
   RenderStructureNode,
   StructureNode,
-  VariableEntity,
 } from '@/types/index';
 
 export const updateToolbarEditorVisible = createAction(
@@ -76,7 +77,10 @@ export const pushPageNode = createAction('BUILDER_PAGE__PUSH_PAGE_NODE', (data: 
   data,
 }))();
 
-export const saveContent = createAction('BUILDER_PAGE__SAVE_PAGE', () => ({}))();
+export const saveContent = createAction('BUILDER_PAGE__SAVE_PAGE', (delay?: boolean, publish?: boolean) => ({
+  delay,
+  publish,
+}))();
 
 export const cloneContent = createAction('BUILDER_PAGE__CLONE_PAGE', (contentId: string) => ({
   contentId,
@@ -137,10 +141,18 @@ export const validate = createAction('BUILDER_MAIN__VALIDATE', () => ({}))();
 
 export const pushLocalVariables = createAction(
   'BUILDER_MAIN__PUSH_LOCAL_VARIABLES',
-  (variables: VariableEntity[]) => ({ variables }),
+  (variables: RelationDetails['variables']) => ({ variables }),
 )();
 
 // TODO:
 export const templateOpenInPage = createAction('BUILDER_MAIN__TEMPLATE_OPEN_IN_PAGE', (status: boolean) => ({
   status,
 }))();
+
+// component mock delete
+export const deleteComponentMock = createAction(
+  'BUILDER_MAIN__DELETE_COMPONENT_MOCK',
+  (data: BuilderWindowChangeOptions) => ({
+    data,
+  }),
+)();

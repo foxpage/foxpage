@@ -232,6 +232,8 @@ export interface File extends CommonFields {
   folderId: string;
   type: FileTypes;
   suffix: string;
+  componentType?: string;
+  extension?: Record<string, any>;
   intro?: string;
   tags?: any[];
 }

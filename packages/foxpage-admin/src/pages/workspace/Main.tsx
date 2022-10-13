@@ -91,7 +91,7 @@ const WorkSpace = () => {
     <Layout hasSider style={{ height: '100%' }}>
       <Sider
         theme="light"
-        breakpoint="xl"
+        breakpoint="xxl"
         width={250}
         collapsedWidth={60}
         onBreakpoint={handleBreakPoint}

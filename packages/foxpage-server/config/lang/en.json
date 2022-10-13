@@ -21,7 +21,10 @@
     "invalidLocales": "Invalid or repeat locales",
     "updateSettingDetailSuccess": "Set application setting item detail success",
     "updateSettingDetailFailed": "Failed to set application setting item detail",
-    "invalidSettingTypeId": "Invalid application setting item type id"
+    "removeSettingSuccess": "Remove app type setting success",
+    "removeSettingDetailFailed": "Failed to remove app type setting",
+    "invalidSettingTypeId": "Invalid application setting item type id",
+    "itemHasNoLiveVersion": "Invalid items with no live version"
   },
   "auth": {
     "addAuthorizeDetailSuccess": "Create user authorized success",
@@ -59,7 +62,8 @@
     "invalidName": "Invalid file name",
     "setStatusFailed": "Failed to set file deletion status",
     "fileIsInvalidOrDeleted": "File id is invalid or has been deleted",
-    "getFileParentListFailed": "Failed to get file all parent list"
+    "getFileParentListFailed": "Failed to get file all parent list",
+    "allowMax20Files": "Max allow create 20 files in folder"
   },
   "folder": {
     "nameExist": "The folder name already exists in the current directory",
@@ -212,7 +216,7 @@
     "invalidFileId": "Invalid Component ID",
     "invalidContentId": "Invalid component content ID",
     "invalidVersionId": "Invalid component version ID",
-    "invalidCategoryName":"Invalid component category name",
+    "invalidCategoryName": "Invalid component category name",
     "componentNotInApp": "Component not application",
     "invalidVersionStatus": "Invalid component version status",
     "updateComponentFileFailed": "Failed to update component details",
@@ -375,6 +379,7 @@
     "templateVersionHasPublished": "The current version has been published and cannot be published repeatedly",
     "setTemplatePublishStatusFailed": "Template version publishing failed",
     "addNewTemplateContentFailed": "Adding template content details failed",
+    "addNewTemplateContentSuccess": "Adding template content details success",
     "getTemplateContentListFailed": "Failed to get the template content list details",
     "invalidRelations": "Invalid dependencies",
     "getAppTemplateFileFailed": "Failed to get the list of template files under the application"
@@ -382,6 +387,7 @@
   "page": {
     "addNewPageFailed": "Failed to add page details",
     "addNewPageContentFailed": "Adding page content details failed",
+    "addNewPageContentSuccess": "Adding page content details success",
     "invalidPageId": "Invalid Page ID",
     "invalidPageContentId": "Invalid Page ContentId",
     "invalidIdType": "The file type of the parameter ID is wrong",
@@ -416,7 +422,8 @@
     "getWorkspaceDynamicListFailed": "Failed to get workspace dynamic list",
     "getWorkspaceRequestDetailFailed": "Failed to get workspace request detail",
     "getWorkspaceDataHistoryFailed": "Failed to get workspace data history",
-    "getPageBuilderItemFailed": "Failed to get page builder item list"
+    "getPageBuilderItemFailed": "Failed to get page builder item list",
+    "getBlockContentLiveVersionFailed": "Failed to get block content live version"
   },
   "store": {
     "getStorePageListFailed": "Failed to get product page data",
@@ -440,6 +447,9 @@
     "uploadObjectsFailed": "Failed to upload object to storage",
     "organizeUploadSuccess": "Success to upload",
     "organizeUploadFailed": "Failed to upload"
+  },
+  "item": {
+    "addNewItemFailed": "Failed to add new item detail"
   },
   "sw": {
     "userLogin": "User account login",
@@ -522,6 +532,7 @@
     "addRegistryContentVersionDetail": "Add the version details of the registry",
     "updateRegisterContentVersionDetail": "Update the version details of the registry",
     "templateList": "Get published templates",
+    "saveContentAsBase": "Save content as base",
     "addProjectDetail": "Add Project Details",
     "updateProjectDetail": "Update Project Details",
     "addResourceContentDetail": "Add static resource content details",
@@ -694,6 +705,7 @@
     "addAuthorizeDetail": "Add target user to the type data",
     "updateAuthorizeDetail": "Update the type data authorize data",
     "setAuthorizeStatus": "Set the target authorize delete status to the type data",
-    "getAuthorizeList": "Get the type data authorize list"
+    "getAuthorizeList": "Get the type data authorize list",
+    "addTypeItemDetail": "Add Type item (variable, function, condition, mock) detail"
   }
 }

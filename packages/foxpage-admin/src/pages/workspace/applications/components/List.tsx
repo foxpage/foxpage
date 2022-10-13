@@ -32,12 +32,15 @@ const mapDispatchToProps = {
   openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
 };
 
-type ApplicationListProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
+type ApplicationListProps = ReturnType<typeof mapStateToProps> &
+  typeof mapDispatchToProps & {
+    search?: string;
+  };
 
 const ApplicationList = (props: ApplicationListProps) => {
-  const { organizationId, loading, pageInfo, list, fetchList, openDrawer, openAuthDrawer } = props;
+  const { list, loading, organizationId, pageInfo, search, fetchList, openDrawer, openAuthDrawer } = props;
 
-  // get multi-language
+  // i18n
   const { locale } = useContext(GlobalContext);
   const { global } = locale.business;
 
@@ -121,10 +124,10 @@ const ApplicationList = (props: ApplicationListProps) => {
         }
         onChange={(pagination) => {
           fetchList({
-            page: pagination.current,
-            search: '',
-            size: pagination.pageSize,
             organizationId,
+            page: pagination.current,
+            search: search || '',
+            size: pagination.pageSize,
             type: 'user',
           });
         }}

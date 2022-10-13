@@ -11,7 +11,7 @@ export type ProjectContentActionType = ActionType<typeof ACTIONS>;
 export type BaseContent = { id: string; name: string };
 
 const contents: ContentEntity[] = [];
-const editContent: Partial<ContentEntity> = {} as Partial<ContentEntity>;
+const editContent: Partial<ContentEntity> & { oneLocale?: boolean } = {};
 const baseContents: BaseContent[] = [];
 const extendRecord: Record<string, string[]> = {};
 const fileDetail: File = {} as File;

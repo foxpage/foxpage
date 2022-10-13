@@ -80,17 +80,35 @@ export class UpdatePageVersionDetail extends BaseController {
       ]);
 
       // Get version recursive relation detail
-      const allRelations = await this.service.version.relation.getVersionRelations(
-        _.keyBy(versionList, 'id'),
-      );
+      const [allRelations, appDefaultFolderIds] = await Promise.all([
+        this.service.version.relation.getVersionRelations(_.keyBy(versionList, 'id')),
+        this.service.folder.info.getAppDefaultItemFolderIds(params.applicationId),
+      ]);
 
       // Get all relations content detail
       const relationContentList = await this.service.content.list.getDetailByIds(_.keys(allRelations));
+      const relationFileList = await this.service.file.list.getDetailByIds(
+        _.map(relationContentList, 'fileId'),
+      );
+      const relationFileObject = _.keyBy(relationFileList, 'id');
 
       const projectId = targetFileDetail.folderId || '';
       let relations: Record<string, Record<string, string>> = {};
 
       for (const content of relationContentList) {
+        // check template in the same application or not
+        if (
+          relationFileObject[content.fileId]?.type === TYPE.TEMPLATE &&
+          relationFileObject[content.fileId]?.applicationId === params.applicationId
+        ) {
+          continue;
+        }
+
+        // check variable, condition is application scope or not
+        if (appDefaultFolderIds.indexOf(relationFileObject[content.fileId]?.folderId) !== -1) {
+          continue;
+        }
+
         const relation = await this.service.file.info.copyFile(content.fileId, params.applicationId, {
           ctx,
           folderId: projectId,

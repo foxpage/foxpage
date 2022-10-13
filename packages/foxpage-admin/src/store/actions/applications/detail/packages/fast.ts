@@ -1,12 +1,13 @@
 import { createAction } from 'typesafe-actions';
 
 import {
+  ComponentRemote,
   EditorComponentSaveParams,
   PaginationInfo,
   RemoteComponentFetchParams,
   RemoteComponentItem,
   RemoteResourceSavedData,
-  RemoteResourceSaveParams,
+  RemoteResourceSaveParams
 } from '@/types/index';
 
 export const clearAll = createAction('APPLICATION_PACKAGES_FAST__CLEAR_ALL', () => ({}))();
@@ -76,6 +77,11 @@ export const saveResources = createAction(
 export const pushResourcesSaved = createAction(
   'APPLICATION_PACKAGES_FAST__PUSH_RESOURCES_SAVED',
   (data: RemoteResourceSavedData) => ({ data }),
+)();
+
+export const updateComponentRemoteInfo = createAction(
+  'APPLICATION_PACKAGES_FAST__UPDATE_COMPONENT_REMOTE_INFO',
+  (name: string, info: Partial<ComponentRemote>) => ({ name, info }),
 )();
 
 export const saveEditors = createAction(

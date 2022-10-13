@@ -1,4 +1,4 @@
-import { AbstractEntity, BaseResponse, CommonDeleteParams, CommonFetchParams, FileTag } from '@/types/index';
+import { AbstractEntity, BaseResponse, CommonDeleteParams, CommonFetchParams, FileTag, ComponentRemote } from '@/types/index';
 
 // new
 export interface ApplicationResourceGroupTag {
@@ -86,6 +86,11 @@ export interface RemoteResourceSaveParams {
   applicationId: string;
   id: string;
   resources: RemoteResource[];
+}
+
+export interface UpdateComponentRemoteInfoParams {
+  name: string;
+  info: Partial<ComponentRemote>;
 }
 
 export type RemoteResourceSavedData = Record<

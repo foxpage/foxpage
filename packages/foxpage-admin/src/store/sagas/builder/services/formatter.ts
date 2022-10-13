@@ -1,4 +1,4 @@
-import { BLANK_NODE, STYLE_CONTAINER } from '@/constants/index';
+import { BLANK_NODE, PAGE_COMPONENT_NAME, BLOCK_COMPONENT_NAME, STYLE_CONTAINER } from '@/constants/index';
 import {
   Component,
   Content,
@@ -9,17 +9,20 @@ import {
   StructureNode,
 } from '@/types/index';
 
-import { getStyleWrapper, initMockNode, structureToNodeMap } from '../utils';
+import { getStyleWrapper, initMockNode, structureToNodeMap, withVariable, withCondition } from '../utils';
 
 export type FormatOptions = {
   origin: PageContent;
   extend?: PageContent;
   mocks: Mock[];
   components: Component[];
+  rootNode?: StructureNode;
 };
 
 type FormatSchemasOptions = Omit<FormattedData, 'formattedSchemas'> & {
   pageContent: PageContent;
+  extendContent?: PageContent;
+  rootNode?: StructureNode;
 };
 
 /**
@@ -30,7 +33,7 @@ type FormatSchemasOptions = Omit<FormattedData, 'formattedSchemas'> & {
  */
 export const format = (data: PageContent, opt: FormatOptions) => {
   const { content } = data;
-  const { origin, extend, mocks = [], components = [] } = opt;
+  const { origin, extend, mocks = [], components = [], rootNode } = opt;
 
   // prepare
   const templates = (origin.relations?.templates || []).concat(extend?.relations?.templates || []);
@@ -48,6 +51,8 @@ export const format = (data: PageContent, opt: FormatOptions) => {
     idMockMap,
     componentMap,
     pageContent: origin,
+    rootNode,
+    extendContent: extend
   });
 
   return {
@@ -61,7 +66,7 @@ export const format = (data: PageContent, opt: FormatOptions) => {
 };
 
 const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptions) => {
-  const { templateNodeMap, extendPageNodeMap, idMockMap, pageContent } = opt;
+  const { templateNodeMap, extendPageNodeMap, idMockMap, pageContent, rootNode, extendContent } = opt;
   const mockEnable = !!pageContent.mock?.enable;
 
   function doFormat(structures: Content['schemas'] = []) {
@@ -83,13 +88,24 @@ const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptio
       }
       renderNode.__renderProps = item.props;
       renderNode.__styleNode = styleNode;
+      const extendId = item.extension?.extendId || item.id;
+      const isExtend = !!(extendPageNodeMap && extendPageNodeMap[extendId]);
+      const hasCondition = withCondition(renderNode, pageContent.content.relation, extendContent?.content?.relation);
+      const hasVariable = withVariable(renderNode, pageContent.content.relation, extendContent?.content?.relation);
+      const isBlockRootNode = item.name === BLOCK_COMPONENT_NAME && item.id === rootNode?.id;
       renderNode.__editorConfig = {
         visible: item.name !== BLANK_NODE,
-        showInStructure: !templateNode && item.name !== STYLE_CONTAINER && item.type !== 'page',
+        showInStructure: !templateNode && item.name !== STYLE_CONTAINER && item.name !== PAGE_COMPONENT_NAME && !isBlockRootNode,
         editable: !templateNode,
         moveable: !item.extension?.extendId && !extendPageNodeMap[item.id],
         directiveable: false,
         styleable: !!styleNode,
+        isExtend,
+        isExtendAndModified: !!item.extension?.extendId && item.name !== BLANK_NODE,
+        isExtendAndDeleted: isExtend && item.name === BLANK_NODE,
+        hasCondition,
+        hasVariable,
+        hasMock: mockEnable && !!idMockMap[item.id]
       };
 
       if (mockEnable) {

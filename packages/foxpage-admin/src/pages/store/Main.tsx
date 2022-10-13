@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 
 import { EyeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Card, Checkbox, Col, Empty, Pagination, Row, Spin, Tabs, Tooltip } from 'antd';
+import { Card, Checkbox, Col, Empty, Pagination, Row, Spin, Tabs } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -16,6 +16,13 @@ import { BuyModal, PreviewModal, SelectTool } from './components';
 
 const { TabPane } = Tabs;
 const { Meta } = Card;
+
+const PAGE_NUM = 1;
+
+const Title = styled.span`
+  display: inline-block;
+  white-space: normal;
+`;
 
 const FileName = styled.div`
   margin-top: 12px;
@@ -101,7 +108,7 @@ const Store: React.FC<StoreResourceProps> = (props) => {
     updateSearchText('');
     updateType(data);
 
-    fetchResources({ page: pageInfo.page, size: pageInfo.size, search: '', type: data });
+    fetchResources({ page: PAGE_NUM, size: pageInfo.size, search: '', type: data });
   };
 
   const handleClickView = (e, item) => {
@@ -175,11 +182,7 @@ const Store: React.FC<StoreResourceProps> = (props) => {
                     hoverable
                     bordered>
                     <Meta
-                      title={
-                        <Tooltip placement="topLeft" title={resource.name}>
-                          {resource.name}
-                        </Tooltip>
-                      }
+                      title={<Title>{resource.name}</Title>}
                       description={`${global.application}: ${resource.application?.name}`}
                     />
                     {isPageOrTemplate && (
@@ -236,7 +239,7 @@ const Store: React.FC<StoreResourceProps> = (props) => {
 
   return (
     <>
-      <Content>
+      <Content style={{ paddingLeft: 'calc(100vw - 100%)' }}>
         <FoxPageContent
           breadcrumb={
             <FoxPageBreadcrumb

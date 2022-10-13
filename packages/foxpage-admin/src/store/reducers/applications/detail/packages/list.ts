@@ -7,6 +7,7 @@ import { AppComponentFetchParams, CommonDrawerEntity, ComponentEntity, Paginatio
 export type ApplicationPackagesActionType = ActionType<typeof ACTIONS>;
 
 const componentList: ComponentEntity[] = [];
+const blockList: ComponentEntity[] = [];
 const pageInfo: PaginationInfo = {
   page: 1,
   total: 0,
@@ -21,6 +22,7 @@ const initialState = {
   loading: false,
   pageInfo,
   componentList,
+  blockList,
   applicationId: '',
   selectPackage: '' as AppComponentFetchParams['type'],
   // drawer

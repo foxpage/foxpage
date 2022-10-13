@@ -54,7 +54,7 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
   } = props;
 
   // url search params
-  const { pathname, search, applicationId, folderId, fileId } = getLocationIfo(useLocation());
+  const { pathname, search, applicationId, fileId } = getLocationIfo(useLocation());
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -78,33 +78,37 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
             <Link
               to={{
                 pathname: '/builder',
-                search: `?applicationId=${applicationId}&folderId=${folderId}&fileId=${fileId}&contentId=${record.id}`,
+                search: `?applicationId=${applicationId}&folderId=${fileDetail?.folderId}&fileId=${fileId}&contentId=${record.id}`,
                 state: { backPathname: pathname, backSearch: search },
               }}>
               <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
-                <Name style={{ maxWidth: type === 'projects' ? 240 : 150 }}>{text}</Name>
+                <Name>{text}</Name>
               </Tooltip>
             </Link>
-            {fileDetail?.type === FileType.page && !record.isBase && record.urls?.length > 0 && (
-              <Popover
-                placement="bottom"
-                content={
-                  <React.Fragment>
-                    {record.urls.map((url) => {
-                      return (
-                        <p key={url}>
-                          <a href={url} target="_blank">
-                            {url}
-                          </a>
-                        </p>
-                      );
-                    })}
-                  </React.Fragment>
-                }
-                trigger="hover">
-                <LinkOutlined style={{ marginLeft: 6 }} />
-              </Popover>
-            )}
+            {fileDetail?.type === FileType.page &&
+              !record.isBase &&
+              record.urls?.length > 0 &&
+              !!record.tags.find((tag) => tag.locale) &&
+              !!record?.version && (
+                <Popover
+                  placement="bottom"
+                  content={
+                    <React.Fragment>
+                      {record.urls.map((url) => {
+                        return (
+                          <p key={url}>
+                            <a href={url} target="_blank">
+                              {url}
+                            </a>
+                          </p>
+                        );
+                      })}
+                    </React.Fragment>
+                  }
+                  trigger="hover">
+                  <LinkOutlined style={{ marginLeft: 6 }} />
+                </Popover>
+              )}
           </NameContainer>
           <IdLabel>
             {global.idLabel}: {record.id}
@@ -209,8 +213,8 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
               size="small"
               shape="circle"
               title={global.remove}
+              disabled={!!(record.isBase && extendRecord[record.id]?.length) || !!record?.version}
               style={{ marginLeft: 8 }}
-              disabled={!!(record.isBase && extendRecord[record.id]?.length)}
             />
           </Popconfirm>
           <Button

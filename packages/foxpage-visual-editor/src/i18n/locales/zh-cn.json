@@ -135,5 +135,14 @@
   "addListener": "添加操作",
   "advance": "高级设置",
   "template": "模板",
-  "select": "选择"
+  "select": "选择",
+  "modified": "有修改",
+  "mockEnabled": "已开启模拟模式",
+  "mockDisabled": "已关闭模拟模式",
+  "enable": "启用",
+  "delete": "删除",
+  "deleteMockTips": "确认删除当前组件的模拟数据吗？",
+  "inheritNode": "继承节点",
+  "usingCondition": "包含条件",
+  "usingVariable": "包含变量"
 }

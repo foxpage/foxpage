@@ -7,24 +7,26 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { LOG, METHOD } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentStatusReq, ContentDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController()
 export class SetPageContentStatus extends BaseController {
   constructor() {
     super();
   }
 
   /**
-   * Set page content deletion status
+   * Set page, template, block content deletion status
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/content-status')
+  @Put('pages/content-status')
+  @Put('templates/content-status')
+  @Put('blocks/content-status')
   @OpenAPI({
     summary: i18n.sw.setPageContentStatus,
     description: '',
@@ -36,13 +38,18 @@ export class SetPageContentStatus extends BaseController {
     params.status = true; // Currently it is mandatory to only allow delete operations
 
     try {
-      ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.PAGE });
+      const apiType = this.getRoutePath(ctx.request.url);
+
+      ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: apiType });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051101);
       }
 
-      const result = await this.service.content.info.setContentDeleteStatus(params, { ctx });
+      const result = await this.service.content.info.setContentDeleteStatus(params, {
+        ctx,
+        actionType: [LOG.DELETE, apiType].join('_'),
+      });
       if (result.code === 1) {
         return Response.warning(i18n.content.invalidContentId, 2051101);
       } else if (result.code === 2) {

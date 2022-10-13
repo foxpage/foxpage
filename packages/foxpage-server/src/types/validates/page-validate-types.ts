@@ -16,9 +16,7 @@ import { JSONSchema } from 'class-validator-jsonschema';
 import { ComponentDetail } from './component-validate-types';
 import { ContentBaseDetail, ContentVersionBaseDetail } from './content-validate-types';
 import { FileBaseDetail } from './file-validate-types';
-import { PagingReq, ResponsePageBase } from './index-validate-types';
-
-;
+import { PagingReq, ResponseBase, ResponsePageBase } from './index-validate-types';
 
 export class AppPageListCommonReq {
   @JSONSchema({ description: 'Application ID' })
@@ -96,7 +94,7 @@ export class AppPageCatalogCommonReq {
   id: string;
 }
 
-export class AppPageBuilderItemReq extends PagingReq{
+export class AppPageBuilderItemReq extends PagingReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
   @Length(20, 20)
@@ -263,4 +261,25 @@ export class AppProjectItemContentDetailRes extends ResponsePageBase {
   @ValidateNested()
   @IsArray()
   data: AppProjectItemContentDetail[];
+}
+
+export class BlockLocaleLiveVersionReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'File ID' })
+  @IsArray()
+  ids: string[];
+
+  @JSONSchema({ description: 'Content locale' })
+  @IsString()
+  locale: string;
+}
+
+export class BlockLocaleLiveVersionRes extends ResponseBase {
+  @ValidateNested({ each: true })
+  @IsObject()
+  data: object;
 }

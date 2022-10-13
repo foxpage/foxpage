@@ -108,11 +108,12 @@ export class UpdateProjectDetailReq {
   path: string;
 }
 
-export class ProjectDetailRes extends FolderDetailRes { }
+export class ProjectDetailRes extends FolderDetailRes {}
 
 export class ProjectListReq {
   @JSONSchema({ description: 'Organization ID' })
   @IsString()
+  @IsOptional()
   @Length(20, 20)
   organizationId: string;
 
@@ -132,7 +133,12 @@ export class ProjectListReq {
   @IsOptional()
   applicationId: string;
 
-  @JSONSchema({ description: 'Filter fields, currently only filter by organization name' })
+  @JSONSchema({ description: 'Filter fields, search project or file info, project|file' })
+  @IsString()
+  @IsOptional()
+  searchType: string;
+
+  @JSONSchema({ description: 'Filter fields, organization name, project name or id, file name or id' })
   @IsString()
   @IsOptional()
   search: string;
@@ -203,12 +209,11 @@ export class ProjectPageDetail {
 export class ProjectScopeTypeReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
-  @Length(20, 20)
   applicationId: string;
 
   @JSONSchema({ description: 'Project ID', default: 'Project ID/Folder ID' })
   @IsString()
-  @Length(20, 20)
+  @IsOptional()
   id: string;
 
   @JSONSchema({ description: 'Search field, name' })

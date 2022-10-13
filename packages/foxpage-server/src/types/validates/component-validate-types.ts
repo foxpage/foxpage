@@ -29,6 +29,11 @@ export class AppComponentsReq {
   @IsArray()
   @IsOptional()
   componentIds: Array<string>;
+
+  @JSONSchema({ description: 'Component search' })
+  @IsString()
+  @IsOptional()
+  search: string;
 }
 
 export class ResourceEntry {
@@ -170,6 +175,11 @@ export class AddComponentReq {
   @JSONSchema({ description: 'Component type, component|editor|library' })
   @IsString()
   type: string;
+
+  @JSONSchema({ description: 'Component type, react.component|dsl.template|...' })
+  @IsString()
+  @IsOptional()
+  componentType: string;
 }
 
 export class ComponentFileContentReq {
@@ -246,6 +256,11 @@ export class UpdateComponentReq {
   @JSONSchema({ description: 'Component Introduction' })
   @IsString()
   intro: string;
+
+  @JSONSchema({ description: 'Component type' })
+  @IsString()
+  @IsOptional()
+  componentType: string;
 }
 
 export class UpdateComponentContentReq {
@@ -426,6 +441,11 @@ export class BatchComponentResource {
   @ValidateNested()
   @Type(() => RemoteComponent)
   component: RemoteComponent;
+
+  @JSONSchema({ description: 'Component type, react.component|dsl.template|...' })
+  @IsString()
+  @IsOptional()
+  componentType: string;
 }
 
 export class SaveRemotePackageReq {
@@ -452,6 +472,11 @@ export class BatchEditorResource {
   @ValidateNested()
   @Type(() => RemoteComponent)
   component: RemoteComponent;
+
+  @JSONSchema({ description: 'Component type, react.component|dsl.template|...' })
+  @IsString()
+  @IsOptional()
+  componentType: string;
 }
 
 export class SaveEditorPackageReq {
@@ -495,15 +520,15 @@ export class RemotePagePackageReq extends PagingReq {
 export class ComponentCategory {
   @JSONSchema({ description: 'Component nick name' })
   @IsString()
-  name:string;
+  name: string;
 
   @JSONSchema({ description: 'Component category name' })
   @IsString()
-  categoryName:string;
+  categoryName: string;
 
   @JSONSchema({ description: 'Component group name' })
   @IsString()
-  groupName:string;
+  groupName: string;
 
   @JSONSchema({ description: 'Component Sort' })
   @IsNumber()
@@ -563,7 +588,7 @@ export class BatchLiveReq {
 
   @ValidateNested({ each: true })
   @IsArray()
-  idVersions: ContentIdVersion[]
+  idVersions: ContentIdVersion[];
 }
 
 export class GetCategoryComponentReq extends PagingReq {

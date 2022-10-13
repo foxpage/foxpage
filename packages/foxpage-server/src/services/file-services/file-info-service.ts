@@ -51,6 +51,7 @@ export class FileInfoService extends BaseService<File> {
       folderId: params.folderId || '',
       tags: params.tags || [],
       type: params.type as FileTypes,
+      componentType: params.componentType || undefined,
       creator: params.creator || options.ctx.userInfo.id,
     };
 
@@ -78,7 +79,7 @@ export class FileInfoService extends BaseService<File> {
   async addFileDetail(
     params: NewFileInfo,
     options: { ctx: FoxCtx; actionType?: string },
-  ): Promise<Record<string, number | (File & { contentId: string })>> {
+  ): Promise<Record<string, number | (File & { contentId: string }) | string[]>> {
     const newFileCheck = _.pick(params, ['applicationId', 'folderId', 'name', 'type', 'suffix']) as FileCheck;
     newFileCheck.deleted = false;
     const [appDetail, fileExist] = await Promise.all([
@@ -93,13 +94,13 @@ export class FileInfoService extends BaseService<File> {
 
     // Check if pathname is duplicate
     if (params.type === TYPE.PAGE) {
-      const pathnameExist = await Service.file.check.pathNameExist({
+      const existPathnames = await Service.file.check.pathNameExist({
         applicationId: params.applicationId,
         tags: params.tags || [],
         fileId: '',
       });
-      if (pathnameExist) {
-        return { code: 3 }; // pathname already exists
+      if (existPathnames.length > 0) {
+        return { code: 3, data: existPathnames }; // pathname already exists
       }
     }
 
@@ -131,7 +132,7 @@ export class FileInfoService extends BaseService<File> {
 
     const fileContentDetail = Object.assign({}, fileDetail, { contentId: '' });
     // Create content details
-    if ([TYPE.PAGE, TYPE.TEMPLATE].indexOf(params.type) === -1) {
+    if ([TYPE.PAGE, TYPE.TEMPLATE, TYPE.BLOCK].indexOf(params.type) === -1) {
       const contentDetail = Service.content.info.addContentDetail(
         { title: params.name, fileId: fileDetail.id },
         { ctx: options.ctx, type: params.type, content: params.content },
@@ -151,7 +152,7 @@ export class FileInfoService extends BaseService<File> {
   async updateFileDetail(
     params: AppTypeFileUpdate,
     options: { ctx: FoxCtx; actionType?: string },
-  ): Promise<Record<string, number>> {
+  ): Promise<Record<string, number | string[]>> {
     const fileDetail = await this.getDetailById(params.id);
     if (!fileDetail || fileDetail.deleted) {
       return { code: 1 }; // Invalid file id
@@ -173,13 +174,13 @@ export class FileInfoService extends BaseService<File> {
 
     // Check if pathname is duplicate
     if (fileDetail.type === TYPE.PAGE) {
-      const pathnameExist = await Service.file.check.pathNameExist({
+      const existPathnames = await Service.file.check.pathNameExist({
         applicationId: params.applicationId,
         tags: params.tags || [],
         fileId: params.id,
       });
-      if (pathnameExist) {
-        return { code: 3 }; // pathname already exists
+      if (existPathnames.length > 0) {
+        return { code: 3, data: existPathnames }; // pathname already exists
       }
 
       // Record file update log
@@ -200,7 +201,10 @@ export class FileInfoService extends BaseService<File> {
 
     // Update file
     options.ctx.transactions.push(
-      Model.file.updateDetailQuery(params.id, _.pick(params, ['name', 'intro', 'type', 'tags'])),
+      Model.file.updateDetailQuery(
+        params.id,
+        _.pick(params, ['name', 'intro', 'type', 'tags', 'componentType']),
+      ),
     );
 
     // Update content name
@@ -496,6 +500,7 @@ export class FileInfoService extends BaseService<File> {
       targetFileId?: string;
       relations?: Record<string, Record<string, string>>;
       setLive?: boolean;
+      addToSetting?: boolean; // add to app builder setting, default is false
     },
   ): Promise<Record<string, Record<string, string>>> {
     if (!options.relations) {
@@ -569,17 +574,6 @@ export class FileInfoService extends BaseService<File> {
         options.relations[file.id] = { newId: newFileDetail.id };
       }
     }
-
-    // Add copy file to app setting
-    Service.application.addAppSetting(
-      {
-        applicationId: targetApplicationId,
-        type: fileDetail.type,
-        typeId: options.relations[fileDetail.id]?.newId || '',
-        typeName: fileDetail.name || '',
-      },
-      { ctx: options.ctx },
-    );
 
     // Pre-match content Id
     let tempRelations: Record<string, Record<string, string>> = {};

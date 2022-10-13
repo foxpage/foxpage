@@ -58,8 +58,8 @@ const Drawer: React.FC<TeamEditDrawerType> = (props) => {
       }
       onClose={() => closeDrawer(false)}>
       {editApp ? (
-        <div style={{ padding: 12 }}>
-          <Form.Item {...formItemLayout} label={application.nameLabel}>
+        <div style={{ padding: '24px 12px' }}>
+          <Form.Item {...formItemLayout} label={global.nameLabel}>
             <Input
               value={editApp?.name}
               placeholder={application.nameLabel}

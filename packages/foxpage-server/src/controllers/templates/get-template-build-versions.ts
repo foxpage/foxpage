@@ -12,6 +12,7 @@ import { PageBuildVersionReq, PageBuildVersionRes } from '../../types/validates/
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/get-page-build-versions.ts
 @JsonController('templates')
 export class GetPageBuildVersionDetail extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class GetPageBuildVersionDetail extends BaseController {
    * @param  {AppContentVersionReq} params
    * @returns {PageContentData[]}
    */
-  @Get('/build-versions')
+  @Get('/build-versions-migrations')
   @OpenAPI({
     summary: i18n.sw.getTemplateBuildVersion,
     description: '',

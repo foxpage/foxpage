@@ -1,6 +1,7 @@
 import { createAction } from 'typesafe-actions';
 
 import {
+  ApplicationSettingBuilderDeleteParams,
   ApplicationSettingBuilderFetchParams,
   ApplicationSettingBuilderSaveParams,
   ComponentCategoryFetchRes,
@@ -30,6 +31,13 @@ export const updatePageNum = createAction(
   }),
 )();
 
+export const updateSearchText = createAction(
+  'APPLICATION_SETTINGS_BUILDER_TEMPLATES__UPDATE_SEARCH_TEXT',
+  (search: string) => ({
+    search,
+  }),
+)();
+
 export const updateModalState = createAction(
   'APPLICATION_SETTINGS_BUILDER_TEMPLATES__UPDATE_MODAL_STATE',
   (data: any) => ({
@@ -54,6 +62,13 @@ export const pushTemplates = createAction(
 export const saveCategory = createAction(
   'APPLICATION_SETTINGS_BUILDER_TEMPLATES__SAVE_CATEGORY',
   (params: ApplicationSettingBuilderSaveParams) => ({
+    params,
+  }),
+)();
+
+export const deleteCategory = createAction(
+  'APPLICATION_SETTINGS_BUILDER_TEMPLATES__DELETE_CATEGORY',
+  (params: ApplicationSettingBuilderDeleteParams) => ({
     params,
   }),
 )();

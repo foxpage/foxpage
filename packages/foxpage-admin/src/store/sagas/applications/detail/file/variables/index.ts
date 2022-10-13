@@ -56,7 +56,9 @@ function* handleSaveVariable(action: VariableActionType) {
   }
 
   const oldRelation = editVariable.content.relation || {};
-  const { realInvalids, relation } = yield getRelation(editVariable.content as any, [] as RelationDetails);
+  const { realInvalids, relation } = yield getRelation(editVariable.content as any, [] as RelationDetails, {
+    applicationId,
+  });
 
   if (!objectEmptyCheck(realInvalids)) {
     return;

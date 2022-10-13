@@ -18,7 +18,7 @@ export class VersionRelationService extends BaseService<ContentVersion> {
    * Single instance
    * @returns VersionRelationService
    */
-  public static getInstance (): VersionRelationService {
+  public static getInstance(): VersionRelationService {
     this._instance || (this._instance = new VersionRelationService());
     return this._instance;
   }
@@ -28,7 +28,7 @@ export class VersionRelationService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} contentVersionList
    * @returns Record
    */
-  getRelationsFromVersion (contentVersionList: ContentVersion[]): Record<string, string[]> {
+  getRelationsFromVersion(contentVersionList: ContentVersion[]): Record<string, string[]> {
     let relationObject: Record<string, string[]> = {};
 
     contentVersionList.forEach((version) => {
@@ -53,7 +53,7 @@ export class VersionRelationService extends BaseService<ContentVersion> {
    * @param  {any} versionContent
    * @returns Promise
    */
-  async getVersionRelationAndComponents (
+  async getVersionRelationAndComponents(
     applicationId: string,
     versionContent: any,
   ): Promise<Record<string, number | string | NameVersion[]>> {
@@ -93,7 +93,7 @@ export class VersionRelationService extends BaseService<ContentVersion> {
    * @param  {string[]} relationIds
    * @returns RelationAssocContent
    */
-  async getRelationDetail (
+  async getRelationDetail(
     relationObject: Record<string, any>,
     buildVersion: boolean = false,
   ): Promise<Record<string, RelationAssocContent>> {
@@ -133,7 +133,7 @@ export class VersionRelationService extends BaseService<ContentVersion> {
    * @param  {RelationsRecursive} relationRecursive
    * @returns Promise
    */
-  async getTypesRelationVersions (relationRecursive: RelationsRecursive): Promise<Record<string, DSL[]>> {
+  async getTypesRelationVersions(relationRecursive: RelationsRecursive): Promise<Record<string, DSL[]>> {
     const contentIds = _.map(relationRecursive.relationList, 'contentId');
     const contentList = await Service.content.info.getDetailByIds(contentIds);
 
@@ -169,7 +169,7 @@ export class VersionRelationService extends BaseService<ContentVersion> {
    * @param  {boolean=true} liveVersion Whether to get the version information of live
    * @returns Promise
    */
-  async getVersionRelations (
+  async getVersionRelations(
     versionObject: Record<string, ContentVersion>,
     liveVersion: boolean = true,
   ): Promise<Record<string, ContentVersion>> {
@@ -201,17 +201,20 @@ export class VersionRelationService extends BaseService<ContentVersion> {
 
   /**
    * Add mock relation data to page content relations
-   * @param versionRelations 
-   * @param mockRelations 
-   * @returns 
+   * @param versionRelations
+   * @param mockRelations
+   * @returns
    */
-  moveMockRelations (versionRelations: any, mockRelations: any): any {
+  moveMockRelations(versionRelations: any = {}, mockRelations: any): any {
     if (!_.isEmpty(mockRelations)) {
       for (const relationKey in mockRelations) {
-        versionRelations[relationKey + 's'] = _.toArray(_.keyBy(_.merge(
-          mockRelations[relationKey],
-          versionRelations[relationKey + 's'] || [],
-        ), 'id'));
+        if (!versionRelations[relationKey + 's']) {
+          versionRelations[relationKey + 's'] = [];
+        }
+
+        versionRelations[relationKey + 's'] = _.toArray(
+          _.keyBy(_.merge(mockRelations[relationKey], versionRelations[relationKey + 's'] || []), 'id'),
+        );
       }
     }
 

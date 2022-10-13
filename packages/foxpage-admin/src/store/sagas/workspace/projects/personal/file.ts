@@ -5,6 +5,7 @@ import { getType } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/workspace/projects/personal/file';
 import * as AUTH_API from '@/apis/authorize';
 import * as API from '@/apis/project';
+import { updateBlock, addBlock } from '@/apis/builder/block';
 import { defaultSuffix, FileType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectFileActionType } from '@/reducers/workspace/projects/personal/file';
@@ -44,14 +45,15 @@ function* handleSave(action: ProjectFileActionType) {
 
   const { folderId, applicationId } = action.payload as ProjectFileSaveParams;
   const { editFile, pageInfo } = store.getState().workspace.projects.personal.file;
-  const api: any =
-    editFile.type === FileType.page
-      ? editFile.id
-        ? API.updatePage
-        : API.addPage
-      : editFile.id
-      ? API.updateTemplate
-      : API.addTemplate;
+
+  const apis = {
+    [FileType.page]: [API.updatePage, API.addPage],
+    [FileType.template]: [API.updateTemplate, API.addTemplate],
+    [FileType.block]: [updateBlock, addBlock],
+  }
+
+  const api: any = editFile.id ? apis[editFile.type][0] : apis[editFile.type][1];
+
   const rs = yield call(api, {
     id: editFile.id,
     name: editFile.name,

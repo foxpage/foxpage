@@ -99,6 +99,26 @@ export class ContentListService extends BaseService<Content> {
   }
 
   /**
+   * Get the first validate content in file, sort by create time asc
+   * @param fileIds 
+   * @returns 
+   */
+  async getFirstContentByFileIds(fileIds:string[]):Promise<Record<string, Content>> {
+    if(fileIds.length === 0) {
+      return {};
+    }
+
+    const contentList = await this.find({ fileId: { $in: fileIds }, deleted: false }, '', { sort: { _id: 1 } });
+    let fileContentObject: Record<string, Content> = {};
+    contentList.forEach(content => {
+      if (!fileContentObject[content.fileId]) {
+        fileContentObject[content.fileId] = content;
+      }
+    });
+    return fileContentObject;
+  }
+
+  /**
    * Get file content list
    * @param fileIds 
    * @returns 

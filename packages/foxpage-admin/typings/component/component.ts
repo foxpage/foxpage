@@ -12,6 +12,7 @@ export interface Component {
   name: string;
   label: string;
   type: string;
+  componentType: string;
   version: string;
   isLiveVersion?: boolean;
   enableChildren?: boolean;
@@ -29,7 +30,16 @@ export interface Component {
    * category: group
    */
   category?: ComponentCategory;
+  status?: boolean;
+  defaultValue?: {
+    props: Record<string, any>;
+  };
   useStyleEditor?: boolean;
+  __extentions?: ComponentExtentions;
+}
+
+interface ComponentExtentions {
+  disabled?: boolean;
 }
 
 export interface ComponentProps {

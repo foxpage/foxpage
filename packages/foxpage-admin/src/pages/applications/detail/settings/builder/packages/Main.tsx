@@ -7,7 +7,7 @@ import { Button, Input } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
-import { clearAll, fetchComponentsAction } from '@/actions/applications/detail/packages/list';
+import { clearAll, fetchComponentsAction, fetchBlocksAction } from '@/actions/applications/detail/packages/list';
 import * as ACTIONS from '@/actions/applications/detail/settings/builder/component';
 import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
@@ -18,6 +18,8 @@ import { Editor, List } from './components';
 
 const { Search } = Input;
 
+const PAGE_NUM = 1;
+
 const OptionsBox = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -26,6 +28,7 @@ const OptionsBox = styled.div`
 
 const mapStateToProps = (store: RootState) => ({
   components: store.applications.detail.packages.list.componentList,
+  blocks: store.applications.detail.packages.list.blockList,
   loading: store.applications.detail.packages.list.loading,
   modalPageInfo: store.applications.detail.packages.list.pageInfo,
   pageInfo: store.applications.detail.settings.builder.components.pageInfo,
@@ -37,8 +40,11 @@ const mapDispatchToProps = {
   fetch: ACTIONS.fetchComponents,
   save: ACTIONS.saveCategory,
   openModal: ACTIONS.updateModalVisible,
+  updatePageNum: ACTIONS.updatePageNum,
+  updateSearchText: ACTIONS.updateSearchText,
   clearAll,
   fetchComponents: fetchComponentsAction,
+  fetchBlocks: fetchBlocksAction
 };
 
 type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -46,6 +52,7 @@ type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 const BuilderWindowSetting = (props: IProps) => {
   const {
     components,
+    blocks,
     loading,
     modalPageInfo,
     pageInfo,
@@ -54,16 +61,20 @@ const BuilderWindowSetting = (props: IProps) => {
     clearAll,
     fetch,
     fetchComponents,
+    fetchBlocks,
     openModal,
     save,
+    updatePageNum,
+    updateSearchText,
   } = props;
   const [searchText, setSearchText] = useState('');
+  const [componentsType, setComponentsType] = useState<string>('component');
 
   const { applicationId } = useParams<{ applicationId: string }>();
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, setting, application: applicationI18n, category } = locale.business;
+  const { category, global, setting } = locale.business;
 
   useEffect(() => {
     return () => {
@@ -75,11 +86,19 @@ const BuilderWindowSetting = (props: IProps) => {
     if (applicationId) {
       fetch({
         applicationId,
-        ...pageInfo,
+        page: pageInfo.page,
+        size: pageInfo.size,
         search: searchText,
       });
     }
   }, [applicationId, pageInfo.page, searchText]);
+
+  const handleSearch = (search) => {
+    setSearchText(search);
+
+    updatePageNum(PAGE_NUM);
+    updateSearchText(search);
+  };
 
   const handleModalClose = () => {
     // clear package list state
@@ -89,33 +108,29 @@ const BuilderWindowSetting = (props: IProps) => {
   };
 
   const handleFetchComponents = (params) => {
-    if (params)
-      fetchComponents({
+    const { type = 'component' } = params;
+    setComponentsType(type);
+    if (params) {
+      const fetchList = type === 'block' ? fetchBlocks : fetchComponents;
+      fetchList({
         ...params,
-        type: 'component',
+        type
       });
+    }
   };
 
   return (
     <Content>
       <FoxPageContent
         breadcrumb={
-          <FoxPageBreadcrumb
-            breadCrumb={[
-              {
-                name: applicationI18n.applicationList,
-                link: '/#/workspace/applications',
-              },
-              { name: setting.componentBar + ' - ' + global.setting },
-            ]}
-          />
+          <FoxPageBreadcrumb breadCrumb={[{ name: setting.componentBar + ' - ' + global.setting }]} />
         }
         style={{ paddingBottom: 0, overflow: 'hidden auto' }}>
         <OptionsBox>
           <Search
             placeholder={category.componentSearchPlaceholder}
-            onSearch={(value) => setSearchText(value)}
-            style={{ width: 250, marginRight: 8 }}
+            onSearch={(value) => handleSearch(value)}
+            style={{ width: 250, marginRight: 12 }}
           />
           <Button type="primary" onClick={() => openModal(true)}>
             <PlusOutlined /> {global.add}
@@ -125,7 +140,7 @@ const BuilderWindowSetting = (props: IProps) => {
         <Editor />
         <Modal
           type="component"
-          list={components}
+          list={componentsType === 'block' ? blocks : components}
           loading={loading}
           pageInfo={modalPageInfo}
           visible={visible}

@@ -7,6 +7,10 @@ const FileTypes = Object.freeze([
     label: 'Template',
     type: 'template',
   },
+  {
+    label: 'BLock',
+    type: 'block'
+  }
 ]);
 
 const Suffix = Object.freeze([
@@ -26,6 +30,7 @@ const suffixTagColor: any = {
   page: '#87d068',
   component: 'magenta',
   editor: 'geekblue',
+  block: '#108ee9',
   library: 'gold',
   refer: 'red',
   post: '#49cc90',

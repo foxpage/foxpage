@@ -46,7 +46,7 @@ export class GetProjectCatalog extends BaseController {
         folderIds: [params.id],
         depth: 5,
         hasContent: true,
-        fileTypes: [TYPE.TEMPLATE, TYPE.PAGE],
+        fileTypes: [TYPE.TEMPLATE, TYPE.PAGE, TYPE.BLOCK],
       });
 
       if (folderFiles[params.id] && folderFiles[params.id].files.length > 0) {

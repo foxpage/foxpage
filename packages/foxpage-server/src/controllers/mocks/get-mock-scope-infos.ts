@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { ACTION, METHOD, TYPE } from '../../../config/constant';
 import { ContentScopeInfo, ContentVersionNumber } from '../../types/content-types';
 import { FoxCtx, PageData, ResData } from '../../types/index-types';
 import { AppContentListRes } from '../../types/validates/page-validate-types';
@@ -36,7 +36,7 @@ export class GetAppScopeMockList extends BaseController {
     operationId: 'get-mock-scope-info-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (
+  async index(
     @Ctx() ctx: FoxCtx,
     @Body() params: ProjectScopeTypeReq,
   ): Promise<ResData<PageData<ContentScopeInfo[]>>> {
@@ -116,6 +116,12 @@ export class GetAppScopeMockList extends BaseController {
           }
           itemRelations[contentFileObject[contentId].type + 's'].push(itemVersionRelations[contentId]);
         });
+
+        // format mock props value
+        version.content.schemas = this.service.version.info.formatMockValue(
+          version.content?.schemas,
+          ACTION.GET,
+        );
 
         contentVersionList.push(
           Object.assign({

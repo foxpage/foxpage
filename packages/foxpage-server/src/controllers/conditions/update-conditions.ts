@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { File } from '@foxpage/foxpage-server-types';
+import { Content, File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { LOG, TYPE, VERSION } from '../../../config/constant';
@@ -12,6 +12,7 @@ import { FileDetailRes, UpdateTypeFileDetailReq } from '../../types/validates/fi
 import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
+import _ from 'lodash';
 
 @JsonController('conditions')
 export class UpdateConditionDetail extends BaseController {
@@ -50,8 +51,15 @@ export class UpdateConditionDetail extends BaseController {
 
       // Get the contents of the file
       const contentList = await this.service.content.file.getContentByFileIds([params.id]);
-      const contentId = contentList[0]?.id || '';
-      const contentName = params.name || contentList[0]?.title;
+      let contentDetail: Partial<Content> = {};
+      if (params.contentId) {
+        contentDetail = _.find(contentList, { id: params.contentId }) as Content;
+      } else {
+        contentDetail = contentList[0];
+      }
+
+      const contentId = contentDetail?.id || '';
+      const contentName = params.name || contentDetail?.title;
       let versionId = '';
       let versionNumber = 1;
       let versionStatus = '';

@@ -12,12 +12,9 @@ const mapStateToProps = (store: RootState) => ({
   loading: store.workspace.projects.personal.folder.loading,
   pageInfo: store.workspace.projects.personal.folder.pageInfo,
   projectList: store.workspace.projects.personal.folder.projectList,
-  authDrawerOpen: store.workspace.projects.personal.folder.authListDrawerVisible,
-  authLoading: store.workspace.projects.personal.folder.authListLoading,
-  authList: store.workspace.projects.personal.folder.authList,
-  userList: store.workspace.projects.personal.folder.userList,
   drawerOpen: store.workspace.projects.personal.folder.drawerOpen,
   editProject: store.workspace.projects.personal.folder.editProject,
+  allApplicationList: store.workspace.projects.personal.folder.allApps,
   applicationList: store.workspace.projects.personal.folder.apps,
 });
 
@@ -25,15 +22,10 @@ const mapDispatchToProps = {
   clearAll: ACTIONS.clearAll,
   fetchProjectList: ACTIONS.fetchProjectList,
   openDrawer: ACTIONS.openEditDrawer,
-  openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
-  fetchAuthList: ACTIONS.fetchAuthList,
-  fetchUserList: ACTIONS.fetchUserList,
-  saveUser: ACTIONS.saveAuthUser,
-  deleteUser: ACTIONS.deleteAuthUser,
   fetchApps: ACTIONS.fetchApps,
+  fetchAllApps: ACTIONS.fetchAllApps,
   updateEditProject: ACTIONS.updateEditProjectValue,
   saveProject: ACTIONS.saveProject,
-  deleteProject: ACTIONS.deleteProject,
 };
 
 type ProjectProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -46,24 +38,16 @@ const Project: React.FC<ProjectProps> = (props) => {
     pageInfo,
     projectList,
     editProject,
+    allApplicationList,
     applicationList,
     drawerOpen,
-    authDrawerOpen,
-    authLoading,
-    authList,
-    userList,
     clearAll,
     fetchProjectList,
+    fetchAllApps,
     fetchApps,
     updateEditProject,
     saveProject,
-    deleteProject,
     openDrawer,
-    openAuthDrawer,
-    fetchAuthList,
-    fetchUserList,
-    saveUser,
-    deleteUser,
   } = props;
 
   useEffect(() => {
@@ -81,23 +65,15 @@ const Project: React.FC<ProjectProps> = (props) => {
       pageInfo={pageInfo}
       projectList={projectList}
       editProject={editProject}
+      allApplicationList={allApplicationList}
       applicationList={applicationList}
       drawerOpen={drawerOpen}
-      authDrawerOpen={authDrawerOpen}
-      authLoading={authLoading}
-      authList={authList}
-      userList={userList}
       fetchList={fetchProjectList}
+      fetchAllApps={fetchAllApps}
       fetchApps={fetchApps}
       updateEditProject={updateEditProject}
       saveProject={saveProject}
-      deleteProject={deleteProject}
       openDrawer={openDrawer}
-      openAuthDrawer={openAuthDrawer}
-      fetchAuthList={fetchAuthList}
-      fetchUserList={fetchUserList}
-      saveUser={saveUser}
-      deleteUser={deleteUser}
     />
   );
 };

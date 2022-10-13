@@ -8,15 +8,17 @@ import { FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD, TYPE } from '../../../config/constant';
-import { ComponentCategory,ComponentContentInfo } from '../../types/component-types';
+import { ComponentCategory, ComponentContentInfo } from '../../types/component-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppComponentsReq, AppComponentsRes } from '../../types/validates/component-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-interface CompontentCells extends ComponentContentInfo {
+interface ComponentCells extends ComponentContentInfo {
   components: ComponentContentInfo[];
   category?: ComponentCategory;
+  defaultValue?: Record<string, any>;
+  status?: boolean;
 }
 
 @JsonController('components')
@@ -52,17 +54,18 @@ export class GetAppComponentListInfos extends BaseController {
         applicationId: params.applicationId,
         type: (params.type as FileTypes[]) || TYPE.COMPONENT,
         contentIds: params.componentIds,
+        search: params.search || '',
       });
 
       const contentFileObject = await this.service.file.list.getContentFileByIds(
         _.map(contentList, (content) => content.package?.id || ''),
-        params.applicationId
+        params.applicationId,
       );
 
       let components: ComponentContentInfo[] = [];
-      let componentCells: CompontentCells[] = [];
-      contentList.map(content => {
-        content.package && componentCells.push(content.package as CompontentCells);
+      let componentCells: ComponentCells[] = [];
+      contentList.map((content) => {
+        content.package && componentCells.push(content.package as ComponentCells);
       });
 
       let componentIds = this.service.content.component.getComponentResourceIds(componentCells);
@@ -74,7 +77,7 @@ export class GetAppComponentListInfos extends BaseController {
         this.service.file.list.getContentFileByIds(_.map(dependenciesIdVersions, 'id'), params.applicationId),
         this.service.application.getDetailById(params.applicationId),
       ]);
-      
+
       const dependenciesList = _.toArray(dependencies);
       const dependComponentIds = this.service.content.component.getComponentResourceIds(
         _.map(dependenciesList, 'content'),
@@ -84,8 +87,11 @@ export class GetAppComponentListInfos extends BaseController {
       componentIds = componentIds.concat(dependComponentIds);
       const [resourceObject, contentAllParents, fileObject] = await Promise.all([
         this.service.content.resource.getResourceContentByIds(componentIds),
-        this.service.content.list.getContentAllParents(componentIds), 
-        this.service.file.list.getContentFileByIds(_.map(dependenciesList, 'contentId'), params.applicationId),
+        this.service.content.list.getContentAllParents(componentIds),
+        this.service.file.list.getContentFileByIds(
+          _.map(dependenciesList, 'contentId'),
+          params.applicationId,
+        ),
       ]);
 
       const appResource = await this.service.application.getAppResourceFromContent(contentAllParents);
@@ -104,14 +110,18 @@ export class GetAppComponentListInfos extends BaseController {
 
       const componentSettingObject = _.keyBy(appDetail.setting?.[TYPE.COMPONENT] || [], 'id');
       for (let content of contentList) {
-        const componentCell = (content.package || {}) as CompontentCells;
+        const componentCell = (content.package || {}) as ComponentCells;
+
         componentCell.type = contentFileObject[componentCell.id]?.type || '';
+        componentCell.componentType = contentFileObject[componentCell.id]?.componentType || '';
         componentCell.name = content.name;
         componentCell.version = <string>content.version;
         componentCell.components = [];
-        componentCell.category = (
-          componentSettingObject[contentFileObject[componentCell.id]?.id || '']?.category || {}
-        ) as ComponentCategory;
+
+        const componentBuildSet = componentSettingObject[contentFileObject[componentCell.id]?.id || ''] || {};
+        componentCell.defaultValue = componentBuildSet.defaultValue || {};
+        componentCell.status = componentBuildSet.status || false;
+        componentCell.category = (componentBuildSet.category || {}) as ComponentCategory;
         componentCell.resource = this.service.version.component.assignResourceToComponent(
           componentCell.resource || {},
           resourceObject,
@@ -122,16 +132,18 @@ export class GetAppComponentListInfos extends BaseController {
 
         let dependIds = _.map(
           _.concat(componentCell.resource['editor-entry'], componentCell.resource.dependencies),
-          'id'
+          'id',
         );
 
-        if (dependIds.length > 0) {          
+        if (dependIds.length > 0) {
           for (const depend of dependenciesList) {
-            if(dependIds.indexOf(depend.contentId) !== -1) {
-              componentCell.components.push(Object.assign(
-                { name: fileObject?.[depend.contentId]?.name || '', versionId: depend.id },
-                depend?.content || {},
-              ) as ComponentContentInfo);
+            if (dependIds.indexOf(depend.contentId) !== -1) {
+              componentCell.components.push(
+                Object.assign(
+                  { name: fileObject?.[depend.contentId]?.name || '', versionId: depend.id },
+                  depend?.content || {},
+                ) as ComponentContentInfo,
+              );
               _.pull(dependIds, depend.contentId);
             }
 
@@ -143,6 +155,31 @@ export class GetAppComponentListInfos extends BaseController {
 
         // Guarantee to return id and name fields
         componentCell && components.push(componentCell);
+      }
+
+      // get block category
+      const blockSetting = appDetail.setting?.[TYPE.BLOCK] || [];
+      if (blockSetting.length > 0) {
+        blockSetting.forEach((block) => {
+          if (!params.search || block.name.indexOf(params.search) !== -1) {
+            const blockCell = {
+              id: block.id,
+              name: block.name,
+              status: block.status,
+              type: TYPE.BLOCK,
+              componentType: '',
+              category: block.category || {},
+              defaultValue: block.defaultValue || {},
+              meta: {},
+              components: [],
+              resource: {} as any,
+              schema: {} as any,
+              version: '',
+              changelog: '',
+            } as any;
+            components.push(blockCell);
+          }
+        });
       }
 
       return Response.success(components, 1110701);

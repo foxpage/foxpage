@@ -14,6 +14,7 @@ import { AppContentListRes, AppPageCatalogCommonReq } from '../../types/validate
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/get-page-catalog.ts
 @JsonController('templates')
 export class GetPageCatalogList extends BaseController {
   constructor() {
@@ -25,12 +26,12 @@ export class GetPageCatalogList extends BaseController {
    * @param  {AppPageListCommonReq} params
    * @returns {ContentInfo}
    */
-  @Get('/catalogs')
+  @Get('/catalogs-migrations')
   @OpenAPI({
     summary: i18n.sw.getTemplateCatalogs,
     description: '',
     tags: ['Template'],
-    operationId: 'get-template-catalog-list',
+    operationId: 'get-template-catalog-list', 
   })
   @ResponseSchema(AppContentListRes)
   async index(@QueryParams() params: AppPageCatalogCommonReq): Promise<ResData<ContentInfo[]>> {

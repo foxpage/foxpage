@@ -4,7 +4,7 @@ import { Creator, Search } from './index-types';
 import { UserBase } from './user-types';
 
 export type AppInfo = Exclude<Application, 'creator'> & { creator: Creator };
-export type AppSearch = Search & { organizationId?: string, creator?: string };
+export type AppSearch = Search & { organizationId?: string; creator?: string };
 export type AppWithFolder = Application & { folders: Folder[] };
 export type AppBaseInfo = Pick<Application, 'id' | 'name'>;
 export type AppOrgInfo = Pick<Application, 'id' | 'name'> & {
@@ -21,26 +21,28 @@ export interface AppDefaultFolder {
 }
 
 export interface AddAppSetting {
-  applicationId:string, 
+  applicationId: string;
   type: string;
-  typeId: string, 
-  typeName: string, 
-  typeStatus?: boolean
-  category?: Record<string, any>
+  typeId: string;
+  typeName: string;
+  typeStatus?: boolean;
+  category?: Record<string, any>;
+  defaultValue?: Record<string, any>;
 }
 
 export interface UpdateAppSetting {
-  applicationId:string,
+  applicationId: string;
   type: string;
   typeId: string;
   setting: {
-    id: string, 
-    name: string, 
-    status?: boolean
-    category?: Record<string, any>
+    id: string;
+    name: string;
+    status?: boolean;
+    category?: Record<string, any>;
+    defaultValue?: Record<string, any>;
     createTime?: Date;
     updateTime?: Date;
-  }
+  };
 }
 
 export interface AppSettingInfo {
@@ -50,6 +52,7 @@ export interface AppSettingInfo {
   status: string;
   delivery: string;
   category?: Record<string, any>;
+  defaultValue?: Record<string, any>;
   creator: UserBase;
   createTime?: Date;
   updateTime?: Date;

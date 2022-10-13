@@ -4,6 +4,7 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/packages/list';
 import * as API from '@/apis/application';
+import { getBlockSearchs } from '@/apis/builder/block';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationPackagesActionType } from '@/reducers/applications/detail/packages/list';
 import { store } from '@/store/index';
@@ -50,17 +51,54 @@ function* handleFetchComponentList(action: ApplicationPackagesActionType) {
   yield put(ACTIONS.updateLoading(false));
 }
 
+function* handleFetchBlockList(action: ApplicationPackagesActionType) {
+  yield put(ACTIONS.updateLoading(true));
+
+  const { params } = action.payload as { params: AppComponentFetchComponentsParams };
+  const { applicationId, page, size, search, type } = params || {};
+  const {
+    applicationId: appId,
+    pageInfo,
+    selectPackage,
+  } = store.getState().applications.detail.packages.list;
+  const res = yield call(getBlockSearchs, {
+    applicationId: applicationId || appId,
+    type: !!type ? type : selectPackage,
+    page: page || pageInfo.page,
+    size: size || pageInfo.size,
+    search: search || '',
+  });
+
+  if (res.code === 200) {
+    yield put(
+      ACTIONS.updateListState({
+        blockList: res.data || [],
+        pageInfo: res.pageInfo,
+      }),
+    );
+  } else {
+    const {
+      package: { fetchFailed },
+    } = getBusinessI18n();
+
+    message.error(res.msg || fetchFailed);
+  }
+
+  yield put(ACTIONS.updateLoading(false));
+}
+
 function* handleSaveComponent(action: ApplicationPackagesActionType) {
   const { params, options = {} } = action.payload as {
     params: AppComponentAddComponentParams;
     options?: OptionsAction;
   };
-  const { applicationId, name, type } = params || {};
+  const { applicationId, name, type, componentType } = params || {};
   const { onSuccess } = options;
   const res = yield call(API.postComponents, {
     applicationId,
     name: name,
     type,
+    componentType
   });
 
   const {
@@ -111,6 +149,7 @@ function* handleDeleteComponent(action: ApplicationPackagesActionType) {
 
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchComponentsAction), handleFetchComponentList);
+  yield takeLatest(getType(ACTIONS.fetchBlocksAction), handleFetchBlockList);
   yield takeLatest(getType(ACTIONS.addComponentAction), handleSaveComponent);
   yield takeLatest(getType(ACTIONS.deleteComponentAction), handleDeleteComponent);
 }

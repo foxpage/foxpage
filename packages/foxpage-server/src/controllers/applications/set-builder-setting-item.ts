@@ -49,8 +49,20 @@ export class UpdateApplicationSettingDetail extends BaseController {
         return Response.warning(i18n.app.invalidType, 2031201);
       }
 
-      const settingItemDetail = await this.service.application.getDetailById(params.applicationId);
+      const itemFileIds = _.map(params.setting, 'id');
+      const [settingItemDetail, hasLiveFileIds] = await Promise.all([
+        this.service.application.getDetailById(params.applicationId),
+        this.service.file.check.checkFileHasLiveContent(itemFileIds),
+      ]);
       const typeSettingList = settingItemDetail.setting?.[params.type] || [];
+
+      // check item has live version
+      if (_.difference(itemFileIds, hasLiveFileIds).length > 0) {
+        const invalidItems = _.filter(params.setting, item => 
+          _.difference(itemFileIds, hasLiveFileIds).indexOf(item.id) !== -1
+        );
+        return Response.warning(i18n.app.itemHasNoLiveVersion + ': ' + _.map(invalidItems, 'name'), 2031202);
+      }
 
       for (const item of params.setting) {
         const itemDetail: Record<string, any> = _.find(typeSettingList, { id: item.id });
@@ -63,6 +75,7 @@ export class UpdateApplicationSettingDetail extends BaseController {
               typeName: item.name || '',
               typeStatus: item.status || false,
               category: item.category || {},
+              defaultValue: item.defaultValue || {},
             },
             { ctx },
           );
@@ -75,6 +88,7 @@ export class UpdateApplicationSettingDetail extends BaseController {
               setting: Object.assign({}, item, {
                 name: item.name || itemDetail.name,
                 category: item.category || itemDetail.category,
+                defaultValue: item.defaultValue || itemDetail.defaultValue || {},
                 status: !_.isNil(item.status) ? item.status : itemDetail.status,
               }),
             },

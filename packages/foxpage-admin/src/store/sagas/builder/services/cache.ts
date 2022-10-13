@@ -24,7 +24,6 @@ export const cache = (content: PageContent) => {
 
   caches.push(content);
   const cached = { id: key, contents: caches };
-  // console.log('[ CACHED ]', cached);
   localStorage.setItem(BUILDER_DSL, encrypt(JSON.stringify(cached)));
   return caches.length;
 };
@@ -37,7 +36,6 @@ export const getCached = (key: string) => {
   try {
     const cachedStr = localStorage.getItem(BUILDER_DSL);
     const cached = cachedStr ? (JSON.parse(decrypt(cachedStr)) as Cached) : ({} as Cached);
-    // console.log('[ GET CACHED ]', key, cached);
     if (cached.id === key) {
       return cached.contents;
     }
@@ -52,6 +50,5 @@ export const getCached = (key: string) => {
  * clear cache by key
  */
 export const clearCache = () => {
-  // console.log('[ CLEAR CACHE ]');
   localStorage.setItem(BUILDER_DSL, encrypt(JSON.stringify({})));
 };

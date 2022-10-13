@@ -9,16 +9,20 @@ import {
 
 export interface ProjectEntity extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
   application: Pick<Application, 'id' | 'name'>;
+  applicationId?: string;
   deleted: boolean;
   folderPath: string;
   intro: string;
   name?: string;
   parentFolderId: string;
   tags: FileTag[];
+  type?: string;
 }
 
-export interface ProjectListFetchParams extends CommonFetchParams {
+export interface ProjectListFetchParams extends Partial<CommonFetchParams> {
   applicationId?: string;
+  searchText?: string;
+  searchType?: string;
   type?: string;
 }
 
@@ -31,7 +35,11 @@ export type ProjectAddParams = Pick<ProjectEntity, 'name'> &
     type: string;
   };
 
-export type ProjectSaveParams = Pick<CommonFetchParams, 'organizationId' | 'applicationId'>;
+export interface ProjectSaveParams {
+  editProject?: Partial<ProjectEntity>;
+  organizationId?: string;
+  applicationId: string;
+}
 
 export interface ProjectDeleteParams extends Omit<CommonDeleteParams, 'id'> {
   projectId: string;

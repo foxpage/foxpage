@@ -61,20 +61,26 @@ const WithHook = (props: IProps) => {
         // message.error('Initial props failed.');
         console.log('request hook failed:', e);
       }
+    } else {
+      setInitialProps({});
     }
   }, [childList, componentProps, fresh]);
 
   useEffect(() => {
-    if (core) {
+    if (core && initialProps) {
       setNode(
         React.createElement(
           core,
-          { ...component.__renderProps, ...(isWrapper ? decoratorInfo : {}), ...(initialProps || {}) },
+          {
+            ...component.__renderProps,
+            ...(isWrapper ? decoratorInfo : {}),
+            ...(initialProps || {}),
+          },
           childList,
         ),
       );
     }
-  }, [component.__renderProps, initialProps, childList, fresh]);
+  }, [component.__renderProps, initialProps, isWrapper, childList, fresh]);
 
   return <WithErrorCatch componentId={id} componentName={name} componentType={type} componentNode={node} />;
 };

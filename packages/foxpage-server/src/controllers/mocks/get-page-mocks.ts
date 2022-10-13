@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Content, ContentVersion, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { ACTION, TYPE } from '../../../config/constant';
 import { ContentInfo, FileContentAndVersion } from '../../types/content-types';
 import { ResData } from '../../types/index-types';
 import { AppContentListRes, AppTypePageListCommonReq } from '../../types/validates/page-validate-types';
@@ -34,7 +34,7 @@ export class GetPageMockList extends BaseController {
     operationId: 'get-page-mock-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (@QueryParams() params: AppTypePageListCommonReq): Promise<ResData<ContentInfo[]>> {
+  async index(@QueryParams() params: AppTypePageListCommonReq): Promise<ResData<ContentInfo[]>> {
     try {
       let fileListPromise = [];
       let appFolderId = '';
@@ -107,6 +107,13 @@ export class GetPageMockList extends BaseController {
             allVersionItemRelations[content.id],
           );
 
+          const contentVersion = allVersionObject?.[content.id]?.content || {};
+          // format mock props value
+          contentVersion.schemas = this.service.version.info.formatMockValue(
+            contentVersion?.schemas,
+            ACTION.GET,
+          );
+
           fileVersion.push({
             id: fileObject?.[content.fileId]?.id,
             name: fileObject?.[content.fileId]?.name,
@@ -114,7 +121,7 @@ export class GetPageMockList extends BaseController {
             version: allVersionObject?.[content.id]?.version || '',
             versionNumber: content.liveVersionNumber || allVersionObject?.[content.id]?.versionNumber,
             contentId: content.id,
-            content: allVersionObject?.[content.id]?.content || {},
+            content: contentVersion,
             relations: itemRelations,
           });
         }

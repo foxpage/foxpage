@@ -13,6 +13,7 @@ import { AppContentStatusReq, ContentDetailRes } from '../../types/validates/con
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/set-page-content-status.ts
 @JsonController('templates')
 export class SetTemplateContentStatus extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class SetTemplateContentStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/content-status')
+  @Put('/content-status-migrations')
   @OpenAPI({
     summary: i18n.sw.setTemplateContentStatus,
     description: '',

@@ -2,47 +2,49 @@ import _ from 'lodash';
 
 import { ContentVersion, DSL } from '@foxpage/foxpage-server-types';
 
-import { VERSION } from '../../../config/constant';
-import { ContentLiveVersion,ContentVersionNumber } from '../../types/content-types';
+import { ACTION, VERSION } from '../../../config/constant';
+import { ContentLiveVersion, ContentVersionNumber } from '../../types/content-types';
 // import * as Model from '../models';
 import * as Service from '../index';
 
 export class ContentMockService {
   private static _instance: ContentMockService;
 
-  constructor() {
-  }
+  constructor() {}
 
   /**
    * Single instance
    * @returns ContentMockService
    */
-  public static getInstance (): ContentMockService {
+  public static getInstance(): ContentMockService {
     this._instance || (this._instance = new ContentMockService());
     return this._instance;
   }
 
   /**
    * get content extensions, eg. extendId, mockId
-   * @param contentIds 
+   * @param contentIds
    */
-  async getContentExtension (contentIds: string[]): Promise<Record<string, any>> {
+  async getContentExtension(contentIds: string[]): Promise<Record<string, any>> {
     const contentList = await Service.content.info.getDetailByIds(contentIds);
 
     const contentExtension: Record<string, any> = {};
-    contentList.forEach(content => {
-      contentExtension[content.id] = Service.content.info.getContentExtension(content, ['extendId', 'mockId']);
+    contentList.forEach((content) => {
+      contentExtension[content.id] = Service.content.info.getContentExtension(content, [
+        'extendId',
+        'mockId',
+      ]);
     });
 
     return contentExtension;
-  };
+  }
 
   /**
    * get mock content build version, if not build version,  max version, get the live
-   * @param contentIds 
-   * @returns 
+   * @param contentIds
+   * @returns
    */
-  async getMockBuildVersions (contentIds: string[]): Promise<Record<string, any>> {
+  async getMockBuildVersions(contentIds: string[]): Promise<Record<string, any>> {
     if (contentIds.length === 0) {
       return {};
     }
@@ -68,13 +70,19 @@ export class ContentMockService {
       }
     });
 
-    const buildList = await Service.version.list.getContentByIdAndVersionNumber(_.toArray(baseVersionInfoObject));
+    const buildList = await Service.version.list.getContentByIdAndVersionNumber(
+      _.toArray(baseVersionInfoObject),
+    );
     const buildObject = _.keyBy(buildList, 'contentId');
     let contentMockVersion: Record<string, any> = {};
     for (const contentId of contentIds) {
       const relations = await this.getMockRelations([buildObject[contentExtension[contentId]?.mockId]]);
+      const content = buildObject[contentExtension[contentId]?.mockId]?.content || {};
+
+      // format mock schema props value
+      content.schemas = Service.version.info.formatMockValue(content?.schemas, ACTION.GET);
       contentMockVersion[contentId] = {
-        mock: buildObject[contentExtension[contentId]?.mockId]?.content || {},
+        mock: content,
         extension: contentExtension[contentId] || {},
         relations,
       };
@@ -86,10 +94,10 @@ export class ContentMockService {
   /**
    * Get content mock live versions, if no live version, response empty
    * Response object {contentId: mockContentVersion}
-   * @param contentIds 
-   * @returns 
+   * @param contentIds
+   * @returns
    */
-  async getMockLiveVersions (contentIds: string[]): Promise<Record<string, any>> {
+  async getMockLiveVersions(contentIds: string[]): Promise<Record<string, any>> {
     if (contentIds.length === 0) {
       return {};
     }
@@ -104,7 +112,7 @@ export class ContentMockService {
 
     const mockLiveInfo: ContentLiveVersion[] = [];
     const mockContentList = await Service.content.info.getDetailByIds(mockIds);
-    mockContentList.forEach(content => {
+    mockContentList.forEach((content) => {
       if (content.liveVersionNumber > 0) {
         mockLiveInfo.push({ id: content.id, liveVersionNumber: content.liveVersionNumber });
       }
@@ -115,10 +123,15 @@ export class ContentMockService {
     const mockObject: Record<string, any> = {};
     for (const contentId of contentIds) {
       const relations = await this.getMockRelations([liveObject[contentExtension[contentId]?.mockId]]);
+      const content = liveObject[contentExtension[contentId]?.mockId]?.content || {};
+
+      // format mock schema props value
+      content.schemas = Service.version.info.formatMockValue(content?.schemas, ACTION.GET);
+
       mockObject[contentId] = {
-        mock: liveObject[contentExtension[contentId]?.mockId]?.content || {},
+        mock: content,
         extension: contentExtension[contentId] || {},
-        relations
+        relations,
       };
     }
 
@@ -127,10 +140,10 @@ export class ContentMockService {
 
   /**
    * Get mock relation details
-   * @param versionList 
-   * @returns 
+   * @param versionList
+   * @returns
    */
-  async getMockRelations (versionList: ContentVersion[]): Promise<Record<string, DSL[]>> {
+  async getMockRelations(versionList: ContentVersion[]): Promise<Record<string, DSL[]>> {
     versionList = _.pullAll(versionList, undefined);
 
     if (versionList.length === 0) {
@@ -144,13 +157,14 @@ export class ContentMockService {
     ]);
 
     let relationObject: Record<string, DSL[]> = {};
-    relationVersions.forEach(relation => {
-      if (contentFileObject[relation.contentId]?.type &&
-        !relationObject[contentFileObject[relation.contentId].type]) {
+    relationVersions.forEach((relation) => {
+      if (
+        contentFileObject[relation.contentId]?.type &&
+        !relationObject[contentFileObject[relation.contentId].type]
+      ) {
         relationObject[contentFileObject[relation.contentId].type] = [];
       }
       relationObject[contentFileObject[relation.contentId].type].push(relation.content);
-
     });
     return relationObject;
   }

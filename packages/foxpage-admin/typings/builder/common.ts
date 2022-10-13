@@ -12,6 +12,7 @@ export interface VisualEditorConfig {
   };
   page?: {
     locale?: string;
+    fileType?: string;
   };
 }
 

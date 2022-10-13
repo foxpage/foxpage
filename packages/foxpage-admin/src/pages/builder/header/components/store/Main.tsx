@@ -2,14 +2,18 @@ import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { FileSearchOutlined } from '@ant-design/icons';
+import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
 import { IconMsg, StyledIcon } from '@/pages/builder/header/Main';
 import { GlobalContext } from '@/pages/system';
 
 import { Modal } from './components';
+import { FileType } from '@/constants/index';
 
-const mapStateToProps = () => ({});
+const mapStateToProps = (store: RootState) => ({
+  fileType: store.builder.main.file?.type,
+});
 
 const mapDispatchToProps = {
   openModal: ACTIONS.updateStoreModalVisible,
@@ -18,7 +22,7 @@ const mapDispatchToProps = {
 type PageCopyType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const PageCopy: React.FC<PageCopyType> = (props) => {
-  const { openModal } = props;
+  const { fileType, openModal } = props;
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -26,17 +30,18 @@ const PageCopy: React.FC<PageCopyType> = (props) => {
 
   return (
     <>
-      <StyledIcon
-        onClick={() => {
-          openModal(true);
-        }}>
-        <FileSearchOutlined />
-        <IconMsg>
-          {file.page}
-          {file.template}
-        </IconMsg>
-      </StyledIcon>
-      <Modal />
+      {fileType === FileType.page && (
+        <>
+          <StyledIcon
+            onClick={() => {
+              openModal(true);
+            }}>
+            <FileSearchOutlined />
+            <IconMsg>{file.template}</IconMsg>
+          </StyledIcon>
+          <Modal />
+        </>
+      )}
     </>
   );
 };

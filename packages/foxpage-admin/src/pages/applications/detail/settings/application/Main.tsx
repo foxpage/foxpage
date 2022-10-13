@@ -321,17 +321,7 @@ const Main: React.FC<SettingType> = (props) => {
   return (
     <Content>
       <FoxPageContent
-        breadcrumb={
-          <FoxPageBreadcrumb
-            breadCrumb={[
-              {
-                name: applicationI18n.applicationList,
-                link: '/#/workspace/applications',
-              },
-              { name: setting.appSetting },
-            ]}
-          />
-        }
+        breadcrumb={<FoxPageBreadcrumb breadCrumb={[{ name: setting.appSetting }]} />}
         style={{ overflow: 'hidden auto' }}>
         <Spin spinning={loading}>
           <Row>

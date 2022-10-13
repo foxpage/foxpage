@@ -4,8 +4,9 @@ import {
   CommonFetchParams,
   FileTag,
   PaginationReqParams,
-  ResponseBody,
+  ResponseBody
 } from '@/types/index';
+import { ComponentType } from '@/constants/index';
 
 export interface ProjectFile extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
   name: string;
@@ -21,11 +22,23 @@ export interface File extends Pick<ProjectFile, 'id' | 'createTime' | 'creator' 
   suffix: string;
   tags: FileTag[];
   type: FileType;
+  componentType: ComponentType;
   online: boolean;
   hasContent: boolean;
+  applicationId?: string;
 }
 
-export type FileType = 'page' | 'template' | 'variable' | 'mock' | 'condition' | 'function' | 'component' | 'editor' | 'systemComponent';
+export type FileType =
+  | 'page'
+  | 'template'
+  | 'variable'
+  | 'mock'
+  | 'condition'
+  | 'function'
+  | 'component'
+  | 'editor'
+  | 'systemComponent'
+  | 'block';
 
 export interface ProjectFileListFetchParams extends Omit<CommonFetchParams, 'organizationId' | 'id'> {
   folderId: string;
@@ -70,9 +83,10 @@ export interface FilesFetchedResponse extends ResponseBody {
 export type FileScope = 'application' | 'project';
 
 // application all file
-export type ApplicationFileListFetchParams = Pick<ProjectFile, 'applicationId'> & PaginationReqParams & {
-  scope?: FileScope;
-};
+export type ApplicationFileListFetchParams = Pick<ProjectFile, 'applicationId'> &
+  PaginationReqParams & {
+    scope?: FileScope;
+  };
 
 export interface ApplicationFileUpdateParams extends Pick<ApplicationFileListFetchParams, 'applicationId'> {
   file: File;

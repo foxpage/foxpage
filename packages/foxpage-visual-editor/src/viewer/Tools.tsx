@@ -13,19 +13,26 @@ const Tools = (props: IProps) => {
   const [time, setTime] = useState(0);
   const { selectNode, selectNodeFrom, zoom } = useContext(EditorContext);
   const { placeholder } = props;
+  const win = getFrameWin();
 
+  let timer;
+  
   const handleUpdateTime = () => {
-    setTimeout(() => {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
       setTime(new Date().getTime());
-    }, 300);
+      timer = null
+    }, 100);
   };
 
   useEffect(() => {
-    getFrameWin() && getFrameWin().addEventListener('resize', handleUpdateTime);
-    return () => {
-      getFrameWin() && getFrameWin().removeEventListener('resize', handleUpdateTime);
-    };
-  }, []);
+    if (win) {
+      win.addEventListener('resize', handleUpdateTime);
+      return () => {
+        win.removeEventListener('resize', handleUpdateTime);
+      };
+    }
+  }, [win]);
 
   return (
     <>

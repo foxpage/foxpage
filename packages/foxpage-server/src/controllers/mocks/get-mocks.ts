@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { ACTION, METHOD, TYPE } from '../../../config/constant';
 import { VersionWithExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
@@ -33,7 +33,10 @@ export class GetMockList extends BaseController {
     operationId: 'get-mock-live-version-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentVersionReq): Promise<ResData<VersionWithExternal[]>> {
+  async index(
+    @Ctx() ctx: FoxCtx,
+    @Body() params: AppContentVersionReq,
+  ): Promise<ResData<VersionWithExternal[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
       const [pageList, contentList] = await Promise.all([
@@ -47,16 +50,17 @@ export class GetMockList extends BaseController {
 
       let pageVersions: VersionWithExternal[] = [];
       const contentObject = _.keyBy(contentList, 'id');
-      pageList.forEach(item => {
-        pageVersions.push(Object.assign(
-          {},
-          item.content || {},
-          {
+      pageList.forEach((item) => {
+        // format mock props value
+        item.content.schemas = this.service.version.info.formatMockValue(item.content?.schemas, ACTION.GET);
+
+        pageVersions.push(
+          Object.assign({}, item.content || {}, {
             name: contentObject[item.contentId]?.title || '',
-            version:item.version || '',
+            version: item.version || '',
             fileId: contentObject[item.contentId]?.fileId || '',
-          }
-        ));
+          }),
+        );
       });
 
       return Response.success(pageVersions, 1190601);

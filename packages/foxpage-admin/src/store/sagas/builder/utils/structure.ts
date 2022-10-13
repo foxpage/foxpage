@@ -61,14 +61,17 @@ const createSelector = <K extends keyof StructureNode>(key: K, val: StructureNod
 export const findStructure = (
   list: StructureNode[],
   selector: (structure?: StructureNode<any> | undefined) => boolean | undefined,
-): StructureNode | null => {
+  opt?: {
+    returnBrother?: boolean;
+  },
+): StructureNode | StructureNode[] | null => {
   for (let idx = 0; idx < list.length; idx++) {
     const node = list[idx];
     if (selector(node)) {
-      return node;
+      return opt?.returnBrother ? list : node;
     }
     if (node.children?.length) {
-      const result = findStructure(node.children, selector);
+      const result = findStructure(node.children, selector, opt);
       if (result) {
         return result;
       }
@@ -79,18 +82,27 @@ export const findStructure = (
 
 export const findStructureByName = (structure: StructureNode[], value: string) => {
   const selector = createSelector('name', value);
-  return findStructure(structure, selector);
+  return findStructure(structure, selector) as StructureNode | null;
 };
 
 export const findStructureById = (structure: StructureNode[], value: string) => {
   const selector = createSelector('id', value);
-  return findStructure(structure, selector);
+  return findStructure(structure, selector) as StructureNode | null;
 };
 
 export const findStructureByExtendId = (dsl: StructureNode[], value: string) => {
   return findStructure(dsl, (node) => {
     return node?.extension?.extendId === value;
-  });
+  }) as StructureNode | null;
+};
+
+export const findBrothers = (dsl: StructureNode[], value: string) => {
+  return findStructure(dsl, (node) => node?.id === value, { returnBrother: true }) as StructureNode[] | null;
+};
+
+
+export const findBrothersByParentId = (dsl: StructureNode[], value: string) => {
+  return findStructure(dsl, (node) => node?.extension && node?.extension?.parentId === value, { returnBrother: true }) as StructureNode[] | null;
 };
 
 // filter removed

@@ -135,5 +135,14 @@
   "addListener": "Add Action",
   "advance": "Advance",
   "template": "Template",
-  "select": "Select"
+  "select": "Select",
+  "modified": "Node modified",
+  "mockEnabled": "Enabled mock mode",
+  "mockDisabled": "Disabled mock mode",
+  "enable": "Enable",
+  "delete": "Delete",
+  "deleteMockTips": "Are you sure to delete the mock data of this component?",
+  "inheritNode": "Inherit node",
+  "usingCondition": "Using condition",
+  "usingVariable": "Using variable"
 }

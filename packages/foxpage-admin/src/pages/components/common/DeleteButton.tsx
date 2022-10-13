@@ -9,11 +9,10 @@ const StyledButton = styled(Button)`
   :hover {
     color: red;
     border-color: red;
-    cursor: pointer;
   }
 `;
 
-const DeleteButton: React.FC<ButtonProps> = props => {
+const DeleteButton: React.FC<ButtonProps> = (props) => {
   return (
     <StyledButton {...props}>
       <DeleteOutlined />

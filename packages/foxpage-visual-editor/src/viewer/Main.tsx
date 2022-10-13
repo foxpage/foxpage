@@ -18,6 +18,8 @@ export const MainView = (props: IProps) => {
   const { onPlaceholder } = props;
   const { onDropComponent, onFrameLoaded } = events;
   const { head, body } = findHeadAndBody(structure, components);
+  const bodyStructure = config.page?.fileType === 'block' ? structure : body?.children;
+
   // @ts-ignore
   const { visualFrameSrc = __DEV__ ? '/environment.html' : '' } = config.sys || {};
 
@@ -40,7 +42,7 @@ export const MainView = (props: IProps) => {
         head={<Head renderStructure={head?.children || []} />}
         body={
           <DropContext onPlaceholder={onPlaceholder} onDropComponent={onDropComponent}>
-            <Body renderStructure={body?.children || []} onSelectNode={EditorEvents.selectComponent} />
+            <Body renderStructure={bodyStructure || []} onSelectNode={EditorEvents.selectComponent} />
           </DropContext>
         }
       />

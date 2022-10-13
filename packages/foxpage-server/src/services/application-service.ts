@@ -246,23 +246,23 @@ export class ApplicationService extends BaseService<Application> {
    * if the host is not {url:'', locales: []} format
    * default to host fields is url
    * @param hostList
-   * @param pathname
+   * @param pathnames
    * @param slug
    */
-  getAppHostLocaleUrl(hostList: AppHostInfo[], pathname: string, slug?: string): Record<string, string> {
-    let hostUrls: Record<string, string> = {};
+  getAppHostLocaleUrl(hostList: AppHostInfo[], pathNames: string[], slug?: string): Record<string, string[]> {
+    let hostUrls: Record<string, string[]> = {};
     hostList.forEach((host) => {
       if (_.isString(host) && !hostUrls['base']) {
-        hostUrls['base'] = mergeUrl(host, pathname, slug || '');
+        hostUrls['base'] = pathNames.map((pathname) => mergeUrl(host, pathname, slug || ''));
       } else {
         if (host.locales.length > 0) {
           host.locales.forEach((locale) => {
             if (!hostUrls[locale]) {
-              hostUrls[locale] = mergeUrl(host.url, pathname, slug || '');
+              hostUrls[locale] = pathNames.map((pathname) => mergeUrl(host.url, pathname, slug || ''));
             }
           });
         } else if (!hostUrls['base']) {
-          hostUrls['base'] = mergeUrl(host.url, pathname, slug || '');
+          hostUrls['base'] = pathNames.map((pathname) => mergeUrl(host.url, pathname, slug || ''));
         }
       }
     });
@@ -339,6 +339,7 @@ export class ApplicationService extends BaseService<Application> {
             ['setting.' + params.type + '.$.name']: params.setting.name,
             ['setting.' + params.type + '.$.status']: params.setting.status || false,
             ['setting.' + params.type + '.$.category']: params.setting.category || {},
+            ['setting.' + params.type + '.$.defaultValue']: params.setting.defaultValue || {},
             ['setting.' + params.type + '.$.updateTime']: moment().format('YYYY-MM-DD HH:mm:ss'),
           },
         } as any,

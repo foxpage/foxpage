@@ -13,7 +13,6 @@ import {
   RelationDetails,
   RenderStructureNode,
   StructureNode,
-  VariableEntity,
 } from '@/types/index';
 
 export type BuilderContentActionType = ActionType<typeof ACTIONS>;
@@ -30,14 +29,11 @@ const relations = {} as RelationDetails; // cur page relations
 const extendContent = {} as PageContent;
 const formattedData = {} as FormattedData; // formatted data(contains: formatted page content, maps)
 const selectedNode = null as RenderStructureNode | null;
-const localVariables: VariableEntity[] = [];
+const localVariables = [] as RelationDetails['variables'] | undefined;
 const contentState = {
-  file,
   content,
   mock,
   relations,
-  formattedData,
-  pageContent,
   pageNode,
   extend: extendContent,
   selectedNode,
@@ -60,10 +56,13 @@ const initialState = {
   publishLoading: false,
   // main
   application,
+  file,
+  formattedData,
+  pageContent,
   // content states
   ...contentState,
   // TODO
-  templateOpenInPage: false,
+  templateOpenInPage: false
 };
 
 type InitialDataType = typeof initialState;

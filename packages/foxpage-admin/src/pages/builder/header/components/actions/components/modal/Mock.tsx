@@ -11,6 +11,7 @@ import * as PAGE_ACTIONS from '@/actions/builder/main';
 import { JSONEditor } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import { MockContent } from '@/types/builder';
+import { wrapperMock } from '@/sagas/builder/utils';
 
 const Modal = styled(AntModal)`
   .ant-modal-content {
@@ -31,7 +32,7 @@ const mapStateToProps = (store: RootState) => ({
   loading: store.builder.header.mockLoading,
   editStatus: store.builder.main.editStatus,
   file: store.builder.main.file,
-  mock: store.builder.main.pageContent.mock,
+  mock: store.builder.main.mock,
 });
 
 const mapDispatchToProps = {
@@ -67,7 +68,7 @@ const Mock: React.FC<MockProps> = (props) => {
   useEffect(() => {
     if (visible) {
       if (mock && mock?.schemas && mock.schemas.length > 0) {
-        setJsonData(mock);
+        setJsonData(wrapperMock(mock) as MockContent);
       }
 
       setMockId(mock?.id);
@@ -107,7 +108,7 @@ const Mock: React.FC<MockProps> = (props) => {
           contentId: contentId || '',
           name: `mock_${contentId}`,
           content: {
-            ...jsonData,
+            ...mock,
             enable: mockMode,
           },
         },
@@ -123,7 +124,7 @@ const Mock: React.FC<MockProps> = (props) => {
     }
   }, [applicationId, folderId, contentId, mockId, jsonData, mockMode, saveMock, publishMock]);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     if (applicationId && folderId) {
       saveMock(
         {
@@ -132,7 +133,7 @@ const Mock: React.FC<MockProps> = (props) => {
           contentId: contentId || '',
           name: `mock_${contentId}`,
           content: {
-            ...jsonData,
+            ...mock,
             enable: mockMode,
           },
         },
@@ -143,13 +144,13 @@ const Mock: React.FC<MockProps> = (props) => {
             fetchContent({
               applicationId,
               id: contentId,
-              type: file.type,
+              type: file?.type,
             });
           }, 50);
         },
       );
     }
-  };
+  }, [applicationId, folderId, contentId, mock, mockMode, file?.type]);
 
   const footer = useMemo(
     () => (

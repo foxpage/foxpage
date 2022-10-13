@@ -24,12 +24,13 @@ function ApplicationSelector(props: IProps) {
   const { application } = locale.business;
 
   useEffect(() => {
-    if (typeof onFetch === 'function' && organizationId)
+    if (typeof onFetch === 'function' && organizationId) {
       onFetch({
         organizationId,
         page: PAGE,
         size: SIZE,
       });
+    }
   }, [onFetch, organizationId]);
 
   const options = useMemo(

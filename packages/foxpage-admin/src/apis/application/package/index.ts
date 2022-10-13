@@ -44,7 +44,7 @@ export interface GetComponentSearchsProps extends PaginationReqParams {
   type: PackageType;
 }
 
-// 查询组件列表
+// search components
 export const getComponentSearchs = (
   params: GetComponentSearchsProps,
 ): Promise<ResponseBody<ComponentEntity[]>> =>

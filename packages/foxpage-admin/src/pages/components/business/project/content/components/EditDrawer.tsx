@@ -1,8 +1,8 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { CheckOutlined, InfoCircleOutlined, SyncOutlined } from '@ant-design/icons';
-import { Button, Input, Select, Tag } from 'antd';
+import { Button, Checkbox, Input, message, Select, Tag } from 'antd';
 import styled from 'styled-components';
 
 import { Field, Group, JSONEditor, Label, OperationDrawer } from '@/components/index';
@@ -22,12 +22,17 @@ const Tips = styled.p`
   font-size: 12px;
 `;
 
+const CheckboxLabel = styled.span`
+  font-size: 12px;
+`;
+
 interface ProjectContentEditDrawer {
   saveLoading: boolean;
   drawerOpen: boolean;
   locales: string[];
   editContent: Partial<ContentEntity>;
   baseContents: Array<Record<string, string>>;
+  contentList: ContentEntity[];
   fileDetail: File;
   closeDrawer: (open: boolean, editContent?: Partial<ContentEntity>) => void;
   fetchLocales: (applicationId: string) => void;
@@ -44,16 +49,18 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
     editContent,
     locales = [],
     baseContents,
+    contentList,
     closeDrawer,
     fetchLocales,
     updateContentValue,
     updateContentTags,
     saveContent,
   } = props;
+  const [selectedLocale, setSelectedLocale] = useState<string[]>([]);
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, content } = locale.business;
+  const { content, global } = locale.business;
 
   // url search params
   const { applicationId, fileId } = getLocationIfo(useLocation());
@@ -65,6 +72,33 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
   useEffect(() => {
     if (applicationId) fetchLocales(applicationId);
   }, []);
+
+  // generate all selected locale with all contents when add new content
+  useEffect(() => {
+    if (drawerOpen) {
+      if (!editContent.id) {
+        const localeContent = contentList && contentList.filter((content) => !content.isBase);
+        const locales: string[] = [];
+
+        if (localeContent) {
+          localeContent.forEach((content) => {
+            const contentLocales = content.tags
+              .filter((tag) => !!tag?.locale)
+              .map((tag) => tag.locale as string);
+
+            if (!objectEmptyCheck(contentLocales)) {
+              contentLocales.forEach((locale) => locales.push(locale));
+            }
+          });
+        }
+
+        const newSelectedLocales = Array.from(new Set(locales));
+        if (!objectEmptyCheck(newSelectedLocales)) setSelectedLocale(newSelectedLocales);
+      }
+    } else {
+      setSelectedLocale([]);
+    }
+  }, [contentList, drawerOpen, editContent]);
 
   const handleLocaleClick = (locale: string) => {
     let newLocalesTag: FileTag[] = [];
@@ -84,6 +118,23 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
     }
   };
 
+  const handleSave = () => {
+    if (!isBase && fileDetail?.type === FileType.page) {
+      if (!editContent.tags?.find((tag) => tag.locale)) {
+        message.warn(content.localeTips);
+        return;
+      }
+    }
+
+    if (applicationId && fileId) {
+      saveContent({
+        applicationId,
+        fileId,
+        fileType: fileDetail?.type || FileType.page,
+      });
+    }
+  };
+
   return (
     <OperationDrawer
       destroyOnClose
@@ -94,17 +145,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
         closeDrawer(false);
       }}
       actions={
-        <Button
-          type="primary"
-          onClick={() => {
-            if (applicationId && fileId) {
-              saveContent({
-                applicationId,
-                fileId,
-                fileType: fileDetail?.type || FileType.page,
-              });
-            }
-          }}>
+        <Button type="primary" onClick={handleSave}>
           {global.apply}
           {saveLoading && <SyncOutlined spin={true} style={{ color: '#fff' }} />}
         </Button>
@@ -119,30 +160,42 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
               onChange={(e) => updateContentValue('title', e.target.value)}
             />
           </Field>
-          {!isBase && !objectEmptyCheck(locales) && (
-            <Field>
-              <Label>{global.locale}</Label>
-              <LocaleSelect>
-                {locales.map((locale: string) => {
-                  const selected = localesTag.find((item) => item.locale === locale);
-                  return (
-                    <Tag
-                      key={locale}
-                      onClick={() => {
-                        handleLocaleClick(locale);
-                      }}
-                      color={selected ? 'green' : 'blue'}
-                      style={{ width: 70, textAlign: 'center', cursor: 'pointer', marginBottom: 8 }}>
-                      {selected && <CheckOutlined />}
-                      {locale}
-                    </Tag>
-                  );
-                })}
-              </LocaleSelect>
-            </Field>
+          {drawerOpen && !isBase && !objectEmptyCheck(locales) && (
+            <>
+              <Field>
+                <Label>{global.locale}</Label>
+                {!editContent?.id && (
+                  <Checkbox
+                    defaultChecked
+                    onChange={(e) => updateContentValue('oneLocale', e.target.checked)}
+                    style={{ marginBottom: 8 }}>
+                    <CheckboxLabel>{content.addMultipleContent}</CheckboxLabel>
+                  </Checkbox>
+                )}
+                <LocaleSelect>
+                  {locales.map((locale: string) => {
+                    const selected = localesTag.find((item) => item.locale === locale);
+                    const exist = selectedLocale.includes(locale);
+
+                    return (
+                      <Tag
+                        color={selected || exist ? 'green' : 'blue'}
+                        key={locale}
+                        onClick={() => {
+                          handleLocaleClick(locale);
+                        }}
+                        style={{ width: 70, textAlign: 'center', cursor: 'pointer', marginBottom: 8 }}>
+                        {selected && <CheckOutlined />}
+                        {locale}
+                      </Tag>
+                    );
+                  })}
+                </LocaleSelect>
+              </Field>
+            </>
           )}
 
-          {!isBase && (
+          {drawerOpen && !isBase && (
             <Field>
               <Label>{content.query}</Label>
               <JSONEditor
@@ -157,7 +210,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
             </Field>
           )}
 
-          {!isBase && (
+          {drawerOpen && !isBase && fileDetail?.type === FileType.page && (
             <Field>
               <Label>{content.extendTitle}</Label>
               <Tips>

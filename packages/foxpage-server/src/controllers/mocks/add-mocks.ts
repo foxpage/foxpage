@@ -6,7 +6,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { ACTION, LOG, TYPE } from '../../../config/constant';
 import { NewFileInfo } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AddMockReq, FileDetailRes } from '../../types/validates/file-validate-types';
@@ -41,7 +41,7 @@ export class AddMockDetail extends BaseController {
     }
 
     try {
-      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      const hasAuth = await this.service.auth.content(params.contentId, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4190101);
       }
@@ -55,6 +55,14 @@ export class AddMockDetail extends BaseController {
         if (!params.folderId) {
           return Response.warning(i18n.folder.invalidFolderId, 2190102);
         }
+      }
+
+      // format mock schema props value
+      if (params.content?.schemas) {
+        params.content.schemas = this.service.version.info.formatMockValue(
+          params.content?.schemas,
+          ACTION.SAVE,
+        );
       }
 
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: TYPE.MOCK });
@@ -74,7 +82,7 @@ export class AddMockDetail extends BaseController {
 
       // binding to content
       if (params.contentId) {
-        this.service.content.tag.updateExtensionTag(
+        await this.service.content.tag.updateExtensionTag(
           params.contentId,
           { mockId: (<any>result.data)?.contentId || '' },
           { ctx },

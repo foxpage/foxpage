@@ -1,20 +1,20 @@
 import React from 'react';
 import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 
-import Detail from './detail';
-import Fast from './fast';
-import List from './list';
+import Components from './components';
+import Editors from './editors';
+import Resources from './resources';
 
 function Packages() {
   const { applicationId } = useParams<{ applicationId: string }>();
 
   return (
     <Switch>
-      <Route path="/applications/:applicationId/packages/content" component={Fast} />
-      <Route path="/applications/:applicationId/packages/detail" component={Detail} />
-      <Route path="/applications/:applicationId/packages/list" component={List} />
+      <Route path="/applications/:applicationId/package/components" component={Components} />
+      <Route path="/applications/:applicationId/package/editors" component={Editors} />
+      <Route path="/applications/:applicationId/package/resources" component={Resources} />
 
-      <Redirect from="/*" to={`/applications/${applicationId}/packages/list`} />
+      <Redirect from="/*" to={`/applications/${applicationId}/package/components`} />
     </Switch>
   );
 }

@@ -1,3 +1,4 @@
+import { PAGE_COMPONENT_NAME } from '@/constants/component';
 import { FormattedData, Mock, RenderStructureNode, Schemas, StructureNode } from '@/types/index';
 
 import { nodeDiff } from '../services/index';
@@ -13,7 +14,6 @@ export const updateContent = <K extends StructureNode | RenderStructureNode, T e
   list: T[] = [],
   formattedData: FormattedData,
 ) => {
-  // console.log('[ UPDATE CONTENT ]:', list);
   const formatted = { ...formattedData };
 
   // node mapper
@@ -74,7 +74,14 @@ export const updateContent = <K extends StructureNode | RenderStructureNode, T e
 
   list.forEach((item) => mapper(item as K));
   // to generate new content
-  const newContent = mapToTree(formatted.originPageNodeMap);
+  let newContent = mapToTree(formatted.originPageNodeMap);
+  // extend page node
+  const extendPageNode = newContent.find((item) => item.name === PAGE_COMPONENT_NAME && !!item.extension.extendId);
+  if (extendPageNode) {
+    const { children = [] } = extendPageNode;
+    extendPageNode.children = [];
+    newContent = newContent.concat(children);
+  }
   return newContent;
 };
 
@@ -88,7 +95,6 @@ export const updateMockContent = <K extends StructureNode | RenderStructureNode,
   list: T[] = [],
   mock: Mock,
 ) => {
-  // console.log('[ UPDATE MOCK CONTENT ]:', list);
   const schemas = [...(mock.schemas || [])];
 
   // node mapper

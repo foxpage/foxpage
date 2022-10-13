@@ -38,32 +38,36 @@ export class GetPageBuilderSettingList extends BaseController {
       let pageTypeList: any[] = [];
       let counts = 0;
       if (appDetail && appDetail.setting && params.type) {
-        const typeList = appDetail.setting[params.type] || [];
+        let typeList = appDetail.setting[params.type] || [];
+
+        // add block data to component list
+        if (params.type === TYPE.COMPONENT) {
+          typeList = _.orderBy(_.concat(typeList, appDetail.setting[TYPE.BLOCK] || []), ['createTime'], ['desc']);
+        }
+
         const search = params.search?.toLowerCase();
-        pageTypeList = _.chunk(
-          _.filter(typeList, (item) => {
-            // search by component id, name, nickname or category name
-            if (search) {
-              if (search === item.id?.toLowerCase() || item.name?.toLowerCase().indexOf(search) !== -1) {
-                return true;
-              } else if (
-                params.type === TYPE.COMPONENT &&
-                ((
-                  (item.category.groupName?.toLowerCase() || '') +
-                  '.' +
-                  (item.category.categoryName?.toLowerCase() || '')
-                ).indexOf(search) !== -1 ||
-                  (item.category.name?.toLowerCase() || '').indexOf(search) !== -1)
-              ) {
-                return true;
-              }
-              return false;
+        const packageTyeList = _.filter(typeList, (item) => {
+          // search by component id, name, nickname or category name
+          if (search) {
+            if (search === item.id?.toLowerCase() || item.name?.toLowerCase().indexOf(search) !== -1) {
+              return true;
+            } else if (
+              params.type === TYPE.COMPONENT &&
+              ((
+                (item.category.groupName?.toLowerCase() || '') +
+                '.' +
+                (item.category.categoryName?.toLowerCase() || '')
+              ).indexOf(search) !== -1 ||
+                (item.category.name?.toLowerCase() || '').indexOf(search) !== -1)
+            ) {
+              return true;
             }
-            return true;
-          }),
-          pageSize.size,
-        )[pageSize.page - 1];
-        counts = typeList.length;
+            return false;
+          }
+          return true;
+        });
+        pageTypeList = _.chunk(packageTyeList, pageSize.size)[pageSize.page - 1];
+        counts = packageTyeList.length;
       }
 
       const fileIds = _.map(pageTypeList, 'id');
@@ -91,6 +95,7 @@ export class GetPageBuilderSettingList extends BaseController {
                 ? TAG.DELIVERY_REFERENCE
                 : '',
               category: item.category || {},
+              defaultValue: item.defaultValue || {},
               creator: userBaseObject[fileObject[item.id]?.creator] || {},
             },
             _.pick(fileObject[item.id], ['type', 'createTime', 'updateTime']),
@@ -105,7 +110,7 @@ export class GetPageBuilderSettingList extends BaseController {
             page: params.page,
             size: params.size,
           },
-          data: buildPageList,
+          data: _.reverse(buildPageList),
         },
         1031101,
       );

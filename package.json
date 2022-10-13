@@ -1,6 +1,6 @@
 {
   "name": "foxpage",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "bugs": {
     "url": "https://github.com/foxpage/foxpage/issues"
@@ -60,6 +60,7 @@
     ]
   },
   "dependencies": {
+    "class-validator": "^0.13.2",
     "lerna": "^4.0.0",
     "lodash": "^4.17.21",
     "typescript": "^4.3.2"
@@ -80,24 +81,24 @@
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
     "@types/node": "^15.12.2",
-    "@typescript-eslint/eslint-plugin": "^2.12.0",
-    "@typescript-eslint/parser": "^2.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.37.0",
+    "@typescript-eslint/parser": "^5.37.0",
     "commitizen": "^4.2.4",
     "commitlint": "^12.1.4",
     "cross-env": "^7.0.3",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^8.10.0",
-    "eslint-config-prettier": "^6.9.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-prettier": "^3.1.2",
-    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint": "^8.23.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-simple-import-sort": "^8.0.0",
     "eslint-plugin-typescript": "^0.14.0",
     "git-cz": "^4.7.6",
     "husky": "^6.0.0",
     "import": "0.0.6",
     "lerna": "^4.0.0",
     "lint-staged": "^11.0.0",
-    "prettier": "^1.19.1",
+    "prettier": "^2.7.1",
     "standard-version": "^9.3.0",
     "ts-node": "^8.8.1"
   },

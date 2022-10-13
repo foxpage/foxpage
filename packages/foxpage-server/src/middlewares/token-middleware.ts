@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import { KoaMiddlewareInterface, Middleware } from 'routing-controllers';
 
+import { RESPONSE_LEVEL } from '../../config/constant';
 import { config, i18n } from '../../app.config';
 import { FoxCtx } from '../types/index-types';
 
@@ -29,7 +30,7 @@ export class TokenMiddleware implements KoaMiddlewareInterface {
       (!jwtTokenInfo.account || currentTime > jwtTokenInfo.exp * 1000) &&
       config.ignoreTokenPath.indexOf(ctx.request.path) === -1
     ) {
-      ctx.body = { code: 401, msg: i18n.system.invalidAccount };
+      ctx.body = { code: RESPONSE_LEVEL.INVALID_TOKEN, msg: i18n.system.invalidAccount };
     } else {
       // Add user information to ctx
       ctx.userInfo = { id: jwtTokenInfo.id || '', account: jwtTokenInfo.account || '' };

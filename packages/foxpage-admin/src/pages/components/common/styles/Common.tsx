@@ -48,7 +48,8 @@ const LocaleTag = styled(Tag)`
 `;
 
 const Name = styled.span`
-  max-width: 260px;
+  display: inline-block;
+  max-width: 350px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

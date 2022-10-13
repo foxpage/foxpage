@@ -37,6 +37,10 @@ export class GetApplicationList extends BaseController {
 
       const appList = await this.service.application.getDetailByIds(params.applicationIds);
 
+      (appList || []).forEach((app) => {
+        delete app.setting;
+      });
+
       return Response.success(appList, 1030501);
     } catch (err) {
       return Response.error(err, i18n.app.listError, 3030501);

@@ -12,6 +12,7 @@ import { AppContentListRes, AppContentVersionReq } from '../../types/validates/p
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/draft-infos.ts
 @JsonController('templates')
 export class GetAppTemplateBuildInfoList extends BaseController {
   constructor() {
@@ -25,7 +26,7 @@ export class GetAppTemplateBuildInfoList extends BaseController {
    * @param  {AppContentVersionReq} params
    * @returns {PageContentData[]}
    */
-  @Post('/draft-infos')
+  @Post('/draft-infos-migrations')
   @OpenAPI({
     summary: i18n.sw.getAppTemplatesBuildInfo,
     description: '',

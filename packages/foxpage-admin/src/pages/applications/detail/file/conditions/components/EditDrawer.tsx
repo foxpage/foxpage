@@ -47,6 +47,7 @@ type ConditionEditDrawer = ReturnType<typeof mapStateToProps> &
   typeof mapDispatchToProps & {
     applicationId: string;
     folderId?: string;
+    search?: string;
   };
 
 function EditDrawer(props: ConditionEditDrawer) {
@@ -55,6 +56,7 @@ function EditDrawer(props: ConditionEditDrawer) {
     folderId,
     type,
     pageInfo,
+    search,
     visible,
     condition,
     closeDrawer,
@@ -151,15 +153,21 @@ function EditDrawer(props: ConditionEditDrawer) {
       () => {
         handleClose();
 
-        fetchList({
+        let params: any = {
           applicationId,
-          folderId,
           page: pageInfo.page,
           size: pageInfo.size,
-        });
+          search: search || '',
+        };
+        if (!!folderId)
+          params = {
+            ...params,
+            folderId,
+          };
+        fetchList(params);
       },
     );
-  }, [applicationId, condition, name, logicType, optData, saveCondition, handleClose]);
+  }, [applicationId, condition, name, logicType, search, optData, saveCondition, handleClose]);
 
   // expression change
   const handleOptDataChange = useCallback(

@@ -36,6 +36,7 @@ export interface ResMsg {
   code: number;
   status?: number;
   msg?: string;
+  data?: any;
 }
 
 export interface PageSize {
@@ -108,7 +109,7 @@ export interface IdVersion {
   version: string;
 }
 
-export interface DBQuery{
+export interface DBQuery {
   type: string;
   model: any;
   data: any;

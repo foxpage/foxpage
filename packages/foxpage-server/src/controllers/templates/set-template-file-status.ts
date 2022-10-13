@@ -14,6 +14,7 @@ import { FileDetailRes } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/set-page-file-status.ts
 @JsonController('templates')
 export class SetTemplateFileStatus extends BaseController {
   constructor() {
@@ -26,7 +27,7 @@ export class SetTemplateFileStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/status')
+  @Put('/status-migrations')
   @OpenAPI({
     summary: i18n.sw.setTemplateFileStatus,
     description: '',

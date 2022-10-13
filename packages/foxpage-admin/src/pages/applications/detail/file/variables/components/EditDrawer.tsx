@@ -6,21 +6,27 @@ import { Button, Input, Select, Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/variables';
+import { saveMock } from '@/actions/builder/header';
+import { updateMock } from '@/actions/builder/main';
 import { Field, Group, JSONEditor, Label, OperationDrawer } from '@/components/index';
 import { FileType, VariableTypes } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { getFunctionRelationKey } from '@/sagas/builder/utils';
 import { FuncContentEntity, FuncEntity, FunctionVariableProps, StaticVariableProps } from '@/types/index';
-import { nameErrorCheck } from '@/utils/name-check';
+import { nameErrorCheck, objectEmptyCheck } from '@/utils/index';
 
 import FunctionSelect from './FunctionSelect';
 
 const { Option } = Select;
 
+const VARIABLE_FUNCTION_TYPE = 'data.function.call';
+
 const mapStateToProps = (store: RootState) => ({
-  editorDrawerOpen: store.applications.detail.file.variables.drawerVisible,
+  mode: store.applications.detail.file.variables.drawerType,
+  open: store.applications.detail.file.variables.drawerVisible,
   editVariable: store.applications.detail.file.variables.editVariable,
   pageInfo: store.applications.detail.file.variables.pageInfo,
+  mock: store.builder.main.mock,
 });
 
 const mapDispatchToProps = {
@@ -32,11 +38,14 @@ const mapDispatchToProps = {
   updateRelation: ACTIONS.updateVariableContentRelation,
   updateVariableContentProps: ACTIONS.updateVariableContentProps,
   updateVariableRelations: ACTIONS.updateVariableRelations,
+  saveMock: saveMock,
+  updateMock: updateMock,
 };
 
 interface IProps {
   applicationId: string;
   folderId?: string;
+  search?: string;
 }
 
 type Type = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
@@ -45,9 +54,12 @@ const EditDrawer: React.FC<Type> = (props) => {
   const {
     applicationId,
     folderId,
-    editorDrawerOpen,
+    mock,
+    mode,
+    open,
     editVariable,
     pageInfo,
+    search,
     closeDrawer,
     fetchList,
     saveVariable,
@@ -56,10 +68,13 @@ const EditDrawer: React.FC<Type> = (props) => {
     updateRelation,
     updateVariableContentProps,
     updateVariableRelations,
+    updateMock,
+    saveMock,
   } = props;
   const [funcDrawerVisible, setFuncDrawerVisible] = useState<boolean>(false);
   const [func, setFunc] = useState<FuncContentEntity | undefined>(undefined);
   const [isEditType, setIsEditType] = useState<boolean>(false);
+  const [mockProps, setMockProps] = useState<any>({});
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -84,6 +99,15 @@ const EditDrawer: React.FC<Type> = (props) => {
     }
   }, [editVariable]);
 
+  useEffect(() => {
+    const schemas = mock?.schemas;
+    if (!objectEmptyCheck(schemas)) {
+      const _props = schemas.find((schema) => schema.id === editVariable?.contentId)?.props || {};
+
+      setMockProps(_props);
+    }
+  }, [editVariable?.id, mock]);
+
   const handleVariableFunctionChange = (selectedFunc?: FuncEntity) => {
     if (!selectedFunc) {
       return;
@@ -99,7 +123,7 @@ const EditDrawer: React.FC<Type> = (props) => {
       },
     });
 
-    updateVariableRelations({ functions: [selectedFunc.content] });
+    updateVariableRelations({ functions: [{ ...selectedFunc.content, id: selectedFunc.contentId }] });
 
     updateContent('props', {
       function: `{{${relationKey}}}`,
@@ -123,6 +147,22 @@ const EditDrawer: React.FC<Type> = (props) => {
         record.schemas[0].props.async ? 'async' : 'sync',
     },
   ];
+
+  const mockModeEnable = useMemo(() => {
+    return mode === 'mock';
+  }, [mode]);
+
+  const title = useMemo(() => {
+    if (mode === 'mock') {
+      return variable.mock;
+    } else {
+      if (editVariable?.id) {
+        return variable.edit;
+      } else {
+        return variable.add;
+      }
+    }
+  }, [editVariable, mode, variable]);
 
   const type = useMemo(() => {
     const schemas = editVariable?.content?.schemas || [];
@@ -148,27 +188,79 @@ const EditDrawer: React.FC<Type> = (props) => {
     }
   };
 
-  const handleSave = () => {
-    if (nameErrorCheck(editVariable?.name)) {
-      return;
+  const handleUpdateContent = (key, value) => {
+    // generate new mock structure
+    if (mockModeEnable) {
+      setMockProps(value);
+    } else {
+      if (type === VARIABLE_FUNCTION_TYPE) {
+        updateVariableContentProps(key, value);
+      } else {
+        updateContent(key, value);
+      }
     }
+  };
 
-    saveVariable(
-      {
-        applicationId,
-        folderId,
-      },
-      () => {
-        handleClose();
+  const handleSave = () => {
+    if (mockModeEnable) {
+      if (applicationId && folderId) {
+        const schemas: Array<any> =
+          mock?.schemas.filter((schema) => schema.id !== editVariable.contentId) || [];
+        schemas.push({
+          id: editVariable.contentId,
+          name: editVariable?.name || '',
+          props: mockProps,
+          type: 'variable',
+        });
+        const _mock = {
+          ...mock,
+          schemas,
+        };
 
-        fetchList({
+        // push to store
+        updateMock(_mock);
+
+        // save to server
+        saveMock(
+          {
+            applicationId,
+            folderId,
+            name: `mock_${editVariable.contentId}`,
+            content: _mock,
+          },
+          () => {
+            handleClose();
+          },
+        );
+      }
+    } else {
+      if (nameErrorCheck(editVariable?.name)) {
+        return;
+      }
+
+      saveVariable(
+        {
           applicationId,
           folderId,
-          page: pageInfo.page,
-          size: pageInfo.size,
-        });
-      },
-    );
+        },
+        () => {
+          handleClose();
+
+          let params: any = {
+            applicationId,
+            page: pageInfo.page,
+            size: pageInfo.size,
+            search: search || '',
+          };
+          if (!!folderId)
+            params = {
+              ...params,
+              folderId,
+            };
+          fetchList(params);
+        },
+      );
+    }
   };
 
   const handleClose = () => {
@@ -183,8 +275,8 @@ const EditDrawer: React.FC<Type> = (props) => {
     <OperationDrawer
       destroyOnClose
       width={480}
-      open={editorDrawerOpen}
-      title={editVariable && editVariable.id ? variable.edit : variable.add}
+      open={open}
+      title={title}
       onClose={handleClose}
       actions={
         <Button type="primary" onClick={handleSave}>
@@ -200,7 +292,7 @@ const EditDrawer: React.FC<Type> = (props) => {
                 : global.nameLabel}
             </Label>
             <Input
-              value={editVariable?.name}
+              value={mockModeEnable ? '' : editVariable?.name}
               disabled={!!editVariable.id}
               placeholder={
                 editVariable && !editVariable.id && !!folderId
@@ -217,7 +309,7 @@ const EditDrawer: React.FC<Type> = (props) => {
                 <Input
                   disabled={!!editVariable.id}
                   placeholder={global.type}
-                  value={type}
+                  value={mockModeEnable ? '' : type}
                   onChange={(e) => {
                     updateContent('type', e.target.value);
                   }}
@@ -265,10 +357,11 @@ const EditDrawer: React.FC<Type> = (props) => {
               <Field>
                 <Label>{functionI18n.name}</Label>
                 <Table
-                  columns={columns}
                   bordered
-                  dataSource={func ? [func] : []}
+                  columns={columns}
+                  dataSource={!mockModeEnable && func ? [func] : []}
                   pagination={false}
+                  rowKey="id"
                   size="small"
                 />
                 <Button
@@ -284,12 +377,18 @@ const EditDrawer: React.FC<Type> = (props) => {
               <Field>
                 <Label>{variable.args}</Label>
                 <JSONEditor
-                  jsonData={(editVariable.content.schemas[0].props as FunctionVariableProps).args || []}
+                  jsonData={
+                    mockModeEnable
+                      ? []
+                      : (editVariable.content.schemas[0].props as FunctionVariableProps).args || []
+                  }
                   onChangeJSON={(json) => {
-                    updateVariableContentProps('args', json);
+                    // updateVariableContentProps('args', json);
+                    handleUpdateContent('args', json);
                   }}
                   onError={() => {
-                    updateVariableContentProps('args', []);
+                    // updateVariableContentProps('args', []);
+                    handleUpdateContent('args', []);
                   }}
                 />
               </Field>
@@ -299,18 +398,18 @@ const EditDrawer: React.FC<Type> = (props) => {
               <Label>{variable.value}</Label>
               <JSONEditor
                 refreshFlag={editVariable.id}
-                jsonData={(editVariable.content.schemas?.[0]?.props as StaticVariableProps)?.value || {}}
+                jsonData={
+                  mockModeEnable
+                    ? mockProps
+                    : (editVariable.content.schemas?.[0]?.props as StaticVariableProps) || {}
+                }
                 onChangeJSON={(json) => {
-                  updateContent('props', {
-                    value: json,
-                    type: 'json',
-                  });
+                  // updateContent('props', json);
+                  handleUpdateContent('props', json);
                 }}
                 onError={() => {
-                  updateContent('props', {
-                    value: {},
-                    type: 'json',
-                  });
+                  // updateContent('props', {});
+                  handleUpdateContent('props', {});
                 }}
               />
             </Field>

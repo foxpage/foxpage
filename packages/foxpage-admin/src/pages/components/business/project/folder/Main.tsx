@@ -1,36 +1,26 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { PlusOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Input, Select } from 'antd';
 import styled from 'styled-components';
 
-import {
-  ApplicationSelector,
-  AuthorizeDrawer,
-  Content,
-  FoxPageBreadcrumb,
-  FoxPageContent,
-} from '@/components/index';
+import { ApplicationSelector, Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { WIDTH_DEFAULT } from '@/constants/global';
 import { GlobalContext } from '@/pages/system';
 import {
   Application,
-  AuthorizeAddParams,
-  AuthorizeDeleteParams,
-  AuthorizeListFetchParams,
-  AuthorizeListItem,
-  AuthorizeUserFetchParams,
   PaginationInfo,
   PaginationReqParams,
   ProjectEntity,
   ProjectListFetchParams,
   ProjectSaveParams,
-  User,
 } from '@/types/index';
 import { getLocationIfo } from '@/utils/location-info';
 
 import { EditDrawer, List } from './components/index';
+
+const { Search: AntSearch } = Input;
 
 interface ProjectProps {
   type: 'application' | 'involved' | 'personal' | 'projects' | 'workspace';
@@ -38,34 +28,37 @@ interface ProjectProps {
   loading: boolean;
   saveLoading;
   pageInfo: PaginationInfo;
+  allApplicationList?: Application[];
   applicationList: Application[];
   projectList: ProjectEntity[];
   editProject: ProjectEntity;
   drawerOpen: boolean;
-  authDrawerOpen?: boolean;
-  authLoading?: boolean;
-  authList?: AuthorizeListItem[];
-  userList?: User[];
   fetchList: (params: ProjectListFetchParams) => void;
+  // for edit drawer
+  fetchAllApps?: (params: PaginationReqParams) => void;
+  // for filter
   fetchApps: (params: PaginationReqParams) => void;
   updateEditProject: (name: string, value: unknown) => void;
   saveProject: (params: ProjectSaveParams, cb?: () => void) => void;
-  deleteProject: (id: string, applicationId: string, organizationId: string, search?: string) => void;
   openDrawer: (open: boolean, editProject?: ProjectEntity) => void;
-  fetchAuthList?: (params: AuthorizeListFetchParams) => void;
-  fetchUserList?: (params: AuthorizeUserFetchParams, cb?: () => void) => void;
-  saveUser?: (params: AuthorizeAddParams, cb?: () => void) => void;
-  deleteUser?: (params: AuthorizeDeleteParams, cb?: () => void) => void;
-  openAuthDrawer?: (visible: boolean, editProject?: ProjectEntity) => void;
 }
 
 const PAGE_NUM = 1;
-const PAGE_SIZE = 999;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
+`;
+
+const Search = styled(AntSearch)`
+  .ant-input-group-addon {
+    .ant-select-focused {
+      .ant-select-selector {
+        color: rgba(0, 0, 0, 0.85);
+      }
+    }
+  }
 `;
 
 const ProjectFolderComponent: React.FC<ProjectProps> = (props) => {
@@ -75,39 +68,34 @@ const ProjectFolderComponent: React.FC<ProjectProps> = (props) => {
     loading,
     saveLoading,
     pageInfo,
+    allApplicationList,
     applicationList,
     projectList,
     editProject,
     drawerOpen,
-    authDrawerOpen = false,
-    authLoading = false,
-    authList = [],
-    userList = [],
     openDrawer,
     fetchList,
+    fetchAllApps,
     fetchApps,
     updateEditProject,
     saveProject,
-    deleteProject,
-    fetchAuthList,
-    fetchUserList,
-    saveUser,
-    deleteUser,
-    openAuthDrawer,
   } = props;
   const [applicationId, setApplicationId] = useState('');
   const [pageNum, setPageNum] = useState(pageInfo.page);
+  const [searchType, setSearchType] = useState('project');
+  const [searchCache, setSearchCache] = useState<Record<string, string | undefined>>({
+    searchType: '',
+    searchText: undefined,
+  });
+  // for list filter by appId
   const [search, setSearch] = useState('');
-  const [typeId, setTypeId] = useState('');
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, project } = locale.business;
+  const { file, global, project } = locale.business;
 
   // location search params
   const { applicationId: queryApplicationId } = getLocationIfo(useLocation());
-
-  const isFromProject = !type && !applicationId;
 
   useEffect(() => {
     if (queryApplicationId) setApplicationId(queryApplicationId);
@@ -121,46 +109,45 @@ const ProjectFolderComponent: React.FC<ProjectProps> = (props) => {
         page: pageNum,
         size: pageInfo.size,
         search,
+        searchText: searchCache.searchText,
+        searchType: searchCache.searchType || '',
       });
-  }, [organizationId, applicationId, search, fetchList]);
+  }, [organizationId, applicationId, search, searchCache, fetchList]);
 
   // get select project detail info
   useEffect(() => {
     const newApplicationId = editProject?.application?.id;
     if (newApplicationId) setApplicationId(newApplicationId);
+  }, [editProject?.application?.id]);
 
-    const newTypeId = editProject?.id;
-    if (newTypeId) setTypeId(newTypeId);
-  }, [editProject?.id, editProject?.application?.id]);
+  const handleSearch = useCallback(
+    (value, type) => {
+      setPageNum(PAGE_NUM);
 
-  // fetch project selected auth list
-  useEffect(() => {
-    if (authDrawerOpen && applicationId && typeId) {
-      if (typeof fetchAuthList === 'function')
-        fetchAuthList({
-          applicationId,
-          type: 'folder',
-          typeId,
+      if (type === 'appId') setSearch(value);
+      if (type === 'search') {
+        setSearchCache({
+          searchText: value,
+          searchType: searchType,
         });
-    }
-  }, [authDrawerOpen, applicationId, typeId, fetchAuthList]);
+      }
+    },
+    [searchType],
+  );
 
-  // fetch project selected authorize user available list
-  useEffect(() => {
-    if (authDrawerOpen) {
-      if (typeof fetchUserList === 'function')
-        fetchUserList({
-          page: PAGE_NUM,
-          size: PAGE_SIZE,
-        });
-    }
-  }, [authDrawerOpen, fetchUserList]);
-
-  const handleSearch = (appId) => {
-    setPageNum(PAGE_NUM);
-
-    setSearch(appId);
-  };
+  const searchTypeOptions = useMemo(
+    () => [
+      {
+        label: project.name,
+        value: 'project',
+      },
+      {
+        label: file.name,
+        value: 'file',
+      },
+    ],
+    [file, project],
+  );
 
   return (
     <>
@@ -181,28 +168,49 @@ const ProjectFolderComponent: React.FC<ProjectProps> = (props) => {
           }}>
           <Header>
             {type !== 'application' ? (
-              <ApplicationSelector list={applicationList} onSelect={handleSearch} />
+              <ApplicationSelector
+                list={applicationList}
+                organizationId={organizationId}
+                onFetch={fetchApps}
+                onSelect={(value: string) => handleSearch(value, 'appId')}
+              />
             ) : (
               <div />
             )}
-            {type !== 'involved' && (
-              <Button type="primary" onClick={() => openDrawer(true)}>
-                <PlusOutlined /> {project.add}
-              </Button>
-            )}
+            <div>
+              <Search
+                placeholder={global.inputSearchText}
+                addonBefore={
+                  <Select
+                    options={searchTypeOptions}
+                    value={searchType}
+                    onChange={setSearchType}
+                    style={{
+                      width: 90,
+                    }}
+                  />
+                }
+                defaultValue={searchCache.searchText}
+                onSearch={(value: string) => handleSearch(value, 'search')}
+                style={{ width: 300 }}
+              />
+              {type !== 'involved' && type !== 'projects' && (
+                <Button type="primary" onClick={() => openDrawer(true)} style={{ marginLeft: 8 }}>
+                  <PlusOutlined /> {project.add}
+                </Button>
+              )}
+            </div>
           </Header>
           <List
             organizationId={organizationId}
             applicationId={applicationId}
             search={search}
+            searchCache={searchCache}
             type={type}
             pageInfo={pageInfo}
             loading={loading}
             projectList={projectList}
             fetchProjectList={fetchList}
-            deleteProject={deleteProject}
-            openDrawer={openDrawer}
-            openAuthDrawer={openAuthDrawer}
           />
         </FoxPageContent>
       </Content>
@@ -215,28 +223,13 @@ const ProjectFolderComponent: React.FC<ProjectProps> = (props) => {
         search={search}
         drawerOpen={drawerOpen}
         editProject={editProject}
-        apps={applicationList}
+        apps={allApplicationList}
         fetchProjectList={fetchList}
-        fetchApps={fetchApps}
+        fetchApps={fetchAllApps}
         updateEditProject={updateEditProject}
         saveProject={saveProject}
         closeDrawer={openDrawer}
       />
-      {!isFromProject && (
-        <AuthorizeDrawer
-          type="folder"
-          typeId={typeId}
-          applicationId={applicationId}
-          visible={authDrawerOpen}
-          loading={authLoading}
-          list={authList}
-          users={userList}
-          onClose={openAuthDrawer}
-          onFetch={fetchAuthList}
-          onAdd={saveUser}
-          onDelete={deleteUser}
-        />
-      )}
     </>
   );
 };

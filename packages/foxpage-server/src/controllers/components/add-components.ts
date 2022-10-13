@@ -59,6 +59,7 @@ export class AddComponentDetail extends BaseController {
         folderId: appComponentFolderId,
         name: params.name,
         type: params.type as FileTypes,
+        componentType: params.componentType || '',
         suffix: '',
         creator: '',
       };

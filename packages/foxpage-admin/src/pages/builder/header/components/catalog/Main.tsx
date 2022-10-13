@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
-// import * as PAGE_ACTIONS from '@/store/actions/builder/main';
 import { CatalogContentSelectParams } from '@/types/builder';
 
 import { List } from './components';

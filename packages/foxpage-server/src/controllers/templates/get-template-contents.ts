@@ -11,6 +11,7 @@ import { ContentDetailRes, ContentListReq } from '../../types/validates/content-
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/get-page-contents.ts
 @JsonController('templates')
 export class GetTemplateContentList extends BaseController {
   constructor() {
@@ -23,7 +24,7 @@ export class GetTemplateContentList extends BaseController {
    * @param  {Header} headers
    * @returns {File}
    */
-  @Get('/content-searchs')
+  @Get('/content-searchs-migrations')
   @OpenAPI({
     summary: i18n.sw.getTemplateContentList,
     description: '',

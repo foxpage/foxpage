@@ -57,7 +57,10 @@ function* handleSaveCondition(actions: ConditionActionType) {
   };
 
   if (params.content) {
-    const { realInvalids, relation } = yield getRelation(params.content as any, [] as RelationDetails);
+    const { applicationId } = store.getState().applications.detail.settings.app;
+    const { realInvalids, relation } = yield getRelation(params.content as any, [] as RelationDetails, {
+      applicationId: params?.applicationId || applicationId,
+    });
 
     if (!objectEmptyCheck(realInvalids)) {
       yield put(ACTIONS.updateLoading(false));
@@ -134,6 +137,10 @@ function* handleSaveConditionVersion(actions: ConditionActionType) {
     for (const key in relation) {
       delete relation[key].content;
     }
+  }
+
+  if (params?.content?.version) {
+    delete params.content.version;
   }
 
   const res: ConditionUpdateRes = yield call(API.updateConditionVersion, {

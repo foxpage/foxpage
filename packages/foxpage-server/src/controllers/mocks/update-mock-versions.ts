@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { ACTION, LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
@@ -40,6 +40,14 @@ export class UpdateMockVersionDetail extends BaseController {
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4191401);
+      }
+
+      // format mock schema props value
+      if (params.content?.schemas) {
+        params.content.schemas = this.service.version.info.formatMockValue(
+          params.content?.schemas,
+          ACTION.SAVE,
+        );
       }
 
       const result = await this.service.version.info.updateVersionDetail(params, {

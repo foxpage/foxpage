@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Component } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { METHOD } from '../../../config/constant';
 import { NameVersionPackage } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppComponentsRes, AppNameVersionPackagesReq } from '../../types/validates/component-validate-types';
@@ -56,7 +56,7 @@ export class GetAppComponentListByNameVersion extends BaseController {
       contentList = await this.service.content.component.getAppComponentByNameVersion({
         applicationId: params.applicationId,
         contentNameVersion: params.nameVersions,
-        type: TYPE.COMPONENT,
+        type: params.type || [],
       });
 
       let contentPackags: Component[] = [];
@@ -64,10 +64,10 @@ export class GetAppComponentListByNameVersion extends BaseController {
         if (params.type && params.type.length > 0 && params.type.indexOf(content.package?.type) === -1) {
           continue;
         }
-        
+
         contentPackags.push(content?.package as Component);
       }
-      
+
       let componentIds = this.service.content.component.getComponentResourceIds(contentPackags);
       const dependenciesIdVersions = this.service.component.getComponentEditorAndDependends(contentPackags);
       const dependencies = await this.service.component.getComponentDetailByIdVersion(dependenciesIdVersions);
@@ -136,8 +136,8 @@ export class GetAppComponentListByNameVersion extends BaseController {
                 {
                   name: fileContentObject?.[editorDepend.id]?.name || '',
                   id: editorDepend.id,
-                  versionId:  dependenceObject[editorDepend.id]?.id || '',
-                  version:  dependenceObject[editorDepend.id]?.version || '',
+                  versionId: dependenceObject[editorDepend.id]?.id || '',
+                  version: dependenceObject[editorDepend.id]?.version || '',
                 },
                 dependenceObject[editorDepend.id]?.content || {},
               ) as Component,

@@ -8,12 +8,17 @@ import { Content, ContentVersion, File, Folder } from '@foxpage/foxpage-server-t
 
 import { i18n } from '../../../app.config';
 import { TYPE } from '../../../config/constant';
-import { ResData } from '../../types/index-types';
+import { ResData, IdName } from '../../types/index-types';
+import { UserBase } from '../../types/user-types';
 import { FileDetailRes, GetFileParentReq } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 type MixedData = Folder | File | Content | ContentVersion;
+type MixedInfoData = MixedData & {
+  application?: IdName;
+  creator: UserBase;
+};
 
 @JsonController('files')
 export class GetFileAllParentList extends BaseController {
@@ -34,7 +39,7 @@ export class GetFileAllParentList extends BaseController {
     operationId: 'get-file-parents-list',
   })
   @ResponseSchema(FileDetailRes)
-  async index(@QueryParams() params: GetFileParentReq): Promise<ResData<MixedData[]>> {
+  async index(@QueryParams() params: GetFileParentReq): Promise<ResData<MixedInfoData[]>> {
     try {
       const dataType = this.service.log.checkDataIdType(params.id);
       if (!dataType.type) {
@@ -80,7 +85,25 @@ export class GetFileAllParentList extends BaseController {
         delete parentList[0];
       }
 
-      return Response.success(parentList, 1170201);
+      // get application and user info
+      const applicationIds = _.map(parentList, 'applicationId');
+      const userIds = _.map(parentList, 'creator');
+      const [applicationObject, userObject] = await Promise.all([
+        this.service.application.getDetailObjectByIds(applicationIds),
+        this.service.user.getUserBaseObjectByIds(userIds),
+      ]);
+
+      let parentItemList: MixedInfoData[] = [];
+      parentList.forEach((item) => {
+        parentItemList.push(
+          Object.assign({}, _.omit(item, ['applicationId']), {
+            application: _.pick(applicationObject[(item as any).applicationId], ['id', 'name']),
+            creator: userObject[item.creator] || {},
+          }) as any,
+        );
+      });
+
+      return Response.success(parentItemList, 1170201);
     } catch (err) {
       return Response.error(err, i18n.file.getFileParentListFailed, 3170201);
     }

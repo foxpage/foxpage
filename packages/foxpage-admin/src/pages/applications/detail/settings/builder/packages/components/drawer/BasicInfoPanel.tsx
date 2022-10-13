@@ -15,10 +15,28 @@ import Category from './Category';
 
 // import CoverUpload from './CoverUpload';
 import 'react-markdown-editor-lite/lib/index.css';
+import { getImageUrlByEnv } from '@/utils/index';
 
 const TooltipContainer = styled.p`
   color: #f90;
   font-size: 12px;
+`;
+
+const CoverBox = styled.div`
+  text-align: center;
+  padding: 12px;
+  border: 1px dashed #ddd;
+  margin-top: 8px;
+  > div {
+    width: 280px;
+    height: 140px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 `;
 
 interface IProps {
@@ -29,7 +47,7 @@ interface IProps {
 
 function BasicInfoPanel(props: IProps) {
   const { category, categories, onChange } = props;
-  const { name, categoryName = '', groupName = '', sort, description } = category || {};
+  const { name, categoryName = '', groupName = '', sort, description, screenshot = '' } = category || {};
 
   const mdParser = new MarkdownIt();
 
@@ -55,12 +73,7 @@ function BasicInfoPanel(props: IProps) {
           <Label>
             {i18n.label} <span style={{ color: 'red' }}>*</span>
           </Label>
-          <Input
-            value={name}
-            maxLength={30}
-            placeholder="Name"
-            onChange={(e) => handleValueChange('name', e.target.value)}
-          />
+          <Input value={name} maxLength={30} onChange={(e) => handleValueChange('name', e.target.value)} />
         </Field>
 
         <Field>
@@ -82,6 +95,16 @@ function BasicInfoPanel(props: IProps) {
             style={{ width: '260px' }}
             onChange={(value) => handleValueChange('sort', value)}
           />
+        </Field>
+
+        <Field>
+          <Label>{i18n.cover}</Label>
+          <Input value={screenshot} onChange={(e) => handleValueChange('screenshot', e.target.value)} />
+          <CoverBox>
+            <div>
+              <img src={screenshot || getImageUrlByEnv('/images/placeholder.png')} width="100%" />
+            </div>
+          </CoverBox>
         </Field>
 
         {/* <Field>

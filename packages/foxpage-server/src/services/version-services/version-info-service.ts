@@ -11,7 +11,7 @@ import {
   FileTypes,
 } from '@foxpage/foxpage-server-types';
 
-import { LOG, PRE, TYPE, VERSION } from '../../../config/constant';
+import { ACTION, LOG, PRE, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { ComponentContentInfo } from '../../types/component-types';
 import {
@@ -22,7 +22,7 @@ import {
   UpdateContentVersion,
 } from '../../types/content-types';
 import { FoxCtx, TypeStatus } from '../../types/index-types';
-import { generationId, randStr } from '../../utils/tools';
+import { generationId } from '../../utils/tools';
 import { BaseService } from '../base-service';
 import * as Service from '../index';
 
@@ -514,14 +514,14 @@ export class VersionInfoService extends BaseService<ContentVersion> {
           dsl.relation[key].id = options.tempRelations[dsl.relation[key].id].newId;
           options.relations[dsl.relation[key].id] = options.tempRelations[dsl.relation[key].id];
         } else {
-          const contentId = generationId(PRE.CONTENT);
-          const contentName = key.split(':')[0] || '';
-          options.relations[dsl.relation[key].id] = {
-            newId: contentId,
-            oldName: contentName,
-            newName: [contentName, randStr(4)].join('_'),
-          };
-          dsl.relation[key].id = contentId;
+          // const contentId = generationId(PRE.CONTENT);
+          // const contentName = key.split(':')[0] || '';
+          // options.relations[dsl.relation[key].id] = {
+          //   newId: contentId,
+          //   oldName: contentName,
+          //   newName: [contentName, randStr(4)].join('_'),
+          // };
+          // dsl.relation[key].id = contentId;
         }
       }
     }
@@ -654,7 +654,8 @@ export class VersionInfoService extends BaseService<ContentVersion> {
       for (const item in relations) {
         if (
           [TYPE.TEMPLATE, TYPE.CONDITION, TYPE.FUNCTION].indexOf(relation[key]?.type) !== -1 &&
-          item === relationArr[1]
+          item === relationArr[1] &&
+          relations[item]
         ) {
           relationArr[1] = relations[item].newId;
           relation[relationArr.join(':')] = relation[key];
@@ -728,5 +729,66 @@ export class VersionInfoService extends BaseService<ContentVersion> {
     const relations = await Service.relation.formatRelationResponse(relationObject);
 
     return { versionDetail, componentList, relations, mockObject };
+  }
+
+  /**
+   * Format the props value in mock version schemas
+   * when type is variable
+   *  action is save, format props.value from object to string
+   *  action is get, format props.value from string to object
+   * @param mockSchemas
+   * @param action save|get
+   * @param types default is ['variable']
+   * @returns
+   */
+  formatMockValue(mockSchemas: DslSchemas[], action: string, types?: string[]): DslSchemas[] {
+    if (!types || types.length === 0) {
+      types = [TYPE.VARIABLE];
+    }
+
+    if (types.indexOf(TYPE.VARIABLE) !== -1) {
+      (mockSchemas || []).forEach((item) => {
+        if (item.type === TYPE.VARIABLE && item?.props?.value) {
+          if (action === ACTION.SAVE && _.isPlainObject(item.props.value)) {
+            item.props.value = JSON.stringify(item.props.value);
+          } else if (action === ACTION.GET && _.isString(item.props.value)) {
+            item.props.value = JSON.parse(item.props.value);
+          }
+        }
+      });
+    }
+
+    return mockSchemas;
+  }
+
+  /**
+   * Update version schema structure info, 
+   * include create new structureId, remove extendId, update parentId ..
+   * @param schemas 
+   * @param structureIdMap 
+   * @param options 
+   * @returns 
+   */
+  updateVersionStructureId(schemas:DslSchemas[], parentId?: string): DslSchemas[] {
+    if (schemas&&schemas.length > 0) {
+      schemas.forEach(schema => {
+        const newStructureId = generationId(PRE.STRUCTURE);
+        schema.id = newStructureId;
+
+        if (schema.extension && schema.extension.parentId) {
+          schema.extension.parentId = parentId || undefined;
+        }
+
+        if (schema.extension && schema.extension.extendId) {
+          schema.extension.extendId = undefined;
+        }
+
+        if (schema.children && schema.children.length > 0) {
+          schema.children = this.updateVersionStructureId(schema.children, newStructureId);
+        }
+      });
+    }
+
+    return schemas;
   }
 }

@@ -82,13 +82,16 @@
     "structure": "Structure",
     "userPermission": "User permission",
     "expression": "Expression",
-    "inputSearchText": "Input search text",
+    "inputSearchText": "input search text",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "overview": "Overview",
     "personal": "Personal",
     "permission": "Permission",
     "noValidContent": "No content available",
+    "mode": "Mode",
+    "searchPlaceholder": "input name or id to search",
+    "props": "Props",
     "level": "Level"
   },
   "workspace": {
@@ -127,11 +130,13 @@
     "registerFailed": "Register failed"
   },
   "project": {
+    "id": "Project ID",
     "name": "Project",
-    "add": "Add project",
-    "edit": "Edit Project",
+    "add": "New project",
+    "edit": "Edit project",
+    "delete": "Delete project",
     "nameLabel": "Project name",
-    "deleteMessage": "Are you sure to delete this project?",
+    "deleteMessage": "Are you sure to delete this project? Please make sure all pages are offline",
     "all": "All",
     "authorized": "Authorized",
     "involved": "Shared",
@@ -162,10 +167,10 @@
     "notSelectError": "Please select application",
     "resourceNameInvalid": "Please input resource name",
     "resourceTypeInvalid": "Please select resource type",
-    "addLocale": "Add Locale",
+    "addLocale": "New Locale",
     "quicklyDefault": "Default",
-    "addResource": "Add Resource",
-    "addHost": "Add Host",
+    "addResource": "New Resource",
+    "addHost": "New Host",
     "selectApplication": "select application",
     "myApplication": "Your Applications"
   },
@@ -175,15 +180,15 @@
   },
   "folder": {
     "name": "Folder",
-    "add": "Add folder",
+    "add": "New folder",
     "nameLabel": "Folder name",
     "deleteTitle": "Are you sure to delete it?",
     "deleteMsg": "All content under these node will not be visible."
   },
   "file": {
-    "id": "File id",
+    "id": "File ID",
     "name": "File",
-    "add": "Add file",
+    "add": "New file",
     "edit": "Edit file",
     "nameLabel": "File name",
     "page": "Page",
@@ -194,11 +199,12 @@
     "filePath": "File path",
     "relPath": "Rel path",
     "fetchDetailFailed": "Fetch file detail failed",
-    "fetchPageListFailed": "Fetch page list failed."
+    "fetchPageListFailed": "Fetch page list failed.",
+    "block": "Block"
   },
   "content": {
     "name": "content",
-    "add": "Add content",
+    "add": "New content",
     "addBase": "Base content",
     "addLocale": "Common content",
     "extendTitle": "Base content (inherit)",
@@ -208,15 +214,17 @@
     "nameLabel": "Content name",
     "deleteMessage": "Are you sure to delete",
     "query": "Query",
+    "addMultipleContent": "Create multiple content",
+    "localeTips": "Please select at least one locale",
     "fetchFailed": "Fetch contents failed"
   },
   "team": {
-    "add": "Add team",
+    "add": "New team",
     "edit": "Edit team",
     "userCount": "User count",
     "nameLabel": "Team name",
     "userManagement": "User management",
-    "addUser": "Add user",
+    "addUser": "New user",
     "userId": "User id",
     "joinTime": "Join time",
     "account": "Account",
@@ -225,7 +233,7 @@
     "fetchUsersFailed": "Fetch team users failed."
   },
   "condition": {
-    "add": "Add condition",
+    "add": "New condition",
     "name": "Conditions",
     "nameLabel": "Condition name",
     "arithmeticLogic": "Arithmetic logic",
@@ -240,7 +248,7 @@
     "fetchFailed": "Fetch condition list failed"
   },
   "function": {
-    "add": "Add function",
+    "add": "New function",
     "name": "Function",
     "nameLabel": "Function name",
     "fetchFailed": "Fetch function list failed"
@@ -291,7 +299,10 @@
     "republish": "Republish",
     "live": "Live",
     "componentVersion": "Component version",
-    "syncTitle": "Sync from cloud"
+    "componentType": "Component type",
+    "syncTitle": "Sync from cloud",
+    "selectComponentType": "Select component type",
+    "componentTypeNoneEmpty": "Please select component type"
   },
   "resource": {
     "group": "Group",
@@ -302,7 +313,7 @@
     "deleteMsg": "All content under these group will not be visible.",
     "saveResourceFiled": "Save resources failed",
     "resourceGroup": "Resource groups",
-    "addResourceGroup": "Add resource group",
+    "addResourceGroup": "New resource group",
     "addGroup": "Add group",
     "editGroup": "Edit group",
     "groupName": "Group name",
@@ -331,7 +342,11 @@
     "builderSetting": "Builder settings",
     "builderStoreModalPage": "Page modal",
     "builderStoreModalTemplate": "Template modal",
-    "componentBar": "Component bar"
+    "componentBar": "Component window",
+    "page": "Page window",
+    "template": "Template window",
+    "componentTab": "Component",
+    "blockTab": "Block"
   },
   "builder": {
     "componentList": "Component list",
@@ -364,14 +379,17 @@
     "parsePageFailed": "Parse page failed",
     "relationMatchError": "bind failed",
     "saveTips": "Please save first",
+    "deleteTips": "Please revoke first and try again",
+    "commitTips": "Please set category detail first and try again",
     "previewUrlEmptyTips": "Please set the application host first."
   },
   "variable": {
-    "add": "Add variable",
+    "add": "New variable",
     "bind": "Variable bind",
     "name": "Variable",
     "title": "Variable",
     "edit": "Edit Variable",
+    "mock": "Mock Variable",
     "args": "Args",
     "value": "Value",
     "selectFunction": "Select function",
@@ -384,6 +402,7 @@
     "content": "Content"
   },
   "authorize": {
+    "name": "Authorize",
     "user": "User",
     "role": "Role",
     "admin": "Administrator",
@@ -406,6 +425,7 @@
     "category": "Category",
     "label": "Label",
     "sort": "Sort",
+    "cover": "Cover",
     "rank": "Popularity rank",
     "addComponent": "Add component",
     "addPage": "Add page",
@@ -420,7 +440,7 @@
     "levelTwoEmptyTips": "Level two is empty",
     "descriptionTips": "* handbook must be uploaded by the product manager before component has been used",
     "componentSearchPlaceholder": "input category or label to search",
-    "pageSearchPlaceholder": "input name or fileId to search",
+    "pageSearchPlaceholder": "input name or id to search",
     "removeConfirm": "Are you sure remove it ?"
   }
 }

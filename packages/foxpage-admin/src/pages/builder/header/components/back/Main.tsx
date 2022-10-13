@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
 import { StyledIcon } from '@/pages/builder/header/Main';
+import { getBuilderHistory, setBuilderHistory } from '@/utils/builder-history';
 
 const mapStateToProps = (store: RootState) => ({
   backState: store.builder.header.backState,
@@ -19,13 +20,19 @@ const mapDispatchToProps = {
 type GoBackType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const GoBack: React.FC<GoBackType> = (props) => {
-  const { backState, updateBackState } = props;
+  const { updateBackState } = props;
+  const [backState, setBackState] = useState(props.backState);
 
   const history = useHistory();
   const { state } = useLocation<any>();
+  const historyCache = getBuilderHistory();
 
   useEffect(() => {
-    updateBackState(state);
+    if (state) setBuilderHistory(state);
+
+    setBackState(state || historyCache);
+
+    updateBackState(state || historyCache);
 
     return () => {
       updateBackState();

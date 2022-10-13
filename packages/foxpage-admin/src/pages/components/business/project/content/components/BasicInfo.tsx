@@ -65,6 +65,10 @@ const BasicInfo: React.FC<IProps> = (props) => {
       name: file.template,
       bgColor: '#2DB7F5',
     },
+    block: {
+      name: file.block,
+      bgColor: '#108ee9'
+    }
   };
 
   return (
@@ -88,11 +92,11 @@ const BasicInfo: React.FC<IProps> = (props) => {
               </Tooltip>
               <Tooltip placement="top" title={global.creator}>
                 <UserOutlined />
-                <Text>{creator?.account || ''}</Text>
+                <Text style={{ userSelect: 'none' }}>{creator?.account || ''}</Text>
               </Tooltip>
               <Tooltip placement="top" title={global.createTime}>
                 <CalendarOutlined />
-                <Text>{periodFormat(createTime, 'unknown') || ''}</Text>
+                <Text style={{ userSelect: 'none' }}>{periodFormat(createTime, 'unknown') || ''}</Text>
               </Tooltip>
             </Meta>
           </Information>

@@ -1,4 +1,5 @@
 import { AbstractEntity, CommonFetchParams, FileTag, PaginationReqParams } from '@/types/index';
+import { ComponentType } from '@/constants/index';
 
 export type PackageType = 'component' | 'editor' | 'library';
 
@@ -16,6 +17,7 @@ export interface ComponentEntity extends AbstractEntity {
   suffix?: string;
   tags: Array<FileTag>;
   type: PackageType;
+  componentType: ComponentType
 }
 
 // AppComponentInfoType
@@ -48,7 +50,7 @@ interface ComponentVersionEntityContent {
 
 // AppComponentVersionType
 export interface ComponentVersionEntity
-  extends Pick<ComponentEntity, 'id' | 'contentId' | 'creator' | 'createTime' | 'updateTime'> {
+  extends Pick<ComponentEntity, 'id' | 'contentId' | 'creator' | 'createTime' | 'updateTime' | 'componentType'> {
   fileId: string;
   isLiveVersion: boolean;
   version: string;
@@ -118,6 +120,7 @@ export type AppComponentFetchComponentsParams = Pick<AppComponentFetchParams, 'a
 export interface AppComponentAddComponentParams
   extends Pick<AppComponentFetchParams, 'applicationId' | 'type'> {
   name: string;
+  componentType: ComponentType;
 }
 
 export interface AppComponentDeleteComponentParams extends AppComponentFetchComponentsParams {
@@ -129,7 +132,7 @@ export type ComponentsVersionFetchParams = AppComponentDeleteComponentParams & P
 
 // PostComponentsVersionsProps
 export type ComponentsVersionSaveParams = Pick<ComponentVersionEntity, 'contentId' | 'version' | 'content'> &
-  Pick<AppComponentFetchParams, 'applicationId'>;
+  Pick<AppComponentFetchParams, 'applicationId'> & { componentType: ComponentType };
 
 // PutComponentsLiveVersionProps
 export type ComponentsLiveVersionUpdateParams = Pick<ComponentVersionEntity, 'id' | 'versionNumber'> &

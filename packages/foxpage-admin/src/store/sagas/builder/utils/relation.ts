@@ -4,6 +4,7 @@ import {
   Relation,
   RelationDetails,
   RelationValue,
+  RenderStructureNode,
   StructureNode,
 } from '@/types/index';
 
@@ -13,7 +14,24 @@ export const TEMPLATE_RELATION_KEY = '__templates';
 export const FUNCTION_RELATION_KEY = '__functions';
 export const TIME_CONDITION_KEY = '__condition';
 export const CONTEXT_KEY = '__context';
-export const THIS_KEY = '$this.children';
+export const THIS_KEY = '$this.';
+
+const getPrefixes = (str: string, prefixStrMap: Record<string, string>) => {
+  const startIdx = str.indexOf('[');
+  const endIdx = str.lastIndexOf(']');
+  const [prefix, ..._rest] = startIdx > -1 ? str.substring(0, startIdx).split(':') : str.split(':');
+
+  if (!(prefix.includes("'") || prefix.includes('"'))) {
+    prefixStrMap[str] = prefix;
+  }
+
+  if (startIdx < endIdx) {
+    const value = str.substring(startIdx + 1, endIdx);
+    if (value) {
+      getPrefixes(value, prefixStrMap);
+    }
+  }
+};
 
 /**
  * init relation by content
@@ -29,43 +47,57 @@ export const initRelation = (content: Content, relations: RelationDetails) => {
 
   const variablePaths = getVariablePath(variableMatches);
   variablePaths.forEach((item) => {
-    const [prefix, ...rest] = item.split(':');
+    if (item.indexOf('[') > -1) {
+      // support [] get attr for variable
+      const prefixStrMap = {};
+      getPrefixes(item, prefixStrMap);
+      Object.keys(prefixStrMap).forEach((useStr) => {
+        const prefix = prefixStrMap[useStr];
+        const result = initVariableRelation(prefix, relations.variables);
+        if (result) {
+          relation[useStr] = result;
+        } else {
+          // invalids will match from server
+          invalids.push(useStr);
+        }
+      });
+    } else {
+      // normal
+      const [prefix, ...rest] = item.split(':');
 
-    if (prefix !== THIS_KEY) {
-      let result: RelationValue | null = null;
+      if (!prefix.startsWith(THIS_KEY)) {
+        let result: RelationValue | null = null;
 
-      switch (prefix) {
-        case TEMPLATE_RELATION_KEY: {
-          result = initTemplateRelation(rest[0]);
-          break;
+        switch (prefix) {
+          case TEMPLATE_RELATION_KEY: {
+            result = initTemplateRelation(rest[0]);
+            break;
+          }
+          case CONDITION_RELATION_KEY: {
+            result = initConditionRelation(rest[0]);
+            break;
+          }
+          case FUNCTION_RELATION_KEY: {
+            result = initFunctionRelation(rest[0]);
+            break;
+          }
+          case CONTEXT_KEY: {
+            result = initSysRelation();
+            break;
+          }
+          default: {
+            // general variable
+            result = initVariableRelation(prefix, relations.variables);
+            break;
+          }
         }
-        case CONDITION_RELATION_KEY: {
-          result = initConditionRelation(rest[0]);
-          break;
-        }
-        case FUNCTION_RELATION_KEY: {
-          result = initConditionRelation(rest[0]);
-          break;
-        }
-        case CONTEXT_KEY: {
-          result = initSysRelation();
-          break;
-        }
-        case THIS_KEY: {
-          break;
-        }
-        default: {
-          // general variable
-          result = initVariableRelation(prefix, relations.variables);
-          break;
-        }
-      }
 
-      if (result) {
-        relation[item] = result;
-      } else {
-        // invalids will match from server
-        invalids.push(item);
+        if (result) {
+          relation[item] = result;
+        } else {
+          // invalids will match from server
+          invalids.push(item);
+        }
       }
     }
   });
@@ -134,7 +166,10 @@ export const initSysRelation = () => {
  * @returns ['AA:BB:CC']
  */
 export const getVariablePath = (values: string[]) => {
-  return values.map((item: string) => item.replaceAll(/\{\{/g, '')).filter((item) => !!item);
+  return values
+    .filter((item) => !!item && typeof item === 'string')
+    .map((item: string) => item.replaceAll(/\{\{/g, ''))
+    .filter((item) => !!item);
 };
 
 export const filterVariables = (list: StructureNode[] = []) => {
@@ -161,6 +196,43 @@ export const filterVariables = (list: StructureNode[] = []) => {
   return variableMatches;
 };
 
+// determine if there is valid condition with node
+export const withCondition = (
+  node: RenderStructureNode,
+  pageRelation: Relation,
+  extendRelation?: Relation,
+) => {
+  const directiveIf = node.directive?.if;
+  if (!directiveIf) return false;
+  return directiveIf.some((rawExp) => {
+    const contentKey = rawExp.slice(2, -2);
+    if (pageRelation[contentKey] || (extendRelation && extendRelation[contentKey])) {
+      return true;
+    }
+  });
+};
+
+// determine if there is valid variable with node
+export const withVariable = (
+  node: RenderStructureNode,
+  pageRelation: Relation,
+  extendRelation?: Relation,
+) => {
+  const { props = {} } = node;
+  const propsStr = JSON.stringify(props);
+  // match props
+  const propsMatches = propsStr?.match(VARIABLE_REG);
+  if (propsMatches) {
+    const variables = getVariablePath(propsMatches);
+    return variables.some((variable) => {
+      if (pageRelation[variable] || (extendRelation && extendRelation[variable])) {
+        return true;
+      }
+    });
+  }
+  return false;
+};
+
 export const getFunctionRelationKey = (contentId: string) => {
   return `${FUNCTION_RELATION_KEY}:${contentId}`;
 };
@@ -179,5 +251,5 @@ export const getTemplateRelationKey = (contentId: string) => {
 
 export const isTimeConditionRelation = (schemaItems: ConditionContentSchema) => {
   const { children = [], name = '' } = schemaItems;
-  return children.length === 3 && name.startsWith(TIME_CONDITION_KEY);
+  return children.length >= 1 && name.startsWith('__renderConditionTimeAndDisplay');
 };

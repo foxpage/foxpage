@@ -6,6 +6,7 @@ import { format, FormatOptions } from './formatter';
 import { merge } from './merger';
 import { mock } from './mocker';
 import { parse, ParseOptions } from './parser';
+import { FileType } from '@/constants/global';
 
 interface ParseContentOptions extends ParseOptions {
   extendContent?: PageContent;
@@ -65,7 +66,7 @@ export const parseContent = async (data: PageContent, opt: ParseContentOptions) 
   }
 
   // parse
-  if (type === 'page') {
+  if (type === FileType.page) {
     parsed = await parse(parsed, {
       application,
       locale,
@@ -104,6 +105,7 @@ export const initState = async (
     extendPage?: PageContent;
     file?: File;
     locale?: string;
+    rootNode?: StructureNode
   },
 ) => {
   console.time('INIT_STATE');
@@ -129,6 +131,7 @@ export const initState = async (
     extend: opt.extendPage,
     mocks,
     components: opt.components,
+    rootNode: opt.rootNode
   });
 
   console.timeEnd('INIT_STATE');

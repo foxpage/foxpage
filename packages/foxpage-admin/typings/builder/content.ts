@@ -11,8 +11,8 @@ import {
 
 export interface Content {
   id: string;
-  dslVersion: string;
-  version: string;
+  dslVersion?: string;
+  version?: string;
   schemas: StructureNode[];
   relation: Relation;
   extension: Extension;
@@ -55,6 +55,13 @@ export interface ContentSaveParams {
 }
 
 export interface ContentSavedRes extends ResponseBody<PageContent> {}
+
+export interface ContentCreateParams {
+  applicationId: string;
+  content: Content;
+  fileId: string;
+  title: string;
+}
 
 export interface ContentPublishParams {
   id: string;

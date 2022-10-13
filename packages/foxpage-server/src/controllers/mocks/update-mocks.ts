@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE, VERSION } from '../../../config/constant';
+import { ACTION, LOG, TYPE, VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailRes, UpdateTypeFileDetailReq } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
@@ -77,6 +77,14 @@ export class UpdateMockDetail extends BaseController {
 
       if (result.code === 2) {
         return Response.warning(i18n.mock.mockNameExist, 2191503);
+      }
+
+      // format mock schema props value
+      if (params.content?.schemas) {
+        params.content.schemas = this.service.version.info.formatMockValue(
+          params.content?.schemas,
+          ACTION.SAVE,
+        );
       }
 
       this.service.content.info.updateContentItem(contentId, { title: contentName }, { ctx });

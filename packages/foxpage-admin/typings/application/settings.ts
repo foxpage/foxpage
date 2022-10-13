@@ -17,6 +17,7 @@ export interface ApplicationSettingBuilderComponent extends AbstractEntity {
   name: string;
   status: boolean;
   type: string;
+  defaultValue?: any;
 }
 
 export interface ApplicationSettingBuilderFetchParams extends Omit<CommonFetchParams, 'organizationId'> {
@@ -30,5 +31,11 @@ export interface ApplicationSettingBuilderSaveParams extends Pick<ApplicationSav
     name: string;
     status: boolean;
     category: ComponentCategory;
+    defaultValue?: any;
   }>;
+}
+
+export interface ApplicationSettingBuilderDeleteParams extends Pick<ApplicationSaveParams, 'applicationId'> {
+  type: string;
+  fileIds: string;
 }

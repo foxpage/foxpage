@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 
+import { CheckCircleOutlined } from '@ant-design/icons';
 import { Card, Empty, message, Modal, Radio, Row, Spin, Tabs } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
@@ -17,6 +18,9 @@ export enum TabEnum {
   permission = 'involve',
   user = 'user',
 }
+
+const PAGE_NUM = 1;
+const CONTENT_ID_LENGTH = 20;
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -84,6 +88,14 @@ const RadioContainer = styled.div`
   }
 `;
 
+const CheckContainer = styled.div`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: green;
+  font-size: 16px;
+`;
+
 const { Meta } = Card;
 const { TabPane } = Tabs;
 
@@ -103,6 +115,7 @@ const mapDispatchToProps = {
   fetchPageTemplate: ACTIONS.fetchPageTemplate,
   openModal: ACTIONS.updateStoreModalVisible,
   cloneContent: PAGE_ACTIONS.cloneContent,
+  updateTemplateBind: PAGE_ACTIONS.templateOpenInPage,
   updatePageNode: PAGE_ACTIONS.updatePageNode,
 };
 
@@ -122,14 +135,25 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
     pageNode,
     templateInPage,
     updatePageNode,
+    updateTemplateBind,
   } = props;
+  const [pageNum, setPageNum] = useState<number>(pageInfo.page || PAGE_NUM);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>();
-  const [tab, setTab] = useState<string>(TabEnum.user);
+  const [tab, setTab] = useState<string>(TabEnum.application);
   const [fileId, setFileId] = useState<string | undefined>();
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { builder, global } = locale.business;
+  const { builder, global, project: projectI18n } = locale.business;
+
+  useEffect(() => {
+    if (open) {
+      const tpl: string = pageNode?.directive?.tpl || '';
+      if (tpl) {
+        setSelectedTemplateId(tpl.substr(tpl.indexOf(':') + 1, CONTENT_ID_LENGTH));
+      }
+    }
+  }, [open, pageNode]);
 
   useEffect(() => {
     if (open) {
@@ -137,18 +161,27 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
         applicationId,
         type,
         scope: tab,
-        page: pageInfo.page,
+        page: pageNum,
         size: pageInfo.size,
       });
     } else {
       setSelectedTemplateId(undefined);
       setFileId(undefined);
-      setTab(TabEnum.user);
+      setTab(TabEnum.application);
+      setPageNum(PAGE_NUM);
     }
-  }, [open, tab]);
+  }, [open, tab, pageNum]);
 
   const handleTabsChange = (tab: string) => {
+    setPageNum(PAGE_NUM);
+
     setTab(tab);
+  };
+
+  const handleClose = () => {
+    updateTemplateBind(false);
+
+    openModal(false);
   };
 
   const handleOk = useCallback(() => {
@@ -164,7 +197,8 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
     } else {
       cloneContent(selectedTemplateId);
     }
-    openModal(false);
+
+    handleClose();
   }, [selectedTemplateId]);
 
   const title = useMemo(() => {
@@ -184,7 +218,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
       visible={open}
       width={1130}
       onOk={handleOk}
-      onCancel={() => openModal(false)}
+      onCancel={handleClose}
       bodyStyle={{
         padding: 0,
       }}
@@ -193,10 +227,10 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
       }}>
       <Container>
         <Header>
-          <Tabs centered destroyInactiveTabPane defaultActiveKey="user" onChange={handleTabsChange}>
-            <TabPane tab={global.personal} key={TabEnum.user} />
-            <TabPane tab={global.permission} key={TabEnum.permission} />
+          <Tabs centered destroyInactiveTabPane defaultActiveKey="application" onChange={handleTabsChange}>
             <TabPane tab={global.application} key={TabEnum.application} />
+            <TabPane tab={global.personal} key={TabEnum.user} />
+            <TabPane tab={projectI18n.involved} key={TabEnum.permission} />
           </Tabs>
         </Header>
         <Body>
@@ -220,15 +254,23 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
                       }
                       style={{ marginBottom: 12 }}
                     />
+                    {!!resource.contents?.find((content) => content.id === selectedTemplateId) && (
+                      <CheckContainer>
+                        <CheckCircleOutlined />
+                      </CheckContainer>
+                    )}
                     {!objectEmptyCheck(resource?.contents) ? (
                       <Drawer className={fileId === resource?.id ? 'active' : ''}>
                         {resource.contents.map((item) => (
-                          <RadioContainer>
+                          <RadioContainer key={item.id}>
                             <Radio
                               key={item.id}
                               checked={selectedTemplateId === item.id}
                               onClick={() => setSelectedTemplateId(item.id)}>
-                              <DrawerTitle>{item.title}</DrawerTitle>
+                              <DrawerTitle style={{ color: '#1890ff' }}>{item.title}</DrawerTitle>
+                              <DrawerTitle style={{ fontSize: 12, marginBottom: 8 }}>
+                                ID: {item.id}
+                              </DrawerTitle>
                               <LocaleView
                                 maxLocaleCount={100}
                                 locales={
@@ -256,15 +298,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
                 current={pageInfo.page}
                 pageSize={pageInfo.size}
                 total={pageInfo.total}
-                onChange={(page, size) => {
-                  fetchPageTemplate({
-                    applicationId,
-                    type,
-                    scope: tab,
-                    page,
-                    size,
-                  });
-                }}
+                onChange={(page: number) => setPageNum(page)}
               />
             </Row>
           </Spin>

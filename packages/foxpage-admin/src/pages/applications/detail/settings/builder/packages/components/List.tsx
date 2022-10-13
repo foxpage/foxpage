@@ -2,13 +2,14 @@ import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { ArrowDownOutlined, ArrowUpOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Table, Tag } from 'antd';
+import { ArrowDownOutlined, ArrowUpOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Popconfirm, Table, Tag, Tooltip } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/settings/builder/component';
+import { StoreGoodsPurchaseType, suffixTagColor } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
-import { ApplicationSettingBuilderComponent, ComponentCategory } from '@/types/index';
+import { ApplicationSettingBuilderComponent } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/empty-check';
 
 const mapStateToProps = (store: RootState) => ({
@@ -18,21 +19,22 @@ const mapStateToProps = (store: RootState) => ({
 });
 
 const mapDispatchToProps = {
-  updatePageNum: ACTIONS.updatePageNum,
-  openEditor: ACTIONS.updateEditorVisible,
+  remove: ACTIONS.deleteCategory,
   save: ACTIONS.saveCategory,
+  openEditor: ACTIONS.updateEditorVisible,
+  updatePageNum: ACTIONS.updatePageNum,
 };
 
 type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const ComponentList = (props: IProps) => {
-  const { loading, components = [], pageInfo, updatePageNum, openEditor, save } = props;
+  const { loading, components = [], pageInfo, updatePageNum, openEditor, save, remove } = props;
 
   const { applicationId } = useParams<{ applicationId: string }>();
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { category, global, store } = locale.business;
+  const { builder, category, global, store, version } = locale.business;
 
   const columns = [
     {
@@ -40,18 +42,25 @@ const ComponentList = (props: IProps) => {
       dataIndex: 'name',
       render: (name: string, record: ApplicationSettingBuilderComponent) => (
         <>
-          <span>{name}</span>
-          {record?.status && (
-            <Tag color="cyan" style={{ margin: '0 0 0 4px' }}>
-              Live
+          {record.delivery === StoreGoodsPurchaseType.reference && (
+            <Tag color={suffixTagColor.refer} style={{ zoom: 0.8 }}>
+              refer
             </Tag>
           )}
+          <span>{name}</span>
         </>
       ),
     },
     {
+      title: version.status,
+      dataIndex: 'status',
+      width: 100,
+      render: (status: boolean) => status && <Tag color="cyan">Live</Tag>,
+    },
+    {
       title: category.label,
       dataIndex: 'label',
+      width: 300,
       render: (_text: string, record: ApplicationSettingBuilderComponent) => (
         <span>{record.category?.name}</span>
       ),
@@ -59,6 +68,7 @@ const ComponentList = (props: IProps) => {
     {
       title: category.category,
       dataIndex: 'groupText',
+      width: 300,
       render: (_text: string, record: ApplicationSettingBuilderComponent) =>
         !objectEmptyCheck(record.category) ? (
           <Tag color="blue">{record.category?.categoryName + '.' + record.category?.groupName}</Tag>
@@ -69,6 +79,7 @@ const ComponentList = (props: IProps) => {
     {
       title: category.sort,
       dataIndex: 'sort',
+      width: 100,
       render: (_sort: string, record: ApplicationSettingBuilderComponent) => {
         const { sort = 0 } = record.category || {};
         return <span>{sort}</span>;
@@ -77,7 +88,7 @@ const ComponentList = (props: IProps) => {
     {
       title: global.actions,
       key: '',
-      width: 130,
+      width: 150,
       render: (_text: string, record: ApplicationSettingBuilderComponent) => (
         <>
           <Button
@@ -91,28 +102,60 @@ const ComponentList = (props: IProps) => {
           </Button>
           <Popconfirm
             cancelText={global.no}
+            disabled={objectEmptyCheck(record.category)}
             okText={global.yes}
             title={record?.status ? store.revokeTitle : store.commitTitle}
-            onConfirm={() => handleCommitRevoke(record.category, record.id, record.name, record.status)}>
-            <Button
-              type="default"
-              size="small"
-              shape="circle"
-              title={record?.status ? store.revoke : store.commit}
-              onClick={() => openEditor(true, record)}
-              style={{ marginLeft: 8 }}>
-              {record?.status ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
-            </Button>
+            onConfirm={() => handleCommitRevoke(record)}>
+            <Tooltip title={objectEmptyCheck(record.category) ? builder.commitTips : ''}>
+              <Button
+                type="default"
+                size="small"
+                shape="circle"
+                disabled={objectEmptyCheck(record.category)}
+                title={record?.status ? store.revoke : store.commit}
+                style={{ marginLeft: 8 }}>
+                {record?.status ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
+              </Button>
+            </Tooltip>
+          </Popconfirm>
+          <Popconfirm
+            title={`${global.deleteMsg} ${record?.name || ''}?`}
+            disabled={record.status}
+            onConfirm={() => {
+              handleDelete(record.id, record.type);
+            }}
+            okText={global.yes}
+            cancelText={global.no}>
+            <Tooltip title={record.status ? builder.deleteTips : ''}>
+              <Button
+                size="small"
+                shape="circle"
+                icon={<DeleteOutlined />}
+                disabled={record.status}
+                style={{ marginLeft: 8 }}
+              />
+            </Tooltip>
           </Popconfirm>
         </>
       ),
     },
   ];
 
-  const handleCommitRevoke = (category: ComponentCategory, id: string, name: string, status: boolean) => {
+  const handleDelete = (id: string, type: string) => {
+    if (applicationId && id) {
+      remove({
+        applicationId,
+        type,
+        fileIds: id,
+      });
+    }
+  };
+
+  const handleCommitRevoke = (record: ApplicationSettingBuilderComponent) => {
+    const { category, id, name, type, status } = record;
     save({
       applicationId,
-      type: 'component',
+      type,
       setting: [
         {
           category,
@@ -131,7 +174,7 @@ const ComponentList = (props: IProps) => {
       columns={columns}
       loading={loading}
       pagination={
-        pageInfo.total > pageInfo.size
+        pageInfo?.total && pageInfo.total > pageInfo.size
           ? {
               position: ['bottomCenter'],
               current: pageInfo.page,
@@ -142,7 +185,7 @@ const ComponentList = (props: IProps) => {
           : false
       }
       onChange={(pagination) => {
-        updatePageNum(pagination.current || pageInfo.size);
+        updatePageNum(pagination.current || 1);
       }}
     />
   );

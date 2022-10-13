@@ -4,16 +4,18 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/events';
 import * as MAIN_ACTIONS from '@/actions/builder/main';
+import { ComponentType, PAGE_COMPONENT_NAME } from '@/constants/index';
 import { BuilderContentActionType } from '@/reducers/builder/main';
 import { store } from '@/store/index';
 import {
   Application,
+  Content,
   DndData,
   FormattedData,
   PageContent,
+  RelationDetails,
   RenderStructureNode,
   StructureNode,
-  VariableEntity,
 } from '@/types/index';
 
 import {
@@ -31,6 +33,17 @@ type UpdateData = {
   pageContent: PageContent;
   formattedData: FormattedData;
 };
+
+function handleGetLocalRelations(relations: RelationDetails = {}) {
+  // current only variables need to match
+  const localVariables = store.getState().builder.main.localVariables;
+  const { variables = [], ...rest } = relations;
+  const _relations = {
+    ...rest,
+    variables: localVariables,
+  };
+  return _relations;
+}
 
 /**
  * do update
@@ -52,7 +65,16 @@ async function doUpdate(
     const content = store.getState().builder.main.content;
     const result = updateContent(effects, formattedData);
     const newContent = { ...content, schemas: result };
-    newPageContent = _.cloneDeep({ ...pageContent, content: newContent });
+    const relations = handleGetLocalRelations(pageContent.relations);
+    const relationalResult = await getRelation(newContent, relations);
+    newPageContent = _.cloneDeep({
+      ...pageContent,
+      content: {
+        ...newContent,
+        relation: relationalResult.relation,
+      },
+      relations: { ...relations, variables: relations.variables?.concat(relationalResult.data.variables) },
+    });
   } else {
     newPageContent = hook();
   }
@@ -64,7 +86,9 @@ async function doUpdate(
       components: store.getState().builder.component.components,
       extendPage: _.cloneDeep(extend),
       file: store.getState().builder.main.file,
+      rootNode: store.getState().builder.main.pageNode as StructureNode,
     });
+
     return { formattedData: newFormatted, pageContent: newPageContent };
   }
 
@@ -73,22 +97,14 @@ async function doUpdate(
 
 function* handleAfterUpdate(actions: BuilderContentActionType) {
   const { pageContent, formattedData } = actions.payload as UpdateData;
-  // current only variables need to match
-  const cachedVariables = store.getState().applications.detail.file.variables.list || [];
-  const localVariables = store.getState().builder.main.localVariables;
-  const { variables = [], ...rest } = pageContent.relations || {};
-  const relations = {
-    ...rest,
-    variables: localVariables.concat(variables as VariableEntity[]).concat(cachedVariables),
-  };
+  // const relations = handleGetLocalRelations(pageContent.relations);
+  // // init & check relation (current only variables)
+  // const result = yield call(getRelation, pageContent.content, relations);
+  // const newPageContent = { ...pageContent, content: { ...pageContent.content, relation: result.relation } };
+  // yield put(MAIN_ACTIONS.pushLocalVariables(result.data.variables));
 
-  // init & check relation (current only variables)
-  const result = yield call(getRelation, pageContent.content, relations);
-  const newPageContent = { ...pageContent, content: { ...pageContent.content, relation: result.relation } };
-  yield put(MAIN_ACTIONS.pushLocalVariables(result.data.variables));
-
-  yield put(MAIN_ACTIONS.pushStep(newPageContent));
-  yield put(MAIN_ACTIONS.updateContent(newPageContent));
+  yield put(MAIN_ACTIONS.pushStep(pageContent));
+  yield put(MAIN_ACTIONS.updateContent(pageContent));
   yield put(MAIN_ACTIONS.pushFormatData(formattedData));
 }
 
@@ -99,18 +115,18 @@ function* handleDropComponent(actions: BuilderContentActionType) {
     formattedData,
     file,
   });
-  yield put(MAIN_ACTIONS.selectComponent(effects[0] as RenderStructureNode));
   const result: UpdateData = yield call(doUpdate, effects, formattedData);
   yield put(ACTIONS.afterUpdateComponent(result.pageContent, result.formattedData));
+  yield put(MAIN_ACTIONS.selectComponent(effects[0] as RenderStructureNode));
 }
 
 function* handleCopyComponent(actions: BuilderContentActionType) {
   const { params } = actions.payload as { params: RenderStructureNode };
   const { formattedData } = store.getState().builder.main;
   const effects = copyComponents([params], { formattedData });
-  yield put(MAIN_ACTIONS.selectComponent(effects[0]));
   const result: UpdateData = yield call(doUpdate, effects, formattedData);
   yield put(ACTIONS.afterUpdateComponent(result.pageContent, result.formattedData));
+  yield put(MAIN_ACTIONS.selectComponent(effects[0]));
 }
 
 function* handleRemoveComponent(actions: BuilderContentActionType) {
@@ -121,44 +137,78 @@ function* handleRemoveComponent(actions: BuilderContentActionType) {
     formattedData,
   });
   const result: UpdateData = yield call(doUpdate, updates, formatted);
-  yield put(MAIN_ACTIONS.selectComponent(null));
   yield put(ACTIONS.afterUpdateComponent(result.pageContent, result.formattedData));
+  yield put(MAIN_ACTIONS.selectComponent(null));
 }
 
 function* handleUpdateComponent(actions: BuilderContentActionType) {
   const { params } = actions.payload as { params: RenderStructureNode };
   // TODO:
   // component or page node
-  if (params.name === 'page' && params.type === 'page') {
+  if (params.name === PAGE_COMPONENT_NAME && params.type === ComponentType.dslTemplate) {
     yield put(MAIN_ACTIONS.updatePageNode({ ...pickNode(params), children: [] }));
     const { pageContent, formattedData } = store.getState().builder.main;
     yield put(ACTIONS.afterUpdateComponent(pageContent, formattedData));
   } else {
     const { formattedData } = store.getState().builder.main;
     yield put(MAIN_ACTIONS.selectComponent(params));
+
     const _isNode = isNode(params);
     if (_isNode) {
       const result: UpdateData = yield call(doUpdate, [params], formattedData);
       yield put(ACTIONS.afterUpdateComponent(result.pageContent, result.formattedData));
     } else {
-      // is mock update
       const { pageContent, mock } = store.getState().builder.main;
-      const newContent = { ...mock, schemas: updateMockContent([params], mock) };
+      let newContent = {
+        ...mock,
+        schemas: updateMockContent([params], mock),
+      };
+      // init & check relation (current only variables)
+      const relations = handleGetLocalRelations({});
+      const content = (newContent as unknown) as Content;
+      const relationalResult = yield call(getRelation, content, relations);
+      yield put(MAIN_ACTIONS.pushLocalVariables(relationalResult.data.variables));
+
+      newContent = {
+        ...newContent,
+        relation: relationalResult.relation,
+      };
+
       yield put(MAIN_ACTIONS.updateMock(newContent));
+      // @TODO: need to lint
       const result: UpdateData = yield call(doUpdate, [params], formattedData, () => {
-        return _.cloneDeep({ ...pageContent, mock: newContent });
+        return _.cloneDeep({
+          ...pageContent,
+          mock: newContent,
+          relations: {
+            ...pageContent.relations,
+            variables: (pageContent.relations.variables || []).concat(relationalResult.data.variables),
+          },
+        });
       });
+
       yield put(ACTIONS.afterUpdateComponent(result.pageContent, result.formattedData));
     }
   }
 }
 
 function* handleVariableBind(actions: BuilderContentActionType) {
-  const { keys, value } = actions.payload as { keys: string; value: string };
+  const { keys, value, opt } = actions.payload as { keys: string; value: string; opt?: { isMock } };
   const { selectedNode } = store.getState().builder.main;
 
   if (selectedNode) {
-    const clonedProps = selectedNode.props || {};
+    let _newSelectNode = selectedNode;
+
+    // bind mock
+    if (opt?.isMock) {
+      if (!selectedNode.__mock?.id) {
+        _newSelectNode = { id: selectedNode.id, name: selectedNode.name, props: {} } as RenderStructureNode;
+      } else {
+        _newSelectNode = selectedNode.__mock;
+      }
+    }
+
+    const clonedProps = _newSelectNode.props || {};
     const keyPath: string[] = keys.split('.') || [];
     const key = keyPath.pop() as string;
     let finalProps = keyPath.reduce((a: any, c: string) => {
@@ -168,7 +218,7 @@ function* handleVariableBind(actions: BuilderContentActionType) {
     }, clonedProps);
     finalProps = { ...finalProps, [key]: value };
 
-    yield put(ACTIONS.updateComponent({ ...selectedNode, props: finalProps }));
+    yield put(ACTIONS.updateComponent({ ..._newSelectNode, props: finalProps }));
   }
 }
 

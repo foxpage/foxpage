@@ -14,7 +14,8 @@ import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('templates')
+// migration to pages/update-page-files
+@JsonController('templates-migrations')
 export class UpdateTemplateDetail extends BaseController {
   constructor() {
     super();

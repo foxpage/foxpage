@@ -38,12 +38,14 @@ export class AddStorePageToApplication extends BaseController {
     operationId: 'add-store-pages-to-applications',
   })
   @ResponseSchema(GetPageTemplateListRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AddGoodsToApplicationReq): Promise<ResData<StoreOrder[]>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AddGoodsToApplicationReq): Promise<ResData<StoreOrder[]>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.RESOURCE });
 
       // Check permission
-      const hasAuth = await Promise.all(params.appIds.map((appId) => this.service.auth.application(appId, { ctx })));
+      const hasAuth = await Promise.all(
+        params.appIds.map((appId) => this.service.auth.application(appId, { ctx })),
+      );
       if (hasAuth.indexOf(false) !== -1) {
         return Response.accessDeny(i18n.system.accessDeny);
       }
@@ -82,20 +84,25 @@ export class AddStorePageToApplication extends BaseController {
             const sourceFolderDetail = folderObject[file.folderId] || {};
             const projectId = generationId(PRE.FOLDER);
             const folderName = [sourceFolderDetail.name, randStr(4)].join('_');
-            const distinctParams = params.delivery === TAG.DELIVERY_REFERENCE 
-            ? { tags: { $elemMatch: { $and: [{type: TAG.DELIVERY_REFERENCE, 'reference.id': file.folderId }]}} }
-            : {};
+            const distinctParams =
+              params.delivery === TAG.DELIVERY_REFERENCE
+                ? {
+                    tags: {
+                      $elemMatch: { $and: [{ type: TAG.DELIVERY_REFERENCE, 'reference.id': file.folderId }] },
+                    },
+                  }
+                : {};
 
             // Create project folder
             const newProjectTags = [
               { type: TYPE.PROJECT },
-              { 
-                type: params.delivery, 
-                [params.delivery]: { 
-                  id: file.folderId, 
+              {
+                type: params.delivery,
+                [params.delivery]: {
+                  id: file.folderId,
                   applicationId: file.applicationId,
-                }
-              }
+                },
+              },
             ];
             const newProjectDetail = await this.service.folder.info.addTypeFolderDetail(
               {
@@ -118,6 +125,7 @@ export class AddStorePageToApplication extends BaseController {
               folderId: <string>projectIdMap.get(file.folderId),
               hasLive: true,
               setLive: true,
+              addToSetting: true,
             });
             newFileId = idMap[file.id].newId;
           } else {

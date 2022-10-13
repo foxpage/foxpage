@@ -9,6 +9,7 @@ import * as ACTIONS from '@/store/actions/applications/detail/settings/builder/p
 import { store } from '@/store/index';
 import { BuilderPageSettingsActionType } from '@/store/reducers/applications/detail/settings/builder/pages';
 import {
+  ApplicationSettingBuilderDeleteParams,
   ApplicationSettingBuilderFetchParams,
   ApplicationSettingBuilderSaveParams,
   BaseResponse,
@@ -47,13 +48,14 @@ function* handleSavePage(action: BuilderPageSettingsActionType) {
   if (res.code === 200) {
     message.success(saveSuccess);
 
-    const pageInfo = store.getState().applications.detail.settings.builder.templates.pageInfo;
+    const { pageInfo, searchText } = store.getState().applications.detail.settings.builder.pages;
     yield put(
       ACTIONS.fetchPages({
         applicationId: params.applicationId,
         type: 'page',
         page: pageInfo.page,
         size: pageInfo.size,
+        search: searchText || '',
       }),
     );
   } else {
@@ -82,10 +84,37 @@ function* handleFetchPagesContent(action: BuilderPageSettingsActionType) {
   yield put(ACTIONS.updateModalState({ loading: false }));
 }
 
+function* handleDeletePage(action: BuilderPageSettingsActionType) {
+  const { params } = action.payload as { params: ApplicationSettingBuilderDeleteParams };
+  const res: BaseResponse = yield call(API.deleteApplicationsBuilderSetting, params);
+
+  const {
+    global: { deleteFailed, deleteSuccess },
+  } = getBusinessI18n();
+
+  if (res.code === 200) {
+    message.success(deleteSuccess);
+
+    const { pageInfo, searchText } = store.getState().applications.detail.settings.builder.pages;
+    yield put(
+      ACTIONS.fetchPages({
+        applicationId: params.applicationId,
+        type: 'page',
+        page: pageInfo.page,
+        size: pageInfo.size,
+        search: searchText || '',
+      }),
+    );
+  } else {
+    message.error(deleteFailed);
+  }
+}
+
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchPages), handleFetchPages);
   yield takeLatest(getType(ACTIONS.saveCategory), handleSavePage);
   yield takeLatest(getType(ACTIONS.fetchPagesContent), handleFetchPagesContent);
+  yield takeLatest(getType(ACTIONS.deleteCategory), handleDeletePage);
 }
 
 export default function* rootSaga() {

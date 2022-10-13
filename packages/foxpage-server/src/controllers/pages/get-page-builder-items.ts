@@ -38,17 +38,18 @@ export class GetPageBuilderItemList extends BaseController {
   })
   @ResponseSchema(AppContentListRes)
   async index(
-    @Ctx() ctx: FoxCtx, 
-    @QueryParams() params: AppPageBuilderItemReq
+    @Ctx() ctx: FoxCtx,
+    @QueryParams() params: AppPageBuilderItemReq,
   ): Promise<ResData<FileContents>> {
     try {
       let counts = 0;
-      let itemFileIds:string[] = [];
+      let itemFileIds: string[] = [];
       let fileList: File[] = [];
       const pageSize = this.service.file.info.setPageSize(params);
+      const availableTypes = [TYPE.PAGE, TYPE.TEMPLATE, TYPE.BLOCK];
 
       // Get page or template items
-      if (params.scope === TYPE.APPLICATION && [TYPE.PAGE, TYPE.TEMPLATE].indexOf(params.type) !== -1) {
+      if (params.scope === TYPE.APPLICATION && availableTypes.indexOf(params.type) !== -1) {
         const appDetail = await this.service.application.getDetailById(params.applicationId);
         const settingItems = _.orderBy(
           _.filter(appDetail.setting?.[params.type] || [], (item) => {
@@ -56,19 +57,19 @@ export class GetPageBuilderItemList extends BaseController {
               return item.id === params.search || item.name.indexOf(params.search) !== -1;
             }
             return item.status;
-          }), 
-          ['createTime', 'desc']
+          }),
+          ['createTime', 'desc'],
         );
         itemFileIds = _.map(_.chunk(settingItems, pageSize.size)[pageSize.page - 1] || [], 'id');
         counts = settingItems.length || 0;
         fileList = await this.service.file.list.getDetailByIds(itemFileIds);
-      } else if (params.scope === TYPE.USER && [TYPE.PAGE, TYPE.TEMPLATE].indexOf(params.type) !== -1) {
+      } else if (params.scope === TYPE.USER && availableTypes.indexOf(params.type) !== -1) {
         // Get current user template files
-        const filter: Record<string, any> ={
-          applicationId: params.applicationId, 
+        const filter: Record<string, any> = {
+          applicationId: params.applicationId,
           type: params.type,
           deleted: false,
-          creator: ctx.userInfo.id
+          creator: ctx.userInfo.id,
         };
 
         if (params.search) {
@@ -79,41 +80,43 @@ export class GetPageBuilderItemList extends BaseController {
           this.service.file.list.getCount(filter),
           this.service.file.list.find(filter, '', {
             sort: { _id: -1 },
-            skip: (pageSize.page-1) * pageSize.size,
+            skip: (pageSize.page - 1) * pageSize.size,
             limit: pageSize.size,
           }),
         ]);
-      } else if (params.scope === TYPE.INVOLVE && [TYPE.PAGE, TYPE.TEMPLATE].indexOf(params.type) !== -1) {
-        const involveFileObject = await this.service.file.list.getUserInvolveFiles(
-          { 
-            applicationId: params.applicationId,
-            type: params.type,
-            userId: ctx.userInfo.id,
-            skip: (pageSize.page-1) * pageSize.size,
-            limit: pageSize.size,
-          }
-        );
+      } else if (params.scope === TYPE.INVOLVE && availableTypes.indexOf(params.type) !== -1) {
+        const involveFileObject = await this.service.file.list.getUserInvolveFiles({
+          applicationId: params.applicationId,
+          type: params.type,
+          userId: ctx.userInfo.id,
+          skip: (pageSize.page - 1) * pageSize.size,
+          limit: pageSize.size,
+        });
         counts = involveFileObject.counts || 0;
         fileList = involveFileObject.list || [];
       }
 
-      const fileContentObject = await this.service.content.list.getFileContentList(itemFileIds, { fileList });
+      const fileContentObject = await this.service.content.list.getFileContentList(
+        _.concat(itemFileIds, _.map(fileList, 'id')),
+        { fileList },
+      );
 
       let fileContentList: FileContents[] = [];
-      fileList.forEach(file => {
-        fileContentList.push(Object.assign(
-          {}, 
-          file, 
-          { 
-            contents: _.filter(fileContentObject[file.id] || [], 'liveVersionNumber') 
-          }
-        ));
+      fileList.forEach((file) => {
+        fileContentList.push(
+          Object.assign({}, file, {
+            contents: _.filter(fileContentObject[file.id] || [], 'liveVersionNumber'),
+          }),
+        );
       });
 
-      return Response.success({
-        pageInfo: this.paging(counts, pageSize),
-        data: fileContentList,
-      }, 1052201);
+      return Response.success(
+        {
+          pageInfo: this.paging(counts, pageSize),
+          data: fileContentList,
+        },
+        1052201,
+      );
     } catch (err) {
       return Response.error(err, i18n.page.getPageBuilderItemFailed, 3052201);
     }
