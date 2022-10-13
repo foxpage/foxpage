@@ -29,6 +29,7 @@
   "author": "yhdeng",
   "license": "MIT",
   "dependencies": {
+    "@foxpage/foxpage-core": "^0.5.10",
     "@foxpage/foxpage-plugin": "^0.2.5",
     "@foxpage/foxpage-plugin-unpkg": "^0.3.8",
     "@foxpage/foxpage-server-types": "^0.3.15",
