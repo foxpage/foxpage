@@ -49,3 +49,9 @@ export const deleteComponentAction = createAction(
   'APPLICATION_PACKAGES_LIST__DELETE_COMPONENT_API',
   (params: AppComponentDeleteComponentParams, options?: OptionsAction) => ({ params, options }),
 )();
+
+// actions
+export const fetchBlocksAction = createAction(
+  'APPLICATION_PACKAGES_LIST__FETCH_BLOCKS_API',
+  (params: AppComponentFetchComponentsParams) => ({ params }),
+)();

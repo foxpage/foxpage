@@ -168,7 +168,13 @@ const loadFramework = async () => {
   const win = getFrameWin();
   const frameworkResources = {
     requirejsLink: 'https://www.unpkg.com/requirejs@2.3.6/require.js',
-    libs: {},
+    libs: {
+      // 'react-helmet': {
+      //   url: '', // umd url
+      //   injectWindow: 'Helmet',
+      //   umdModuleName: 'react-helmet',
+      // },
+    },
     win,
   };
 

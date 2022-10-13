@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { TYPE } from '../../../config/constant';
 import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
@@ -55,29 +55,40 @@ export class SetVersionPublishStatus extends BaseController {
       }
 
       if (!params.id) {
-        const versionDetail = await this.service.version.info.getContentLatestVersion({
+        const contentVersionDetail = await this.service.version.info.getContentLatestVersion({
           contentId: params.contentId,
         });
-        params.id = versionDetail.id;
+        params.id = contentVersionDetail.id;
       }
 
       if (!params.id) {
         return Response.warning(i18n.variable.invalidVariableId, 2081003);
       }
 
+      let versionDetail = await this.service.version.info.getDetailById(params.id);
+
       // Set publishing status
-      const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
-        ctx,
-        liveRelation: true,
-        actionType: [LOG.PUBLISH, TYPE.VARIABLE].join('_'),
-      });
+      const [result] = await Promise.all([
+        this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
+          ctx,
+          liveRelation: true,
+        }),
+        this.service.content.live.setLiveVersion(
+          {
+            applicationId: params.applicationId,
+            id: params.contentId,
+            versionNumber: versionDetail.versionNumber,
+          },
+          { ctx, force: true },
+        ),
+      ]);
 
       if (result.code === 1) {
         return Response.warning(i18n.variable.variableVersionHasPublished, 2081001);
       }
 
       await this.service.version.live.runTransaction(ctx.transactions);
-      const versionDetail = await this.service.version.info.getDetailById(params.id);
+      versionDetail = await this.service.version.info.getDetailById(params.id);
 
       return Response.success(versionDetail, 1081001);
     } catch (err) {

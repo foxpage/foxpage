@@ -14,7 +14,8 @@ import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('variables')
+// migration to files/add-type-items
+@JsonController('variables-migrations')
 export class AddVariableDetail extends BaseController {
   constructor() {
     super();

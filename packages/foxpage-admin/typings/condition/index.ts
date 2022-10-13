@@ -62,7 +62,9 @@ export interface ConditionFetchRes extends ResponseBody {
 // ConditionNewParams
 export interface ConditionSaveParams
   extends Pick<ConditionEntity, 'applicationId' | 'intro' | 'name' | 'folderId' | 'suffix'> {
-  content?: ConditionContentEntity;
+  content?: ConditionContentEntity & {
+    version?: string;
+  };
   id?: string;
   type?: string;
 }

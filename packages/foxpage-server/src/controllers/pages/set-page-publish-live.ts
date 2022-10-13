@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content, ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { LOG } from '../../../config/constant';
 import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
@@ -17,7 +17,7 @@ import {
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController()
 export class SetPageVersionPublishAndLiveStatus extends BaseController {
   constructor() {
     super();
@@ -32,7 +32,9 @@ export class SetPageVersionPublishAndLiveStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/publish')
+  @Put('pages/publish')
+  @Put('templates/publish')
+  @Put('blocks/publish')
   @OpenAPI({
     summary: i18n.sw.setPageVersionPublishLiveStatus,
     description: '',
@@ -42,7 +44,9 @@ export class SetPageVersionPublishAndLiveStatus extends BaseController {
   @ResponseSchema(ContentVersionDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: VersionPublishStatusReq): Promise<ResData<ContentVersion>> {
     try {
-      ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
+      const apiType = this.getRoutePath(ctx.request.url);
+
+      ctx.logAttr = Object.assign(ctx.logAttr, { type: apiType });
 
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
@@ -53,7 +57,7 @@ export class SetPageVersionPublishAndLiveStatus extends BaseController {
       const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
         ctx,
         liveRelation: true,
-        actionType: [LOG.LIVE, TYPE.PAGE].join('_'),
+        actionType: [LOG.LIVE, apiType].join('_'),
       });
 
       if (result.code === 1) {
@@ -69,7 +73,7 @@ export class SetPageVersionPublishAndLiveStatus extends BaseController {
         this.service.content.live.setLiveContent(result?.data?.contentId, result?.data?.versionNumber, {
           ctx,
           content: { id: result?.data?.contentId } as Content,
-          actionType: [LOG.LIVE, TYPE.PAGE].join('_'),
+          actionType: [LOG.LIVE, apiType].join('_'),
         });
       }
 

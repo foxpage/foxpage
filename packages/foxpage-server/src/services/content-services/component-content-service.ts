@@ -24,7 +24,7 @@ import {
   NameVersionContent,
   NameVersionPackage,
 } from '../../types/content-types';
-import { FoxCtx , TRecord } from '../../types/index-types';
+import { FoxCtx, TRecord } from '../../types/index-types';
 import { generationId } from '../../utils/tools';
 import { BaseService } from '../base-service';
 import * as Service from '../index';
@@ -40,7 +40,7 @@ export class ComponentContentService extends BaseService<Content> {
    * Single instance
    * @returns ContentService
    */
-  public static getInstance (): ComponentContentService {
+  public static getInstance(): ComponentContentService {
     this._instance || (this._instance = new ComponentContentService());
     return this._instance;
   }
@@ -51,7 +51,7 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {DslSchemas[]} schemas
    * @returns Promise
    */
-  async getComponentsFromDSL (applicationId: string, schemas: DslSchemas[]): Promise<Component[]> {
+  async getComponentsFromDSL(applicationId: string, schemas: DslSchemas[]): Promise<Component[]> {
     // Get component name infos
     const componentInfos = this.getComponentInfoRecursive(schemas);
     const componentList = await this.getComponentDetails(applicationId, componentInfos);
@@ -63,7 +63,7 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {DslSchemas[]} components
    * @returns NameVersion
    */
-  getComponentInfoRecursive (schemas: DslSchemas[]): NameVersion[] {
+  getComponentInfoRecursive(schemas: DslSchemas[]): NameVersion[] {
     let componentInfo: NameVersion[] = [];
     schemas?.forEach((schema) => {
       schema.name && componentInfo.push({ name: schema.name, version: schema.version || '' });
@@ -83,7 +83,7 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {NameVersion[]} componentInfos
    * @returns Promise
    */
-  async getComponentDetails (
+  async getComponentDetails(
     applicationId: string,
     componentInfos: NameVersion[],
     showLiveVersion: boolean = true,
@@ -96,7 +96,7 @@ export class ComponentContentService extends BaseService<Content> {
     });
 
     // replace reference component
-    fileList.forEach(file => {
+    fileList.forEach((file) => {
       if (file.tags && file.tags.length > 0) {
         const referTag = _.find(file.tags, { type: 'reference' });
         referTag?.reference && (file.id = referTag.reference.id || '');
@@ -133,7 +133,7 @@ export class ComponentContentService extends BaseService<Content> {
           name: contentIdObject[version.contentId].title,
           version:
             showLiveVersion ||
-              version.versionNumber !== liveVersionObject[version.contentId]?.liveVersionNumber
+            version.versionNumber !== liveVersionObject[version.contentId]?.liveVersionNumber
               ? version.version
               : '',
           type: TYPE.COMPONENT,
@@ -150,12 +150,12 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {ContentVersion[]} componentList
    * @returns Promise
    */
-   getComponentResourceIds (componentList: Component[], types?: string[]): string[] {
+  getComponentResourceIds(componentList: Component[], types?: string[]): string[] {
     let componentIds: string[] = [];
     componentList.forEach((component) => {
       let item = <Record<string, string>>component?.resource?.entry || {};
       if (types && types.length > 0) {
-        item= _.pick(item, types || []);
+        item = _.pick(item, types || []);
       }
       componentIds = componentIds.concat(_.pull(_.values(item), ''));
     });
@@ -170,7 +170,7 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {} object>
    * @returns ContentVersion
    */
-  replaceComponentResourceIdWithContent (
+  replaceComponentResourceIdWithContent(
     componentList: Component[],
     resourceObject: TRecord<TRecord<string>>,
     contentResource: Record<string, AppResource> = {},
@@ -184,11 +184,11 @@ export class ComponentContentService extends BaseService<Content> {
 
         item[typeKey] = contentId
           ? ({
-            host: contentResource?.[contentId]?.detail.host || '',
-            downloadHost: contentResource?.[contentId]?.detail.downloadHost || '',
-            path: _.pull(path.split('/'), '').join('/'),
-            contentId,
-          } as any)
+              host: contentResource?.[contentId]?.detail.host || '',
+              downloadHost: contentResource?.[contentId]?.detail.downloadHost || '',
+              path: _.pull(path.split('/'), '').join('/'),
+              contentId,
+            } as any)
           : {};
       });
     });
@@ -200,7 +200,7 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {Component[]} componentList
    * @returns string
    */
-  getComponentEditors (componentList: Component[]): EditorEntry[] {
+  getComponentEditors(componentList: Component[]): EditorEntry[] {
     let editorIdVersion: EditorEntry[] = [];
     componentList.forEach((component) => {
       editorIdVersion = editorIdVersion.concat(component?.resource?.['editor-entry'] || []);
@@ -215,7 +215,7 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {Component[]} componentList
    * @returns Promise
    */
-  async getEditorDetailFromComponent (
+  async getEditorDetailFromComponent(
     applicationId: string,
     componentList: Component[],
   ): Promise<Component[]> {
@@ -239,7 +239,7 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {} string[]>={}
    * @returns Promise
    */
-  async getComponentDetailRecursive (
+  async getComponentDetailRecursive(
     applicationId: string,
     componentInfos: NameVersion[],
     componentDependents: Record<string, string[]> = {},
@@ -302,7 +302,7 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {ComponentNameVersion} params
    * @returns Promise
    */
-  async getComponentDetailByNameVersion (
+  async getComponentDetailByNameVersion(
     params: ComponentNameVersion,
   ): Promise<Record<string, ComponentInfo>> {
     const fileList = await Service.file.info.getFileIdByNames({
@@ -365,12 +365,20 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {AppNameVersion} params
    * @returns {NameVersionPackage[]} Promise
    */
-  async getAppComponentByNameVersion (params: AppNameVersion): Promise<NameVersionPackage[]> {
+  async getAppComponentByNameVersion(params: AppNameVersion): Promise<NameVersionPackage[]> {
     // Get the fileIds of the specified name of the specified application
     const fileList = await Service.file.info.getFileIdByNames({
       applicationId: params.applicationId,
-      type: params.type || '',
+      type: _.isString(params.type) ? [params.type] : [],
       fileNames: _.map(params.contentNameVersion, 'name'),
+    });
+
+    // replace reference component
+    fileList.forEach((file) => {
+      if (file.tags && file.tags.length > 0) {
+        const referTag = _.find(file.tags, { type: 'reference' });
+        referTag?.reference && (file.id = referTag.reference.id || '');
+      }
     });
 
     // Get content information through fileId
@@ -425,13 +433,13 @@ export class ComponentContentService extends BaseService<Content> {
    * @param  {AppTypeContent} params
    * @returns {NameVersionPackage[]} Promise
    */
-  async getComponentVersionLiveDetails (params: AppTypeContent): Promise<NameVersionPackage[]> {
+  async getComponentVersionLiveDetails(params: AppTypeContent): Promise<NameVersionPackage[]> {
     const contentIds = params.contentIds || [];
     let contentInfo: Content[] = [];
 
     // Get contentIds
     if (contentIds.length === 0) {
-      contentInfo = await Service.content.list.getAppContentList(_.pick(params, ['applicationId', 'type']));
+      contentInfo = await Service.content.list.getAppContentList(params);
     } else {
       // Check whether contentIds is under the specified appId
       contentInfo = await Service.content.list.getDetailByIds(contentIds);
@@ -458,31 +466,40 @@ export class ComponentContentService extends BaseService<Content> {
 
   /**
    * Clone package content
-   * @param targetFileId 
-   * @param sourceFileId 
-   * @param options 
+   * @param targetFileId
+   * @param sourceFileId
+   * @param options
    */
-  async cloneContent(targetFileId:string, sourceFileId:string, options: { ctx: FoxCtx }): Promise<void> {
+  async cloneContent(targetFileId: string, sourceFileId: string, options: { ctx: FoxCtx }): Promise<void> {
     const contentList = await Service.content.file.getContentByFileIds([sourceFileId]);
     const contentInfo = contentList[0] || {};
     const contentId = contentInfo?.id || '';
     if (contentId) {
-      const contentDetail = Service.content.info.create({
-        id: generationId(PRE.CONTENT),
-        title: _.trim(contentInfo?.title) || '',
-        fileId: targetFileId,
-        creator: options.ctx.userInfo.id,
-      }, options);
+      const contentDetail = Service.content.info.create(
+        {
+          id: generationId(PRE.CONTENT),
+          title: _.trim(contentInfo?.title) || '',
+          fileId: targetFileId,
+          creator: options.ctx.userInfo.id,
+        },
+        options,
+      );
 
-      const versionInfo = await Service.version.info.getDetail({contentId, versionNumber:  contentInfo?.liveVersionNumber });
-      Service.version.info.create({
-        id: generationId(PRE.CONTENT_VERSION),
-        contentId: contentDetail.id,
-        version: versionInfo.version || '0.0.1',
-        versionNumber: versionInfo.versionNumber || 1,
-        content: Object.assign({ id: contentDetail.id }, versionInfo.content || {}),
-        creator: options.ctx.userInfo.id,
-      }, options);
+      const versionInfo = await Service.version.info.getDetail({
+        contentId,
+        versionNumber: contentInfo?.liveVersionNumber,
+      });
+      Service.version.info.create(
+        {
+          id: generationId(PRE.CONTENT_VERSION),
+          contentId: contentDetail.id,
+          version: versionInfo.version || '0.0.1',
+          versionNumber: versionInfo.versionNumber || 1,
+          content: Object.assign({ id: contentDetail.id }, versionInfo.content || {}),
+          creator: options.ctx.userInfo.id,
+        },
+        options,
+      );
     }
   }
 }

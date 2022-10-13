@@ -16,6 +16,7 @@ import {
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/update-page-versions.ts
 @JsonController('templates')
 export class UpdateTemplateVersionDetail extends BaseController {
   constructor() {
@@ -27,7 +28,7 @@ export class UpdateTemplateVersionDetail extends BaseController {
    * @param  {ContentVersionUpdateReq} params
    * @returns {ContentVersion}
    */
-  @Put('/versions')
+  @Put('/versions-migrations')
   @OpenAPI({
     summary: i18n.sw.updateTemplateVersionDetail,
     description: '/template/version/detail',

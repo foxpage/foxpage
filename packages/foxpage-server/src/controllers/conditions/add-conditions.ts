@@ -14,7 +14,8 @@ import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('conditions')
+// migration to files/add-type-items
+@JsonController('conditions-migrations')
 export class AddConditionDetail extends BaseController {
   constructor() {
     super();

@@ -5,17 +5,12 @@ import { Ctx, Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
 import { FileContents } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppPageItemListContentReq, AppProjectItemContentDetailRes } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-const typeMap: Record<string, string> = {
-  'page-content': TYPE.PAGE,
-  'template-content': TYPE.TEMPLATE,
-};
 
 @JsonController('projects')
 export class GetPageProjectItemListWithContents extends BaseController {
@@ -32,7 +27,8 @@ export class GetPageProjectItemListWithContents extends BaseController {
   @Get('/page-content/search')
   @Get('/template-content/search')
   @Get('/page-content/searchs')
-  @Get('/template-content/searchs')
+  @Get('/template-content/searchs')  
+  @Get('/block-content/searchs')
   @OpenAPI({
     summary: i18n.sw.getAppProjectItemPageList,
     description: '',
@@ -42,7 +38,7 @@ export class GetPageProjectItemListWithContents extends BaseController {
   @ResponseSchema(AppProjectItemContentDetailRes)
   async index(@Ctx() ctx: FoxCtx, @QueryParams() params: AppPageItemListContentReq): Promise<ResData<FileContents[]>> {
     try {
-      const apiType = this.getRoutePath(ctx.request.url, typeMap, 2);
+      const apiType = this.getRoutePath(ctx.request.url, 2);
 
       const searchParams: Record<string, any> = {
         applicationId: params.applicationId,

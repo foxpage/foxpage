@@ -84,6 +84,7 @@ export class AddStorePageItemToApplication extends BaseController {
             folderId: appTypeFolderObject[appId],
             hasLive: true,
             setLive: true,
+            addToSetting: true,
           });
 
           // Add goods order

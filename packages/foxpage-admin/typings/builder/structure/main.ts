@@ -9,7 +9,7 @@ export interface StructureNode<P = Record<string, any>> {
   name: string;
   props: P;
   version: string;
-  type: 'react.component' | 'page';
+  type: 'react.component' | 'dsl.template';
   children?: StructureNode[];
   extension: Extension;
   directive?: Directive;
@@ -56,10 +56,15 @@ export interface Relation {
   [key: string]: RelationValue;
 }
 
-type RelationKey = 'id' | 'relation' | 'schemas' | 'version'| 'name';
+type RelationKey = 'id' | 'relation' | 'schemas' | 'version' | 'name';
+
 export interface RelationDetails {
   templates?: Content[];
   variables?: Array<Pick<VariableEntity, RelationKey>>;
   conditions?: Array<Pick<ConditionEntity, RelationKey>>;
   functions?: Array<Pick<FuncEntity, RelationKey>>;
+}
+
+export interface RelationSearchOption {
+  applicationId: string;
 }

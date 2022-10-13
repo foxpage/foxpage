@@ -13,7 +13,7 @@ export type ParseOptions = {
 };
 
 const parsePageInServer = async (page: Page, opt: PageParseOption, host: string) => {
-  const url = `${PARSE_PAGE_PATH}?&host=${host}`;
+  const url = `${PARSE_PAGE_PATH}?&host=${host}&locale=${opt.locale}`;
   const result = await Axios.post(url, {
     page,
     opt: {
@@ -33,7 +33,7 @@ const parsePageInServer = async (page: Page, opt: PageParseOption, host: string)
  */
 export const parse = async (data: PageContent, opt: ParseOptions): Promise<PageContent | null> => {
   const { content, relations = {} } = data;
-  const { application, locale } = opt;
+  const { application, locale = 'en-US' } = opt;
 
   const appInfo = {
     appId: application.id,

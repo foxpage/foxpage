@@ -17,6 +17,7 @@ import {
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/set-page-version-publish.ts
 @JsonController('templates')
 export class SetPageVersionPublishStatus extends BaseController {
   constructor() {
@@ -29,7 +30,7 @@ export class SetPageVersionPublishStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/version-publish')
+  @Put('/version-publish-migrations')
   @OpenAPI({
     summary: i18n.sw.setTemplateVersionPublishStatus,
     description: '',

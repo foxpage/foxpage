@@ -1,15 +1,14 @@
 import 'reflect-metadata';
 
 import _ from 'lodash';
-import { Get, JsonController, QueryParams } from 'routing-controllers';
+import { Ctx, Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { File, FileTypes } from '@foxpage/foxpage-server-types';
+import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
 import { ContentInfo } from '../../types/content-types';
-import { ResData } from '../../types/index-types';
+import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppPageCatalogCommonReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
@@ -18,7 +17,7 @@ interface fileContents extends File {
   contents: ContentInfo[];
 }
 
-@JsonController('pages')
+@JsonController('')
 export class GetPageCatalogList extends BaseController {
   constructor() {
     super();
@@ -29,7 +28,9 @@ export class GetPageCatalogList extends BaseController {
    * @param  {AppPageListCommonReq} params
    * @returns {ContentInfo}
    */
-  @Get('/catalogs')
+  @Get('pages/catalogs')
+  @Get('templates/catalogs')
+  @Get('blocks/catalogs')
   @OpenAPI({
     summary: i18n.sw.getPageCatalogs,
     description: '',
@@ -37,14 +38,16 @@ export class GetPageCatalogList extends BaseController {
     operationId: 'get-page-catalog-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index(@QueryParams() params: AppPageCatalogCommonReq): Promise<ResData<fileContents>> {
+  async index(@Ctx() ctx: FoxCtx, @QueryParams() params: AppPageCatalogCommonReq): Promise<ResData<fileContents>> {
     try {
+      const apiType = this.getRoutePath(ctx.request.url);
+
       const fileDetail = await this.service.file.info.getDetailById(params.id);
       if (
         !fileDetail ||
         fileDetail.deleted ||
         fileDetail.applicationId !== params.applicationId ||
-        fileDetail.type !== TYPE.PAGE
+        fileDetail.type !== apiType
       ) {
         return Response.warning(i18n.file.invalidFileId, 2050601);
       }
@@ -54,7 +57,7 @@ export class GetPageCatalogList extends BaseController {
         fileId: params.id,
         page: 1,
         size: 500,
-        type: TYPE.PAGE as FileTypes,
+        type: apiType,
       });
 
       result.list.forEach((content) => {

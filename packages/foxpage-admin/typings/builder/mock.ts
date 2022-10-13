@@ -56,6 +56,7 @@ export interface MockNewParams extends Partial<MockCommon> {
   folderId: string;
   suffix?: string;
   contentId?: string;
+  refresh?: boolean;
 }
 
 export interface MockNewRes extends ResponseBody {
@@ -118,13 +119,15 @@ export interface MockBuildDetailFetchRes extends ResponseBody {
   data: MockBuildDetailItem;
 }
 
+export interface MockContentSchemaItem {
+  id?: string;
+  name: string;
+  props: Record<string, unknown>;
+  type?: string;
+}
 export interface MockContent {
   id?: string;
-  schemas: Array<{
-    id?: string;
-    name: string;
-    props: Record<string, unknown>;
-  }>;
+  schemas: Array<MockContentSchemaItem>;
   relation?: Relation;
   enable?: boolean;
 }

@@ -1,8 +1,10 @@
-import { Component, DndData, File, FormattedData, RenderStructureNode, StructureNode } from '@/types/index';
+import { DndData, File, FormattedData, RenderStructureNode, StructureNode, Component } from '@/types/index';
 
-import { findStructureById } from '../utils';
+import { findBrothers, findBrothersByParentId } from '../utils';
 
 import { addComponent } from './add';
+import { store } from '@/store/index';
+import { PAGE_COMPONENT_NAME } from '@/constants/index';
 
 type DropComponentOptions = {
   formattedData: FormattedData;
@@ -36,7 +38,6 @@ export const dropComponent = (dnd: DndData, opt: DropComponentOptions) => {
       node = detail as StructureNode;
     }
   }
-
   const effects = placementNode(node, placement, { dropIn: dropIn as StructureNode, formattedData, file });
   return effects;
 };
@@ -58,14 +59,11 @@ const placementNode = (
     file: File;
   },
 ) => {
-  const { formattedData, dropIn, file } = opt;
+  const { formattedData, dropIn } = opt;
+  const rootNode = store.getState().builder.main.pageNode;
   if (!dropIn) {
-    // TODO: need to clean
-    if (file.type === 'page') {
-      const pageNode = Object.values(formattedData.originPageNodeMap).find((item) => item.name === 'page' || item.name === '');
-      if (pageNode) {
-        node.extension.parentId = pageNode.id;
-      }
+    if (rootNode) {
+      return inPlacement(node, rootNode, formattedData);
     }
     return [node];
   }
@@ -73,16 +71,15 @@ const placementNode = (
   const dropInTemplate = !!formattedData.templateNodeMap[dropIn.id];
   if (dropInTemplate) {
     // pageNode
-    const pageNode = Object.values(formattedData.originPageNodeMap).find(item => item.name === 'page' || item.name === '');
-    if (pageNode) {
-      node.extension.parentId = pageNode.id;
+    if (rootNode) {
+      node.extension.parentId = rootNode.id;
     }
     return [node];
   }
 
   // drop in the page node
   const dropInComponent = formattedData.componentMap[dropIn.name];
-  if (dropInComponent && dropInComponent.type === 'systemComponent' && dropInComponent.name === 'page') {
+  if (dropInComponent && dropInComponent.type === 'systemComponent' && dropInComponent.name === PAGE_COMPONENT_NAME) {
     return inPlacement(node, dropIn, formattedData);
   }
 
@@ -97,17 +94,25 @@ const placementNode = (
   return effects;
 };
 
+/**
+ * before placement
+ * @param node
+ * @param dropIn
+ * @param formattedData
+ * @returns
+ */
 export const beforePlacement = (node: StructureNode, dropIn: StructureNode, formattedData: FormattedData) => {
   const { id: dropInId, extension } = dropIn;
-  const { sort = 0, parentId = '', extendId = '' } = extension || {};
+  const { sort = 0, parentId = '' } = extension || {};
   let effects: StructureNode[] = [];
-  const dropInExtend = !!extendId || formattedData.extendPageNodeMap[dropInId];
+  const dropInExtend = hadExtendNode(dropIn, formattedData);
 
   node.extension.parentId = parentId;
 
   if (dropInExtend) {
     const preNode = getPreNode(dropIn, formattedData);
     const preNodeSort = preNode?.extension?.sort || 0;
+
     node.extension.sort = preNode ? preNodeSort + 1 : 1;
     effects.push(node);
   } else {
@@ -116,29 +121,42 @@ export const beforePlacement = (node: StructureNode, dropIn: StructureNode, form
 
     const preNodeSort = node.extension.sort;
     // next brothers
-    const brothers = [...getChildren(parentId, formattedData)];
+    const brothers = [...(findBrothers(formattedData.formattedSchemas, dropIn.id) || [])];
     const idx = brothers.findIndex((item) => item.id === node.id); // same level move
     if (idx > -1) {
       brothers.splice(idx, 1);
     }
-    effects = effects.concat(getNextEffects(dropInId, preNodeSort, brothers));
+    effects = effects.concat(
+      getNextEffects({ startId: dropInId, startSort: preNodeSort, next: false }, brothers, formattedData),
+    );
   }
 
   return effects;
 };
 
+/**
+ * in placement
+ * @param node
+ * @param dropIn
+ * @param formattedData
+ * @returns
+ */
 export const inPlacement = (node: StructureNode, dropIn: StructureNode, formattedData: FormattedData) => {
-  const dropInExtend = !!dropIn.extension?.extendId;
-  node.extension.parentId = dropIn.id;
+  const { extendId = '' } = dropIn.extension || {};
+  const dropInExtend = !!extendId;
+  const parentId = extendId || dropIn.id;
+  node.extension.parentId = parentId;
 
   if (dropInExtend) {
-    const children = getChildren(dropIn.id, formattedData);
-    const lastNode = children[children?.length || 0];
-    if (!!lastNode?.extension?.extendId) {
-      node.extension.sort = (lastNode?.extension?.sort || 100) + 1;
+    const children = [...(findBrothersByParentId(formattedData.formattedSchemas, parentId) || [])];
+    const lastNode = children[children.length - 1] || {};
+    const { extendId: lastNodeExtendId = '', sort: lastNodeSort = 0 } = lastNode.extension || {};
+
+    if (!!lastNodeExtendId) {
+      node.extension.sort = (lastNodeSort || 100) + 1;
     } else {
-      const existExtendNode = children.find((item) => !!item.extension.extendId);
-      node.extension.sort = (lastNode?.extension?.sort || 0) + (existExtendNode ? 1 : 100);
+      const existExtendNode = children.findIndex((item) => hadExtendNode(item, formattedData)) > -1;
+      node.extension.sort = lastNodeSort + (existExtendNode ? 1 : 100);
     }
   } else {
     node.extension.sort = ((dropIn.childIds?.length || 0) + 1) * 100;
@@ -147,53 +165,48 @@ export const inPlacement = (node: StructureNode, dropIn: StructureNode, formatte
   return [node];
 };
 
+/**
+ * after placement
+ * @param node
+ * @param dropIn
+ * @param formattedData
+ * @returns
+ */
 export const afterPlacement = (node: StructureNode, dropIn: StructureNode, formattedData: FormattedData) => {
   const { id: dropInId, extension } = dropIn;
-  const { sort: dropInNodeSort = 0, parentId = '', extendId = '' } = extension || {};
-  const dropInExtend = !!extendId || formattedData.extendPageNodeMap[dropInId];
+  const { sort: dropInNodeSort = 0, parentId = '' } = extension || {};
   let effects: StructureNode[] = [];
 
   // next brothers
-  const brothers = [...getChildren(parentId, formattedData)];
+  const brothers = [...(findBrothers(formattedData.formattedSchemas, dropIn.id) || [])];
   const idx = brothers.findIndex((item) => item.id === node.id); // same level move
   if (idx > -1) {
     brothers.splice(idx, 1);
   }
 
+  // get the sort
+  const dropInIdx = brothers.findIndex((item) => item.id === dropIn.id);
+  const dropInExtend =
+    brothers.findIndex((item, _idx) => _idx > dropInIdx && hadExtendNode(item, formattedData)) > -1;
   const curNodeSort = dropInNodeSort + (dropInExtend ? 1 : 100);
+
+  // set node attrs
   node.extension.sort = curNodeSort;
   node.extension.parentId = parentId;
   effects.push(node);
 
-  effects = effects.concat(getNextEffects(dropInId, curNodeSort, brothers, true));
+  effects = effects.concat(
+    getNextEffects({ startId: dropInId, startSort: curNodeSort, next: true }, brothers, formattedData),
+  );
+
   return effects;
 };
 
-const getNode = (id: string, formattedData: FormattedData) => {
-  return findStructureById(formattedData.formattedSchemas, id);
-};
-
-const getChildren = (id: string, formattedData: FormattedData) => {
-  let parent = getNode(id, formattedData);
-  if (!parent) {
-    parent = formattedData.originPageNodeMap[id];
-    if (parent) {
-      return parent.childIds?.map((item) => formattedData.originPageNodeMap[item]) || [];
-    }
-    const extendNode = formattedData.extendPageNodeMap[id];
-    if (extendNode) {
-      return [];
-    }
-    return [...(formattedData.formattedSchemas || [])];
-  }
-  return [...(parent.children || [])];
-};
-
 const getPreNode = (node: StructureNode, formattedData: FormattedData) => {
-  const parent = getNode(node.extension.parentId || '', formattedData);
-  const childIds = parent?.childIds || [];
-  const preId = childIds[childIds.indexOf(node.id) - 1];
-  const preNode = getNode(preId, formattedData);
+  const nodeId = node.id;
+  const brothers = findBrothers(formattedData.formattedSchemas, nodeId) || [];
+  const idx = brothers.findIndex((item) => item.id === nodeId);
+  const preNode = brothers[idx - 1];
   return preNode;
 };
 
@@ -207,15 +220,22 @@ const getPreNode = (node: StructureNode, formattedData: FormattedData) => {
  * @returns
  */
 const getNextEffects = (
-  startId: string,
-  startSort: number,
+  data: {
+    startId: string;
+    startSort: number;
+    next?: boolean;
+  },
   brothers: StructureNode[] = [],
-  next?: boolean,
+  formattedData: FormattedData,
 ) => {
+  const { startId, startSort, next } = data;
+  const { extendPageNodeMap } = formattedData;
   const effects: StructureNode[] = [];
   const idx = brothers.findIndex((item) => item.id === startId);
   const nextChildren = idx > -1 ? brothers.splice(next ? idx + 1 : idx, brothers.length) : brothers;
-  const nextExtendIdx = nextChildren.findIndex((item) => !!item.extension.extendId);
+  const nextExtendIdx = nextChildren.findIndex(
+    (item) => !!item.extension.extendId || !!extendPageNodeMap[item.id],
+  );
   if (nextExtendIdx > -1) {
     nextChildren.forEach((item, idx) => {
       if (idx < nextExtendIdx) {
@@ -244,4 +264,8 @@ const getSortEffects = (
     const { extension, children, ...rest } = item;
     effects.push({ ...rest, extension: { ...extension, sort: sort(idx) } });
   });
+};
+
+const hadExtendNode = (node: StructureNode, formattedData: FormattedData) => {
+  return !!node.extension?.extendId || formattedData.extendPageNodeMap[node.id];
 };

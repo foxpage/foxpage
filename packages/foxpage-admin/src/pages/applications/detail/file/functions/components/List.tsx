@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Table as AntTable } from 'antd';
+import { Button, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -10,7 +10,7 @@ import * as ACTIONS from '@/actions/applications/detail/file/functions';
 import { FunctionTypeEnum } from '@/constants/index';
 import { PublishIcon } from '@/pages/components';
 import { GlobalContext } from '@/pages/system';
-import { FuncEntity } from '@/types/index';
+import { Creator, FuncEntity } from '@/types/index';
 import { periodFormat } from '@/utils/index';
 
 const Table = styled(AntTable)`
@@ -34,7 +34,10 @@ const mapDispatchToProps = {
   publishFunction: ACTIONS.publishFunction,
 };
 
-type FunctionListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
+type FunctionListType = ReturnType<typeof mapStateToProps> &
+  typeof mapDispatchToProps & {
+    search?: string;
+  };
 
 function FunctionList(props: FunctionListType) {
   const {
@@ -43,6 +46,7 @@ function FunctionList(props: FunctionListType) {
     pageInfo,
     list,
     scope,
+    search,
     fetchList,
     deleteFunction,
     openDrawer,
@@ -51,7 +55,16 @@ function FunctionList(props: FunctionListType) {
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global } = locale.business;
+  const { global, version } = locale.business;
+
+  const handleFetchList = (page?: number, size?: number) => {
+    fetchList({
+      applicationId,
+      page: page || pageInfo.page,
+      size: size || pageInfo.size,
+      search: search || '',
+    });
+  };
 
   const handlePublish = (contentId) => {
     if (contentId) {
@@ -61,12 +74,7 @@ function FunctionList(props: FunctionListType) {
           contentId,
           status: 'release',
         },
-        () =>
-          fetchList({
-            applicationId,
-            page: pageInfo.page,
-            size: pageInfo.size,
-          }),
+        handleFetchList,
       );
     }
   };
@@ -79,13 +87,7 @@ function FunctionList(props: FunctionListType) {
           id,
           status: true,
         },
-        () => {
-          fetchList({
-            applicationId,
-            page: pageInfo.page,
-            size: pageInfo.size,
-          });
-        },
+        handleFetchList,
       );
     }
   };
@@ -97,9 +99,18 @@ function FunctionList(props: FunctionListType) {
       key: 'name',
     },
     {
+      title: <Tooltip title={version.liveVersion}>{version.name}</Tooltip>,
+      dataIndex: 'version',
+      key: 'version',
+      width: 90,
+      render: (version: Record<string, string>) =>
+        version?.live ? <Tag color="orange">{version.live}</Tag> : '',
+    },
+    {
       title: global.type,
       dataIndex: 'type',
       key: 'type',
+      width: 90,
       render: (_text: string, record: FuncEntity) => {
         const schemas = record.content?.schemas;
         return (
@@ -113,7 +124,8 @@ function FunctionList(props: FunctionListType) {
       title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
-      render: (_text: string, record: FuncEntity) => record?.creator?.account || '',
+      width: 200,
+      render: (creator: Creator) => creator?.account || '',
     },
     {
       title: global.createTime,
@@ -126,7 +138,7 @@ function FunctionList(props: FunctionListType) {
       title: global.actions,
       dataIndex: '',
       key: '',
-      width: 150,
+      width: 160,
       render: (_text: string, record: FuncEntity) => (
         <>
           <Button
@@ -143,9 +155,7 @@ function FunctionList(props: FunctionListType) {
             title={global.publish}
             onClick={() => handlePublish(record.contentId)}
             style={{ marginRight: 8 }}>
-            <PublishIcon
-              svgStyles={{ width: 18, height: 18, position: 'absolute', top: '2px', left: '1px' }}
-            />
+            <PublishIcon />
           </Button>
           <Popconfirm
             title={`${global.deleteMsg}${record.name}?`}
@@ -175,22 +185,17 @@ function FunctionList(props: FunctionListType) {
       columns={columns}
       dataSource={list}
       pagination={
-        pageInfo.total > pageInfo.size
+        pageInfo?.total && pageInfo.total > pageInfo.size
           ? {
               position: ['bottomCenter'],
               current: pageInfo.page,
               pageSize: pageInfo.size,
               total: pageInfo.total,
+              showSizeChanger: false,
             }
           : false
       }
-      onChange={(pagination) => {
-        fetchList({
-          applicationId,
-          page: pagination.current || 1,
-          size: pagination.pageSize || 10,
-        });
-      }}
+      onChange={(pagination) => handleFetchList(pagination.current, pagination.pageSize)}
     />
   );
 }

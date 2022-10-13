@@ -14,7 +14,8 @@ import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('functions')
+// migration to files/add-type-items
+@JsonController('functions-migrations')
 export class AddFunctionDetail extends BaseController {
   constructor() {
     super();

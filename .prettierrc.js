@@ -11,5 +11,5 @@ module.exports = {
   insertPragma: false,
   tabWidth: 2,
   useTabs: false,
-  proseWrap: 'preserve',
+  proseWrap: 'preserve'
 };

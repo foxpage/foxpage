@@ -7,7 +7,7 @@ import { PaginationInfo, ProjectEntity } from '@/types/index';
 export type RecycleActionType = ActionType<typeof ACTIONS>;
 
 const projects: ProjectEntity[] = [];
-const pageInfo: PaginationInfo = { page: 1, size: 12, total: 1 };
+const pageInfo: PaginationInfo = { page: 1, size: 10, total: 1 };
 
 const initialState = {
   loading: false,

@@ -14,6 +14,7 @@ import {
 } from '@foxpage/foxpage-server-types';
 
 import { Creator, Search } from './index-types';
+import { AppFileType } from './file-types';
 
 export type SearchContentExist = Pick<Content, 'title' | 'fileId'>;
 export type ContentInfo = Exclude<Content, 'creator'> & {
@@ -36,7 +37,7 @@ export type RelationContentInfo = Record<string, File[] | DSL[]>;
 export type NewContentInfo = Pick<Content, 'title' | 'fileId' | 'tags' | 'creator'>;
 export type ContentVersionWithLive = ContentVersion & { isLiveVersion?: boolean };
 export type ContentCheck = Pick<Content, 'title' | 'fileId'>;
-export type ContentInfoUrl = ContentInfo & { urls: string[] };
+export type ContentInfoUrl = ContentInfo & { urls?: string[] };
 export type NameVersionContent = NameVersion & { content: DSL };
 export type NameVersionPackage = NameVersion & { package?: ComponentDSL };
 export type FolderFileContent = Folder | File | Content;
@@ -66,12 +67,10 @@ export interface NameVersion {
 export interface AppNameVersion {
   applicationId: string;
   contentNameVersion: NameVersion[];
-  type?: string;
+  type?: string | string[];
 }
 
-export interface AppTypeContent {
-  applicationId: string;
-  type: FileTypes | FileTypes[];
+export interface AppTypeContent extends AppFileType {
   contentIds?: string[];
 }
 
@@ -156,6 +155,7 @@ export interface PageContentRelationsAndExternal {
   content: VersionWithExternal;
   relations: Record<string, DSL[]>;
   mock?: Record<string, any>;
+  fileId?: string;
 }
 
 export interface PageContentRelationInfos extends PageContentRelations {

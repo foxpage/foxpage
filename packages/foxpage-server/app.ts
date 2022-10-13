@@ -1,9 +1,11 @@
 'use strict';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { writeFile } from 'fs';
 import path from 'path';
 
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
-import dotenv from 'dotenv';
 import bodyParser from 'koa-bodyparser';
 import router from 'koa-router';
 import serve from 'koa-static';
@@ -14,7 +16,6 @@ import { routingControllersToSpec } from 'routing-controllers-openapi';
 import { loggerMiddleware, tokenMiddleware } from './src/middlewares';
 import dbConnect from './src/utils/mongoose';
 
-dotenv.config();
 
 const { defaultMetadataStorage } = require('class-transformer/cjs/storage');
 

@@ -93,6 +93,9 @@ export interface FoxI18n extends Locale {
       personal: string;
       permission: string;
       noValidContent: string;
+      mode: string;
+      searchPlaceholder: string;
+      props: string;
       level: string;
     };
     workspace: {
@@ -131,9 +134,11 @@ export interface FoxI18n extends Locale {
       registerFailed: string;
     };
     project: {
+      id: string;
       name: string;
       add: string;
       edit: string;
+      delete: string;
       nameLabel: string;
       deleteMessage: string;
       all: string;
@@ -199,6 +204,7 @@ export interface FoxI18n extends Locale {
       relPath: string;
       fetchDetailFailed: string;
       fetchPageListFailed: string;
+      block: string;
     };
     content: {
       name: string;
@@ -212,6 +218,8 @@ export interface FoxI18n extends Locale {
       nameLabel: string;
       deleteMessage: string;
       query: string;
+      addMultipleContent: string;
+      localeTips: string;
       fetchFailed: string;
     };
     team: {
@@ -295,7 +303,10 @@ export interface FoxI18n extends Locale {
       republish: string;
       live: string;
       componentVersion: string;
+      componentType: string;
       syncTitle: string;
+      selectComponentType: string;
+      componentTypeNoneEmpty: string;
     };
     resource: {
       group: string;
@@ -336,6 +347,10 @@ export interface FoxI18n extends Locale {
       builderStoreModalPage: string;
       builderStoreModalTemplate: string;
       componentBar: string;
+      page: string;
+      template: string;
+      componentTab: string;
+      blockTab: string;
     };
     builder: {
       componentList: string;
@@ -368,6 +383,8 @@ export interface FoxI18n extends Locale {
       parsePageFailed: string;
       relationMatchError: string;
       saveTips: string;
+      deleteTips: string;
+      commitTips: string;
       previewUrlEmptyTips: string;
     };
     variable: {
@@ -376,6 +393,7 @@ export interface FoxI18n extends Locale {
       name: string;
       title: string;
       edit: string;
+      mock: string;
       args: string;
       value: string;
       selectFunction: string;
@@ -388,6 +406,7 @@ export interface FoxI18n extends Locale {
       content: string;
     };
     authorize: {
+      name: string;
       user: string;
       role: string;
       admin: string;
@@ -410,6 +429,7 @@ export interface FoxI18n extends Locale {
       category: string;
       label: string;
       sort: string;
+      cover: string;
       rank: string;
       addComponent: string;
       addPage: string;

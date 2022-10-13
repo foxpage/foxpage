@@ -2,6 +2,7 @@ import { createAction } from 'typesafe-actions';
 
 import {
   ApplicationSettingBuilderComponent,
+  ApplicationSettingBuilderDeleteParams,
   ApplicationSettingBuilderSaveParams,
   CategoryType,
   ComponentCategoryFetchParams,
@@ -28,6 +29,13 @@ export const updatePageNum = createAction(
   'APPLICATION_SETTINGS_BUILDER_COMPONENTS__UPDATE__NUM_LOADING',
   (num: number) => ({
     num,
+  }),
+)();
+
+export const updateSearchText = createAction(
+  'APPLICATION_SETTINGS_BUILDER_COMPONENTS__UPDATE_SEARCH_TEXT',
+  (search: string) => ({
+    search,
   }),
 )();
 
@@ -60,6 +68,13 @@ export const saveCategory = createAction(
 export const removeCategory = createAction(
   'APPLICATION_SETTINGS_BUILDER_COMPONENTS__REMOVE_CATEGORY',
   (params: ApplicationSettingBuilderSaveParams) => ({
+    params,
+  }),
+)();
+
+export const deleteCategory = createAction(
+  'APPLICATION_SETTINGS_BUILDER_COMPONENTS__DELETE_CATEGORY',
+  (params: ApplicationSettingBuilderDeleteParams) => ({
     params,
   }),
 )();

@@ -7,6 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
+import { ACTION } from '../../../config/constant';
 import { ResData } from '../../types/index-types';
 import { AppContentListRes, PageBuildVersionReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
@@ -31,7 +32,7 @@ export class GetMockBuildDetail extends BaseController {
     operationId: 'get-mock-build-version',
   })
   @ResponseSchema(AppContentListRes)
-  async index (@QueryParams() params: PageBuildVersionReq): Promise<ResData<ContentVersion>> {
+  async index(@QueryParams() params: PageBuildVersionReq): Promise<ResData<ContentVersion>> {
     try {
       const versionNumber = await this.service.version.number.getLatestVersionNumber(params.id);
       let contentVersion = await this.service.version.info.getDetail({ contentId: params.id, versionNumber });
@@ -42,6 +43,12 @@ export class GetMockBuildDetail extends BaseController {
         const relationObject = await this.service.version.relation.getVersionRelations(
           { [contentVersion.contentId]: contentVersion },
           false,
+        );
+
+        // format mock props value
+        contentVersion.content.schemas = this.service.version.info.formatMockValue(
+          contentVersion.content?.schemas,
+          ACTION.GET,
         );
 
         relations = await this.service.relation.formatRelationResponse(relationObject);

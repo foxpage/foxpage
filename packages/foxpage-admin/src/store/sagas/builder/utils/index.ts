@@ -5,3 +5,4 @@ export * from './node';
 export * from './relation';
 export * from './structure';
 export * from './wrapper';
+export * from './mock';

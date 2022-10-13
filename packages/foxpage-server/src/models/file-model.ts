@@ -111,17 +111,17 @@ export class FileModel extends BaseModel<File> {
    * @returns {File]} Promise
    */
   async getDetailByNames(params: FileNameSearch): Promise<File[]> {
-    return this.model
-      .find(
-        {
-          applicationId: params.applicationId,
-          type: params.type && _.isArray(params.type) ? { $in: params.type } : params.type,
-          name: { $in: params.fileNames },
-          deleted: false,
-        } as mongoose.FilterQuery<File>,
-        '-_id',
-      )
-      .lean();
+    const filter: Record<string, any> = {
+      applicationId: params.applicationId,
+      name: { $in: params.fileNames },
+      deleted: false,
+    };
+
+    if (_.isString(params.type) || params.type.length > 0) {
+      filter.type = params.type && _.isArray(params.type) ? { $in: params.type } : params.type;
+    }
+
+    return this.model.find(filter as mongoose.FilterQuery<File>, '-_id').lean();
   }
 
   /**
@@ -130,11 +130,15 @@ export class FileModel extends BaseModel<File> {
    * @returns Promise
    */
   async getAppFileList(params: AppFileType): Promise<File[]> {
-    let searchParams: { applicationId: string; type: any; deleted: boolean } = {
+    let searchParams: { applicationId: string; type: any; deleted: boolean; $or?: any } = {
       applicationId: params.applicationId,
       type: _.isString(params.type) ? params.type : { $in: params.type },
       deleted: false,
     };
+
+    if (params.search) {
+      searchParams['$or'] = [{ id: params.search }, { name: { $regex: new RegExp(params.search, 'i') } }];
+    }
 
     return this.model.find(searchParams as mongoose.FilterQuery<File>, '-_id').lean();
   }

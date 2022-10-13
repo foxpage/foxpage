@@ -4,15 +4,14 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/main';
 import { store } from '@/store/index';
-import { VariableEntity } from '@/types/variable';
 
 import { validateContent } from './services';
 
 function* handleValidate() {
-  const { pageContent, localVariables } = store.getState().builder.main;
+  const { pageContent, localVariables = [] } = store.getState().builder.main;
   const relations = {
     ...pageContent.relations,
-    variables: (pageContent.relations.variables || []).concat(localVariables as VariableEntity[]),
+    variables: (pageContent.relations.variables || []).concat(localVariables),
   };
   // validate
   const result = validateContent(pageContent, { relations });

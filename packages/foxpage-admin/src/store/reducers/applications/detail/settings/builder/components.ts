@@ -23,6 +23,7 @@ const initialState = {
   loading: false,
   components,
   pageInfo,
+  searchText: '',
   editor,
   categories,
   // modal visible
@@ -51,6 +52,11 @@ const reducer = (state: InitialDataType = initialState, action: BuilderComponent
 
       case getType(ACTIONS.updatePageNum): {
         draft.pageInfo.page = action.payload.num;
+        break;
+      }
+
+      case getType(ACTIONS.updateSearchText): {
+        draft.searchText = action.payload.search;
         break;
       }
 

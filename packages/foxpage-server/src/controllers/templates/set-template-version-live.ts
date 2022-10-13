@@ -13,6 +13,7 @@ import { AppContentLiveReq, ContentDetailRes } from '../../types/validates/conte
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/set-page-version-live.ts
 @JsonController('templates')
 export class SetTemplateLiveVersions extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class SetTemplateLiveVersions extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/live-versions')
+  @Put('/live-versions-migrations')
   @OpenAPI({
     summary: i18n.sw.setTemplateContentLive,
     description: '',

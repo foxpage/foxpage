@@ -42,11 +42,12 @@ function* handleFetchApp(action: ProjectInvolvedFolderActionType) {
 function* handleFetchList(action: ProjectInvolvedFolderActionType) {
   yield put(ACTIONS.updateLoading(true));
 
-  const { organizationId, page = 1, search, size = 10 } = action.payload as ProjectListFetchParams;
+  const { page = 1, search, searchText, searchType, size = 10 } = action.payload as ProjectListFetchParams;
   let params: ProjectListFetchParams = {
-    organizationId,
     page,
     size,
+    search: searchText || '',
+    searchType,
     type: 'involve',
   };
   if (search)
@@ -99,10 +100,10 @@ function* handleSave(action: ProjectInvolvedFolderActionType) {
 }
 
 function* handleDelete(action: ProjectInvolvedFolderActionType) {
-  const { id, applicationId, organizationId } = action.payload as {
+  const { id, applicationId, cb } = action.payload as {
     id: string;
     applicationId: string;
-    organizationId: string;
+    cb?: () => void;
   };
   const res = yield call(API.deleteProject, {
     projectId: id,
@@ -117,17 +118,7 @@ function* handleDelete(action: ProjectInvolvedFolderActionType) {
   if (res.code === 200) {
     message.success(deleteSuccess);
 
-    const { pageInfo, projectList } = store.getState().workspace.projects.involved.folder;
-    const page = projectList.length === 1 && pageInfo.page > 1 ? pageInfo.page - 1 : pageInfo.page;
-    let params: ProjectListFetchParams = {
-      organizationId,
-      ...pageInfo,
-      page,
-      search: '',
-      type: 'user',
-    };
-
-    yield put(ACTIONS.fetchProjectList(params));
+    if (typeof cb === 'function') cb();
   } else {
     message.error(res.msg || deleteFailed);
   }

@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { LOG } from '../../../config/constant';
 import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
@@ -17,7 +17,7 @@ import {
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController()
 export class SetPageVersionPublishStatus extends BaseController {
   constructor() {
     super();
@@ -31,7 +31,9 @@ export class SetPageVersionPublishStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/version-publish')
+  @Put('pages/version-publish')
+  @Put('templates/version-publish')
+  @Put('blocks/version-publish')
   @OpenAPI({
     summary: i18n.sw.setPageVersionPublishStatus,
     description: '',
@@ -41,7 +43,9 @@ export class SetPageVersionPublishStatus extends BaseController {
   @ResponseSchema(ContentVersionDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: VersionPublishStatusReq): Promise<ResData<ContentVersion>> {
     try {
-      ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
+      const apiType = this.getRoutePath(ctx.request.url);
+
+      ctx.logAttr = Object.assign(ctx.logAttr, { type: apiType });
 
       const hasAuth = await this.service.auth.version(params.id, { ctx });
       if (!hasAuth) {
@@ -52,7 +56,7 @@ export class SetPageVersionPublishStatus extends BaseController {
       const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
         ctx,
         liveRelation: true,
-        actionType: [LOG.LIVE, TYPE.PAGE].join('_'),
+        actionType: [LOG.LIVE, apiType].join('_'),
       });
 
       if (result.code === 1) {

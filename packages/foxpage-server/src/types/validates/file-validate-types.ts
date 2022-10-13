@@ -199,7 +199,7 @@ export class FileListReq {
   @JSONSchema({ description: 'Folder ID' })
   @IsString()
   @Length(0, 20)
-  // @IsOptional()
+  @IsOptional()
   id: string;
 
   @JSONSchema({ description: 'File deleted status, default is false' })
@@ -468,6 +468,11 @@ export class UpdateTypeFileDetailReq {
   @IsString()
   id: string;
 
+  @JSONSchema({ description: 'File Cotnent ID' })
+  @IsString()
+  @IsOptional()
+  contentId: string;
+
   @JSONSchema({ description: 'File name' })
   @IsString()
   @Length(1, 100)
@@ -614,6 +619,5 @@ export class GetFileParentReq {
 export class AddMockReq extends FileVersionDetailReq {
   @JSONSchema({ description: 'Binding content ID' })
   @IsString()
-  @Length(20, 20)
-  contentId?: string;
+  contentId: string;
 }

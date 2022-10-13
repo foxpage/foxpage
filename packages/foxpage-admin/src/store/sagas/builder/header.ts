@@ -3,6 +3,7 @@ import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
+import { fetchContent } from '@/actions/builder/main';
 import * as API from '@/apis/builder';
 import { FileType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
@@ -14,6 +15,8 @@ import {
   MockPublishParams,
   PageTemplateFetchParams,
 } from '@/types/index';
+
+import { wrapperMock } from './utils';
 
 function* handleFetchCatalog(action: BuilderHeaderActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -60,7 +63,13 @@ function* handleFetchDsl(action: BuilderHeaderActionType) {
   const { fileType } = store.getState().builder.header;
   const { applicationId, ids } = action.payload;
 
-  const res = yield call(fileType === FileType.page ? API.fetchPageDsl : API.fetchTemplateDsl, {
+  const apis = {
+    [FileType.page]: API.fetchPageDsl,
+    [FileType.template]: API.fetchTemplateDsl,
+    [FileType.block]: API.fetchBlockDsl,
+  };
+
+  const res = yield call(apis[fileType], {
     applicationId,
     ids,
   });
@@ -82,6 +91,7 @@ function* handleSaveMock(action: BuilderHeaderActionType) {
 
   // call mock add api
   const { params, cb } = action.payload as { params: MockNewParams; cb: (mockId?: string) => void };
+  params.content = wrapperMock(params.content);
   const { applicationId, content } = params;
 
   // get specific api & params with different update type
@@ -105,6 +115,18 @@ function* handleSaveMock(action: BuilderHeaderActionType) {
 
     const newVersionId = res.data?.id;
     if (typeof cb === 'function') cb(newVersionId);
+
+    if (params?.refresh) {
+      const { applicationId: appId, contentId } = store.getState().builder.header;
+      const { file } = store.getState().builder.main;
+      yield put(
+        fetchContent({
+          applicationId: applicationId || appId,
+          id: contentId,
+          type: file?.type || 'page',
+        }),
+      );
+    }
   } else {
     const {
       global: { addFailed },

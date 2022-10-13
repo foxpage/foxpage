@@ -41,6 +41,7 @@
     "@foxpage/foxpage-js-sdk": "^0.5.0",
     "@uiw/react-markdown-preview": "^4.0.22",
     "antd": "^4.18.3",
+    "html2canvas": "^1.4.1",
     "jsoneditor": "^9.5.0",
     "lodash": "^4.17.21",
     "react": "^16.14.0",

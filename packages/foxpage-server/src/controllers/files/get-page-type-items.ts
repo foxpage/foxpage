@@ -7,25 +7,13 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { ACTION, TYPE } from '../../../config/constant';
 import { PageContentData } from '../../types/content-types';
 import { AppTypeFileParams, FileAssoc } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppTypeFilesReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
-
-;
-
-// multi route type mapping
-const typeMap: Record<string, string> = {
-  'pages': TYPE.PAGE,
-  'templates': TYPE.TEMPLATE,
-  'variables': TYPE.VARIABLE,
-  'conditions': TYPE.CONDITION,
-  'functions': TYPE.FUNCTION,
-  'mocks': TYPE.MOCK,
-};
 
 @JsonController('')
 export class GetAppPageFileList extends BaseController {
@@ -42,6 +30,7 @@ export class GetAppPageFileList extends BaseController {
    */
   @Get('pages/file-searchs')
   @Get('templates/file-searchs')
+  @Get('blocks/file-searchs')
   @Get('variables/file-searchs')
   @Get('conditions/file-searchs')
   @Get('functions/file-searchs')
@@ -53,8 +42,11 @@ export class GetAppPageFileList extends BaseController {
     operationId: 'get-app-type-file-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index(@Ctx() ctx: FoxCtx, @QueryParams() params: AppTypeFilesReq): Promise<ResData<PageContentData[]>> {
-    const apiType = this.getRoutePath(ctx.request.url, typeMap, 1);
+  async index(
+    @Ctx() ctx: FoxCtx,
+    @QueryParams() params: AppTypeFilesReq,
+  ): Promise<ResData<PageContentData[]>> {
+    const apiType = this.getRoutePath(ctx.request.url);
     const hasScopeTypes = [TYPE.VARIABLE, TYPE.CONDITION, TYPE.FUNCTION, TYPE.MOCK];
 
     try {
@@ -66,7 +58,7 @@ export class GetAppPageFileList extends BaseController {
         typePageParams.scope = '';
         typePageParams.scopeId = params.folderId;
       } else if (hasScopeTypes.indexOf(apiType) !== -1) {
-        typePageParams.scopeId = await this.service.folder.info.getAppTypeFolderId({ 
+        typePageParams.scopeId = await this.service.folder.info.getAppTypeFolderId({
           applicationId: params.applicationId,
           type: apiType as AppFolderTypes,
         });
@@ -79,18 +71,28 @@ export class GetAppPageFileList extends BaseController {
       if (result?.list.length > 0) {
         [fileList, contentObject] = await Promise.all([
           this.service.file.list.getFileAssocInfo(result.list, { type: apiType }),
-          hasScopeTypes.indexOf(apiType) !== -1 ? 
-          this.service.content.list.getContentObjectByFileIds(_.map(fileList, 'id')) :
-          {}
+          hasScopeTypes.indexOf(apiType) !== -1
+            ? this.service.content.list.getContentObjectByFileIds(_.map(fileList, 'id'))
+            : {},
         ]);
 
-        fileList = fileList.map(file => {
+        fileList = fileList.map((file) => {
           if (!file.version) {
             file.version = {};
           }
 
           if (contentObject[file.id]) {
-            file.version.live = this.service.version.number.getVersionFromNumber(contentObject[file.id].liveVersionNumber);
+            file.version.live = this.service.version.number.getVersionFromNumber(
+              contentObject[file.id].liveVersionNumber,
+            );
+          }
+
+          // format mock props value
+          if (apiType === TYPE.MOCK && file.content?.schemas) {
+            file.content.schemas = this.service.version.info.formatMockValue(
+              file.content.schemas,
+              ACTION.GET,
+            );
           }
 
           return hasScopeTypes.indexOf(apiType) === -1 ? _.omit(file, 'version') : file;

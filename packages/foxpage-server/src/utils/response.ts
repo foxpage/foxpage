@@ -13,8 +13,8 @@ export function success(data: any, status?: number): ResData<{}> | ResMsg {
 
   if (_.isString(data)) {
     body.msg = data;
-  } else if (data.pageInfo) {
-    body.data = data.data || {};
+  } else if (data?.pageInfo) {
+    body.data = data?.data || {};
     body.pageInfo = data.pageInfo;
   } else {
     body.data = data;
@@ -38,13 +38,18 @@ export function download(content: Buffer): Buffer {
  * @param  {string} msg
  * @returns ResMsg
  */
-export function warning(msg: string, status?: number): ResMsg {
+export function warning(msg: string, status?: number, data?: any): ResMsg {
   // ctx.response.status = 400;
-  const body = {
+  const body: ResMsg = {
     code: RESPONSE_LEVEL.WARNING,
     status: status || 1,
     msg: msg,
   };
+
+  if (data) {
+    body.data = data;
+  }
+
   return body;
 }
 

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { ArrowDownOutlined, ArrowUpOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Table as AntTable } from 'antd';
+import { Button, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -36,7 +36,10 @@ const mapDispatchToProps = {
   deleteVariable: ACTIONS.deleteVariable,
 };
 
-type ConditionListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
+type ConditionListType = ReturnType<typeof mapStateToProps> &
+  typeof mapDispatchToProps & {
+    search?: string;
+  };
 
 function ConditionList(props: ConditionListType) {
   const {
@@ -45,6 +48,7 @@ function ConditionList(props: ConditionListType) {
     pageInfo,
     list,
     scope,
+    search,
     fetchList,
     fetchBuildVersion,
     publishVariable,
@@ -55,10 +59,15 @@ function ConditionList(props: ConditionListType) {
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, store } = locale.business;
+  const { global, store, version } = locale.business;
 
-  const handleFetchList = () => {
-    fetchList({ applicationId, page: pageInfo.page, size: pageInfo.size });
+  const handleFetchList = (page?: number, size?: number) => {
+    fetchList({
+      applicationId,
+      page: page || pageInfo.page,
+      size: size || pageInfo.size,
+      search: search || '',
+    });
   };
 
   const handleDelete = (id) => {
@@ -69,13 +78,7 @@ function ConditionList(props: ConditionListType) {
           id,
           status: true,
         },
-        () => {
-          fetchList({
-            applicationId,
-            page: pageInfo.page,
-            size: pageInfo.size,
-          });
-        },
+        handleFetchList,
       );
     }
   };
@@ -114,9 +117,18 @@ function ConditionList(props: ConditionListType) {
       key: 'name',
     },
     {
+      title: <Tooltip title={version.liveVersion}>{version.name}</Tooltip>,
+      dataIndex: 'version',
+      key: 'version',
+      width: 90,
+      render: (version: Record<string, string>) =>
+        version?.live ? <Tag color="orange">{version.live}</Tag> : '',
+    },
+    {
       title: global.type,
       dataIndex: 'type',
       key: 'schemas',
+      width: 150,
       render: (_text: string, record: VariableEntity) => {
         const schemas = record.content?.schemas;
         return <React.Fragment>{schemas?.length > 0 ? schemas[0].type : '--'}</React.Fragment>;
@@ -126,6 +138,7 @@ function ConditionList(props: ConditionListType) {
       title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
+      width: 200,
       render: (creator: Creator) => creator?.account || '',
     },
     {
@@ -138,7 +151,7 @@ function ConditionList(props: ConditionListType) {
     {
       title: global.actions,
       key: 'id',
-      width: 180,
+      width: 160,
       render: (_text: string, record: VariableEntity) => {
         return (
           <React.Fragment>
@@ -161,9 +174,7 @@ function ConditionList(props: ConditionListType) {
               title={global.publish}
               onClick={() => handlePublish(record.contentId)}
               style={{ marginRight: 8 }}>
-              <PublishIcon
-                svgStyles={{ width: 18, height: 18, position: 'absolute', top: '2px', left: '1px' }}
-              />
+              <PublishIcon />
             </Button>
             <Popconfirm
               title={record?.online ? store.revokeTitle : store.commitTitle}
@@ -210,22 +221,17 @@ function ConditionList(props: ConditionListType) {
       columns={columns}
       dataSource={list}
       pagination={
-        pageInfo.total > pageInfo.size
+        pageInfo?.total && pageInfo.total > pageInfo.size
           ? {
               position: ['bottomCenter'],
               current: pageInfo.page,
               pageSize: pageInfo.size,
               total: pageInfo.total,
+              showSizeChanger: false,
             }
           : false
       }
-      onChange={(pagination) => {
-        fetchList({
-          applicationId,
-          page: pagination.current || 1,
-          size: pagination.pageSize || 10,
-        });
-      }}
+      onChange={(pagination) => handleFetchList(pagination.current, pagination.pageSize)}
     />
   );
 }

@@ -59,6 +59,10 @@ export class LogService extends BaseService<Log> {
           log.content.after = logDataObject[log.content.id];
         }
 
+        if (log.category.type && log.category.type === TYPE.APPLICATION) {
+          log.category.applicationId = log.category.id;
+        }
+
         log.category.versionId &&
           (log.category.contentId = itemIdObject.version[log.category.versionId]?.contentId);
         log.category.contentId &&
@@ -150,8 +154,8 @@ export class LogService extends BaseService<Log> {
           LOG.META_UPDATE,
         ] as any[],
       }, // Get the data set to live, tags updated data
-      'category.id': params.applicationId,
-      'category.type': LOG.CATEGORY_APPLICATION,
+      $or: [{ 'category.id': params.applicationId }, { 'category.applicationId': params.applicationId }],
+      // 'category.type': LOG.CATEGORY_APPLICATION,
       'content.id': { $exists: true },
     });
 

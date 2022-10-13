@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { File } from '@foxpage/foxpage-server-types';
+import { Content, File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { LOG, TYPE, VERSION } from '../../../config/constant';
@@ -50,8 +50,15 @@ export class UpdateFunctionDetail extends BaseController {
 
       // 获取文件的内容
       const contentList = await this.service.content.file.getContentByFileIds([params.id]);
-      const contentId = contentList[0]?.id || '';
-      const contentName = params.name || contentList[0]?.title;
+      let contentDetail: Partial<Content> = {};
+      if (params.contentId) {
+        contentDetail = _.find(contentList, { id: params.contentId }) as Content;
+      } else {
+        contentDetail = contentList[0];
+      }
+
+      const contentId = contentDetail?.id || '';
+      const contentName = params.name || contentDetail?.title;
       let versionId = '';
       let versionNumber = 1;
       let versionStatus = '';

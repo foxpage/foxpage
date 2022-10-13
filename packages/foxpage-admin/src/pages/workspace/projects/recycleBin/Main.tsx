@@ -1,8 +1,8 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { FileOutlined, FolderOutlined } from '@ant-design/icons';
-import { Table as AntTable } from 'antd';
+import { Input, Table as AntTable } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -10,6 +10,10 @@ import * as ACTIONS from '@/actions/workspace/projects/recycleBin';
 import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import { periodFormat } from '@/utils/index';
+
+const { Search } = Input;
+
+const PAGE_NUM = 1;
 
 const Table = styled(AntTable)`
   .ant-table-pagination.ant-pagination {
@@ -33,18 +37,27 @@ type ProjectsProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPr
 
 const RecycleBin: React.FC<ProjectsProps> = (props) => {
   const { organizationId, loading, pageInfo, projects, fetchRecycles, clearAll } = props;
+  const [pageNum, setPageNum] = useState<number>(pageInfo.page);
+  const [search, setSearch] = useState<string | undefined>();
 
   // i18n
   const { locale } = useContext(GlobalContext);
   const { global } = locale.business;
 
   useEffect(() => {
-    fetchRecycles({ organizationId, page: pageInfo.page, size: pageInfo.size, search: '' });
-
     return () => {
       clearAll();
     };
   }, []);
+
+  useEffect(() => {
+    fetchRecycles({
+      organizationId,
+      page: pageNum,
+      size: pageInfo.size,
+      search: search || '',
+    });
+  }, [pageNum, search]);
 
   const columns = [
     {
@@ -87,6 +100,12 @@ const RecycleBin: React.FC<ProjectsProps> = (props) => {
     },
   ];
 
+  const handleSearch = (search) => {
+    setPageNum(PAGE_NUM);
+
+    setSearch(search);
+  };
+
   return (
     <FoxPageContent
       breadcrumb={
@@ -99,6 +118,14 @@ const RecycleBin: React.FC<ProjectsProps> = (props) => {
         />
       }>
       <Content>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
+          <Search
+            placeholder={global.inputSearchText}
+            defaultValue={search}
+            onSearch={handleSearch}
+            style={{ width: 250 }}
+          />
+        </div>
         <Table
           loading={loading}
           rowKey="id"
@@ -119,7 +146,7 @@ const RecycleBin: React.FC<ProjectsProps> = (props) => {
               organizationId,
               page: pagination.current,
               size: pagination.pageSize,
-              search: '',
+              search: search || '',
             });
           }}
         />

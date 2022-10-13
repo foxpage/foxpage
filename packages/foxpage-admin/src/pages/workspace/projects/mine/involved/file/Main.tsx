@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/workspace/projects/involved/file';
+import { deleteProject } from '@/actions/workspace/projects/involved/folder';
 import { ProjectFile } from '@/components/index';
 
 const mapStateToProps = (store: RootState) => ({
@@ -32,6 +33,7 @@ const mapDispatchToProps = {
   fetchUserList: ACTIONS.fetchUserList,
   saveUser: ACTIONS.saveAuthUser,
   deleteUser: ACTIONS.deleteAuthUser,
+  deleteProject,
 };
 
 type FileListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -60,6 +62,7 @@ const Main: React.FC<FileListType> = (props) => {
     fetchUserList,
     saveUser,
     deleteUser,
+    deleteProject,
   } = props;
 
   useEffect(() => {
@@ -92,6 +95,7 @@ const Main: React.FC<FileListType> = (props) => {
       fetchUserList={fetchUserList}
       saveUser={saveUser}
       deleteUser={deleteUser}
+      deleteProject={deleteProject}
     />
   );
 };

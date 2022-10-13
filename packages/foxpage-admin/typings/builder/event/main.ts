@@ -28,4 +28,6 @@ export interface FoxBuilderEvents {
   onWindowChange?: (target: BuilderWindow, opt?: BuilderWindowChangeOptions) => void;
   onLinkChange?: (target: string, opt?: {}) => void;
   onFrameLoaded?: (opt?: {}) => void;
+  onPageCapture?: () => void;
+  onPageCaptured?: (opt: {}) => void;
 }

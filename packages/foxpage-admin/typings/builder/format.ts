@@ -1,6 +1,6 @@
 import { Component } from '../component';
 
-import { RenderStructureNode, StructureNode } from './structure';
+import { RelationDetails, RenderStructureNode, StructureNode } from './structure';
 
 export type FormattedData = {
   formattedSchemas: RenderStructureNode[];
@@ -9,4 +9,5 @@ export type FormattedData = {
   originPageNodeMap: Record<string, StructureNode>;
   idMockMap: Record<string, StructureNode>;
   componentMap: Record<string, Component>;
+  relations?: RelationDetails;
 };

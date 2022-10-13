@@ -38,12 +38,16 @@ const mapStateToProps = (store: RootState) => ({
   folderId: store.builder.header.folderId,
   type: store.builder.main.toolbarModalType,
   visible: store.builder.main.toolbarModalVisible,
+  conditionLoading: store.applications.detail.file.conditions.loading,
   conditionPageInfo: store.applications.detail.file.conditions.pageInfo,
   conditions: store.applications.detail.file.conditions.list,
+  functionLoading: store.applications.detail.file.functions.loading,
   functionPageInfo: store.applications.detail.file.functions.pageInfo,
   functions: store.applications.detail.file.functions.list,
+  variableLoading: store.applications.detail.file.variables.loading,
   variablePageInfo: store.applications.detail.file.variables.pageInfo,
   variables: store.applications.detail.file.variables.list,
+  mock: store.builder.main.mock,
   pageNode: store.builder.main.pageNode,
 });
 
@@ -65,6 +69,7 @@ const mapDispatchToProps = {
   clearAllVariable: VARIABLE_ACTIONS.clearAll,
   deleteVariable: VARIABLE_ACTIONS.deleteVariable,
   fetchVariables: VARIABLE_ACTIONS.fetchList,
+  fetchBuildVersion: VARIABLE_ACTIONS.fetchVariableBuilderVersion,
   openVariableEditDrawer: VARIABLE_ACTIONS.openEditDrawer,
   updateVariablePageInfo: VARIABLE_ACTIONS.updatePaginationInfo,
 };
@@ -75,12 +80,16 @@ const ToolbarModal: React.FC<ToolbarModalModalType> = (props) => {
   const {
     applicationId,
     folderId,
+    mock,
     type,
     visible,
+    conditionLoading,
     conditionPageInfo,
     conditions,
+    functionLoading,
     functionPageInfo,
     functions,
+    variableLoading,
     variablePageInfo,
     variables,
     openModal,
@@ -94,6 +103,7 @@ const ToolbarModal: React.FC<ToolbarModalModalType> = (props) => {
     fetchConditions,
     fetchFunctions,
     fetchVariables,
+    fetchBuildVersion,
     openConditionEditDrawer,
     openFunctionEditDrawer,
     openVariableEditDrawer,
@@ -162,6 +172,15 @@ const ToolbarModal: React.FC<ToolbarModalModalType> = (props) => {
 
   const open = useMemo(() => visible && type !== 'variableBind', [visible, type]);
 
+  const loading = useMemo(
+    () => ({
+      condition: conditionLoading,
+      function: functionLoading,
+      variable: variableLoading,
+    }),
+    [conditionLoading, functionLoading, variableLoading],
+  );
+
   const paginationInfo = useMemo(
     () => ({
       condition: conditionPageInfo,
@@ -191,6 +210,9 @@ const ToolbarModal: React.FC<ToolbarModalModalType> = (props) => {
 
     if (type === ModalTypeEnum.variable) {
       openVariableEditDrawer(true, entity, editType);
+
+      // fetch variable detail info before edit
+      if (editType === 'edit' || editType === 'view') fetchBuildVersion(applicationId, entity);
     }
   };
 
@@ -244,11 +266,13 @@ const ToolbarModal: React.FC<ToolbarModalModalType> = (props) => {
         />
       ) : (
         <List
-          type={type}
           applicationId={applicationId}
-          folderId={folderId}
           button={button}
+          folderId={folderId}
+          loadingInfo={loading}
+          mock={mock}
           paginationInfo={paginationInfo}
+          type={type}
           dataSource={dataSource}
           onDelete={handleDelete}
           onEdit={handleEdit}

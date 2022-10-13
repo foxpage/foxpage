@@ -23,7 +23,6 @@ const mapDispatchToProps = {
   fetchApps: ACTIONS.fetchApps,
   updateEditProject: ACTIONS.updateEditProjectValue,
   saveProject: ACTIONS.saveProject,
-  deleteProject: ACTIONS.deleteProject,
   openDrawer: ACTIONS.openEditDrawer,
 };
 
@@ -44,7 +43,6 @@ const Project: React.FC<ProjectProps> = (props) => {
     fetchApps,
     updateEditProject,
     saveProject,
-    deleteProject,
     openDrawer,
   } = props;
 
@@ -69,7 +67,6 @@ const Project: React.FC<ProjectProps> = (props) => {
       fetchApps={fetchApps}
       updateEditProject={updateEditProject}
       saveProject={saveProject}
-      deleteProject={deleteProject}
       openDrawer={openDrawer}
     />
   );

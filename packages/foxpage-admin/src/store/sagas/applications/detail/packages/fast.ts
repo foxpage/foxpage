@@ -9,6 +9,7 @@ import * as API from '@/apis/application';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationPackagesFastActionType } from '@/reducers/applications/detail/packages/fast';
 import { store } from '@/store/index';
+import { ComponentType } from '@/constants/index';
 import {
   ComponentRemote,
   ComponentRemoteSaveParams,
@@ -96,7 +97,7 @@ const componentWrapper = (
   return components.map((item) => {
     const { components = [], lastVersion } = item;
     const savedComponent = _.cloneDeep<ComponentRemote>(components[0]);
-    const { component, resource } = savedComponent || {};
+    const { component, resource, componentType } = savedComponent || {};
     const content = component?.content || {};
     const componentResource = content.resource || {};
     const entry = componentResource.entry;
@@ -129,6 +130,10 @@ const componentWrapper = (
       content.meta = lastVersion.content.meta;
       componentResource.dependencies = lastVersion.content.resource.dependencies;
       component.content = { ...lastVersion.content, ...content };
+    }
+
+    if (!componentType) {
+      savedComponent.componentType = ComponentType.reactComponent;
     }
 
     return savedComponent;

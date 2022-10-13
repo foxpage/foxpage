@@ -17,6 +17,8 @@ import { List } from './components';
 
 const { Search } = Input;
 
+const PAGE_NUM = 1;
+
 const OptionsBox = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -34,19 +36,31 @@ const mapDispatchToProps = {
   fetchPages: ACTIONS.fetchPagesContent,
   save: ACTIONS.saveCategory,
   openModal: ACTIONS.updateModalState,
+  updatePageNum: ACTIONS.updatePageNum,
+  updateSearchText: ACTIONS.updateSearchText,
 };
 
 type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const BuilderWindowSetting = (props: IProps) => {
-  const { modal, pageInfo, clear, fetch, fetchPages, openModal, save } = props;
+  const {
+    modal,
+    pageInfo,
+    clear,
+    fetch,
+    fetchPages,
+    openModal,
+    save,
+    updatePageNum,
+    updateSearchText,
+  } = props;
   const [searchText, setSearchText] = useState('');
 
   const { applicationId } = useParams<{ applicationId: string }>();
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { category, global, setting, application: applicationI18n } = locale.business;
+  const { category, global, setting } = locale.business;
 
   useEffect(() => {
     return () => {
@@ -66,26 +80,27 @@ const BuilderWindowSetting = (props: IProps) => {
     }
   }, [applicationId, pageInfo.page, searchText]);
 
+  const handleSearch = (search) => {
+    setSearchText(search);
+
+    updatePageNum(PAGE_NUM);
+    updateSearchText(search);
+  };
+
   return (
     <Content>
       <FoxPageContent
         breadcrumb={
           <FoxPageBreadcrumb
-            breadCrumb={[
-              {
-                name: applicationI18n.applicationList,
-                link: '/#/workspace/applications',
-              },
-              { name: setting.builderStoreModalPage + ' - ' + global.setting },
-            ]}
+            breadCrumb={[{ name: setting.builderStoreModalPage + ' - ' + global.setting }]}
           />
         }
         style={{ paddingBottom: 0, overflow: 'hidden auto' }}>
         <OptionsBox>
           <Search
             placeholder={category.pageSearchPlaceholder}
-            onSearch={(value) => setSearchText(value)}
-            style={{ width: 250, marginRight: 8 }}
+            onSearch={(value) => handleSearch(value)}
+            style={{ width: 250, marginRight: 12 }}
           />
           <Button type="primary" onClick={() => openModal({ visible: true })}>
             <PlusOutlined /> {global.add}

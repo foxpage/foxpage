@@ -1,7 +1,7 @@
 import React, { useCallback, useContext } from 'react';
 import { connect } from 'react-redux';
 
-import { BugOutlined } from '@ant-design/icons';
+import { BugFilled } from '@ant-design/icons';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
@@ -10,6 +10,7 @@ import { GlobalContext } from '@/pages/system';
 import * as PAGE_ACTIONS from '@/store/actions/builder/main';
 
 import { DSL, Mock, More, Preview, Publish, Save } from './components';
+import { posters } from '@/pages/builder/events';
 
 const mapStateToProps = (store: RootState) => ({
   applicationId: store.builder.header.applicationId,
@@ -83,13 +84,17 @@ const Catalog: React.FC<Type> = (props) => {
     } else {
       publishPageContent();
     }
+
+    if (posters.handlePageCapture) {
+      posters.handlePageCapture();
+    }
   };
 
   return (
     <>
       {mock?.enable && (
         <StyledIcon style={{ backgroundColor: '#ffffff', color: '#ff5918', cursor: 'default' }}>
-          <BugOutlined />
+          <BugFilled />
           <IconMsg>{mockI18n.mockMode}</IconMsg>
         </StyledIcon>
       )}

@@ -32,9 +32,9 @@ interface DrawerProps {
   search?: string;
   drawerOpen: boolean;
   editProject: ProjectEntity;
-  apps: Application[];
+  apps?: Application[];
   fetchProjectList: (params: ProjectListFetchParams) => void;
-  fetchApps: (params: PaginationReqParams) => void;
+  fetchApps?: (params: PaginationReqParams) => void;
   updateEditProject: (name: string, value: unknown) => void;
   saveProject: (params: ProjectSaveParams, cb?: () => void) => void;
   closeDrawer: (open: boolean, editProject?: ProjectEntity) => void;
@@ -62,7 +62,7 @@ const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
   const { project, global, application: applicationI18n } = locale.business;
 
   useEffect(() => {
-    fetchApps({ page: 1, size: APP_PAGE_SIZE });
+    if (typeof fetchApps === 'function') fetchApps({ page: 1, size: APP_PAGE_SIZE });
   }, []);
 
   const handleSave = () => {
@@ -114,8 +114,8 @@ const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
         </Button>
       }>
       {editProject ? (
-        <div style={{ padding: 12 }}>
-          <Form.Item {...formItemLayout} label={project.nameLabel}>
+        <div style={{ padding: '24px 12px' }}>
+          <Form.Item {...formItemLayout} label={global.nameLabel}>
             <Input
               defaultValue={editProject.name}
               placeholder={project.nameLabel}
@@ -125,6 +125,9 @@ const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
           {!applicationId && (
             <Form.Item {...formItemLayout} label={global.application}>
               <Select
+                showSearch
+                allowClear
+                optionFilterProp="children"
                 placeholder={applicationI18n.selectApplication}
                 disabled={!!editProject.id}
                 defaultValue={editProject.application ? editProject.application.id : search || undefined}
@@ -136,6 +139,7 @@ const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
                 {apps.map((app: Application) => (
                   <Option value={app.id} key={app.id}>
                     {app.name}
+                    {app?.organization?.name ? `(${app.organization.name})` : ''}
                   </Option>
                 ))}
               </Select>

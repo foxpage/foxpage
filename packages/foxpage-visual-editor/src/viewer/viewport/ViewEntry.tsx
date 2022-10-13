@@ -1,8 +1,7 @@
-import React, { ReactNode, useCallback, useContext } from 'react';
+import React, { ReactNode, useCallback } from 'react';
 
 import { createGlobalStyle, StyleSheetManager } from 'styled-components';
 
-import { EditorContext } from '@/context/index';
 import { FoxBuilderEvents, RenderStructureNode } from '@/types/index';
 import { getFrameDoc } from '@/utils/index';
 
@@ -29,15 +28,18 @@ const GlobalStyle = createGlobalStyle`
       outline: none;
     }
   }
-  *[data-node-drag-in="true"]>div:empty {
-    min-height: 48px !important;
+  *[data-node-belong-template="true"] {
+    outline: none;
+  }
+  *[data-node-drag-in="true"]:empty {
+    height: 48px !important;
     background: rgba(255, 255, 255, 0.3);
     outline-offset: -1px;
     position: relative;
     ${(props: { gridMode: string }) =>
       props.gridMode === 'none' ? 'none' : 'outline: 1px dashed rgba(0, 0, 0, 0.3);'}
   }
-  *[data-node-drag-in="true"]>div:empty:before {
+  *[data-node-drag-in="true"]:empty:before {
     content: '+';
     font-size: 14px;
     line-height: 1;

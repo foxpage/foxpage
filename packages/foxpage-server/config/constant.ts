@@ -44,6 +44,7 @@ export const TYPE = {
   TEMPLATE: 'template',
   VARIABLE: 'variable',
   MOCK: 'mock',
+  BLOCK: 'block',
 
   GOODS: 'goods',
   INVOLVE: 'involve',
@@ -106,6 +107,7 @@ export const RESPONSE_LEVEL = {
   SUCCESS: 200,
   DOWNLOAD: 210,
   WARNING: 400,
+  INVALID_TOKEN: 401,
   ACCESS_DENY: 403,
   NOT_FOUND: 404,
   ERROR: 500,
@@ -117,6 +119,11 @@ export const LOGGER_LEVEL = {
   WARN: 3,
   ERROR: 4,
   NONE: 5,
+};
+
+export const ACTION = {
+  GET: 'get',
+  SAVE: 'save',
 };
 
 export const METHOD = {

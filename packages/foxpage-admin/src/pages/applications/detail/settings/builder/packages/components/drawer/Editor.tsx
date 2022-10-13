@@ -2,15 +2,31 @@ import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { Button, message, Spin } from 'antd';
+import { Button, message, Spin, Tabs as AntTabs } from 'antd';
+import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/settings/builder/component';
-import { OperationDrawer } from '@/components/index';
+import { JSONEditor, OperationDrawer } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import { Component } from '@/types/component';
 
 import BasicInfoPanel from './BasicInfoPanel';
+
+const { TabPane } = AntTabs;
+
+const Tabs = styled(AntTabs)`
+  &.ant-tabs {
+    .ant-tabs-nav {
+      margin-bottom: 0;
+      padding-left: 16px;
+    }
+  }
+`;
+
+const EditorContainer = styled.div`
+  height: 700px;
+`;
 
 const mapStateToProps = (store: RootState) => ({
   loading: store.applications.detail.settings.builder.components.loading,
@@ -27,15 +43,25 @@ const mapDispatchToProps = {
 type DrawerProp = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Editor: React.FC<DrawerProp> = (props) => {
-  const { applicationId } = useParams<{ applicationId: string }>();
   const [category, setCategory] = useState<Component['category'] | undefined>(
     props.editorState?.data?.category,
   );
+  const [defaultValue, setDefaultValue] = useState<Record<string, any> | undefined>(
+    props.editorState?.data?.defaultValue,
+  );
+  const [tabKey, setTabKey] = useState('1');
   const { loading, editorState, categories, closeDrawer, save, fetchCategories } = props;
   const { status, data } = editorState;
+
+  const { applicationId } = useParams<{ applicationId: string }>();
+
   // i18n
   const { locale } = useContext(GlobalContext);
   const { global, setting, category: i18n } = locale.business;
+
+  useEffect(() => {
+    setTabKey('1');
+  }, []);
 
   useEffect(() => {
     if (!status) {
@@ -46,6 +72,7 @@ const Editor: React.FC<DrawerProp> = (props) => {
 
   useEffect(() => {
     setCategory(props.editorState?.data?.category);
+    setDefaultValue(props.editorState?.data?.defaultValue);
   }, [props.editorState]);
 
   const checker = (params?: Component['category']) => {
@@ -66,17 +93,25 @@ const Editor: React.FC<DrawerProp> = (props) => {
     return true;
   };
 
+  const onClose = () => {
+    setTabKey('1');
+    setDefaultValue(undefined);
+
+    setTimeout(() => closeDrawer(false, null), 50);
+  };
+
   const onSave = () => {
     if (category && checker(category)) {
       save({
         applicationId,
-        type: 'component',
+        type: editorState.data.type,
         setting: [
           {
             category,
             id: editorState?.data.id,
             name: editorState?.data.name || '',
-            status: false,
+            status: editorState?.data.status || false,
+            defaultValue,
           },
         ],
       });
@@ -88,7 +123,7 @@ const Editor: React.FC<DrawerProp> = (props) => {
       maskClosable={false}
       open={status}
       title={data?.category?.categoryName ? global.edit : global.add + setting.componentBar}
-      onClose={() => closeDrawer(false, null)}
+      onClose={onClose}
       width={480}
       destroyOnClose
       actions={
@@ -96,9 +131,18 @@ const Editor: React.FC<DrawerProp> = (props) => {
           {global.apply}
         </Button>
       }>
-      <Spin spinning={loading}>
-        <BasicInfoPanel key={status} category={category} categories={categories} onChange={setCategory} />
-      </Spin>
+      <Tabs activeKey={tabKey} onChange={setTabKey}>
+        <TabPane key="1" tab={setting.basicInfo}>
+          <Spin spinning={loading}>
+            <BasicInfoPanel key={status} category={category} categories={categories} onChange={setCategory} />
+          </Spin>
+        </TabPane>
+        <TabPane key="2" tab={global.props}>
+          <EditorContainer>
+            <JSONEditor jsonData={defaultValue || {}} onChangeJSON={setDefaultValue} />
+          </EditorContainer>
+        </TabPane>
+      </Tabs>
     </OperationDrawer>
   );
 };

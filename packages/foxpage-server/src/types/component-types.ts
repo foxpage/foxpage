@@ -7,6 +7,7 @@ export type ComponentContentInfo = Component & {
   version: string;
   type: string;
   isLive: boolean;
+  componentType?: string;
 };
 export interface ComponentInfo {
   name: string;
@@ -26,9 +27,9 @@ export interface ContentPath {
 }
 
 export interface ComponentCategory {
-  name:string;
+  name: string;
   categoryName: string;
-  groupName:string;
+  groupName: string;
   sort?: number;
   rank?: number;
   props?: Record<string, any>;
@@ -37,7 +38,7 @@ export interface ComponentCategory {
 }
 
 export interface ComponentWithCategory extends File {
-  category: ComponentCategory
+  category: ComponentCategory;
 }
 
 export interface ComponentCategoryTypes {

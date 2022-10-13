@@ -71,7 +71,7 @@ export class ContentLiveService extends BaseService<Content> {
    */
   async setLiveVersion(
     params: LiveContentVersion,
-    options: { ctx: FoxCtx; actionType?: string },
+    options: { ctx: FoxCtx; force?: boolean; actionType?: string },
   ): Promise<Record<string, number | string>> {
     const versionDetail = await Service.version.info.getDetail({
       contentId: params.id,
@@ -82,7 +82,7 @@ export class ContentLiveService extends BaseService<Content> {
       return { code: 1 }; // Invalid version information
     }
 
-    if (versionDetail.status !== VERSION.STATUS_RELEASE) {
+    if (!options.force && versionDetail.status !== VERSION.STATUS_RELEASE) {
       return { code: 2 }; // Not in release state
     }
 

@@ -19,6 +19,7 @@ import {
   ProjectListFetchParams,
   ProjectSaveParams,
 } from '@/types/index';
+import { objectEmptyCheck } from '@/utils/empty-check';
 
 function* handleFetchApp(action: ApplicationProjectsListActionType) {
   const { params } = action.payload as { params: ApplicationListFetchParams };
@@ -46,26 +47,31 @@ function* handleFetchList(action: ApplicationProjectsListActionType) {
     organizationId,
     applicationId,
     page = 1,
-    search = '',
+    searchText,
+    searchType,
     size = 10,
   } = action.payload as ProjectListFetchParams;
-  const params: ProjectListFetchParams = {
-    organizationId,
-    applicationId,
-    page,
-    search,
-    size,
-  };
-  const res = yield call(API.fetchProjects, params);
 
-  if (res.code === 200) {
-    yield put(ACTIONS.pushProjectList(res.data || [], res.pageInfo));
-  } else {
-    const {
-      global: { fetchListFailed },
-    } = getBusinessI18n();
+  if (applicationId) {
+    const params: ProjectListFetchParams = {
+      organizationId,
+      applicationId,
+      page,
+      size,
+      search: searchText || '',
+      searchType,
+    };
+    const res = yield call(API.fetchProjects, params);
 
-    message.error(res.msg || fetchListFailed);
+    if (res.code === 200) {
+      yield put(ACTIONS.pushProjectList(res.data || [], res.pageInfo));
+    } else {
+      const {
+        global: { fetchListFailed },
+      } = getBusinessI18n();
+
+      message.error(res.msg || fetchListFailed);
+    }
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -75,14 +81,15 @@ function* handleSave(action: ApplicationProjectsListActionType) {
   yield put(ACTIONS.updateSaveLoading(true));
 
   const { params, cb } = action.payload as { params: ProjectSaveParams; cb?: () => void };
-  const { organizationId } = params || {};
+  const { editProject: project, organizationId } = params || {};
+  const { editProject: storeProject } = store.getState().applications.detail.projects.folder;
+  const editProject = !objectEmptyCheck(project) ? project : storeProject;
   const { applicationId } = store.getState().applications.detail.settings.app;
-  const { editProject } = store.getState().applications.detail.projects.folder;
 
-  const api: any = editProject.id ? API.updateProject : API.addProject;
+  const api: any = editProject?.id ? API.updateProject : API.addProject;
   const res = yield call(api, {
-    projectId: editProject.id,
-    name: editProject.name,
+    projectId: editProject?.id,
+    name: editProject?.name,
     applicationId: editProject?.application?.id || applicationId,
     type: rootFolderType.project,
     organizationId,
@@ -102,10 +109,10 @@ function* handleSave(action: ApplicationProjectsListActionType) {
 }
 
 function* handleDelete(action: ApplicationProjectsListActionType) {
-  const { id, applicationId, organizationId } = action.payload as {
+  const { id, applicationId, cb } = action.payload as {
     id: string;
     applicationId: string;
-    organizationId: string;
+    cb?: () => void;
   };
   const res = yield call(API.deleteProject, {
     projectId: id,
@@ -120,17 +127,7 @@ function* handleDelete(action: ApplicationProjectsListActionType) {
   if (res.code === 200) {
     message.success(deleteSuccess);
 
-    const { pageInfo, projectList } = store.getState().applications.detail.projects.folder;
-    const page = projectList.length === 1 && pageInfo.page > 1 ? pageInfo.page - 1 : pageInfo.page;
-    let params: ProjectListFetchParams = {
-      organizationId,
-      applicationId,
-      ...pageInfo,
-      page,
-      search: '',
-    };
-
-    yield put(ACTIONS.fetchProjectList(params));
+    if (typeof cb === 'function') cb();
   } else {
     message.error(res.msg || deleteFailed);
   }

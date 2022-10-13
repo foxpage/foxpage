@@ -22,6 +22,7 @@ const Actions = styled.div`
 `;
 
 const DELAY = 100; //ms
+const LONG_DELAY = 300; //ms
 
 interface IProps {
   selectNode: RenderStructureNode | null;
@@ -44,9 +45,12 @@ const EditorIndex = (props: IProps) => {
       handleVisible(_visible);
     }
     if (_visible) {
-      setTimeout(() => {
-        setNewSelectNode(selectNode);
-      }, DELAY);
+      setTimeout(
+        () => {
+          setNewSelectNode(selectNode);
+        },
+        show ? DELAY : LONG_DELAY,
+      );
     } else {
       setNewSelectNode(null);
     }

@@ -30,6 +30,9 @@ export class FileContentService extends BaseService<Content> {
    * @returns {Content[]} Promise
    */
   async getContentByFileIds(fileIds: string[]): Promise<Content[]> {
+    if (fileIds.length === 0) {
+      return [];
+    }
     return Model.content.getDetailByFileIds(fileIds);
   }
 
@@ -74,5 +77,40 @@ export class FileContentService extends BaseService<Content> {
     }
 
     return ContentUserList;
+  }
+
+  /**
+   * get the locale content list under special file ids
+   * @param fileIds
+   * @param options {
+   *    locale, isLive
+   * }
+   * @returns
+   */
+  async getFileLocaleContent(
+    fileIds: string[],
+    options: { locale?: string; isLive?: boolean },
+  ): Promise<Record<string, Content>> {
+    if (fileIds.length === 0) {
+      return {};
+    }
+
+    const { locale = '', isLive = false } = options;
+    const searchParams: Record<string, any> = {
+      fileId: { $in: fileIds },
+      deleted: false,
+    };
+
+    if (locale) {
+      searchParams['tags.locale'] = locale;
+    } else {
+      searchParams['tags.isBase'] = true;
+    }
+
+    isLive && (searchParams.liveVersionNumber = { $gt: 0 });
+
+    const contentList = await Model.content.find(searchParams);
+
+    return _.keyBy(contentList, 'fileId');
   }
 }

@@ -10,15 +10,25 @@ import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectFolderActionType } from '@/reducers/projects/folder';
 import { store } from '@/store/index';
 import { PaginationReqParams, ProjectListFetchParams, ProjectSaveParams } from '@/types/index';
+import { objectEmptyCheck } from '@/utils/empty-check';
 
 function* handleFetchList(action: ProjectFolderActionType) {
   yield put(ACTIONS.updateLoading(true));
 
-  const { organizationId, page = 1, search, size = 10 } = action.payload as ProjectListFetchParams;
+  const {
+    organizationId,
+    page = 1,
+    search,
+    searchText,
+    searchType,
+    size = 10,
+  } = action.payload as ProjectListFetchParams;
   let params: ProjectListFetchParams = {
     organizationId,
     page,
     size,
+    search: searchText || '',
+    searchType,
   };
   if (search)
     params = {
@@ -44,10 +54,14 @@ function* handleSave(action: ProjectFolderActionType) {
   yield put(ACTIONS.updateSaveLoading(true));
 
   const { params, cb } = action.payload as { params: ProjectSaveParams; cb?: () => void };
-  const { organizationId, applicationId } = params;
-  const { editProject, pageInfo } = store.getState().projects.folder;
-  const res = yield call(API.addProject, {
-    name: editProject.name,
+  const { editProject: project, organizationId, applicationId } = params || {};
+  const { editProject: storeProject, pageInfo } = store.getState().projects.folder;
+  const editProject = !objectEmptyCheck(project) ? project : storeProject;
+
+  const api: any = editProject?.id ? API.updateProject : API.addProject;
+  const res = yield call(api, {
+    projectId: editProject?.id,
+    name: editProject?.name,
     applicationId: editProject?.application?.id || applicationId,
     type: rootFolderType.project,
     organizationId,
@@ -77,10 +91,10 @@ function* handleSave(action: ProjectFolderActionType) {
 }
 
 function* handleDelete(action: ProjectFolderActionType) {
-  const { id, applicationId, organizationId } = action.payload as {
+  const { id, applicationId, cb } = action.payload as {
     id: string;
     applicationId: string;
-    organizationId: string;
+    cb?: () => void;
   };
   const res = yield call(API.deleteProject, {
     projectId: id,
@@ -95,10 +109,7 @@ function* handleDelete(action: ProjectFolderActionType) {
   if (res.code === 200) {
     message.success(deleteSuccess);
 
-    // refresh project list
-    const { pageInfo, projectList } = store.getState().projects.folder;
-    const page = projectList.length === 1 && pageInfo.page > 1 ? pageInfo.page - 1 : pageInfo.page;
-    yield put(ACTIONS.fetchProjectList({ organizationId, ...pageInfo, page, search: '' }));
+    if (typeof cb === 'function') cb();
   } else {
     message.error(res.msg || deleteFailed);
   }

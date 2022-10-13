@@ -142,6 +142,8 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
 
         setConditions(newConditions);
       }
+    } else {
+      setConditions([]);
     }
   }, [open]);
 
@@ -205,7 +207,7 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
       },
     });
 
-    const timeConditionsName = `__condition_${shortId(10)}`;
+    const timeConditionsName = `__renderConditionTimeAndDisplay_${shortId(10)}`;
     const timeConditionContentEntity: ConditionContentEntity = {
       id: timeConditionsContent.current || '',
       schemas: [{ type: 1, props: {}, name: timeConditionsName, children: items }],

@@ -43,17 +43,20 @@ const mapStateToProps = (store: RootState) => ({
   folderId: store.builder.header.folderId,
   pageList: store.builder.header.pageList,
   components: store.builder.component.components,
+  locale: store.builder.header.locale,
 });
 
 const mapDispatchToProps = {
   openToolbarEditor: ACTIONS.updateToolbarEditorVisible,
   openToolbarModal: ACTIONS.updateToolbarModalVisible,
   templateBind: ACTIONS.templateOpenInPage,
-  selectContent: selectContent,
+  changeContent: ACTIONS.clearByContentChange,
   clear: ACTIONS.clearAll,
   fetchApp: ACTIONS.fetchApp,
   fetchFile: ACTIONS.fetchFile,
   fetchContent: ACTIONS.fetchContent,
+  deleteComponentMock: ACTIONS.deleteComponentMock,
+  selectContent: selectContent,
   fetchComponents: fetchComponentList,
   openStoreModal: updateStoreModalVisible,
 };
@@ -75,12 +78,15 @@ const Builder = (props: IProps) => {
     openToolbarModal,
     selectContent,
     clear,
+    changeContent,
     fetchComponents,
     fetchApp,
     fetchFile,
     fetchContent,
     templateBind,
     openStoreModal,
+    deleteComponentMock,
+    locale,
   } = props;
 
   useEffect(() => {
@@ -120,21 +126,25 @@ const Builder = (props: IProps) => {
   useEffect(() => {
     if (applicationId) {
       fetchApp(applicationId);
-      fetchComponents(applicationId);
+      fetchComponents(applicationId, locale);
     }
-  }, [applicationId]);
+  }, [applicationId, locale]);
 
   useEffect(() => {
     if (applicationId && fileId) {
       fetchFile({ applicationId, ids: [fileId] });
     }
   }, [applicationId, fileId]);
-  
+
   useEffect(() => {
-    if (components.length && application?.id && file.id && contentId) {
+    changeContent();
+  }, [contentId]);
+
+  useEffect(() => {
+    if (components.length && application?.id && file?.id && contentId) {
       fetchContent({ applicationId: application.id, id: contentId, type: file.type });
     }
-  }, [application, contentId, file.id, components.length]);
+  }, [application, contentId, file?.id, components.length]);
 
   const handleWindowChange: FoxBuilderEvents['onWindowChange'] = (target, opt) => {
     if (BUILDER_WINDOW_EDITOR.indexOf(target) > -1) openToolbarEditor(true, target, opt);
@@ -142,6 +152,9 @@ const Builder = (props: IProps) => {
     if (target === 'templateBind') {
       openStoreModal(true, 'template');
       templateBind(true);
+    }
+    if (target === 'mockDelete' && opt) {
+      deleteComponentMock(opt);
     }
   };
 

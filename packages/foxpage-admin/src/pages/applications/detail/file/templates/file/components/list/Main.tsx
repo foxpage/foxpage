@@ -1,14 +1,13 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
-import { FileOutlined } from '@ant-design/icons';
-import { Table as AntTable, Tag, Tooltip } from 'antd';
+import { EditOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Popconfirm, Table as AntTable, Tooltip } from 'antd';
 import styled from 'styled-components';
 
-import { suffixTagColor } from '@/constants/file';
-import { Name } from '@/pages/components';
+import { DeleteButton, Name } from '@/pages/components';
 import { GlobalContext } from '@/pages/system';
-import { File, PaginationInfo } from '@/types/index';
+import { File, PaginationInfo, ProjectFileDeleteParams } from '@/types/index';
 import { periodFormat } from '@/utils/period-format';
 
 const Table = styled(AntTable)`
@@ -23,10 +22,22 @@ interface FileListProps {
   pageInfo: PaginationInfo;
   list: File[];
   onPaginationChange: (page?: number, size?: number) => void;
+  deleteFile: (params: ProjectFileDeleteParams) => void;
+  openDrawer: (open: boolean, editFile?: File) => void;
+  openAuthDrawer: (visible: boolean, editFile?: File) => void;
 }
 
 const FileList: React.FC<FileListProps> = (props) => {
-  const { applicationId, loading, pageInfo, list, onPaginationChange } = props;
+  const {
+    applicationId,
+    loading,
+    pageInfo,
+    list,
+    deleteFile,
+    onPaginationChange,
+    openDrawer,
+    openAuthDrawer,
+  } = props;
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -34,17 +45,10 @@ const FileList: React.FC<FileListProps> = (props) => {
 
   const columns: any = [
     {
-      title: '',
-      dataIndex: '',
-      width: 40,
-      render: () => <FileOutlined />,
-    },
-    {
       title: global.nameLabel,
       dataIndex: 'name',
       render: (text: string, record: File) => (
-        <Link
-          to={`/applications/${applicationId}/file/templates/content?folderId=${record.folderId}&fileId=${record.id}`}>
+        <Link to={`/applications/${applicationId}/file/templates/content?fileId=${record.id}`}>
           <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
             <Name style={{ maxWidth: 400 }}>{text}</Name>
           </Tooltip>
@@ -55,14 +59,12 @@ const FileList: React.FC<FileListProps> = (props) => {
       title: global.project,
       dataIndex: 'folderName',
       key: 'folderName',
-    },
-    {
-      title: global.type,
-      dataIndex: 'type',
-      key: 'type',
-      render: (text: string, _record: File) => {
-        return <Tag color={suffixTagColor[text]}>{file[text]}</Tag>;
-      },
+      render: (folderName: string, record: File) => (
+        <Link
+          to={`/applications/${applicationId}/projects/detail?applicationId=${applicationId}&folderId=${record.folderId}`}>
+          <Name>{folderName}</Name>
+        </Link>
+      ),
     },
     {
       title: global.creator,
@@ -79,6 +81,50 @@ const FileList: React.FC<FileListProps> = (props) => {
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
+    {
+      title: global.actions,
+      key: '',
+      width: 130,
+      render: (_text: string, record: File) => (
+        <>
+          <Button
+            type="default"
+            size="small"
+            shape="circle"
+            title={global.edit}
+            onClick={() => openDrawer(true, record)}>
+            <EditOutlined />
+          </Button>
+          <Popconfirm
+            cancelText={global.no}
+            okText={global.yes}
+            title={`${file.deleteMessage}${file[record.type]}?`}
+            onConfirm={() => {
+              deleteFile({
+                id: record.id,
+                applicationId: record.applicationId || applicationId,
+                folderId: record.folderId,
+              });
+            }}>
+            <DeleteButton
+              type="default"
+              size="small"
+              shape="circle"
+              title={global.remove}
+              style={{ marginLeft: 8 }}
+            />
+          </Popconfirm>
+          <Button
+            type="default"
+            size="small"
+            shape="circle"
+            title={global.userPermission}
+            onClick={() => openAuthDrawer(true, record)}>
+            <UserOutlined />
+          </Button>
+        </>
+      ),
+    },
   ];
 
   return (
@@ -88,12 +134,13 @@ const FileList: React.FC<FileListProps> = (props) => {
       columns={columns}
       loading={loading}
       pagination={
-        pageInfo.total > pageInfo.size
+        pageInfo?.total && pageInfo.total > pageInfo.size
           ? {
               position: ['bottomCenter'],
               current: pageInfo.page,
               pageSize: pageInfo.size,
               total: pageInfo.total,
+              showSizeChanger: false,
             }
           : false
       }

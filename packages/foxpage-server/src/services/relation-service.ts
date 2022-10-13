@@ -53,7 +53,8 @@ export class RelationService extends BaseService<ContentRelation> {
 
       if (invalidContentIds.length > 0) {
         Object.keys(relations).forEach((relation) => {
-          if (invalidContentIds.indexOf(relations[relation].id) !== -1) {
+          let ignoreCheck = this.ignoreCheckRelation(relation, relations[relation]);
+          if (!ignoreCheck && invalidContentIds.indexOf(relations[relation].id) !== -1) {
             invalidRelations[relation] = relations[relation].id;
           }
         });
@@ -138,7 +139,10 @@ export class RelationService extends BaseService<ContentRelation> {
       const relationDetail = relationObject[contentId] || {};
       !relations[type] && (relations[type] = []);
       relations[type].push(
-        Object.assign({ version: relationDetail?.version || '' }, relationDetail?.content || {}),
+        Object.assign({}, relationDetail?.content || {}, {
+          version: relationDetail?.version || '',
+          id: relationDetail.contentId || '',
+        }),
       );
     });
 
@@ -252,5 +256,35 @@ export class RelationService extends BaseService<ContentRelation> {
       }
     });
     return invalidRelations;
+  }
+
+  /**
+   * filter ignore relation check items
+   * @param relationKey
+   * @param relationValue
+   * @returns
+   */
+  ignoreCheckRelation(relationKey: string, relationValue: Record<string, any>): boolean {
+    const ignoreNamePrefixs = ['$this:', '__context:'];
+    const ignoreTypePrefixs = ['sys_'];
+
+    let ignoreCheck = false;
+    for (const namePrefix of ignoreNamePrefixs) {
+      if (_.startsWith(relationKey, namePrefix)) {
+        ignoreCheck = true;
+        break;
+      }
+    }
+
+    if (!ignoreCheck) {
+      for (const typePrefix of ignoreTypePrefixs) {
+        if (_.startsWith(relationValue.type, typePrefix)) {
+          ignoreCheck = true;
+          break;
+        }
+      }
+    }
+
+    return ignoreCheck;
   }
 }

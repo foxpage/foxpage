@@ -67,22 +67,33 @@ export const saveProject = createAction(
 // delete related
 export const deleteProject = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_FOLDER__DELETE_PROJECT',
-  (id: string, applicationId: string, organizationId: string, search) => ({
+  (id: string, applicationId: string, cb?: () => void) => ({
     id,
     applicationId,
-    organizationId,
-    search,
+    cb,
   }),
 )();
 
 // application list related
 export const fetchApps = createAction(
-  'WORKSPACE_PROJECTS_PERSONAL_FOLDER__FETCH_LIST',
+  'WORKSPACE_PROJECTS_PERSONAL_FOLDER__FETCH_APP_LIST',
   (params: PaginationReqParams) => ({ params }),
 )();
 
 export const pushApps = createAction(
-  'WORKSPACE_PROJECTS_PERSONAL_FOLDER__PUSH_LIST',
+  'WORKSPACE_PROJECTS_PERSONAL_FOLDER__PUSH_APP_LIST',
+  (data: Application[]) => ({
+    data,
+  }),
+)();
+
+export const fetchAllApps = createAction(
+  'WORKSPACE_PROJECTS_PERSONAL_FOLDER__FETCH_ALL_APP_LIST',
+  (params: PaginationReqParams) => ({ params }),
+)();
+
+export const pushAllApps = createAction(
+  'WORKSPACE_PROJECTS_PERSONAL_FOLDER__PUSH_ALL_APP_LIST',
   (data: Application[]) => ({
     data,
   }),

@@ -335,11 +335,17 @@ export class AppSettingInfo {
   @IsBoolean()
   status: boolean;
 
-  @JSONSchema({ description: 'Item type status, true|false' })
+  @JSONSchema({ description: 'Item type category' })
   @ValidateNested({ each: true })
   @IsObject()
   @IsOptional()
   category: Record<string, any>;
+
+  @JSONSchema({ description: 'Item type default value' })
+  @ValidateNested({ each: true })
+  @IsObject()
+  @IsOptional()
+  defaultValue: Record<string, any>;
 }
 
 export class AppSettingDetailReq {
@@ -347,7 +353,7 @@ export class AppSettingDetailReq {
   @IsString()
   applicationId: string;
 
-  @JSONSchema({ description: 'Application setting item type, page|template|component' })
+  @JSONSchema({ description: 'Application setting item type, page|template|block|component' })
   @IsString()
   type: string;
 
@@ -355,7 +361,7 @@ export class AppSettingDetailReq {
   @ValidateNested({ each: true })
   @IsArray()
   @Type(() => AppSettingInfo)
-  setting: AppSettingInfo[]
+  setting: AppSettingInfo[];
 }
 
 export class AppSettingItemDetail extends AppSettingInfo {
@@ -377,4 +383,18 @@ export class AppSettingItemRes extends ResponsePageBase {
   @IsArray()
   @Type(() => AppSettingItemDetail)
   data: Array<AppSettingItemDetail>;
+}
+
+export class RemoveAppSettingDetailReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Application setting item type, page|template|component' })
+  @IsString()
+  type: string;
+
+  @JSONSchema({ description: 'Application setting item file ids, string of split by comma' })
+  @IsString()
+  fileIds: string;
 }

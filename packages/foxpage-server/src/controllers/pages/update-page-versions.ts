@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { LOG } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
@@ -16,7 +16,7 @@ import {
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController()
 export class UpdatePageVersionDetail extends BaseController {
   constructor() {
     super();
@@ -27,7 +27,9 @@ export class UpdatePageVersionDetail extends BaseController {
    * @param  {ContentVersionUpdateReq} params
    * @returns {ContentVersion}
    */
-  @Put('/versions')
+  @Put('pages/versions')
+  @Put('templates/versions')
+  @Put('blocks/versions')
   @OpenAPI({
     summary: i18n.sw.updatePageVersionDetail,
     description: '/page/version/detail',
@@ -37,7 +39,8 @@ export class UpdatePageVersionDetail extends BaseController {
   @ResponseSchema(ContentVersionDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
     try {
-      ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
+      const apiType = this.getRoutePath(ctx.request.url);
+
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051901);
@@ -60,7 +63,7 @@ export class UpdatePageVersionDetail extends BaseController {
       [result] = await Promise.all([
         this.service.version.info.updateVersionDetail(params, {
           ctx,
-          actionType: [LOG.UPDATE, TYPE.PAGE].join('_'),
+          actionType: [LOG.UPDATE, apiType].join('_'),
         }),
         this.service.content.tag.updateExtensionTag(params.id, { mockId }, { ctx }),
       ]);
@@ -79,6 +82,7 @@ export class UpdatePageVersionDetail extends BaseController {
 
       await this.service.version.info.runTransaction(ctx.transactions);
       const versionDetail = await this.service.version.info.getDetailById(<string>result.data);
+      ctx.logAttr = Object.assign(ctx.logAttr, { id: <string>result.data, type: apiType });
 
       return Response.success(versionDetail, 1051901);
     } catch (err) {

@@ -1,6 +1,7 @@
 import React, { CSSProperties, useContext } from 'react';
 
-import { DownOutlined, DragOutlined, RightOutlined } from '@ant-design/icons';
+import { DownOutlined, DragOutlined, RightOutlined, BugFilled } from '@ant-design/icons';
+import { Tooltip } from 'antd';
 import styled from 'styled-components';
 
 import { BLANK_NODE } from '@/constant/index';
@@ -14,7 +15,6 @@ const LayerContent = styled.div`
 `;
 
 const Content = styled.div`
-  width: 100%;
   position: relative;
 `;
 
@@ -29,11 +29,12 @@ const Name = styled.span`
   text-decoration: ${(props: { state: boolean }) => (props.state ? 'line-through' : 'none')};
   color: ${(props: { state: boolean }) => (props.state ? '#999' : '')};
   margin-right: 4px;
+  line-height: 18px;
 `;
 
 const Component = styled.div`
-  line-height: 20px;
-  padding: 6px 0;
+  line-height: 18px;
+  padding: 8px 0;
   position: relative;
   border-bottom: 1px dashed #e8e8e8;
   background-color: ${(props: any) => (props.isedit ? '#F7FFFB' : 'transparent')};
@@ -57,6 +58,42 @@ const DragIcon = styled(DragOutlined)`
   }
 `;
 
+const StatusTagWithChars = styled.span`
+  display: inline-block;
+  margin: -4px;
+  width: 22px;
+  height: 22px;
+  line-height: 20px;
+  font-size: 12px;
+  text-align: center;
+  border: solid 1px #ffd591;
+  transform: scale(0.6);
+  margin-right: 2px;
+  color: #d46b08;
+  background: #fff7e6;
+`;
+
+const StatusTag = styled.span`
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 2px;
+  border-radius: 50%;
+  position: relative;
+  top: -1px;
+  background-color: ${(props: { color?: string; backgroundColor?: string }) =>
+    props.backgroundColor || 'yellow'};
+  :hover {
+    transform: scale(1.3);
+  }
+`;
+
+const TagsWrapper = styled.span`
+  margin-left: 2px;
+  position: relative;
+  top: 1px;
+`;
+
 export const iconStyle: CSSProperties = {
   transform: 'scale(0.8)',
 };
@@ -75,7 +112,7 @@ interface IProps {
 }
 
 const Node = (props: IProps) => {
-  const { componentMap } = useContext(FoxContext);
+  const { componentMap, foxI18n } = useContext(FoxContext);
   const {
     idx,
     childNum,
@@ -91,7 +128,8 @@ const Node = (props: IProps) => {
   const { id } = component;
 
   const canDragIn = componentMap[component.name]?.enableChildren;
-  const { moveable = true } = component.__editorConfig || {};
+  const { moveable = true, isExtend, isExtendAndModified, hasCondition, hasVariable, hasMock } =
+    component.__editorConfig || {};
 
   return (
     <Component
@@ -117,6 +155,42 @@ const Node = (props: IProps) => {
       <LayerContent>
         <Content>
           <Name state={component.name === BLANK_NODE}>{component.label || component.name}</Name>
+          {isExtend && (
+            <Tooltip title={foxI18n.inheritNode}>
+              <StatusTag backgroundColor="#faad14" />
+            </Tooltip>
+          )}
+          {isExtendAndModified && (
+            <Tooltip title={foxI18n.modified}>
+              <StatusTag backgroundColor="#52c41a" />
+            </Tooltip>
+          )}
+          <TagsWrapper>
+            {hasCondition && (
+              <Tooltip title={foxI18n.usingCondition}>
+                <StatusTagWithChars>C</StatusTagWithChars>
+              </Tooltip>
+            )}
+            {hasVariable && (
+              <Tooltip title={foxI18n.usingVariable}>
+                <StatusTagWithChars>V</StatusTagWithChars>
+              </Tooltip>
+            )}
+            {hasMock && (
+              <Tooltip title={foxI18n.mockEnabled}>
+                <BugFilled
+                  style={{
+                    color: 'rgb(255, 89, 24)',
+                    marginLeft: -4,
+                    transform: 'scale(0.6)',
+                    fontSize: '16px',
+                    position: 'relative',
+                    top: 1,
+                  }}
+                />
+              </Tooltip>
+            )}
+          </TagsWrapper>
         </Content>
       </LayerContent>
       {toolBar && (

@@ -9,6 +9,7 @@ import {
   ComponentVersionEntityResource,
   RemoteResource,
 } from '@/types/index';
+import { ComponentType } from '@/constants/index';
 
 // type api
 export type AppComponentDetailFetchComponentInfoParams = Pick<CommonFetchParams, 'applicationId' | 'id'>;
@@ -68,6 +69,7 @@ export interface ComponentRemote {
     version: string;
   };
   resource: RemoteResource;
+  componentType: ComponentType;
 }
 
 export interface RemoteComponentItem {

@@ -136,4 +136,13 @@ export interface FoxI18n {
   advance: string;
   template: string;
   select: string;
+  modified: string;
+  mockEnabled: string;
+  mockDisabled: string;
+  enable: string;
+  delete: string;
+  deleteMockTips: string;
+  inheritNode: string;
+  usingCondition: string;
+  usingVariable: string;
 }

@@ -124,7 +124,9 @@ export class FileListService extends BaseService<File> {
     };
 
     if (params.search) {
-      filter['$and'].push({ name: { $regex: new RegExp(params.search, 'i') } });
+      filter['$and'].push({
+        $or: [{ name: { $regex: new RegExp(params.search, 'i') } }, { id: params.search }],
+      });
     }
 
     // filter application or the special folder items
@@ -173,8 +175,8 @@ export class FileListService extends BaseService<File> {
       Service.store.goods.find({ 'details.id': { $in: fileIds }, status: 1, deleted: false }),
     ];
 
-    // Only variable and condition return content version value
-    if ([TYPE.VARIABLE, TYPE.CONDITION, TYPE.FUNCTION].indexOf(fileType) !== -1) {
+    // Only variable, condition, function and mock return content version value
+    if ([TYPE.VARIABLE, TYPE.CONDITION, TYPE.FUNCTION, TYPE.MOCK].indexOf(fileType) !== -1) {
       promises.push(Service.version.list.getMaxVersionByFileIds(fileIds));
     } else {
       promises.push(Service.content.list.getContentObjectByFileIds(fileIds));
@@ -307,7 +309,7 @@ export class FileListService extends BaseService<File> {
           version: versionObject?.[content.id]?.version || '',
           versionNumber: content.liveVersionNumber || versionObject?.[content.id]?.versionNumber,
           contentId: content.id,
-          content: versionObject?.[content.id]?.content || {},
+          content: Object.assign(versionObject?.[content.id]?.content || {}, { id: content.id }),
           relations: itemRelations,
           online: goodsStatusObject[content.fileId]?.status ? true : false,
         });
@@ -330,7 +332,6 @@ export class FileListService extends BaseService<File> {
     limit?: number;
   }): Promise<{ counts: number; list: File[] }> {
     const { applicationId = '', userId = '' } = params;
-
     const userInvoloveItems = await Service.auth.find(
       {
         targetId: userId,
@@ -359,7 +360,7 @@ export class FileListService extends BaseService<File> {
     };
 
     if (fileIds.length > 0) {
-      fileParams['$or'].push({ fileId: { $in: _.uniq(fileIds) } });
+      fileParams['$or'].push({ id: { $in: _.uniq(fileIds) } });
     }
 
     if (projectIds.length > 0) {

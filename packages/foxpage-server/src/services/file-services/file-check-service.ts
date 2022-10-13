@@ -41,24 +41,26 @@ export class FileCheckService extends BaseService<File> {
    * @param  {AppFileTag} params
    * @returns Promise
    */
-  async pathNameExist(params: AppFileTag): Promise<boolean> {
-    const pathName = this.getValidPathname(params.tags);
+  async pathNameExist(params: AppFileTag): Promise<string[]> {
+    const pathNames = this.getValidPathname(params.tags);
 
-    if (pathName) {
+    if (pathNames) {
       const fileList = await Service.file.list.find({
         applicationId: params.applicationId,
-        tags: { $elemMatch: { pathname: pathName } },
+        tags: { $elemMatch: { pathname: { $in: pathNames } } },
+        id: { $ne: params.fileId },
         deleted: false,
       });
-
-      const existFile = fileList.find((file) => {
-        return this.getValidPathname(file?.tags || []) && file.id !== params.fileId;
+      let existPathnames: string[] = [];
+      (fileList || []).forEach((file) => {
+        const filePathnameTags = _.map(file.tags, 'pathname');
+        existPathnames.push(..._.intersection(pathNames, filePathnameTags));
       });
 
-      return !!existFile;
+      return existPathnames;
     }
 
-    return false;
+    return [];
   }
 
   /**
@@ -66,15 +68,44 @@ export class FileCheckService extends BaseService<File> {
    * @param  {Tag[]} tags
    * @returns string
    */
-  getValidPathname(tags: Tag[]): string {
-    let pathname: string = '';
+  getValidPathname(tags: Tag[]): string[] {
+    let pathNames: string[] = [];
     if (tags && tags.length > 0) {
       tags.forEach((tag) => {
         if (tag.pathname && (_.isNil(tag.status) || tag.status)) {
-          pathname = tag.pathname;
+          pathNames.push(tag.pathname.toLowerCase());
         }
       });
     }
-    return pathname;
+    return pathNames;
+  }
+
+  /**
+   * check the contents in files has live version, return has live version's fileId
+   * @param fileIds
+   * @returns
+   */
+  async checkFileHasLiveContent(fileIds: string[]): Promise<string[]> {
+    const [fileContentList, fileList] = await Promise.all([
+      Service.content.file.getContentByFileIds(fileIds),
+      Service.file.list.getDetailByIds(fileIds),
+    ]);
+    let hasLiveContentFileIds: string[] = [];
+
+    // check file is reference
+    fileList.forEach((file) => {
+      if (file.tags && file.tags.length > 0) {
+        const referTag = _.find(file.tags, { type: 'reference' });
+        referTag?.reference?.id && hasLiveContentFileIds.push(file.id);
+      }
+    });
+
+    fileContentList.map((content) => {
+      if (hasLiveContentFileIds.indexOf(content.fileId) === -1 && content.liveVersionNumber > 0) {
+        hasLiveContentFileIds.push(content.fileId);
+      }
+    });
+
+    return hasLiveContentFileIds;
   }
 }

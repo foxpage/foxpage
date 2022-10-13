@@ -20,7 +20,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * Single instance
    * @returns VersionCheckService
    */
-  public static getInstance (): VersionCheckService {
+  public static getInstance(): VersionCheckService {
     this._instance || (this._instance = new VersionCheckService());
     return this._instance;
   }
@@ -33,7 +33,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {any} content
    * @returns {string[]} Promise
    */
-  async contentFields (fileId: string, content: any): Promise<string[]> {
+  async contentFields(fileId: string, content: any): Promise<string[]> {
     let missingFields: string[] = [];
 
     // Get the type of page
@@ -60,7 +60,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} contentVersion
    * @returns ContentVersionNumber
    */
-  notExistVersionNumber (
+  notExistVersionNumber(
     idNumbers: ContentVersionNumber[],
     contentVersion: ContentVersion[],
   ): ContentVersionNumber[] {
@@ -84,7 +84,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {ContentVersion[]} contentVersion
    * @returns ContentVersionString
    */
-  notExistVersion (
+  notExistVersion(
     idVersions: ContentVersionString[],
     contentVersion: ContentVersion[],
   ): ContentVersionString[] {
@@ -106,7 +106,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {number} versionNumber
    * @returns {boolean} Promise
    */
-  async isNewVersion (contentId: string, versionNumber: number): Promise<boolean> {
+  async isNewVersion(contentId: string, versionNumber: number): Promise<boolean> {
     const versionDetail = await Model.version.getDetailByVersionNumber(contentId, versionNumber);
 
     return !versionDetail;
@@ -118,7 +118,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {ContentCheck} params
    * @returns Promise
    */
-  async versionExist (contentId: string, version: string, versionId: string = ''): Promise<boolean> {
+  async versionExist(contentId: string, version: string, versionId: string = ''): Promise<boolean> {
     return this.checkExist({ contentId, version, deleted: false }, versionId);
   }
 
@@ -132,7 +132,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {VersionCheckResult} versionDSL
    * @returns versionDSL
    */
-  structure (versionDSL: DSL): VersionCheckResult {
+  structure(versionDSL: DSL): VersionCheckResult {
     if (!versionDSL.id || !_.startsWith(versionDSL.id, PRE.CONTENT)) {
       return { code: 1, data: versionDSL, msg: versionDSL.id || '' };
     }
@@ -163,20 +163,16 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {} DslRelation>
    * @returns string
    */
-  relation (relation: Record<string, DslRelation>): string[] {
+  relation(relation: Record<string, DslRelation>): string[] {
     let invalidKeys: string[] = [];
     for (const key in relation) {
       // do not check system variable, conditions ..
-      if (relation[key].type && _.startsWith(relation[key].type, 'sys_')) {
+      const ignoreCheck = Service.relation.ignoreCheckRelation(key, relation[key]);
+      if (ignoreCheck) {
         continue;
       }
 
-      if (
-        key.indexOf('.') !== -1 ||
-        !relation[key].type ||
-        !relation[key].id ||
-        !_.startsWith(relation[key].id, PRE.CONTENT)
-      ) {
+      if (!relation[key].type || !relation[key].id || !_.startsWith(relation[key].id, PRE.CONTENT)) {
         invalidKeys.push(key);
       }
     }
@@ -192,7 +188,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @param  {{invalidNames:string[]}={invalidNames:[]}} options
    * @returns string
    */
-  schemaCheckRecursive (
+  schemaCheckRecursive(
     schemas: DslSchemas[],
     options: { invalidNames: string[] } = { invalidNames: [] },
   ): { schemas: DslSchemas[]; options: { invalidNames: string[] } } {

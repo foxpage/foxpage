@@ -12,6 +12,7 @@ import { PageBuildVersionReq, PageBuildVersionRes } from '../../types/validates/
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/get-page-live-versions.ts
 @JsonController('templates')
 export class GetTemplateLiveVersionDetail extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class GetTemplateLiveVersionDetail extends BaseController {
    * @param  {AppContentVersionReq} params
    * @returns {PageContentData[]}
    */
-  @Get('/live-version')
+  @Get('/live-version-migrations')
   @OpenAPI({
     summary: i18n.sw.getTemplateLiveVersion,
     description: '',
@@ -32,9 +33,7 @@ export class GetTemplateLiveVersionDetail extends BaseController {
     operationId: 'get-template-live-version',
   })
   @ResponseSchema(PageBuildVersionRes)
-  async index (
-    @QueryParams() params: PageBuildVersionReq,
-  ): Promise<ResData<PageBuildVersion>> {
+  async index(@QueryParams() params: PageBuildVersionReq): Promise<ResData<PageBuildVersion>> {
     try {
       // Get the template content detail
       const contentDetail = await this.service.content.info.getDetailById(params.id);
@@ -44,15 +43,23 @@ export class GetTemplateLiveVersionDetail extends BaseController {
         return Response.success({}, 1071901);
       }
 
-      const versionDetail = await this.service.version.info.getDetail({ contentId: params.id, versionNumber: liveVersionNumber });
-      const versionInfo = await this.service.version.info.getPageVersionInfo(versionDetail, { applicationId: params.applicationId });
+      const versionDetail = await this.service.version.info.getDetail({
+        contentId: params.id,
+        versionNumber: liveVersionNumber,
+      });
+      const versionInfo = await this.service.version.info.getPageVersionInfo(versionDetail, {
+        applicationId: params.applicationId,
+      });
 
       // Splicing return result
       versionDetail.content.extension = versionInfo.mockObject[params.id]?.extension || {};
       versionDetail.content.dslVersion = versionDetail.dslVersion || DSL_VERSION;
-      
+
       const mockRelations = versionInfo.mockObject[params.id]?.relations || {};
-      versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockRelations);
+      versionInfo.relations = this.service.version.relation.moveMockRelations(
+        versionInfo.relations,
+        mockRelations,
+      );
 
       const pageLiveVersion: PageBuildVersion = Object.assign({}, versionDetail, {
         relations: versionInfo.relations || {},

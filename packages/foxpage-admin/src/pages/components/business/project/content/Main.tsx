@@ -25,7 +25,9 @@ import {
 } from '@/types//index';
 import { getLocationIfo, getProjectFolder } from '@/utils/index';
 
-import { BasicInfo, EditDrawer, List } from './components/index';
+import { BasicInfo } from '../common/index';
+
+import { EditDrawer, List } from './components/index';
 
 interface ProjectContentType {
   type: 'application' | 'involved' | 'personal' | 'projects' | 'workspace';
@@ -98,11 +100,12 @@ const ProjectContentComponent: React.FC<ProjectContentType> = (props: ProjectCon
     deleteUser,
     openAuthDrawer,
   } = props;
+  const [folderId, setFolderId] = useState<string | undefined>();
   const [folderName, setFolderName] = useState<string>(getProjectFolder()?.name || 'Project details');
   const [typeId, setTypeId] = useState('');
 
   // url search params
-  const { applicationId, folderId, fileId } = getLocationIfo(useLocation());
+  const { applicationId, fileId } = getLocationIfo(useLocation());
 
   // route map with different type
   const typeRouteMap = {
@@ -132,8 +135,8 @@ const ProjectContentComponent: React.FC<ProjectContentType> = (props: ProjectCon
           id: fileId,
         },
         (folder) => {
-          const folderName = folder?.name;
-          if (folderName) setFolderName(folderName);
+          if (folder?.name) setFolderName(folder.name);
+          if (folder?.id) setFolderId(folder.id);
         },
       );
     }
@@ -244,50 +247,64 @@ const ProjectContentComponent: React.FC<ProjectContentType> = (props: ProjectCon
             overflow: type === 'projects' ? 'unset' : 'hidden auto',
           }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            {fileDetail?.online ? (
+            {type === 'application' && (
+              <>
+                {fileDetail?.online ? (
+                  <Button
+                    type="default"
+                    title="Revoke To Store"
+                    style={{ marginRight: 8 }}
+                    onClick={handleRevoke}>
+                    <ArrowDownOutlined />
+                    {store.revoke}
+                  </Button>
+                ) : (
+                  <Button
+                    type="default"
+                    title="Commit To Store"
+                    onClick={handleCommit}
+                    style={{ marginRight: 8 }}>
+                    <ArrowUpOutlined />
+                    {store.commit}
+                  </Button>
+                )}
+              </>
+            )}
+            {fileDetail.type === 'template' || fileDetail.type === 'block' ? (
               <Button
-                type="default"
-                title="Revoke To Store"
-                style={{ marginRight: 8 }}
-                onClick={handleRevoke}>
-                <ArrowDownOutlined />
-                {store.revoke}
+                type="primary"
+                onClick={() => {
+                  openDrawer(true);
+                }}>
+                <PlusOutlined /> {content.add}
               </Button>
             ) : (
-              <Button
-                type="default"
-                title="Commit To Store"
-                style={{ marginRight: 8 }}
-                onClick={handleCommit}>
-                <ArrowUpOutlined />
-                {store.commit}
-              </Button>
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item
+                      key="1"
+                      onClick={() => {
+                        openDrawer(true, { isBase: true });
+                      }}>
+                      {content.addBase}
+                    </Menu.Item>
+                    <Menu.Item
+                      key="2"
+                      onClick={() => {
+                        openDrawer(true);
+                      }}>
+                      {content.addLocale}
+                    </Menu.Item>
+                  </Menu>
+                }>
+                <Button type="primary">
+                  <PlusOutlined /> {content.add} <DownOutlined />
+                </Button>
+              </Dropdown>
             )}
-            <Dropdown
-              overlay={
-                <Menu>
-                  <Menu.Item
-                    key="1"
-                    onClick={() => {
-                      openDrawer(true, { isBase: true });
-                    }}>
-                    {content.addBase}
-                  </Menu.Item>
-                  <Menu.Item
-                    key="2"
-                    onClick={() => {
-                      openDrawer(true);
-                    }}>
-                    {content.addLocale}
-                  </Menu.Item>
-                </Menu>
-              }>
-              <Button type="primary">
-                <PlusOutlined /> {content.add} <DownOutlined />
-              </Button>
-            </Dropdown>
           </div>
-          <BasicInfo fileDetail={fileDetail} />
+          <BasicInfo fileType="file" fileDetail={fileDetail} />
           <List
             type={type}
             loading={loading}
@@ -307,6 +324,7 @@ const ProjectContentComponent: React.FC<ProjectContentType> = (props: ProjectCon
         editContent={editContent}
         locales={locales}
         baseContents={baseContents}
+        contentList={contentList}
         closeDrawer={openDrawer}
         fetchLocales={fetchLocales}
         updateContentValue={updateContentValue}

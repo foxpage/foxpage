@@ -67,13 +67,18 @@ export class ContentInfoService extends BaseService<Content> {
    */
   addContentDetail(
     params: Partial<Content>,
-    options: { ctx: FoxCtx; type: FileTypes; content?: any; actionType?: string },
+    options: { ctx: FoxCtx; type: FileTypes; content?: Record<string, any>; actionType?: string },
   ): Content {
-    const contentDetail = this.create(params, { ctx: options.ctx, actionType: options.actionType });
+    const contentDetail = this.create(params, { ctx: options.ctx });
     if ([TYPE.COMPONENT, TYPE.EDITOR, TYPE.LIBRARY].indexOf(options.type) === -1) {
+      if (!options.content) {
+        options.content = {};
+      }
+
+      options.content.id = contentDetail.id;
       Service.version.info.create(
         { contentId: contentDetail.id, content: options?.content || {} },
-        { ctx: options.ctx, fileId: params.fileId, actionType: options.actionType },
+        { ctx: options.ctx, fileId: params.fileId },
       );
     }
 

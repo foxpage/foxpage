@@ -13,6 +13,7 @@ import { ContentDetailRes, UpdateContentReq } from '../../types/validates/conten
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to pages/update-page-contents.ts
 @JsonController('templates')
 export class UpdateTemplateContentDetail extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class UpdateTemplateContentDetail extends BaseController {
    * @param  {UpdateContentReq} params
    * @returns {Content}
    */
-  @Put('/contents')
+  @Put('/contents-migraitons')
   @OpenAPI({
     summary: i18n.sw.updateTemplateContentDetail,
     description: '/template/detail',

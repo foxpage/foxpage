@@ -9,6 +9,7 @@ import * as ACTIONS from '@/store/actions/applications/detail/settings/builder/t
 import { store } from '@/store/index';
 import { BuilderTemplateSettingsActionType } from '@/store/reducers/applications/detail/settings/builder/templates';
 import {
+  ApplicationSettingBuilderDeleteParams,
   ApplicationSettingBuilderFetchParams,
   ApplicationSettingBuilderSaveParams,
   BaseResponse,
@@ -47,13 +48,14 @@ function* handleSaveTemplate(action: BuilderTemplateSettingsActionType) {
   if (res.code === 200) {
     message.success(saveSuccess);
 
-    const pageInfo = store.getState().applications.detail.settings.builder.templates.pageInfo;
+    const { pageInfo, searchText } = store.getState().applications.detail.settings.builder.templates;
     yield put(
       ACTIONS.fetchTemplates({
         applicationId: params.applicationId,
         type: 'template',
         page: pageInfo.page,
         size: pageInfo.size,
+        search: searchText || '',
       }),
     );
   } else {
@@ -82,10 +84,37 @@ function* handleFetchTemplatesContent(action: BuilderTemplateSettingsActionType)
   yield put(ACTIONS.updateModalState({ loading: false }));
 }
 
+function* handleDeleteTemplate(action: BuilderTemplateSettingsActionType) {
+  const { params } = action.payload as { params: ApplicationSettingBuilderDeleteParams };
+  const res: BaseResponse = yield call(API.deleteApplicationsBuilderSetting, params);
+
+  const {
+    global: { deleteFailed, deleteSuccess },
+  } = getBusinessI18n();
+
+  if (res.code === 200) {
+    message.success(deleteSuccess);
+
+    const { pageInfo, searchText } = store.getState().applications.detail.settings.builder.templates;
+    yield put(
+      ACTIONS.fetchTemplates({
+        applicationId: params.applicationId,
+        type: 'template',
+        page: pageInfo.page,
+        size: pageInfo.size,
+        search: searchText || '',
+      }),
+    );
+  } else {
+    message.error(deleteFailed);
+  }
+}
+
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchTemplates), handleFetchTemplates);
   yield takeLatest(getType(ACTIONS.saveCategory), handleSaveTemplate);
   yield takeLatest(getType(ACTIONS.fetchTemplatesContent), handleFetchTemplatesContent);
+  yield takeLatest(getType(ACTIONS.deleteCategory), handleDeleteTemplate);
 }
 
 export default function* rootSaga() {

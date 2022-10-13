@@ -1,7 +1,7 @@
 import React, { useContext, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-import { BuildOutlined, EditOutlined, FileOutlined, UserOutlined } from '@ant-design/icons';
+import { BuildOutlined, EditOutlined, FileOutlined, FileTextOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 
@@ -10,6 +10,7 @@ import { suffixTagColor } from '@/constants/file';
 import { GlobalContext } from '@/pages/system';
 import { File, PaginationInfo, ProjectFileDeleteParams, ProjectFileFetchParams } from '@/types/index';
 import { getLocationIfo, periodFormat } from '@/utils/index';
+import { FileType } from '@/constants/global';
 
 const PAGE_SIZE = 10;
 
@@ -53,7 +54,7 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
       title: '',
       dataIndex: '',
       width: 40,
-      render: () => <FileOutlined />,
+      render: (_, record: File) => (record?.type === FileType.page ? <FileTextOutlined /> : <FileOutlined />),
     },
     {
       title: global.nameLabel,
@@ -71,7 +72,7 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
             onClick={() => {
               localStorage['foxpage_project_file'] = JSON.stringify(record);
             }}
-            to={`${slugMap[type]}/content?applicationId=${applicationId}&folderId=${folderId}&fileId=${record.id}&fileType=${record.type}`}>
+            to={`${slugMap[type]}/content?applicationId=${applicationId}&fileId=${record.id}`}>
             <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
               <Name style={{ maxWidth: type === 'projects' ? 260 : 240 }}>{text}</Name>
             </Tooltip>
@@ -88,7 +89,7 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
       title: global.type,
       dataIndex: 'type',
       key: 'type',
-      render: (text: string) => <Tag color={suffixTagColor[text]}>{file[text]}</Tag>,
+      render: (text: string) => <Tag color={suffixTagColor[text]} style={{minWidth: '38px', textAlign: 'center'}}>{file[text]}</Tag>,
     },
     {
       title: global.creator,
@@ -179,12 +180,13 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
       columns={columns}
       loading={loading}
       pagination={
-        pageInfo.total > pageInfo.size
+        pageInfo?.total && pageInfo.total > pageInfo.size
           ? {
               position: ['bottomCenter'],
               current: pageInfo.page,
               pageSize: pageInfo.size,
               total: pageInfo.total,
+              showSizeChanger: false,
             }
           : false
       }

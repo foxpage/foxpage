@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { PlusOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Input } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/workspace/applications/list';
@@ -10,6 +10,8 @@ import { AuthorizeDrawer, Content, FoxPageBreadcrumb, FoxPageContent } from '@/p
 import { GlobalContext } from '@/pages/system';
 
 import { EditDrawer, List } from './components';
+
+const { Search } = Input;
 
 const PAGE_NUM = 1;
 const PAGE_SIZE = 999;
@@ -55,15 +57,23 @@ function Application(props: IProps) {
     saveUser,
     deleteUser,
   } = props;
+  const [pageNum, setPageNum] = useState<number>(pageInfo.page);
+  const [search, setSearch] = useState<string | undefined>();
   const [typeId, setTypeId] = useState('');
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { application } = locale.business;
+  const { application, global } = locale.business;
 
   useEffect(() => {
-    fetchList({ organizationId, type: 'user', page: pageInfo.page, size: pageInfo.size });
-  }, [fetchList, organizationId]);
+    fetchList({
+      organizationId,
+      page: pageNum,
+      size: pageInfo.size,
+      search: search || '',
+      type: 'user',
+    });
+  }, [fetchList, organizationId, pageNum, search]);
 
   useEffect(() => {
     const newTypeId = editApp?.id;
@@ -91,6 +101,12 @@ function Application(props: IProps) {
     }
   }, [authDrawerVisible, fetchUserList]);
 
+  const handleSearch = (search) => {
+    setPageNum(PAGE_NUM);
+
+    setSearch(search);
+  };
+
   return (
     <>
       <Content>
@@ -105,11 +121,17 @@ function Application(props: IProps) {
             />
           }>
           <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
+            <Search
+              placeholder={global.inputSearchText}
+              defaultValue={search}
+              onSearch={handleSearch}
+              style={{ width: 250, marginRight: 8 }}
+            />
             <Button type="primary" onClick={() => openDrawer(true)}>
               <PlusOutlined /> {application.add}
             </Button>
           </div>
-          <List />
+          <List search={search} />
         </FoxPageContent>
       </Content>
       <EditDrawer />

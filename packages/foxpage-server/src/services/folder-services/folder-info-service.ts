@@ -88,6 +88,7 @@ export class FolderInfoService extends BaseService<Folder> {
     const folderList = await Model.folder.find({
       applicationId: { $in: params.applicationIds },
       parentFolderId: '',
+      deleted: false,
       'tags.type': params.type,
     });
 
@@ -99,6 +100,21 @@ export class FolderInfoService extends BaseService<Folder> {
     });
 
     return appFolderMap;
+  }
+
+  /**
+   * Get application all default item folder ids
+   * @param applicationId
+   * @returns
+   */
+  async getAppDefaultItemFolderIds(applicationId: string): Promise<string[]> {
+    const folderList = await Model.folder.find({
+      applicationId: applicationId,
+      parentFolderId: '',
+      deleted: false,
+    });
+
+    return _.map(folderList, 'id');
   }
 
   /**

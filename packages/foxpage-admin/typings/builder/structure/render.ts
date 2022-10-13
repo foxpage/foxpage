@@ -18,6 +18,12 @@ export interface RenderStructureNode extends StructureNode {
     moveable?: boolean;
     editable?: boolean;
     styleable?: boolean;
+    isExtend?: boolean;
+    isExtendAndModified?: boolean;
+    isExtendAndDeleted?: boolean;
+    hasCondition?: boolean;
+    hasVariable?: boolean;
+    hasMock?: boolean;
     // rootNode
     templateBind?: boolean;
     disableTemplateBind?: boolean;

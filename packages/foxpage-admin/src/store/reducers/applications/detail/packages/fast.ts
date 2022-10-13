@@ -79,6 +79,14 @@ const reducer = (state: StateType = initialData, action: ApplicationPackagesFast
         draft.savedResources = data;
         break;
       }
+      case getType(ACTIONS.updateComponentRemoteInfo): {
+        const { name, info } = action.payload;
+        const pkg = draft.packages.find(item => item.components[0].resource.name === name);
+        if (pkg && info.componentType) {
+          pkg.components[0].componentType = info.componentType;
+        }
+        break;
+      }
       default:
         break;
     }

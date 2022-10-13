@@ -7,13 +7,13 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { LOG } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { ContentDetailRes, UpdateContentReq } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController()
 export class UpdatePageContentDetail extends BaseController {
   constructor() {
     super();
@@ -24,7 +24,9 @@ export class UpdatePageContentDetail extends BaseController {
    * @param  {UpdateContentReq} params
    * @returns {Content}
    */
-  @Put('/contents')
+  @Put('pages/contents')
+  @Put('templates/contents')
+  @Put('blocks/contents')
   @OpenAPI({
     summary: i18n.sw.updatePageContentDetail,
     description: '',
@@ -34,12 +36,15 @@ export class UpdatePageContentDetail extends BaseController {
   @ResponseSchema(ContentDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateContentReq): Promise<ResData<Content>> {
     try {
-      ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
+      const apiType = this.getRoutePath(ctx.request.url);
+
+      ctx.logAttr = Object.assign(ctx.logAttr, { type: apiType });
 
       const [hasAuth, sourceContentDetail] = await Promise.all([
         this.service.auth.content(params.id, { ctx }),
         this.service.content.info.getDetailById(params.id),
       ]);
+
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051701);
       }
@@ -52,12 +57,9 @@ export class UpdatePageContentDetail extends BaseController {
       params.isBase && params.tags.push({ isBase: params.isBase });
       params.extendId && params.tags.push({ extendId: params.extendId });
 
-      const result: Record<
-        string,
-        number | Content
-      > = await this.service.content.info.updateContentDetail(
-        Object.assign({}, params, { type: TYPE.PAGE as FileTypes }),
-        { ctx, actionType: [LOG.UPDATE, TYPE.PAGE].join('_') },
+      const result = await this.service.content.info.updateContentDetail(
+        Object.assign({}, params, { type: apiType as FileTypes }),
+        { ctx, actionType: [LOG.UPDATE, apiType].join('_') },
       );
 
       if (result.code === 1) {

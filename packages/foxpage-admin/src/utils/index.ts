@@ -1,4 +1,5 @@
 export * from './api-agent';
+export * from './builder-history';
 export * from './crypt';
 export * from './empty-check';
 export * from './file';

@@ -53,25 +53,28 @@ export class GetRemoteComponent extends BaseController {
     operationId: 'get-remote-page-component-list',
   })
   @ResponseSchema(RemotePagePackageRes)
-  async index (
+  async index(
     @QueryParams() params: RemotePagePackageReq,
   ): Promise<ResData<{ components: RemoteComponentRes[]; lastVersion: ContentVersion }>> {
     try {
       const pageSize = this.service.application.setPageSize(params);
       const groupInfo = await this.service.folder.info.getDetailById(params.groupId);
-      let resourceData = await this.service.resource.getResourceGroupLatestVersion(
-        params.groupId,
-        { packageName: params.groupName || groupInfo.name, proxy: config.proxy || '' }
-      );
+      let resourceData = await this.service.resource.getResourceGroupLatestVersion(params.groupId, {
+        packageName: params.groupName || groupInfo.name,
+        proxy: config.proxy || '',
+      });
 
       if (params.name) {
-        resourceData = _.filter(resourceData, resource => resource.name.indexOf(params.name) !== -1);
+        resourceData = _.filter(resourceData, (resource) => resource.name.indexOf(params.name) !== -1);
       }
 
       const packageList = _.chunk(resourceData, pageSize.size)[pageSize.page - 1] || [];
 
       const componentNames = _.map(packageList, 'name');
-      const componentInfos = await this.service.component.getComponentInfoByNames(params.applicationId, componentNames);
+      const componentInfos = await this.service.component.getComponentInfoByNames(
+        params.applicationId,
+        componentNames,
+      );
       const componentNameObject = _.keyBy(componentInfos, 'name');
       const componentIds = _.map(componentInfos, 'id');
 
@@ -80,7 +83,9 @@ export class GetRemoteComponent extends BaseController {
       let lastVersionResource: Record<string, Partial<ComponentDSL>> = {};
       for (const component of componentInfos) {
         if (maxComponentVersion[component.id]) {
-          lastVersionResource[component.id] = await this.service.component.getComponentResourcePath(maxComponentVersion[component.id].content);
+          lastVersionResource[component.id] = await this.service.component.getComponentResourcePath(
+            maxComponentVersion[component.id].content,
+          );
           maxComponentVersion[component.id].content = lastVersionResource[component.id];
         }
       }
@@ -121,28 +126,30 @@ export class GetRemoteComponent extends BaseController {
         const newComponentVersion = this.service.version.number.getVersionFromNumber(componentMaxVersion + 1);
 
         remoteComponentList.push({
-          components: [{
-            resource: Object.assign({ groupId: params.groupId, groupName }, res),
-            component: {
-              id: componentId,
-              version: newComponentVersion,
-              content: {
-                resource: {
-                  entry: {
-                    browser: { path: browserPath },
-                    css: { path: cssPath },
-                    debug: { path: debugPath },
-                    node: { path: nodePath },
-                    editor: { path: editorPath }
+          components: [
+            {
+              resource: Object.assign({ groupId: params.groupId, groupName }, res),
+              component: {
+                id: componentId,
+                version: newComponentVersion,
+                content: {
+                  resource: {
+                    entry: {
+                      browser: { path: browserPath },
+                      css: { path: cssPath },
+                      debug: { path: debugPath },
+                      node: { path: nodePath },
+                      editor: { path: editorPath },
+                    },
+                    'editor-entry': [],
+                    dependencies: [],
                   },
-                  'editor-entry': [],
-                  dependencies: [],
+                  meta: res.meta || {},
+                  schema: res.schema || {},
                 },
-                meta: res.meta || {},
-                schema: res.schema || {},
               },
-            }
-          }],
+            },
+          ],
           lastVersion: maxComponentVersion[componentId] || null,
         });
       });

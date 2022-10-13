@@ -37,7 +37,7 @@ export class SaveRemoteComponents extends BaseController {
     operationId: 'save-remote-component-list',
   })
   @ResponseSchema(ResponseBase)
-  async index (
+  async index(
     @Ctx() ctx: FoxCtx,
     @Body() params: SaveRemotePackageReq,
   ): Promise<ResData<NewResourceDetail[]>> {
@@ -58,7 +58,7 @@ export class SaveRemoteComponents extends BaseController {
       [appTypeId, fileContentObject, componentFileList] = await Promise.all([
         this.service.folder.info.getAppTypeFolderId({
           applicationId: params.applicationId,
-          type: TYPE.COMPONENT as AppFolderTypes
+          type: TYPE.COMPONENT as AppFolderTypes,
         }),
         this.service.content.list.getContentObjectByFileIds(componentFileIds),
         this.service.file.list.getDetailByIds(componentFileIds),
@@ -81,12 +81,16 @@ export class SaveRemoteComponents extends BaseController {
           });
 
           if (!componentDetail || _.isEmpty(componentDetail)) {
-            const fileDetail = this.service.file.info.create({
-              applicationId: params.applicationId || '',
-              name: _.trim(item.resource.name) || '',
-              folderId: appTypeId,
-              type: TYPE.COMPONENT as FileTypes,
-            }, { ctx });
+            const fileDetail = this.service.file.info.create(
+              {
+                applicationId: params.applicationId || '',
+                name: _.trim(item.resource.name) || '',
+                folderId: appTypeId,
+                type: TYPE.COMPONENT as FileTypes,
+                componentType: item.componentType || '',
+              },
+              { ctx },
+            );
 
             item.component.id = fileDetail.id;
           } else {
@@ -138,7 +142,10 @@ export class SaveRemoteComponents extends BaseController {
               entries[entryItem] =
                 checkResult.contentPath[item.resource.id][_.replace(itemPath, pathPre, '')];
             } else {
-              entries[entryItem] = await this.service.resource.getContentIdByPath(item.resource.groupId, _.drop(itemPath.split('/')));
+              entries[entryItem] = await this.service.resource.getContentIdByPath(
+                item.resource.groupId,
+                _.drop(itemPath.split('/')),
+              );
             }
           }
 
@@ -147,7 +154,10 @@ export class SaveRemoteComponents extends BaseController {
               editorEntry.id =
                 checkResult.contentPath[item.resource.id][_.replace(editorEntry.path, pathPre, '')];
             } else {
-              editorEntry.id = await this.service.resource.getContentIdByPath(item.resource.groupId, _.drop(editorEntry.path.split('/')));
+              editorEntry.id = await this.service.resource.getContentIdByPath(
+                item.resource.groupId,
+                _.drop(editorEntry.path.split('/')),
+              );
             }
 
             delete editorEntry.contentId;

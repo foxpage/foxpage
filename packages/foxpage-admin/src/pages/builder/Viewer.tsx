@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Spin } from 'antd';
 import styled from 'styled-components';
@@ -8,10 +8,10 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/events';
 import { selectComponent } from '@/actions/builder/main';
-import { EDITOR_ENV_PATH, EDITOR_PATH, STYLE_CONTAINER } from '@/constants/index';
+import { EDITOR_ENV_PATH, EDITOR_PATH, FileType, STYLE_CONTAINER } from '@/constants/index';
 import { findStructureByExtendId, findStructureById } from '@/sagas/builder/utils';
 import { FoxBuilderEvents, RenderStructureNode, StructureNode } from '@/types/index';
-import { getGlobalLocale } from '@/utils/global';
+import { getGlobalLocale, getLocationIfo } from '@/utils/index';
 
 import { listeners, posters } from './events';
 
@@ -68,7 +68,8 @@ const Viewer = (props: IProps) => {
   const { formattedSchemas: structure } = state;
   const locale = getGlobalLocale() || 'en';
   const history = useHistory();
-  const isPage = file.type === 'page';
+  const { applicationId } = getLocationIfo(useLocation());
+  const isPage = file?.type === FileType.page;
   // @ts-ignore
   const previewHtmlURL = __DEV__
     ? 'http://localhost:3003'
@@ -76,8 +77,10 @@ const Viewer = (props: IProps) => {
     ? `${host[0]?.url}/${slug}${EDITOR_PATH}`
     : '';
 
-  const handleLinkChange = (target: string, _opt?: {}) => {
-    history.push(target);
+  const handleLinkChange = (_target: string, _opt?: {}) => {
+    // TODO: generate different link by target, opt
+    const appSettingComponentLink = `/applications/${applicationId}/settings/builder/component`;
+    history.push(appSettingComponentLink);
   };
 
   const handleFrameLoaded = (_opt?: {}) => {
@@ -94,11 +97,18 @@ const Viewer = (props: IProps) => {
     onWindowChange: changeWindow,
     onLinkChange: handleLinkChange,
     onFrameLoaded: handleFrameLoaded,
+    onPageCaptured: handlePageCaptured,
   };
 
   const onListeners = (event: MessageEvent) => {
     listeners.listener(event, handlers);
   };
+
+  // upload page snapshot
+  function handlePageCaptured(img) {
+    // TODO: do upload here
+    return img;
+  }
 
   useEffect(() => {
     window.addEventListener('message', onListeners, false);
@@ -117,6 +127,7 @@ const Viewer = (props: IProps) => {
       };
       const pageConfig = {
         locale: pageLocale,
+        fileType: file.type,
       };
       // get select node
       let selectNode: StructureNode | null = null;
@@ -146,7 +157,7 @@ const Viewer = (props: IProps) => {
           } as unknown) as RenderStructureNode)
         : null;
 
-      posters.handleInit({
+      const initVal = {
         components,
         structure,
         selectNode: selectNode as RenderStructureNode,
@@ -158,7 +169,8 @@ const Viewer = (props: IProps) => {
           },
           page: pageConfig,
         },
-      });
+      };
+      posters.handleInit(initVal);
     }
   }, [frameLoaded, structure, components, pageLocale, application.id]);
 

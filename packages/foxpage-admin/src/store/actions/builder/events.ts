@@ -38,10 +38,14 @@ export const dropComponent = createAction('BUILDER_EVENT__DROP_COMPONENT', (para
   params,
 }))();
 
-export const variableBind = createAction('BUILDER_EVENT__VARIABLE_BIND', (keys: string, value?: string) => ({
-  keys,
-  value,
-}))();
+export const variableBind = createAction(
+  'BUILDER_EVENT__VARIABLE_BIND',
+  (keys: string, value?: string, opt?: { isMock: boolean }) => ({
+    keys,
+    value,
+    opt,
+  }),
+)();
 
 export const conditionBind = createAction('BUILDER_EVENT__CONDITION_BIND', (conditionIds: string[]) => ({
   conditionIds,

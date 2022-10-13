@@ -1,4 +1,5 @@
 import {
+  ApplicationSettingBuilderDeleteParams,
   ApplicationSettingBuilderFetchParams,
   ApplicationSettingBuilderSaveParams,
 } from '@/types/application';
@@ -14,6 +15,13 @@ export const getApplicationsBuilderSetting = (params: ApplicationSettingBuilderF
 export const saveApplicationsBuilderSetting = (params: ApplicationSettingBuilderSaveParams) =>
   new Promise((resolve) => {
     FoxPageApi.put('/applications/builder-setting', params, (rs: unknown) => {
+      resolve(rs);
+    });
+  });
+
+export const deleteApplicationsBuilderSetting = (params: ApplicationSettingBuilderDeleteParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.delete('/applications/builder-setting', params, (rs: unknown) => {
       resolve(rs);
     });
   });

@@ -39,7 +39,7 @@ export const saveProject = createAction(
 
 export const deleteProject = createAction(
   'PROJECTS_LIST__DELETE_PROJECT',
-  (id: string, applicationId: string, organizationId: string) => ({ id, applicationId, organizationId }),
+  (id: string, applicationId: string, cb?: () => void) => ({ id, applicationId, cb }),
 )();
 
 export const updateEditProjectValue = createAction(

@@ -8,7 +8,6 @@ import * as ACTIONS from './actions';
  * @param data data info
  */
 export const poster = (type: string, data: any, frame = window.parent) => {
-  // console.log('[ POSTER ]',type, data);
   frame.postMessage(
     {
       data,
@@ -112,4 +111,20 @@ export const handleLinkChange: FoxBuilderEvents['onLinkChange'] = (target, opt) 
  */
 export const handleFrameLoaded: FoxBuilderEvents['onFrameLoaded'] = (opt) => {
   poster(ACTIONS.FRAME_LOADED, { opt });
+};
+
+/**
+ * capture page
+ * @param data
+ */
+export const handlePageCapture: FoxBuilderEvents['onPageCapture'] = () => {
+  framePoster(ACTIONS.PAGE_CAPTURE, {});
+};
+
+/**
+ * captured page
+ * @param data
+ */
+ export const handlePageCaptured: FoxBuilderEvents['onPageCaptured'] = (opt) => {
+  poster(ACTIONS.PAGE_CAPTURED, { opt });
 };

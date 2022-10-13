@@ -8,7 +8,6 @@ import { LogService } from './log-service';
 import { OrgService } from './organization-service';
 import { RelationService } from './relation-service';
 import { ResourceService } from './resource-service';
-import { StorageService } from './storage-service';
 import * as store from './store-services';
 import { TeamService } from './team-service';
 import { UserService } from './user-service';
@@ -23,7 +22,6 @@ const relation: RelationService = RelationService.getInstance();
 const auth: AuthService = AuthService.getInstance();
 const component: ComponentService = ComponentService.getInstance();
 const resource: ResourceService = ResourceService.getInstance();
-const storage: StorageService = StorageService.getInstance();
 
 export {
   application,
@@ -36,7 +34,6 @@ export {
   org,
   relation,
   resource,
-  storage,
   store,
   team,
   user,

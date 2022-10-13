@@ -7,14 +7,14 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { LOG } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailRes, UpdateFileDetailReq } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController()
 export class UpdatePageDetail extends BaseController {
   constructor() {
     super();
@@ -25,7 +25,9 @@ export class UpdatePageDetail extends BaseController {
    * @param  {UpdateFileDetailReq} params
    * @returns {File}
    */
-  @Put('')
+  @Put('pages')
+  @Put('templates')
+  @Put('blocks')
   @OpenAPI({
     summary: i18n.sw.updatePageDetail,
     description: '',
@@ -40,15 +42,18 @@ export class UpdatePageDetail extends BaseController {
     }
 
     try {
-      ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
+      const apiType = this.getRoutePath(ctx.request.url);
+
+      ctx.logAttr = Object.assign(ctx.logAttr, { type: apiType });
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051801);
       }
 
+      params.tags = this.service.content.tag.formatTags(apiType, params.tags);
       const result: Record<string, any> = await this.service.file.info.updateFileDetail(params, {
         ctx,
-        actionType: [LOG.UPDATE, TYPE.PAGE].join('_'),
+        actionType: [LOG.UPDATE, apiType].join('_'),
       });
 
       if (result.code === 1) {
@@ -61,13 +66,14 @@ export class UpdatePageDetail extends BaseController {
 
       // Check if the path of the file already exists
       if (result.code === 3) {
-        return Response.warning(i18n.file.pathNameExist, 2051804);
+        return Response.warning(
+          i18n.file.pathNameExist + ':"' + ((result.data || []) as string[]).join(',') + '"',
+          2051804,
+        );
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
-
-      // Get file details
-      const pageDetail: File = await this.service.file.info.getDetailById(params.id);
+      const pageDetail = await this.service.file.info.getDetailById(params.id);
 
       return Response.success(pageDetail, 1051801);
     } catch (err) {

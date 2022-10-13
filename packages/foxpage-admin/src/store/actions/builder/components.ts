@@ -1,19 +1,27 @@
 import { createAction } from 'typesafe-actions';
 
-import { Component } from '@/types/index';
+import { Component, Content } from '@/types/index';
 
 export const clearAll = createAction('BUILDER_COMPONENT_LIST__CLEAR_ALL', () => ({}))();
 
 export const fetchComponentList = createAction(
   'BUILDER_COMPONENT_LIST__FETCH_COMPONENT_LIST',
-  (applicationId: string) => ({
+  (applicationId: string, locale: string) => ({
     applicationId,
+    locale
   }),
 )();
 
 export const pushComponentList = createAction(
   'BUILDER_COMPONENT_LIST__PUSH_COMPONENT_LIST',
   (data: Component[]) => ({
+    data,
+  }),
+)();
+
+export const pushBlockDSL = createAction(
+  'BUILDER_COMPONENT_LIST__PUSH_BLOCK_DSL',
+  (data: Record<string, Content>) => ({
     data,
   }),
 )();

@@ -4,16 +4,16 @@ import Icon from '@ant-design/icons';
 
 const PublishIcon = (props: { svgStyles?: any }) => {
   const { svgStyles, ...rest } = props;
-  const { width = 16, height = 16 } = props.svgStyles || {};
+
   return (
     <Icon
       component={() => (
         <svg
-          viewBox="0 0 1024 1024"
+          viewBox="64 64 896 896"
           version="1.1"
           p-id="1867"
-          width={width}
-          height={height}
+          width="1em"
+          height="1em"
           style={{ fill: 'currentcolor', ...props.svgStyles }}>
           <path
             d="M781.198222 251.050667L262.826667 467.114667 384 559.900444a28.444444 28.444444 0 0 1-34.531556 45.226667L189.155556 482.417778a28.444444 28.444444 0 0 1 6.314666-48.867556l615.367111-256.455111a28.444444 28.444444 0 0 1 38.627556 32.824889l-145.976889 615.708444a28.444444 28.444444 0 0 1-44.942222 16.042667L490.268444 712.817778a28.444444 28.444444 0 0 1 34.588445-45.169778l133.404444 102.115556 122.936889-518.769778z"

@@ -61,7 +61,7 @@ const Label = styled.span`
 `;
 
 const TOOLBAR_HEIGHT = 20;
-const DELAY = 100;
+const DELAY = 260;
 
 const SelectedLabel = () => {
   const [curZoom, setCurZoom] = useState(1);
@@ -92,11 +92,13 @@ const SelectedLabel = () => {
   }, [selectNode]);
 
   useEffect(() => {
-    win?.addEventListener('scroll', handleScroll);
-    return () => {
-      win?.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+    if(win){
+      win.addEventListener('scroll', handleScroll);
+      return () => {
+        win.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, [win]);
 
   const getRect = (ele: HTMLElement | null) => {
     if (!ele) {

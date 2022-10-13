@@ -60,7 +60,7 @@ const MenuItem = styled.li`
     background: #f7f7f7;
   }
   &.active {
-    background: #f2f8ff;
+    background: #eaf2fb;
   }
   &.disabled {
     color: #00000040 !important;
@@ -122,6 +122,7 @@ const Main: React.FC<CatalogList> = (props) => {
     selectFoldStatus,
     setLocale,
   } = props;
+  const [visible, setVisible] = useState(false);
   const [folderOpen, setFolderOpen] = useState<boolean>(true);
   const [fileId, setFileId] = useState('');
   const { locale: i18n } = useContext(GlobalContext);
@@ -133,14 +134,18 @@ const Main: React.FC<CatalogList> = (props) => {
   // expand current file by default
   useEffect(() => {
     if (fileId) {
-      selectFoldStatus(fileId, false);
-      // } else {
-      // use first file when there is no file id in url search params
-      // const defaultFile = contentList.find((item) => item.contents && item.contents.length > 0);
-
-      // if (defaultFile) selectFoldStatus(defaultFile.id, false);
+      selectFoldStatus(fileId, !visible);
     }
-  }, [fileId, selectFoldStatus]);
+
+    // if (fileId) {
+    //   selectFoldStatus(fileId, false);
+    //   } else {
+    //   // use first file when there is no file id in url search params
+    //   const defaultFile = contentList.find((item) => item.contents && item.contents.length > 0);
+    //
+    //   if (defaultFile) selectFoldStatus(defaultFile.id, false);
+    // }
+  }, [fileId, visible]);
 
   // get current content
   const currentContent = useMemo(() => {
@@ -189,11 +194,13 @@ const Main: React.FC<CatalogList> = (props) => {
   };
 
   const handlePopoverShow = (visible: boolean) => {
+    setVisible(visible);
+
     if (contentId) {
       if (visible) {
         setTimeout(() => {
           document.getElementById(contentId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
+        }, 500);
       }
     }
   };
@@ -212,7 +219,9 @@ const Main: React.FC<CatalogList> = (props) => {
         style={{ paddingLeft: 2 }}>
         <CaretDownOutlined rotate={folderOpen ? 0 : 270} style={iconStyle} />
         {folderOpen ? <FolderOpenOutlined style={iconStyle} /> : <FolderOutlined style={iconStyle} />}
-        {root}
+        <MenuTitleText style={{ maxWidth: 230 }}>
+          <Tooltip title={root}>{root}</Tooltip>
+        </MenuTitleText>
       </MenuItem>
       {folderOpen &&
         contentList.map((item) => (
@@ -221,7 +230,7 @@ const Main: React.FC<CatalogList> = (props) => {
               className={item.contents && item.contents.length > 0 ? '' : 'disabled'}
               onClick={() => handleSecondFolderClick(item)}>
               <CaretDownOutlined rotate={!item.fold ? 0 : 270} style={iconStyle} />
-              <Tag style={{ transform: 'scale(0.8)' }} color={suffixTagColor[item.type]}>
+              <Tag style={{ transform: 'scale(0.8)', minWidth: '38px', textAlign: 'center' }} color={suffixTagColor[item.type]}>
                 {i18n.business.file[item.type]}
               </Tag>
               <MenuTitleText style={{ maxWidth: 190 }}>

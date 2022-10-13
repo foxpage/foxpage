@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ArrowUpOutlined } from '@ant-design/icons';
-import { Input, Modal, Table as AntTable, Tag, Tooltip } from 'antd';
+import { Input, Modal, Table as AntTable, Tag, Tooltip, Tabs as AntTabs } from 'antd';
 import styled from 'styled-components';
 
 import { GlobalContext } from '@/pages/system';
@@ -10,6 +10,7 @@ import { ComponentCategory, ComponentEntity, PaginationInfo } from '@/types/inde
 import { objectEmptyCheck } from '@/utils/empty-check';
 
 const { Search } = Input;
+const { TabPane }  = AntTabs;
 
 const PAGE = 1;
 const SIZE = 10;
@@ -17,8 +18,16 @@ const SEARCH_SIZE = 9999;
 
 const Header = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-bottom: 12px;
+  align-items: center;
+`;
+
+const Tabs = styled(AntTabs)`
+  height: 40px;
+  & > .ant-tabs-nav::before {
+    border: none;
+  }
 `;
 
 const Table = styled(AntTable)`
@@ -42,12 +51,13 @@ const Main = (props: IProps) => {
   const { list, loading, pageInfo, type, visible, onClose, onFetch, onSave } = props;
   const [search, setSearch] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [activeTab, setActiveTab] = useState<string>(type);
 
   const { applicationId } = useParams<{ applicationId: string }>();
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { category, global, package: packageI18n } = locale.business;
+  const { category, global, package: packageI18n, setting: settingI18n } = locale.business;
 
   useEffect(() => {
     if (visible && applicationId && typeof onFetch === 'function') {
@@ -135,13 +145,24 @@ const Main = (props: IProps) => {
 
       onSave({
         applicationId,
-        type,
+        type: activeTab,
         setting,
       });
     }
 
     setTimeout(() => handleCancel(), 250);
   };
+
+  const switchTab = tab => {
+    setActiveTab(tab);
+    onFetch && onFetch({
+      applicationId,
+      page: PAGE,
+      size: SIZE,
+      search: '',
+      type: tab
+    });
+  }
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
@@ -174,6 +195,10 @@ const Main = (props: IProps) => {
       onCancel={handleCancel}
       onOk={handleConfirm}>
       <Header>
+        <Tabs onChange={ switchTab } style={{ visibility:  type === 'component' ? 'visible' : 'hidden' }}>
+          <TabPane key="component" tab={settingI18n.componentTab} />
+          <TabPane key="block" tab={settingI18n.blockTab} />
+        </Tabs>
         <Search
           allowClear
           placeholder={packageI18n.inputNameTips}
@@ -191,7 +216,7 @@ const Main = (props: IProps) => {
           onChange: onSelectChange,
         }}
         pagination={
-          pageInfo.total > pageInfo.size
+          pageInfo?.total && pageInfo.total > pageInfo.size
             ? {
                 position: ['bottomCenter'],
                 current: pageInfo.page,

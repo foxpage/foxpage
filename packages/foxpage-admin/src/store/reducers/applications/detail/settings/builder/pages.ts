@@ -28,6 +28,7 @@ const initialState = {
   loading: false,
   pages,
   pageInfo,
+  searchText: '',
   modal,
 };
 
@@ -53,6 +54,11 @@ const reducer = (state: InitialDataType = initialState, action: BuilderPageSetti
 
       case getType(ACTIONS.updatePageNum): {
         draft.pageInfo.page = action.payload.num;
+        break;
+      }
+
+      case getType(ACTIONS.updateSearchText): {
+        draft.searchText = action.payload.search;
         break;
       }
 

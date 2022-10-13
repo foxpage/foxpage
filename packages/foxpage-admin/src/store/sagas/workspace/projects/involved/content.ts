@@ -5,12 +5,13 @@ import { getType } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/workspace/projects/involved/content';
 import * as APPLICATION_API from '@/apis/application';
 import * as AUTH_API from '@/apis/authorize';
-import * as BUILDER_API from '@/apis/builder';
 import * as API from '@/apis/project';
-import { FileType } from '@/constants/index';
+import { updateBlockContent, addBlockContent } from '@/apis/builder/block';
+import { FileType, BLOCK_COMPONENT_NAME, PAGE_COMPONENT_NAME } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectInvolvedContentActionType } from '@/reducers/workspace/projects/involved/content';
 import { store } from '@/store/index';
+import { initRootContentNode } from '@/store/sagas/builder/utils'; 
 import {
   AuthorizeAddParams,
   AuthorizeDeleteParams,
@@ -23,13 +24,13 @@ import {
   ProjectContentDeleteParams,
   ProjectContentFetchParams,
 } from '@/types/index';
-import shortId from '@/utils/short-id';
+import { fetchLiveComponentList } from '@/apis/builder/component';
 
 function* handleFetchList(action: ProjectInvolvedContentActionType) {
   yield put(ACTIONS.updateLoading(true));
 
   const { applicationId, fileId, fileType } = action.payload as ProjectContentFetchParams;
-  const res = yield call(fileType === 'page' ? API.fetchPageContents : API.fetchTemplateContents, {
+  const res = yield call(fileType === FileType.page ? API.fetchPageContents : API.fetchTemplateContents, {
     applicationId,
     fileId,
   });
@@ -48,10 +49,10 @@ function* handleFetchList(action: ProjectInvolvedContentActionType) {
 }
 
 function* handleSave(action: ProjectInvolvedContentActionType) {
-  const { applicationId, fileId, fileType } = action.payload as ProjectContentFetchParams;
+  const { applicationId, fileId, fileType = FileType.page } = action.payload as ProjectContentFetchParams;
   const { editContent: content } = store.getState().workspace.projects.involved.content;
   const {
-    global: { nameError, saveSuccess, saveFailed, addFailed },
+    global: { nameError, saveSuccess, saveFailed },
   } = getBusinessI18n();
 
   if (!content?.title) {
@@ -61,55 +62,53 @@ function* handleSave(action: ProjectInvolvedContentActionType) {
 
   yield put(ACTIONS.updateSaveLoading(true));
 
-  const saveApi = content.id
-    ? fileType === FileType.page
-      ? API.updatePageContent
-      : API.updateTemplateContent
-    : fileType === FileType.page
-    ? API.addPageContent
-    : API.addTemplateContent;
-  const res = yield call(saveApi, {
+  let params: any = {
     ...content,
     extendId: !content.extendId ? undefined : content.extendId,
     fileId,
     applicationId,
-  });
+  };
+  if (typeof content?.oneLocale === 'undefined')
+    params = {
+      ...params,
+      oneLocale: true,
+    };
+  const isNew = !content.id;
+  const isExtend = !!content.extendId;
+  const fileTypeRootNodeMap: Record<string, string> = {
+    [FileType.page]: PAGE_COMPONENT_NAME,
+    [FileType.block]: BLOCK_COMPONENT_NAME
+  }
+  // create new root content node for base and content without extendId
+  if (isNew && !isExtend && fileTypeRootNodeMap[fileType]) {
+    const componentName = fileTypeRootNodeMap[fileType];
+    const { data: components } = yield call(fetchLiveComponentList, {
+      applicationId,
+      type: ["component", "systemComponent"],
+      search: componentName
+    });
+    const component = components.find(item => item.name === componentName);
+    if (component) {
+        params = {
+        ...params,
+        content: initRootContentNode(component)
+      };
+    }
+  }
+
+  const apis = {
+    [FileType.page]: [API.updatePageContent, API.addPageContent],
+    [FileType.template]: [API.updateTemplateContent, API.addTemplateContent],
+    [FileType.block]: [updateBlockContent, addBlockContent]
+  }
+  const saveApi = content.id ? apis[fileType][0] : apis[fileType][1];
+  const res = yield call(saveApi, params);
 
   if (res.code === 200) {
     message.success(saveSuccess);
 
     yield put(ACTIONS.openEditDrawer(false));
     yield put(ACTIONS.fetchContentList({ applicationId, fileId, fileType }));
-
-    // add root as default for content new base page/new locale page without extend
-    if (
-      fileType === FileType.page &&
-      !content.id &&
-      (content.isBase || (!content.isBase && !content.extendId))
-    ) {
-      // TODO: need to clean
-      const addRootRes = yield call(BUILDER_API.updatePageDsl, {
-        applicationId,
-        content: {
-          id: res.data.id,
-          relation: {},
-          schemas: [
-            {
-              children: [],
-              id: `stru_${shortId(15)}`,
-              name: 'page',
-              props: { width: '100%', height: '100%' },
-              type: 'page',
-            },
-          ],
-        },
-        id: res.data.id,
-      });
-
-      if (addRootRes.code !== 200) {
-        message.error(addRootRes.msg || addFailed);
-      }
-    }
   } else {
     message.error(res.msg || saveFailed);
   }
@@ -119,7 +118,7 @@ function* handleSave(action: ProjectInvolvedContentActionType) {
 
 function* handleDelete(action: ProjectInvolvedContentActionType) {
   const { applicationId, id, status, fileId, fileType } = action.payload as ProjectContentDeleteParams;
-  const res = yield call(fileType === 'page' ? API.deletePageContent : API.deleteTemplateContent, {
+  const res = yield call(fileType === FileType.page ? API.deletePageContent : API.deleteTemplateContent, {
     applicationId,
     id,
     status,

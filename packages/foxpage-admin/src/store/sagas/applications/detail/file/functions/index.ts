@@ -27,7 +27,9 @@ function* handleFetchList(actions: FunctionActionType) {
   const { folderId, type } = params;
   const { scope } = store.getState().applications.detail.file.functions;
   const res: FuncFetchRes =
-    !folderId && !type ? yield call(API.fetchAppFunctions, {...params, scope}) : yield call(API.fetchFunctions, params);
+    !folderId && !type
+      ? yield call(API.fetchAppFunctions, { ...params, scope })
+      : yield call(API.fetchFunctions, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushList(res.data, res.pageInfo));
@@ -52,7 +54,10 @@ function* handleSaveFunction(actions: FunctionActionType) {
   }
 
   if (params.content) {
-    const { realInvalids, relation } = yield getRelation(params.content as any, [] as RelationDetails);
+    const { applicationId } = store.getState().applications.detail.settings.app;
+    const { realInvalids, relation } = yield getRelation(params.content as any, [] as RelationDetails, {
+      applicationId: params?.applicationId || applicationId,
+    });
 
     if (!objectEmptyCheck(realInvalids)) {
       yield put(ACTIONS.updateLoading(false));

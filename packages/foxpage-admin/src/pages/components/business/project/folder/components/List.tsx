@@ -1,27 +1,25 @@
-import React, { useContext, useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
 
-import { BuildOutlined, EditOutlined, FolderOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Spin, Table as AntTable, Tooltip } from 'antd';
+import { FolderOutlined } from '@ant-design/icons';
+import { Spin, Table as AntTable, Tooltip } from 'antd';
 import styled from 'styled-components';
 
-import { DeleteButton, Name } from '@/components/index';
+import { Name } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import { PaginationInfo, ProjectEntity, ProjectListFetchParams } from '@/types/index';
-import { getLocationIfo, periodFormat } from '@/utils/index';
+import { periodFormat } from '@/utils/index';
 
 interface ProjectListProp {
   organizationId: string;
   applicationId?: string;
   search?: string;
+  searchCache?: Record<string, string | undefined>;
   type: string;
   loading: boolean;
   pageInfo: PaginationInfo;
   projectList: ProjectEntity[];
   fetchProjectList: (params: ProjectListFetchParams) => void;
-  deleteProject: (id: string, applicationId: string, organizationId: string, search?: string) => void;
-  openDrawer: (open: boolean, editProject?: ProjectEntity) => void;
-  openAuthDrawer?: (visible: boolean, editProject?: ProjectEntity) => void;
 }
 
 const Table = styled(AntTable)`
@@ -35,30 +33,17 @@ const ProjectList: React.FC<ProjectListProp> = (props: ProjectListProp) => {
     applicationId,
     organizationId,
     search: searchAppId,
+    searchCache,
     type,
     loading,
     pageInfo,
     projectList,
     fetchProjectList,
-    deleteProject,
-    openDrawer,
-    openAuthDrawer,
   } = props;
-
-  // url search params
-  const { pathname, search } = getLocationIfo(useLocation());
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { project, global } = locale.business;
-
-  const handeAuthorize = (open: boolean, project: ProjectEntity) => {
-    if (typeof openAuthDrawer === 'function') {
-      openAuthDrawer(open, project);
-    }
-  };
-
-  const authorizeAdmin = useMemo(() => type === 'personal' || type === 'application', [type]);
+  const { global } = locale.business;
 
   const columns: any = [
     {
@@ -118,65 +103,56 @@ const ProjectList: React.FC<ProjectListProp> = (props: ProjectListProp) => {
       width: 170,
       render: (text: string) => periodFormat(text, 'unknown'),
     },
-    {
-      title: global.actions,
-      key: '',
-      width: authorizeAdmin ? 160 : 80,
-      render: (_text: string, record: ProjectEntity) => (
-        <>
-          <Button type="default" size="small" shape="circle" title={global.build}>
-            <Link
-              to={{
-                pathname: '/builder',
-                search: `?applicationId=${record.application.id}&folderId=${record.id}`,
-                state: { backPathname: pathname, backSearch: search },
-              }}
-              onClick={() => {
-                localStorage['foxpage_project_file'] = JSON.stringify(record);
-              }}>
-              <BuildOutlined />
-            </Link>
-          </Button>
-          {authorizeAdmin && (
-            <>
-              <Button
-                type="default"
-                size="small"
-                shape="circle"
-                title={global.edit}
-                onClick={() => openDrawer(true, record)}
-                style={{ marginLeft: 8 }}>
-                <EditOutlined />
-              </Button>
-              <Popconfirm
-                cancelText={global.no}
-                okText={global.yes}
-                title={project.deleteMessage}
-                onConfirm={() => {
-                  deleteProject(record.id, record.application.id, organizationId, searchAppId);
-                }}>
-                <DeleteButton
-                  type="default"
-                  size="small"
-                  shape="circle"
-                  title={global.remove}
-                  style={{ marginLeft: 8 }}
-                />
-              </Popconfirm>
-              <Button
-                type="default"
-                size="small"
-                shape="circle"
-                title={global.userPermission}
-                onClick={() => handeAuthorize(true, record)}>
-                <UserOutlined />
-              </Button>
-            </>
-          )}
-        </>
-      ),
-    },
   ];
+
+  // if (authorizeAdmin) {
+  //   columns.push({
+  //     title: global.actions,
+  //     key: '',
+  //     width: 130,
+  //     render: (_text: string, record: ProjectEntity) => (
+  //       <>
+  //         <Button
+  //           type="default"
+  //           size="small"
+  //           shape="circle"
+  //           title={global.edit}
+  //           onClick={() => openDrawer(true, record)}
+  //         >
+  //           <EditOutlined />
+  //         </Button>
+  //         <Popconfirm
+  //           cancelText={global.no}
+  //           okText={global.yes}
+  //           title={project.deleteMessage}
+  //           onConfirm={() => {
+  //             deleteProject(record.id, record.application.id, organizationId, searchAppId);
+  //           }}>
+  //           <DeleteButton
+  //             type="default"
+  //             size="small"
+  //             shape="circle"
+  //             title={global.remove}
+  //             style={{ marginLeft: 8 }}
+  //           />
+  //         </Popconfirm>
+  //         <Button
+  //           type="default"
+  //           size="small"
+  //           shape="circle"
+  //           title={global.userPermission}
+  //           onClick={() => handeAuthorize(true, record)}>
+  //           <UserOutlined />
+  //         </Button>
+  //       </>
+  //     ),
+  //   });
+  // }
+
+  // remove column application in application detail
+  if (type === 'application') {
+    columns.splice(2, 1);
+  }
 
   return (
     <Spin spinning={loading}>
@@ -191,6 +167,7 @@ const ProjectList: React.FC<ProjectListProp> = (props: ProjectListProp) => {
                 current: pageInfo.page,
                 pageSize: pageInfo.size,
                 total: pageInfo.total,
+                showSizeChanger: false,
               }
             : false
         }
@@ -201,6 +178,8 @@ const ProjectList: React.FC<ProjectListProp> = (props: ProjectListProp) => {
             page: pagination.current || 1,
             size: pagination.pageSize || 10,
             search: searchAppId,
+            searchText: searchCache?.searchText || '',
+            searchType: searchCache?.searchType || '',
           });
         }}
       />

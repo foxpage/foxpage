@@ -18,7 +18,10 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
     const params = !_.isEmpty(ctx.request.body) ? ctx.request.body : ctx.request.query;
     ctx.operations = [];
     ctx.transactions = [];
-    ctx.logAttr = { transactionId: generationId(PRE.TRAN), applicationId: params.applicationId || '' };
+    ctx.logAttr = {
+      transactionId: generationId(PRE.TRAN),
+      applicationId: (params.applicationId as string) || '',
+    };
     ctx.userInfo = { id: '', account: '' };
     ctx.lang = <LangEnums>ctx.request.header?.lang || 'en'; // response language
     ctx.log = {

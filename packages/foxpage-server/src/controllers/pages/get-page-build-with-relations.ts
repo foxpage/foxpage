@@ -4,15 +4,17 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
+import { Content } from '@foxpage/foxpage-server-types';
+
 import { i18n } from '../../../app.config';
-import { DSL_VERSION, METHOD } from '../../../config/constant';
-import { PageContentRelationsAndExternal } from '../../types/content-types';
+import { DSL_VERSION, METHOD, TYPE } from '../../../config/constant';
+import { PageContentRelationInfos, PageContentRelationsAndExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController('')
 export class GetAppPageBuildInfoList extends BaseController {
   constructor() {
     super();
@@ -25,7 +27,9 @@ export class GetAppPageBuildInfoList extends BaseController {
    * @param  {AppContentVersionReq} params
    * @returns {PageContentData[]}
    */
-  @Post('/draft-infos')
+  @Post('pages/draft-infos')
+  @Post('templates/draft-infos')
+  @Post('blocks/draft-infos')
   @OpenAPI({
     summary: i18n.sw.getAppPagesBuildInfo,
     description: '',
@@ -33,7 +37,7 @@ export class GetAppPageBuildInfoList extends BaseController {
     operationId: 'get-page-build-version-info-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (
+  async index(
     @Ctx() ctx: FoxCtx,
     @Body() params: AppContentVersionReq,
   ): Promise<ResData<PageContentRelationsAndExternal[]>> {
@@ -42,6 +46,8 @@ export class GetAppPageBuildInfoList extends BaseController {
       if (params.ids.length === 0) {
         return Response.success([], 1050501);
       }
+
+      const apiType = this.getRoutePath(ctx.request.url);
 
       const contentFileObject = await this.service.file.list.getContentFileByIds(params.ids);
 
@@ -53,13 +59,15 @@ export class GetAppPageBuildInfoList extends BaseController {
       }
 
       // Get the live details of the specified contentIds and the relation details
-      const [contentList, contentVersionList] = await Promise.all([
-        this.service.content.list.getDetailByIds(validContentIds),
-        this.service.version.live.getContentAndRelationVersion(validContentIds, true),
-      ]);
+      let contentPromise: any[] = [];
+      contentPromise[0] = this.service.version.live.getContentAndRelationVersion(validContentIds, true);
+      if (apiType === TYPE.PAGE) {
+        contentPromise[1] = this.service.content.list.getDetailByIds(validContentIds);
+      }
+      const [contentVersionList, contentList] = await Promise.all(contentPromise);
 
       let templateIds: string[] = [];
-      contentVersionList.forEach(content => {
+      (<PageContentRelationInfos[]>contentVersionList).forEach((content) => {
         if (content.relations?.templates && content.relations.templates.length > 0) {
           templateIds.push(content.relations.templates[0].id);
         }
@@ -74,8 +82,9 @@ export class GetAppPageBuildInfoList extends BaseController {
       let dependMissing: string[] = [];
       let recursiveItem: string[] = [];
       let contentAndRelation: PageContentRelationsAndExternal[] = [];
-      const contentObject = _.keyBy(contentList, 'id');
-      contentVersionList.forEach((content) => {
+      const contentObject = _.keyBy(<Content[]>contentList || [], 'id');
+
+      (<PageContentRelationInfos[]>contentVersionList).forEach((content) => {
         const dependMissing: string[] = [];
         if (content.dependMissing && content.dependMissing.length > 0) {
           dependMissing.concat(content.dependMissing);
@@ -91,22 +100,31 @@ export class GetAppPageBuildInfoList extends BaseController {
           (<any>content.relations.templates[0]).mock = templateMockObject[templateId]?.mock || {};
         }
 
-        const mockRelations = mockObject[content.id]?.relations || {};
-        const mockTemplateRelations = templateMockObject[content.relations?.templates?.[0]?.id]?.relations || {};
-        content.relations = this.service.version.relation.moveMockRelations(content.relations, mockRelations);
-        content.relations = this.service.version.relation.moveMockRelations(content.relations, mockTemplateRelations);
+        if (apiType === TYPE.PAGE) {
+          const mockRelations = mockObject[content.id]?.relations || {};
+          const mockTemplateRelations =
+            templateMockObject[content.relations?.templates?.[0]?.id]?.relations || {};
+          content.relations = this.service.version.relation.moveMockRelations(
+            content.relations,
+            mockRelations,
+          );
+          content.relations = this.service.version.relation.moveMockRelations(
+            content.relations,
+            mockTemplateRelations,
+          );
+        }
 
         contentAndRelation.push({
-          content: Object.assign(
-            {},
-            content.content || {},
-            {
-              extension: this.service.content.info.getContentExtension(contentObject[content.id], ['extendId', 'mock']),
-              dslVersion: content.dslVersion || DSL_VERSION,
-            }
-          ),
+          content: Object.assign({}, content.content || {}, {
+            extension: this.service.content.info.getContentExtension(contentObject[content.id], [
+              'extendId',
+              'mockId',
+            ]),
+            dslVersion: content.dslVersion || DSL_VERSION,
+          }),
           relations: content.relations || {},
           mock: mockObject[content.id]?.mock || {},
+          fileId: contentObject[content.id]?.fileId || '',
         });
       });
 

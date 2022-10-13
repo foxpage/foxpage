@@ -15,6 +15,7 @@ import {
   FileSearchOutlined,
   FileTextOutlined,
   FunctionOutlined,
+  LayoutOutlined,
   ProjectOutlined,
   SettingOutlined,
   SlidersOutlined,
@@ -31,7 +32,7 @@ import File from './file';
 import Overview from './overview';
 import Packages from './packages';
 import Projects from './projects';
-import Resources from './resources';
+// import Resources from './resources';
 import Settings from './settings';
 
 const AppName = styled.div`
@@ -75,7 +76,7 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = (props) => {
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, file, setting } = locale.business;
+  const { file, global, package: packageI18n, setting } = locale.business;
 
   useEffect(() => {
     if (applicationId) {
@@ -114,7 +115,7 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = (props) => {
         theme="light"
         width={250}
         collapsedWidth={60}
-        breakpoint="xl"
+        breakpoint="xxl"
         onBreakpoint={(broken) => setSiderCollapsed(broken)}
         style={{ height: '100%', overflow: 'auto' }}>
         <AppName style={{ paddingLeft: siderCollapsed ? 8 : 24 }}>{application?.name}</AppName>
@@ -122,7 +123,7 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = (props) => {
           onClick={handleClick}
           mode="inline"
           selectedKeys={selectedKeys}
-          defaultOpenKeys={['file', 'settings', 'builder']}
+          defaultOpenKeys={['file', 'package', 'settings']}
           theme="light">
           <Menu.Item key="overview" icon={<DashboardOutlined />}>
             {global.overview}
@@ -137,22 +138,27 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = (props) => {
             <Menu.Item key="templates" icon={<FileOutlined />}>
               {file.template}
             </Menu.Item>
-            <Menu.Item key="functions" icon={<FunctionOutlined />}>
-              {global.functions}
-            </Menu.Item>
             <Menu.Item key="variables" icon={<SlidersOutlined />}>
               {global.variables}
+            </Menu.Item>
+            <Menu.Item key="functions" icon={<FunctionOutlined />}>
+              {global.functions}
             </Menu.Item>
             <Menu.Item key="conditions" icon={<ControlOutlined />}>
               {global.conditions}
             </Menu.Item>
           </Menu.SubMenu>
-          <Menu.Item key="packages" icon={<BookOutlined />}>
-            {global.packages}
-          </Menu.Item>
-          <Menu.Item key="resources" icon={<ContainerOutlined />}>
-            {global.resources}
-          </Menu.Item>
+          <Menu.SubMenu key="package" title={global.packages} icon={<BookOutlined />}>
+            <Menu.Item key="components" icon={<LayoutOutlined />}>
+              {packageI18n.component}
+            </Menu.Item>
+            <Menu.Item key="editors" icon={<ControlOutlined />}>
+              {packageI18n.editor}
+            </Menu.Item>
+            <Menu.Item key="resources" icon={<ContainerOutlined />}>
+              {global.resources}
+            </Menu.Item>
+          </Menu.SubMenu>
           <Menu.Item key="dynamics" icon={<BranchesOutlined />}>
             {global.dynamics}
           </Menu.Item>
@@ -162,10 +168,10 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = (props) => {
                 {setting.componentBar}
               </Menu.Item>
               <Menu.Item key="page" icon={<FileTextOutlined />}>
-                {file.page}
+                {setting.page}
               </Menu.Item>
               <Menu.Item key="template" icon={<FileOutlined />}>
-                {file.template}
+                {setting.template}
               </Menu.Item>
             </Menu.SubMenu>
             <Menu.Item key="application" icon={<AppstoreOutlined />}>
@@ -178,9 +184,9 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = (props) => {
       <Switch>
         <Route path="/applications/:applicationId/overview" component={Overview} />
         <Route path="/applications/:applicationId/file" component={File} />
-        <Route path="/applications/:applicationId/packages" component={Packages} />
+        <Route path="/applications/:applicationId/package" component={Packages} />
         <Route path="/applications/:applicationId/projects" component={Projects} />
-        <Route path="/applications/:applicationId/resources" component={Resources} />
+        {/*<Route path="/applications/:applicationId/resources" component={Resources} />*/}
         <Route path="/applications/:applicationId/dynamics" component={Dynamics} />
         <Route path="/applications/:applicationId/settings" component={Settings} />
 

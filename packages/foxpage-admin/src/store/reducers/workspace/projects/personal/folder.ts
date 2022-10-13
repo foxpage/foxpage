@@ -7,6 +7,7 @@ import { Application, AuthorizeListItem, PaginationInfo, ProjectEntity, User } f
 export type ProjectListActionType = ActionType<typeof ACTIONS>;
 
 const apps: Application[] = [];
+const allApps: Application[] = [];
 const projectList: ProjectEntity[] = [];
 const pageInfo: PaginationInfo = { page: 1, size: 10, total: 0 };
 const editProject: ProjectEntity = {} as ProjectEntity;
@@ -14,6 +15,7 @@ const authList: AuthorizeListItem[] = [];
 const userList: User[] = [];
 
 const initialState = {
+  allApps,
   apps,
   projectList,
   pageInfo,
@@ -55,8 +57,12 @@ const reducer = (state: InitialDataType = initialState, action: ProjectListActio
       }
 
       case getType(ACTIONS.pushApps): {
-        const { data } = action.payload;
-        draft.apps = data;
+        draft.apps = action.payload.data;
+        break;
+      }
+
+      case getType(ACTIONS.pushAllApps): {
+        draft.allApps = action.payload.data;
         break;
       }
 

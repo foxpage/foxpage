@@ -5,7 +5,7 @@ import { Drawer } from 'antd';
 import styled from 'styled-components';
 
 import CusButton from '@/components/common/Button';
-import { FoxBuilderEvents, RenderStructureNode } from '@/types/index';
+import { BuilderWindowChangeOptions, FoxBuilderEvents, RenderStructureNode } from '@/types/index';
 
 import { FoxContext } from '../context';
 import EditorMain from '../editor/Main';
@@ -45,6 +45,10 @@ const MockEditor = (props: IProps) => {
     }
   }, [visible]);
 
+  useEffect(() => {
+    handleVisible(false);
+  }, [selectNode?.id]);
+
   const handleVisible = (value: boolean) => {
     visibleChange(value);
   };
@@ -68,7 +72,7 @@ const MockEditor = (props: IProps) => {
 
   const handleWindoWChange: FoxBuilderEvents['onWindowChange'] = (target, opt) => {
     if (typeof onWindowChange === 'function') {
-      onWindowChange(target, opt);
+      onWindowChange(target, { ...opt, isMock: true } as BuilderWindowChangeOptions);
     }
   };
 
@@ -106,8 +110,8 @@ const MockEditor = (props: IProps) => {
         <Container>
           <EditorMain
             key="mock"
-            selectNode={__mock}
             type="mock"
+            selectNode={__mock as RenderStructureNode}
             onChange={handleChange}
             onWindowChange={handleWindoWChange}
           />

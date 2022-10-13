@@ -44,6 +44,7 @@ function* handleDoStep(actions: BuilderContentActionType) {
     components: store.getState().builder.component.components,
     extendPage: store.getState().builder.main.extend,
     file: store.getState().builder.main.file,
+    relations: store.getState().builder.main.relations
   });
   yield put(ACTIONS.pushContent(params));
   yield put(ACTIONS.pushFormatData(state));

@@ -10,3 +10,4 @@ export * from './store';
 export * from './variable';
 export * from './version';
 export * from './workspace';
+export * from './component';

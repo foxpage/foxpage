@@ -67,10 +67,10 @@ export const saveProject = createAction(
 // delete related
 export const deleteProject = createAction(
   'WORKSPACE_PROJECTS_INVOLVED_FOLDER__DELETE_PROJECT',
-  (id: string, applicationId: string, organizationId: string) => ({
+  (id: string, applicationId: string, cb?: () => void) => ({
     id,
     applicationId,
-    organizationId,
+    cb,
   }),
 )();
 

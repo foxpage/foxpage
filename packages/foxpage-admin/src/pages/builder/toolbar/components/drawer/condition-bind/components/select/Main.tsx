@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
-import { Button, Table } from 'antd';
+import { Button, Table, Tooltip } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
@@ -10,12 +10,22 @@ import * as ACTIONS from '@/actions/applications/detail/file/conditions';
 import { Group, OperationDrawer, ScopeSelector } from '@/components/index';
 import { ConditionTypeEnum, ScopeEnum } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
-import { ConditionEntity,ConditionFetchParams } from '@/types/index';
+import { ConditionEntity, ConditionFetchParams } from '@/types/index';
+
+const PAGE_NUM = 1;
 
 const Toolbar = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
+`;
+
+const Name = styled.div`
+  display: inline-block;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const mapStateToProps = (state: RootState) => ({
@@ -53,6 +63,7 @@ const Main: React.FC<ConditionSelectType> = (props) => {
     onChange,
   } = props;
   const [group, setGroup] = useState<ScopeEnum>(ScopeEnum.project);
+  const [pageNum, setPageNum] = useState<number>(pageInfo.page);
   const [selectedRows, setSelectedRows] = useState<ConditionEntity[]>([]);
 
   // i18n
@@ -63,7 +74,7 @@ const Main: React.FC<ConditionSelectType> = (props) => {
     if (visible && applicationId) {
       const params: ConditionFetchParams = {
         applicationId,
-        page: pageInfo.page,
+        page: pageNum,
         size: pageInfo.size,
       };
 
@@ -72,14 +83,20 @@ const Main: React.FC<ConditionSelectType> = (props) => {
       }
 
       fetchList(params);
+    } else {
+      setGroup(ScopeEnum.project);
+      setPageNum(PAGE_NUM);
+      setSelectedRows([]);
     }
-  }, [visible, applicationId, folderId, group]);
+  }, [visible, applicationId, folderId, group, pageNum]);
 
   useEffect(() => {
     setSelectedRows(conditions);
   }, [conditions]);
 
   const handleGroupChange = useCallback((group) => {
+    setPageNum(PAGE_NUM);
+
     setGroup(group);
   }, []);
 
@@ -92,6 +109,16 @@ const Main: React.FC<ConditionSelectType> = (props) => {
       title: global.nameLabel,
       dataIndex: 'name',
       key: 'name',
+      render: (name: string) => (
+        <Tooltip title={name}>
+          <Name>{name}</Name>
+        </Tooltip>
+      ),
+    },
+    {
+      title: global.idLabel,
+      dataIndex: 'contentId',
+      key: 'contentId',
     },
     {
       title: global.type,
@@ -110,7 +137,7 @@ const Main: React.FC<ConditionSelectType> = (props) => {
       open={visible}
       onClose={handleClose}
       title={condition.selectCondition}
-      width={480}
+      width={500}
       actions={
         <Button
           type="primary"
@@ -134,28 +161,23 @@ const Main: React.FC<ConditionSelectType> = (props) => {
           dataSource={list}
           rowSelection={{
             type: 'checkbox',
-            selectedRowKeys: selectedRows.map((condition) => condition.content.id as string) || [],
+            selectedRowKeys: selectedRows.map((condition) => condition.contentId) || [],
             onChange: (_selectedRowKeys: React.Key[], selectedRows: ConditionEntity[]) => {
               setSelectedRows(selectedRows);
             },
           }}
           pagination={
-            pageInfo.total > pageInfo.size
+            pageInfo?.total && pageInfo.total > pageInfo.size
               ? {
                   position: ['bottomCenter'],
                   current: pageInfo.page,
                   pageSize: pageInfo.size,
                   total: pageInfo.total,
+                  showSizeChanger: false,
                 }
               : false
           }
-          onChange={(pagination) => {
-            fetchList({
-              applicationId,
-              page: pagination.current || 1,
-              size: pagination.pageSize || 10,
-            });
-          }}
+          onChange={(pagination) => setPageNum(pagination?.current || PAGE_NUM)}
         />
       </Group>
     </OperationDrawer>

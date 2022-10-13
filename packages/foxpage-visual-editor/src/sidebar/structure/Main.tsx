@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 
 import { Empty } from 'antd';
+import _ from 'lodash';
 import styled from 'styled-components';
 
 import { Scrollbar } from '@/components/index';
@@ -24,6 +25,14 @@ let _dndInfo: DndData = {
   placement: 'in',
 };
 
+let levelMark = new Date().getTime();
+
+function initThrottle(fn: (...args: any) => any) {
+  return _.throttle(fn, 60, { trailing: true });
+}
+
+let throttleOver = (..._args: any) => {};
+
 const Structure = () => {
   const { structure, events, structureList = [] } = useContext(FoxContext);
   const { selectComponent } = useContext(EditorContext).events;
@@ -33,8 +42,13 @@ const Structure = () => {
   const { onDropComponent } = events;
 
   useEffect(() => {
+    throttleOver = initThrottle(dragOver);
     handleDragEnd();
   }, []);
+
+  const dragOver = () => {
+    setDndInfo(Object.assign({}, _dndInfo));
+  };
 
   const handleDragStart = (ev: DragEvent, node: RenderStructureNode) => {
     if (node.id !== dragId) {
@@ -53,7 +67,7 @@ const Structure = () => {
     const newDnd: DndData = {
       placement: 'in',
     };
-
+    levelMark = new Date().getTime();
     const nodeType = getAttrData(target, 'data-type');
     if (nodeType === STRUCTURE_DROP_IN) {
       newDnd.dropInId = undefined;
@@ -94,15 +108,17 @@ const Structure = () => {
       _dndInfo.placement = newDnd.placement;
       _dndInfo.noUpdate = newDnd.noUpdate;
       _dndInfo.dropInId = newDnd.dropInId;
-      setDndInfo(Object.assign({}, _dndInfo));
+      throttleOver();
     }
 
     e.preventDefault();
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (restDragId: boolean = true) => {
+    if (restDragId) {
+      setDragId('');
+    }
     setDndInfo(null);
-    setDragId('');
     _dndInfo = {
       placement: 'in',
     };
@@ -116,32 +132,40 @@ const Structure = () => {
       const node = structureList.find((item) => item.id === _dndInfo.dropInId);
       _dndInfo.dropIn = node;
     }
-    if (typeof onDropComponent === 'function') {
+    if (!_dndInfo.noUpdate && typeof onDropComponent === 'function') {
       onDropComponent(_dndInfo);
     }
     handleDragEnd();
   };
 
   const handleLevel = () => {
-    handleDragEnd();
+    const _levelMark = levelMark;
+    setTimeout(() => {
+      if (_levelMark === levelMark) {
+        console.log('level');
+        handleDragEnd(false);
+      }
+    }, 100);
   };
 
   if (!structure || structure.length === 0) {
     return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
   }
 
+  const tree = (<Tree
+    dragId={dragId}
+    onDragStart={handleDragStart}
+    onDragOver={handleDragOver}
+    onDrop={handleOnDrop}
+    onDragEnd={handleDragEnd}
+    onDragLevel={handleLevel}
+    onExpend={setExpendIds}
+    onSelect={selectComponent}
+  />)
+
   return (
     <Container id="structure-root" data-type="structure-root">
-      <Tree
-        dragId={dragId}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDrop={handleOnDrop}
-        onDragEnd={handleDragEnd}
-        onDragLevel={handleLevel}
-        onExpend={setExpendIds}
-        onSelect={selectComponent}
-      />
+      {tree}
       <Placeholder dndInfo={dndInfo} />
       <Tools dndInfo={dndInfo} />
       <Toolbar expendIds={expendIds} />

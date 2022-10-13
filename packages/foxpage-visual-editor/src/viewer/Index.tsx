@@ -17,7 +17,7 @@ const Viewer = styled.div`
   position: relative;
   overflow: hidden;
   margin: 0 auto;
-  max-width: 1180px;
+  max-width: 1240px;
   height: 100%;
   transition: all 0.3s ease 0s;
   user-select: none;

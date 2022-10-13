@@ -37,6 +37,7 @@ interface DrawerProp {
   type: string;
   typeId: string;
   applicationId: string;
+  needFetch?: boolean;
   onClose?: (status) => void;
   onFetch?: (params: AuthorizeListFetchParams) => void;
   onAdd?: (params: AuthorizeAddParams, cb: () => void) => void;
@@ -52,6 +53,7 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
     type,
     typeId,
     applicationId,
+    needFetch = false,
     onClose,
     onFetch,
     onAdd,
@@ -65,6 +67,14 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
     setSelectUserIds([]);
     setSelectRole(0);
   }, []);
+
+  useEffect(() => {
+    if (visible && needFetch && typeId) {
+      if (typeof onFetch === 'function') {
+        onFetch({ applicationId, type, typeId });
+      }
+    }
+  }, [visible, needFetch, type, typeId]);
 
   // get multi-language
   const { locale } = useContext(GlobalContext);
@@ -135,7 +145,9 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
             mask: selectRole,
           },
           () => {
-            setChildDrawerVisible(false);
+            // close drawer
+            handleChildDrawerClose();
+
             onFetch({ applicationId, type, typeId });
           },
         );

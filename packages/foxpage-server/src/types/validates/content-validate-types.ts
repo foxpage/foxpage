@@ -48,6 +48,16 @@ export class AddContentReq {
   @IsArray()
   @IsOptional()
   tags: any[];
+
+  @JSONSchema({ description: 'Set one locale per file, default is false' })
+  @IsBoolean()
+  @IsOptional()
+  oneLocale: boolean;
+
+  @JSONSchema({ description: 'Content dsl' })
+  @IsObject()
+  @IsOptional()
+  content: Record<string, string>;
 }
 
 export class UpdateContentReq {
@@ -652,6 +662,12 @@ export class VersionPublishStatus2Req extends VersionPublishStatusReq {
   @Length(20, 20)
   @IsOptional()
   contentId: string;
+
+  @JSONSchema({ description: 'Version ID' })
+  @IsString()
+  @Length(20, 20)
+  @IsOptional()
+  id: string;
 }
 
 export class CloneContentReq {
@@ -672,4 +688,14 @@ export class CloneContentReq {
   // @IsNumber()
   // @IsOptional()
   // sourceVersionNumber: number;
+}
+
+export class SaveToBaseReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
 }

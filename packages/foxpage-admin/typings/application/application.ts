@@ -6,8 +6,7 @@ interface ApplicationHost {
 }
 
 // Before multi-host supported, host type is string[]
-export interface Application
-  extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
+export interface Application extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
   name: string;
   deleted: boolean;
   host: ApplicationHost[];
@@ -16,9 +15,13 @@ export interface Application
   organizationId: string;
   resources: ApplicationResource[];
   slug: string;
+  organization?: {
+    id: string;
+    name: string;
+  };
 }
 
-export interface ApplicationFetchRes extends ResponseBody<Application> { };
+export interface ApplicationFetchRes extends ResponseBody<Application> {}
 
 export interface ApplicationResource extends Pick<Application, 'id' | 'name'> {
   detail: {

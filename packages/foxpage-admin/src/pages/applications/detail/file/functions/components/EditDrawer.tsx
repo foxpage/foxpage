@@ -42,6 +42,7 @@ type FunctionEditDrawerType = ReturnType<typeof mapStateToProps> &
   typeof mapDispatchToProps & {
     applicationId: string;
     folderId?: string;
+    search?: string;
   };
 
 function EditDrawer(props: FunctionEditDrawerType) {
@@ -49,6 +50,7 @@ function EditDrawer(props: FunctionEditDrawerType) {
     applicationId,
     folderId,
     pageInfo,
+    search,
     type,
     visible,
     func,
@@ -123,7 +125,18 @@ function EditDrawer(props: FunctionEditDrawerType) {
         () => {
           handleClose();
 
-          fetchList({ applicationId, folderId, page: pageInfo.page, size: pageInfo.size });
+          let params: any = {
+            applicationId,
+            page: pageInfo.page,
+            size: pageInfo.size,
+            search: search || '',
+          };
+          if (!!folderId)
+            params = {
+              ...params,
+              folderId,
+            };
+          fetchList(params);
         },
       );
     }
