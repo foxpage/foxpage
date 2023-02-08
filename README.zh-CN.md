@@ -37,8 +37,7 @@ Foxpage 是一个轻量级前端低代码框架。
   |   ├─foxpage-admin                // foxpage portal
   │   ├─foxpage-server               // foxpage server
   │   ├─foxpage-server-types         // foxpage types
-  │   ├─foxpage-plugin-aws-s3        // foxpage aws s3 plugin
-  │   ├─foxpage-plugin-unpkg         // foxpage unpkg plugin
+  │   ├─foxpage-visual-editor         // foxpage visual editor
 ```
 
 ## 开始使用

@@ -36,8 +36,7 @@ English | [简体中文](./README.zh-CN.md)
   |   ├─foxpage-admin                // foxpage portal
   │   ├─foxpage-server               // foxpage server
   │   ├─foxpage-server-types         // foxpage types
-  │   ├─foxpage-plugin-aws-s3        // foxpage aws s3 plugin
-  │   ├─foxpage-plugin-unpkg         // foxpage unpkg plugin
+  │   ├─foxpage-visual-editor         // foxpage visual editor
 ```
 
 ## Getting Started

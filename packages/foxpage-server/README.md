@@ -9,8 +9,6 @@ Foxpage Server apis for portal and SDK
   ├── packages
   │   ├─foxpage-server               // foxpage server
   │   ├─foxpage-server-types         // foxpage types
-  │   ├─foxpage-plugin-aws-s3        // foxpage aws s3 plugin
-  │   ├─foxpage-plugin-ares          // foxpage ares plugin
   │   ├─foxpage-plugin-unpkg         // foxpage unpkg plugin
 ```
 
