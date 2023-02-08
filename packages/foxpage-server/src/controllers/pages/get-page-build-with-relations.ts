@@ -8,6 +8,7 @@ import { Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { DSL_VERSION, METHOD, TYPE } from '../../../config/constant';
+import metric from '../../third-parties/metric';
 import { PageContentRelationInfos, PageContentRelationsAndExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
@@ -49,7 +50,9 @@ export class GetAppPageBuildInfoList extends BaseController {
 
       const apiType = this.getRoutePath(ctx.request.url);
 
+      metric.time('content-file');
       const contentFileObject = await this.service.file.list.getContentFileByIds(params.ids);
+      metric.block('getContentFileByIds', 'content-file');
 
       const validContentIds: string[] = [];
       for (const contentId in contentFileObject) {
@@ -64,7 +67,9 @@ export class GetAppPageBuildInfoList extends BaseController {
       if (apiType === TYPE.PAGE) {
         contentPromise[1] = this.service.content.list.getDetailByIds(validContentIds);
       }
+      metric.time('content-relation');
       const [contentVersionList, contentList] = await Promise.all(contentPromise);
+      metric.block('getContentAndRelation', 'content-relation');
 
       let templateIds: string[] = [];
       (<PageContentRelationInfos[]>contentVersionList).forEach((content) => {
@@ -74,10 +79,12 @@ export class GetAppPageBuildInfoList extends BaseController {
       });
 
       // get mock build content and template live version
+      metric.time('content-version');
       const [mockObject, templateMockObject] = await Promise.all([
         this.service.content.mock.getMockBuildVersions(params.ids),
         this.service.content.mock.getMockLiveVersions(templateIds),
       ]);
+      metric.block('getContentVersion', 'content-version');
 
       let dependMissing: string[] = [];
       let recursiveItem: string[] = [];
@@ -121,10 +128,10 @@ export class GetAppPageBuildInfoList extends BaseController {
               'mockId',
             ]),
             dslVersion: content.dslVersion || DSL_VERSION,
+            fileId: contentObject[content.id]?.fileId || '',
           }),
           relations: content.relations || {},
           mock: mockObject[content.id]?.mock || {},
-          fileId: contentObject[content.id]?.fileId || '',
         });
       });
 
@@ -135,6 +142,9 @@ export class GetAppPageBuildInfoList extends BaseController {
       if (recursiveItem.length > 0) {
         return Response.error(new Error(recursiveItem.join(',')), i18n.page.pageHasRecursiveDepend, 3050502);
       }
+
+      // send metric
+      contentAndRelation.length === 0 && metric.empty(ctx.request.url, params.applicationId);
 
       return Response.success(contentAndRelation, 1050501);
     } catch (err) {

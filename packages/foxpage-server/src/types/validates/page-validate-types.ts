@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsNumber,
   IsObject,
   IsOptional,
@@ -12,6 +13,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
+
+import { UserBase } from '../user-types';
 
 import { ComponentDetail } from './component-validate-types';
 import { ContentBaseDetail, ContentVersionBaseDetail } from './content-validate-types';
@@ -149,13 +152,26 @@ export class AppTypeFilesReq extends PagingReq {
 export class PageBuildVersionReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
-  @Length(20, 20)
   applicationId: string;
 
   @JSONSchema({ description: 'Content ID' })
   @IsString()
-  @Length(20, 20)
   id: string;
+}
+
+export class PageVersionReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  id: string;
+
+  @JSONSchema({ description: 'Content Version ID' })
+  @IsString()
+  @IsOptional()
+  versionId: string;
 }
 
 export class AppContentDetail {
@@ -226,7 +242,6 @@ export class PageBuildVersionRes {
 export class AppPageItemListContentReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
-  @Length(20, 20)
   applicationId: string;
 
   @JSONSchema({ description: 'Project ID' })
@@ -282,4 +297,153 @@ export class BlockLocaleLiveVersionRes extends ResponseBase {
   @ValidateNested({ each: true })
   @IsObject()
   data: object;
+}
+
+export class GetProjectItemsReq extends PagingReq {
+  @JSONSchema({ description: 'Organization ID' })
+  @IsString()
+  organizationId: string;
+
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @IsOptional()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Search string' })
+  @IsString()
+  @IsOptional()
+  search: string;
+}
+
+export class PageTypeSearchReq extends GetProjectItemsReq {
+  @JSONSchema({
+    description:
+      'Data type, project|page_template|page|template|variable|condition|function|project_variable|project_condition|project_function|component|content',
+  })
+  @IsString()
+  type: string;
+
+  @JSONSchema({ description: 'Data type id' })
+  @IsString()
+  @IsOptional()
+  typeId: string;
+
+  @JSONSchema({ description: 'data assoc user type, team|user|involve' })
+  @IsString()
+  @IsOptional()
+  userType: string;
+}
+
+export class GetTypeItemVersionReq extends PagingReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Page Content ID' })
+  @IsString()
+  contentId: string;
+}
+
+export class TypeItemVersionsItem {
+  @JSONSchema({ description: 'Version ID' })
+  @IsString()
+  id: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Version' })
+  @IsString()
+  version: string;
+
+  @JSONSchema({ description: 'Version Number' })
+  @IsNumber()
+  versionNumber: number;
+
+  @JSONSchema({ description: 'Version Status' })
+  @IsString()
+  status: string;
+
+  @JSONSchema({ description: 'Version live status' })
+  @IsBoolean()
+  isLive: boolean;
+
+  @JSONSchema({ description: 'Page Content ID' })
+  @ValidateNested({ each: true })
+  @IsObject()
+  creator: UserBase;
+
+  @JSONSchema({ description: 'Version Create Time' })
+  @IsString()
+  createTime: Date;
+
+  @JSONSchema({ description: 'Version Update Time' })
+  @IsString()
+  updateTime: Date;
+}
+
+export class TypeItemVersionsRes extends ResponseBase {
+  @ValidateNested({ each: true })
+  @IsArray()
+  data: TypeItemVersionsItem;
+}
+
+export class GetContentVersionLogs {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Page Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Page Version ID' })
+  @IsString()
+  versionId: string;
+}
+
+export class ContentVersionLogItem {
+  @JSONSchema({ description: 'Version ID' })
+  @IsString()
+  id: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Version' })
+  @IsString()
+  version: string;
+
+  @JSONSchema({ description: 'Version Number' })
+  @IsNumber()
+  versionNumber: number;
+
+  @JSONSchema({ description: 'Log Action' })
+  @IsString()
+  action: string;
+
+  @JSONSchema({ description: 'Version live status' })
+  @IsArray()
+  content: any[];
+
+  @JSONSchema({ description: 'Page Content ID' })
+  @ValidateNested({ each: true })
+  @IsObject()
+  creator: UserBase;
+
+  @JSONSchema({ description: 'Version Create Time' })
+  @IsString()
+  createTime: Date;
+
+  @JSONSchema({ description: 'Version Update Time' })
+  @IsString()
+  updateTime: Date;
+}
+
+export class ContentVersionLogRes extends ResponseBase {
+  @ValidateNested({ each: true })
+  @IsArray()
+  data: ContentVersionLogItem;
 }

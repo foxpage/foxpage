@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { createElement, useContext, useEffect, useMemo, useState } from 'react';
 
 import { CaretRightOutlined, FileTextOutlined, FormOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Collapse as AntdCollapse, Modal, Radio, Tabs as AntdTabs } from 'antd';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import styled from 'styled-components';
 
 import { EditContext } from '@foxpage/foxpage-component-editor-context';
@@ -14,10 +14,11 @@ import { FoxContext } from '@/context/index';
 import { FoxBuilderEvents, RenderStructureNode } from '@/types/index';
 
 import Basic from './Basic';
+import WithErrorCatch from './ErrorCatch';
 import EventListener from './EventListener';
 import RootNodeEditor from './RootNode';
 import Style from './style';
-import { getCoveredState, getState } from './utils';
+import { getCoveredState } from './utils';
 
 const { Panel } = AntdCollapse;
 const { TabPane } = AntdTabs;
@@ -34,7 +35,6 @@ enum EditorTypeEnum {
 
 const Collapse = styled(AntdCollapse)`
   .ant-collapse-content-box {
-    background: #fafafa !important;
     padding: 0 !important;
   }
 
@@ -42,18 +42,21 @@ const Collapse = styled(AntdCollapse)`
     overflow-x: hidden;
     > .ant-collapse-header {
       padding: 8px;
+      font-weight: 500;
     }
   }
 `;
 
 const Tabs = styled(AntdTabs)`
-  height: 100%;
   .ant-tabs-content-holder {
-    height: calc(100% - 46px);
+    min-height: 0;
     overflow: auto;
   }
   .ant-tabs-tab {
-    font-size: 12px;
+    padding: 8px 0;
+  }
+  .ant-collapse-borderless {
+    background: #ffffff;
   }
 `;
 
@@ -67,7 +70,7 @@ const MockHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   background-color: #ffffff;
-  padding: 8px 16px;
+  padding: 8px 12px;
 `;
 
 interface IProps {
@@ -77,32 +80,26 @@ interface IProps {
   type?: string;
 }
 
-let cached = {
-  editorChanged: false,
-  newNode: {} as RenderStructureNode,
-  initd: false,
-};
-
-function initThrottle(fn: (...args: any) => any) {
-  return _.throttle(fn, 300, { trailing: true });
-}
-
-let throttleUpdate = (..._args: any) => {};
+let changed = false;
+let snapshot = '';
+let newSnapshot = '';
 
 const EditorMain = (props: IProps) => {
-  const [newSelectNode, setNewSelectNode] = useState<RenderStructureNode | null>(null);
+  const [newNode, setNewNode] = useState<RenderStructureNode | null>(null);
   const [tabKey, setTabKey] = useState('props');
-
   const [editorType, setEditorType] = useState(EditorTypeEnum.form);
+  const [keyId, setKeyId] = useState(0);
   const { foxI18n, loadedComponents, componentMap, rootNode } = useContext(FoxContext);
   const { selectNode, type, onChange, onWindowChange } = props;
-  const { props: nodeProps = {}, __styleNode, __editorConfig } = newSelectNode || {};
-  const isRootNode = rootNode?.id === selectNode?.id;
+  const { id: selectNodeId = '', name: selectNodeName = '' } = selectNode || {};
+  const { props: nodeProps = {}, __styleNode, __editorConfig } = newNode || {};
+  const isRootNode = rootNode?.id === selectNodeId;
+  const isNode = !!selectNode?.extension || selectNode?.label || selectNode?.type || selectNode?.version;
 
   // get EDITOR
   const Editor: FoxpageComponentType | undefined = useMemo(() => {
-    if (selectNode?.id) {
-      const component = componentMap[selectNode.name];
+    if (selectNodeId) {
+      const component = componentMap[selectNodeName];
       const editorEntry = component?.resource?.['editor-entry'];
       const editor = editorEntry && editorEntry.length > 0 ? editorEntry[0] : undefined;
       if (editor) {
@@ -110,95 +107,101 @@ const EditorMain = (props: IProps) => {
       }
     }
     return undefined;
-  }, [selectNode?.name, loadedComponents, componentMap]);
+  }, [selectNodeName, loadedComponents, componentMap]);
 
   const deleteButtonDisabled = useMemo(() => {
-    return !newSelectNode || Object.keys(newSelectNode.props).length === 0;
-  }, [newSelectNode]);
+    return !newNode || Object.keys(newNode.props).length === 0;
+  }, [newNode]);
 
   useEffect(() => {
-    throttleUpdate = initThrottle(handlePropsUpdate);
-    cached.editorChanged = false;
-    cached.newNode = {} as RenderStructureNode;
-  }, []);
-
-  useEffect(() => {
-    let newData = _.cloneDeep(selectNode);
-    if (newData && cached.newNode && cached.newNode.id === newData.id) {
-      if (cached.editorChanged) {
-        newData = getState(newData, cached.newNode);
-      } else {
-        newData = getCoveredState(newData, cached.newNode);
-      }
+    // update newNode by selectNode
+    // because of some props will be modified on outside platform
+    let __newNode: RenderStructureNode | null;
+    try {
+      __newNode = JSON.parse(newSnapshot);
+    } catch (e) {
+      __newNode = null;
     }
-    setNewSelectNode(newData);
-    cached.newNode = newData as RenderStructureNode;
+    const _changedFromOutSide = (selectNode?.__lastModified || 0) > (__newNode?.__lastModified || 0);
+    if (_changedFromOutSide) {
+      setKeyId(new Date().getTime());
+    }
+    const _newNode = selectNode
+      ? {
+          ...(__newNode && selectNodeId === __newNode.id && isNode
+            ? getCoveredState(cloneDeep(selectNode), __newNode)
+            : selectNode),
+          children: [],
+        }
+      : null;
+    setNewNode(_newNode);
+    // reset changed status
+    if (selectNodeId !== __newNode?.id) {
+      changed = false;
+    }
+    snapshot = _newNode ? JSON.stringify(_newNode) : '';
   }, [selectNode]);
 
-  const handleUpdateComponent = (opt?: { _data: any; autoSave?: boolean }) => {
-    if (cached.newNode || opt?.autoSave) {
-      onChange(opt?._data || cached.newNode);
+  const updateNewNode = (_newNode: RenderStructureNode | null) => {
+    // update snapshot
+    newSnapshot = _newNode ? JSON.stringify(_newNode) : '';
+    changed = true;
+
+    // for cover old or be cover by old
+    if (_newNode) {
+      Object.assign(_newNode, { __lastModified: new Date().getTime() });
     }
-    cached.editorChanged = false;
+
+    setNewNode(_newNode);
   };
 
   const handleUpdate = (key: string, val: any, autoSave?: boolean) => {
-    const component = Object.assign({}, cached.newNode, { [key]: val });
-    cached.newNode = component;
-    setNewSelectNode(component);
+    const component = Object.assign({}, newNode, { [key]: val });
+    updateNewNode(component);
     if (autoSave) {
-      handleUpdateComponent({ _data: component, autoSave: true });
+      handleBlurToChange();
     }
   };
 
-  const handlePropsUpdate = (component: RenderStructureNode) => {
-    handleUpdateComponent({ _data: component, autoSave: true });
-  };
-
   const handlePropChange = (keys, val) => {
-    const keypath = keys.split('.');
-    const key = keypath.pop() as string;
+    if (!newNode) {
+      return;
+    }
 
-    const component = _.cloneDeep(cached.newNode);
-    const originProps = component?.props || {};
-
-    const props = keypath.reduce((a, c) => {
+    const keyPath = keys.split('.');
+    const key = keyPath.pop() as string;
+    const component = cloneDeep(newNode);
+    const originProps = component.props || {};
+    const props = keyPath.reduce((a, c) => {
       if (typeof a[c] !== 'undefined') return a[c];
       a[c] = {};
       return a[c];
     }, originProps);
-
     if (val === undefined) {
       delete props[key];
     } else {
       props[key] = val;
     }
 
-    if (component) {
-      const _component = Object.assign({}, cached.newNode, { props: component.props });
-      cached.newNode = _component;
-      setNewSelectNode(_component);
-      throttleUpdate(_component);
-    }
+    updateNewNode(Object.assign({}, component, { props: component.props }));
   };
 
   const handlePropsChange = (props) => {
-    const component = _.cloneDeep(cached.newNode);
+    if (!newNode) {
+      return;
+    }
+    const component = cloneDeep(newNode || {});
+    updateNewNode(Object.assign({}, component, { props: props }));
+  };
 
-    if (component) {
-      const _component = Object.assign({}, cached.newNode, { props: props });
-      cached.newNode = _component;
-      setNewSelectNode(_component);
-      throttleUpdate(_component);
+  const handleUpdateStyle = (value) => {
+    if (value || __styleNode) {
+      onChange(value || __styleNode);
     }
   };
 
-  const handleUpdateStyle = (opt?: { _data: any; autoSave?: boolean }) => {
-    handleUpdateComponent({ _data: opt?._data || __styleNode, autoSave: opt?.autoSave });
-  };
-
   const handleStyleChange = (key: string, value: string, autoSave?: boolean) => {
-    const component = _.cloneDeep(__styleNode);
+    const component = cloneDeep(__styleNode);
     if (component) {
       if (!component.props) {
         component.props = {};
@@ -209,24 +212,21 @@ const EditorMain = (props: IProps) => {
       component.props.style[key] = value;
       handleUpdate('__styleNode', component);
       if (autoSave) {
-        handleUpdateStyle({ _data: component, autoSave: true });
+        handleUpdateStyle(component);
       }
     }
   };
 
   const handleDirectiveChange = (tpl?: string) => {
-    if (newSelectNode) {
-      const component = _.cloneDeep(cached.newNode);
+    if (newNode) {
+      const component = cloneDeep(newNode);
       if (component.directive) {
         component.directive.tpl = tpl;
       } else {
         component.directive = { tpl };
       }
-
-      // handleUpdate('directive', component.directive);
-      cached.newNode = component;
-      setNewSelectNode(component);
-      handleUpdateComponent({ _data: component, autoSave: true });
+      updateNewNode(component);
+      handleBlurToChange();
     }
   };
 
@@ -235,9 +235,9 @@ const EditorMain = (props: IProps) => {
       title: foxI18n.delete,
       content: foxI18n.deleteMockTips,
       onOk: () => {
-        if (typeof onWindowChange === 'function' && cached.newNode) {
+        if (typeof onWindowChange === 'function' && newNode) {
           onWindowChange('mockDelete', {
-            id: cached.newNode.id,
+            id: selectNodeId,
           });
 
           handlePropsChange({});
@@ -248,77 +248,94 @@ const EditorMain = (props: IProps) => {
     });
   };
 
-  if (!isRootNode && !__editorConfig?.editable) {
+  /**
+   * for fixed modified not affect
+   */
+  const handleBlurToChange = () => {
+    if (changed && newSnapshot !== snapshot) {
+      onChange(JSON.parse(newSnapshot));
+      snapshot = newSnapshot;
+      changed = false;
+    }
+  };
+
+  if (!isRootNode && isNode && !__editorConfig?.editable) {
     return null;
   }
 
-  const editorParams = {
-    componentProps: nodeProps || {},
-    widgets,
-    propChange: handlePropChange,
-    propsChange: () => {},
-    applyState: () => {
-      if (cached.initd) {
-        // TODO: add throttle on change, will remove blur listener
-        handleUpdateComponent();
-      }
-    },
-    onBindVariable: (keys: string, opt: {}) => {
-      cached.editorChanged = true;
-      if (typeof onWindowChange === 'function' && cached.newNode) {
-        onWindowChange('variableBind', {
-          status: true,
-          component: cached.newNode,
-          keys,
-          opt,
-        });
-      }
-    },
+  const variableBind = (keys: string, opt: {}) => {
+    if (typeof onWindowChange === 'function' && newNode) {
+      onWindowChange('variableBind', {
+        status: true,
+        component: newNode,
+        keys,
+        opt,
+      });
+    }
   };
 
+  const editorParams: any = {
+    componentProps: nodeProps || {},
+    widgets: { ...widgets, Listeners: () => '' },
+    propChange: handlePropChange,
+    applyState: () => {
+      handleBlurToChange();
+    },
+    // no used
+    propsChange: () => {},
+    onBindVariable: variableBind,
+    onBindValue: variableBind,
+  };
+
+  const EditorElem = Editor ? createElement(Editor, { ...editorParams }, null) : null;
+  const WithErrorCatchElem = (
+    // @ts-ignore
+    <WithErrorCatch key={keyId} editor={EditorElem} tips={foxI18n.editorRenderError} />
+  );
+
   if (isRootNode && rootNode) {
+    let _rootNode = rootNode;
+    if (rootNode.id === selectNodeId) {
+      _rootNode = {
+        ...rootNode,
+        props: selectNode?.props || rootNode.props,
+        directive: selectNode?.directive,
+      };
+    }
     return (
-      <>
-        {Editor && (
-          <EditContext.Provider key={newSelectNode?.id} value={editorParams}>
-            {
-              // @ts-ignore
-              <Editor {...editorParams} />
-            }
-          </EditContext.Provider>
-        )}
-        <RootNodeEditor node={rootNode} />
-      </>
+      <div style={{ height: '100%', overflow: 'auto' }}>
+        <EditContext.Provider key={newNode?.id} value={editorParams as any}>
+          {WithErrorCatchElem}
+        </EditContext.Provider>
+        <RootNodeEditor node={_rootNode} />
+      </div>
     );
   }
 
   return (
-    <Tabs centered activeKey={tabKey} onChange={setTabKey} tabBarStyle={{ marginBottom: 0, marginLeft: 4 }}>
+    <Tabs
+      centered
+      className="text-sm h-full"
+      activeKey={tabKey}
+      onChange={setTabKey}
+      tabBarStyle={{ marginBottom: 0, marginLeft: 4 }}
+      onBlurCapture={handleBlurToChange}>
       <TabPane tab={<TabHeader>{foxI18n.basic}</TabHeader>} key="basic">
         <Collapse
           bordered={false}
           expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
           defaultActiveKey={['basic', 'style']}>
           <Panel header={foxI18n.basic} key="basic">
-            {newSelectNode && (
-              <Basic
-                id={newSelectNode.id}
-                name={newSelectNode.name || ''}
-                label={newSelectNode.label || ''}
-                version={newSelectNode.version || ''}
-                onChange={handleUpdate}
-                onApplyState={handleUpdateComponent}
-              />
-            )}
+            {newNode && <Basic node={newNode} onChange={handleUpdate} onApplyState={handleBlurToChange} />}
           </Panel>
 
-          {newSelectNode && newSelectNode.name === '@fox-design/react-slot' && (
+          {newNode && newNode.name === '@fox-design/react-slot' && (
             <Panel header={foxI18n.directive} key="directive">
               <div style={{ padding: 12 }}>
                 <Checkbox
-                  checked={!!newSelectNode.directive?.tpl}
+                  checked={!!newNode.directive?.tpl}
                   onChange={(e) => {
-                    handleDirectiveChange(e.target.checked ? '{{$this.children}}' : undefined);
+                    handleDirectiveChange(e.target.checked ? '{{$this:children}}' : undefined);
                   }}>
                   tpl:this.children
                 </Checkbox>
@@ -340,7 +357,7 @@ const EditorMain = (props: IProps) => {
       </TabPane>
       <TabPane tab={<TabHeader>{foxI18n.props}</TabHeader>} key="props">
         {Editor ? (
-          <EditContext.Provider key={newSelectNode?.id} value={editorParams}>
+          <EditContext.Provider key={newNode?.id} value={editorParams as any}>
             {type === TypeEnum.mock && (
               <MockHeader>
                 <Radio.Group
@@ -372,8 +389,7 @@ const EditorMain = (props: IProps) => {
               </MockHeader>
             )}
             {editorType === EditorTypeEnum.form ? (
-              // @ts-ignore
-              <Editor {...editorParams} />
+              WithErrorCatchElem
             ) : (
               <JSONEditor jsonData={nodeProps} onChangeJSON={handlePropsChange} options={{ mode: 'code' }} />
             )}
@@ -383,7 +399,7 @@ const EditorMain = (props: IProps) => {
         )}
       </TabPane>
       <TabPane tab={<TabHeader>{foxI18n.listener}</TabHeader>} key="listener">
-        {newSelectNode && <EventListener component={newSelectNode} updateEditorValue={handleUpdate} />}
+        {newNode && <EventListener component={newNode} updateEditorValue={handleUpdate} />}
       </TabPane>
     </Tabs>
   );

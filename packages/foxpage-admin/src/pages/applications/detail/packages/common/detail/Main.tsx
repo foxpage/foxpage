@@ -57,7 +57,7 @@ const ComponentDetail: React.FC<ComponentDetailProp> = (props) => {
 
   // url params
   const location = useLocation();
-  const { fileId, name: componentName } = getLocationIfo(location);
+  const { fileId, filePage, fileSearch, name: componentName } = getLocationIfo(location);
   const cType = useMemo(() => {
     const pathName = location?.pathname || '';
     return pathName && pathName.substring(pathName.indexOf('package/') + 8, pathName.indexOf('/detail') - 1);
@@ -126,7 +126,9 @@ const ComponentDetail: React.FC<ComponentDetailProp> = (props) => {
             breadCrumb={[
               {
                 name: cType === 'editor' ? packageI18n.editor : packageI18n.component,
-                link: `/applications/${applicationId}/package/${cType}s/list`,
+                link: `/applications/${applicationId}/package/${cType}s/list?page=${
+                  filePage || ''
+                }&searchText=${fileSearch || ''}`,
               },
               { name: componentName },
             ]}

@@ -41,7 +41,7 @@ export class SetFolderStatus extends BaseController {
       }
 
       const folderDetail = await this.service.folder.info.getDetailById(params.projectId);
-      if (!folderDetail) {
+      if (this.notValid(folderDetail)) {
         return Response.warning(i18n.folder.invalidFolderId, 2040801);
       }
 
@@ -49,7 +49,19 @@ export class SetFolderStatus extends BaseController {
         return Response.warning(i18n.project.cannotDeleteSystemFolders, 2040802);
       }
 
-      // TODO Check delete precondition
+      // get project page and template file list
+      const fileList = await this.service.file.list.find({
+        folderId: params.projectId,
+        deleted: false,
+        type: { $in: [TYPE.PAGE, TYPE.TEMPLATE] },
+      });
+      // check file has live content
+      const hasLiveContentFileIds = await this.service.file.check.checkFileHasLiveContent(
+        _.map(fileList, 'id'),
+      );
+      if (hasLiveContentFileIds.length > 0) {
+        return Response.warning(i18n.project.hasLiveContentFile, 2040803);
+      }
 
       // Get a list of all folders, files, contents, and versions under the project
       const folderChildren = await this.service.folder.list.getAllChildrenRecursive({

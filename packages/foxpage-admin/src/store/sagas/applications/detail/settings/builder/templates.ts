@@ -15,6 +15,7 @@ import {
   BaseResponse,
   ProjectPageTemplateContentFetchParams,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchTemplates(action: BuilderTemplateSettingsActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -29,7 +30,7 @@ function* handleFetchTemplates(action: BuilderTemplateSettingsActionType) {
       component: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -59,7 +60,7 @@ function* handleSaveTemplate(action: BuilderTemplateSettingsActionType) {
       }),
     );
   } else {
-    message.error(saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -78,7 +79,7 @@ function* handleFetchTemplatesContent(action: BuilderTemplateSettingsActionType)
       component: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateModalState({ loading: false }));
@@ -106,7 +107,7 @@ function* handleDeleteTemplate(action: BuilderTemplateSettingsActionType) {
       }),
     );
   } else {
-    message.error(deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 

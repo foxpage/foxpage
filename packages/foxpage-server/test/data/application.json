@@ -33,7 +33,37 @@
       ],
       "createTime": "2021-09-18T10:03:19.759+08:00",
       "updateTime": "2021-12-04T13:47:53.114+08:00",
-      "host": ["http://www.demo.com/"]
+      "host": [{ "url": "http://www.demo.com/", "locales": ["en-US", "zh-HK", "en-HK"] }],
+      "setting": {
+        "component": [
+          {
+            "idx": 1,
+            "id": "file_R3ydFvJnSsqTAsS",
+            "name": "hello-component",
+            "status": true,
+            "category": {
+              "description": "",
+              "name": "hello",
+              "categoryName": "category",
+              "groupName": "group"
+            },
+            "createTime": "2022-12-09 15:51:58",
+            "updateTime": "2022-12-09 15:57:33",
+            "defaultValue": {}
+          },
+          {
+            "idx": 1,
+            "status": true,
+            "category": {
+              "description": "",
+              "name": "hello"
+            },
+            "createTime": "2022-12-09 15:51:58",
+            "updateTime": "2022-12-09 15:57:33",
+            "defaultValue": {}
+          }
+        ]
+      }
     },
     {
       "intro": "",
@@ -63,7 +93,9 @@
           }
         }
       ],
+      "setting": { "component": [] },
       "slug": "flutter",
+      "host": [{ "url": "http://www.demo.com/", "locales": ["en-US", "zh-HK", "en-HK"] }],
       "createTime": "2021-08-27T15:05:22.660+08:00",
       "updateTime": "2021-08-27T15:05:22.669+08:00"
     }

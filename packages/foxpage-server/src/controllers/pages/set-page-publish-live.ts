@@ -54,27 +54,31 @@ export class SetPageVersionPublishAndLiveStatus extends BaseController {
       }
 
       // Set publishing status
-      const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
-        ctx,
-        liveRelation: true,
-        actionType: [LOG.LIVE, apiType].join('_'),
-      });
+      const [result, validateResult] = await Promise.all([
+        this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
+          ctx,
+          liveRelation: true,
+        }),
+        this.service.version.check.versionCanPublish(params.id),
+      ]);
 
       if (result.code === 1) {
         return Response.warning(i18n.page.pageVersionHasPublished, 2051301);
-      } else if (result.code === 2) {
-        return Response.warning(
-          i18n.page.invalidRelations + ':' + Object.keys(result.data).join(','),
-          2051302,
-        );
+      } else if (!validateResult.publishStatus) {
+        return Response.warning(i18n.page.invalidVersionData, 2051302, validateResult);
       }
 
       if (result?.data) {
-        this.service.content.live.setLiveContent(result?.data?.contentId, result?.data?.versionNumber, {
-          ctx,
-          content: { id: result?.data?.contentId } as Content,
-          actionType: [LOG.LIVE, apiType].join('_'),
-        });
+        this.service.content.live.setLiveContent(
+          result?.data?.contentId,
+          result?.data?.versionNumber,
+          params.id,
+          {
+            ctx,
+            content: { id: result?.data?.contentId } as Content,
+            actionType: [LOG.LIVE, apiType].join('_'),
+          },
+        );
       }
 
       await this.service.version.live.runTransaction(ctx.transactions);

@@ -8,7 +8,7 @@ import { Content, ContentVersion, File, Folder } from '@foxpage/foxpage-server-t
 
 import { i18n } from '../../../app.config';
 import { TYPE } from '../../../config/constant';
-import { ResData, IdName } from '../../types/index-types';
+import { IdName, ResData } from '../../types/index-types';
 import { UserBase } from '../../types/user-types';
 import { FileDetailRes, GetFileParentReq } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
@@ -73,7 +73,7 @@ export class GetFileAllParentList extends BaseController {
         const folderParentList = await this.service.folder.list.getAllParentsRecursive([
           folderId || params.id,
         ]);
-        parentList = (folderParentList[folderId || params.id] as MixedData[]).concat(parentList);
+        parentList = ((folderParentList[folderId || params.id] as MixedData[]) || []).concat(parentList);
       }
 
       // Remove system default folder item

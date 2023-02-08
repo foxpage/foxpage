@@ -17,6 +17,7 @@ import {
   AuthorizeUserFetchParams,
   ResponseBody,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchList(actions: ApplicationsActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -31,7 +32,7 @@ function* handleFetchList(actions: ApplicationsActionType) {
       application: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -67,7 +68,7 @@ function* handleSaveApp() {
       }),
     );
   } else {
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -86,24 +87,26 @@ function* handleAuthFetchList(action: ApplicationsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateAuthListLoading(false));
 }
 
 function* handleAuthUserFetchList(action: ApplicationsActionType) {
-  const { params } = action.payload as { params: AuthorizeUserFetchParams };
+  const { params, cb } = action.payload as { params: AuthorizeUserFetchParams; cb?: (userList) => void };
   const res = yield call(AUTH_API.authorizeUserFetch, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushUserList(res.data || []));
+
+    if (typeof cb === 'function') cb(res.data);
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -120,7 +123,7 @@ function* handleAuthAdd(action: ApplicationsActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || addFailed);
+    errorToast(res, addFailed);
   }
 }
 
@@ -137,7 +140,7 @@ function* handleAuthDelete(action: ApplicationsActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 

@@ -10,7 +10,7 @@ import * as ACTIONS from '@/actions/store/list';
 import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { FileType, WIDTH_DEFAULT } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
-import { getImageUrlByEnv } from '@/utils/image-url-env';
+import { getContentsFirstPicture } from '@/utils/image-url';
 
 import { BuyModal, PreviewModal, SelectTool } from './components';
 
@@ -174,7 +174,11 @@ const Store: React.FC<StoreResourceProps> = (props) => {
                     }}
                     cover={
                       isPageOrTemplate ? (
-                        <img alt="example" src={getImageUrlByEnv('/images/placeholder.png')} />
+                        <img
+                          alt="example"
+                          src={getContentsFirstPicture(resource?.files)}
+                          style={{ height: '130px', objectFit: 'contain', background: '#f4f4f4' }}
+                        />
                       ) : null
                     }
                     actions={actions}

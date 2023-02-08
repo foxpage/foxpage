@@ -27,14 +27,14 @@ const { Search } = Input;
 const PAGE_NUM = 1;
 
 const Container = styled.div`
-  padding: 24px 24px 0;
+  padding: 16px 24px 0;
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 `;
 
 const Table = styled(AntTable)`
@@ -42,6 +42,8 @@ const Table = styled(AntTable)`
     margin: 16px 0 0;
   }
 `;
+
+export type RecordEntity = ConditionEntity | FuncEntity | VariableEntity;
 
 interface Type {
   applicationId: string;
@@ -163,11 +165,17 @@ const Main: React.FC<Type> = (props) => {
     [type],
   );
 
-  const handleDelete = (id) => {
-    if (id && typeof onDelete === 'function') onDelete(id, params);
+  const handleDelete = (record: RecordEntity) => {
+    if (record.id && typeof onDelete === 'function') onDelete(record.id, { ...params, entity: record });
   };
 
   const columns: any = [
+    {
+      title: global.idLabel,
+      dataIndex: 'contentId',
+      key: 'contentId',
+      width: 160,
+    },
     {
       title: global.nameLabel,
       dataIndex: 'name',
@@ -180,11 +188,6 @@ const Main: React.FC<Type> = (props) => {
           )}
         </>
       ),
-    },
-    {
-      title: global.idLabel,
-      dataIndex: 'id',
-      key: 'id',
     },
     {
       title: global.type,
@@ -212,7 +215,7 @@ const Main: React.FC<Type> = (props) => {
                 title={`${global.deleteMsg}${record.name}?`}
                 okText={global.yes}
                 cancelText={global.no}
-                onConfirm={() => handleDelete(record.id)}>
+                onConfirm={() => handleDelete(record)}>
                 <Button size="small" shape="circle" icon={<DeleteOutlined />} style={{ margin: '0 8px' }} />
               </Popconfirm>
             </>
@@ -258,8 +261,9 @@ const Main: React.FC<Type> = (props) => {
           />
           {tab === TabEnum.project && (
             <Button
-              type="primary"
+              type="link"
               size="small"
+              ghost
               icon={<PlusOutlined />}
               onClick={() => onEdit('new')}
               style={{ marginLeft: 8 }}>
@@ -278,11 +282,12 @@ const Main: React.FC<Type> = (props) => {
           pagination={
             pageInfo?.total && pageInfo.total > pageInfo.size
               ? {
-                  position: ['bottomCenter'],
-                  current: pageInfo.page,
-                  pageSize: pageInfo.size,
-                  total: pageInfo.total,
-                }
+                position: ['bottomCenter'],
+                current: pageInfo.page,
+                pageSize: pageInfo.size,
+                total: pageInfo.total,
+                size: 'small',
+              }
               : false
           }
           onChange={(pagination) => {

@@ -42,7 +42,7 @@ export class GetPageUserDetail extends BaseController {
       return Response.success(
         {
           pageInfo: { page: params.page, size: params.size, total: userCountList.count },
-          data: _.map(userCountList.list, (user) => _.pick(user, ['id', 'account', 'type'])),
+          data: _.map(userCountList.list, (user) => _.pick(user, ['id', 'account', 'email', 'nickName'])),
         },
         1060701,
       );

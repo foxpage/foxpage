@@ -3,6 +3,8 @@ import {
   Application,
   CommonDeleteParams,
   CommonFetchParams,
+  ContentEntity,
+  File,
   FileTag,
   ResponseBody,
 } from '@/types/index';
@@ -38,7 +40,7 @@ export type ProjectAddParams = Pick<ProjectEntity, 'name'> &
 export interface ProjectSaveParams {
   editProject?: Partial<ProjectEntity>;
   organizationId?: string;
-  applicationId: string;
+  applicationId?: string;
 }
 
 export interface ProjectDeleteParams extends Omit<CommonDeleteParams, 'id'> {
@@ -51,4 +53,35 @@ export interface ProjectUpdateParams extends ProjectAddParams {
 
 export interface ProjectPageTemplateContentFetchParams extends Omit<CommonFetchParams, 'organizationId'> {
   projectId: string;
+}
+
+export interface ProjectSearchResult {
+  folders: ProjectEntity[];
+  files: File[];
+  contents: ContentEntity[];
+}
+
+export interface ProjectSearchEntity {
+  id: string;
+  name: string;
+  type: string;
+  level: string;
+  parent: {
+    fileId?: string;
+    fileName?: string;
+    folderId?: string;
+    folderName?: string;
+  };
+  application: {
+    id: string;
+    name: string;
+  };
+  creator: {
+    id: string;
+    account: string;
+    email: string;
+    nickName: string;
+  };
+  createTime: string;
+  updateTime: string;
 }

@@ -38,7 +38,7 @@ export class UpdateTeamDetail extends BaseController {
 
       // Get team details
       const sourceTeamDetail = await this.service.team.getDetailById(params.teamId);
-      if (!sourceTeamDetail || sourceTeamDetail.deleted) {
+      if (this.notValid(sourceTeamDetail)) {
         return Response.warning(i18n.team.invalidTeamId, 2020601);
       }
 

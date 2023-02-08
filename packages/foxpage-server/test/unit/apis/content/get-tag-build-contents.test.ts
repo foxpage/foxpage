@@ -6,6 +6,7 @@ const conInstance = new GetContentTagVersions();
 
 let params = {
   applicationId: Data.app.id,
+  fileId: '',
   pathname: '',
   tags: [],
 };
@@ -20,6 +21,7 @@ beforeEach(() => {
 
   params = {
     applicationId: Data.app.id,
+    fileId: '',
     pathname: '',
     tags: [],
   };

@@ -49,7 +49,7 @@ export const RegisterModal = (props: ModalProps) => {
   return (
     <Modal
       title={packageI18n.quickly}
-      visible={visible}
+      open={visible}
       onOk={handleOk}
       okButtonProps={{ disabled: noNeedUpdates }}
       onCancel={() => onVisibleChange(false)}

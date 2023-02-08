@@ -20,7 +20,6 @@ const Table = styled(AntTable)`
 `;
 
 const mapStateToProps = (state: RootState) => ({
-  organizationId: state.system.user.organizationId,
   loading: state.workspace.applications.list.loading,
   pageInfo: state.workspace.applications.list.pageInfo,
   list: state.workspace.applications.list.applicationList,
@@ -38,10 +37,10 @@ type ApplicationListProps = ReturnType<typeof mapStateToProps> &
   };
 
 const ApplicationList = (props: ApplicationListProps) => {
-  const { list, loading, organizationId, pageInfo, search, fetchList, openDrawer, openAuthDrawer } = props;
+  const { list, loading, pageInfo, search, fetchList, openDrawer, openAuthDrawer } = props;
 
   // i18n
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { global } = locale.business;
 
   const handleEdit = (app) => {
@@ -53,7 +52,7 @@ const ApplicationList = (props: ApplicationListProps) => {
       title: global.nameLabel,
       dataIndex: 'name',
       render: (text: string, app: Application) => (
-        <Link to={`/applications/${app.id}/file/pages/list`}>
+        <Link to={`/applications/${app.id}/`}>
           <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
             <Name style={{ maxWidth: 400 }}>{text}</Name>
           </Tooltip>

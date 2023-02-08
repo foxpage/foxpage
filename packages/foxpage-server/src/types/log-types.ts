@@ -29,3 +29,16 @@ export interface LogOptionItems {
   type?: string;
   method?: string;
 }
+
+export interface LogContent {
+  id: string;
+  type: string;
+  content: any;
+}
+
+export interface ContentLogItem {
+  action: string;
+  content: LogContent[];
+  createTime?: number;
+  structureId?: string;
+}

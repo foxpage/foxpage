@@ -21,8 +21,13 @@ module.exports = (api) => {
       require('@babel/preset-typescript'),
     ].filter(Boolean),
     plugins: [
-      [require('babel-plugin-import'), { libraryName: 'antd', libraryDirectory: 'es', style: 'css' }],
-      [require('@babel/plugin-proposal-class-properties')],
+      [require('babel-plugin-import'), { libraryName: 'antd', libraryDirectory: 'es', style: 'css' }, 'antd'],
+      [
+        require('babel-plugin-import'),
+        { libraryName: '@ant-design/icons', libraryDirectory: 'es/icons', camel2DashComponentName: false },
+        'antd-icons',
+      ],
+      require('@babel/plugin-proposal-class-properties'),
       require('@babel/plugin-proposal-export-default-from'),
       require('@babel/plugin-proposal-export-namespace-from'),
       require('@babel/plugin-proposal-json-strings'),

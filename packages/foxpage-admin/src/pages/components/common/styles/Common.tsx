@@ -53,6 +53,7 @@ const Name = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.5;
 `;
 
 const NameContainer = styled.div`

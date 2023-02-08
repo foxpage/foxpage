@@ -4,6 +4,7 @@ export * from './content';
 export * from './dnd';
 export * from './event';
 export * from './format';
+export * from './locker';
 export * from './mock';
 export * from './pageTemplate';
 export * from './structure';

@@ -1,18 +1,15 @@
-import React, { useContext, useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useHistory } from 'react-router-dom';
 
-import { BuildOutlined, EditOutlined, FileOutlined, FileTextOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
+import { BlockOutlined, BuildOutlined, FileOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Button, Table as AntTable, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 
-import { DeleteButton, Name } from '@/components/index';
-import { suffixTagColor } from '@/constants/file';
+import { Name } from '@/components/index';
+import { FileType, ROUTE_CONTENT_MAP, suffixTagColor } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
-import { File, PaginationInfo, ProjectFileDeleteParams, ProjectFileFetchParams } from '@/types/index';
+import { File, PaginationInfo } from '@/types/index';
 import { getLocationIfo, periodFormat } from '@/utils/index';
-import { FileType } from '@/constants/global';
-
-const PAGE_SIZE = 10;
 
 const Table = styled(AntTable)`
   .ant-table-pagination.ant-pagination {
@@ -26,59 +23,53 @@ interface ProjectFileListProps {
   pageInfo: PaginationInfo;
   fileList: File[];
   openDrawer: (open: boolean, editFile?: File) => void;
-  deleteFile: (params: ProjectFileDeleteParams) => void;
-  fetchFileList: (params: ProjectFileFetchParams) => void;
-  openAuthDrawer?: (visible: boolean, editFile?: File) => void;
 }
 
 const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListProps) => {
-  const { type, loading, pageInfo, fileList, deleteFile, fetchFileList, openDrawer, openAuthDrawer } = props;
-
-  // get multi-language
-  const { locale } = useContext(GlobalContext);
-  const { global, file } = locale.business;
+  const { type, loading, pageInfo, fileList } = props;
 
   // url search params
-  const { pathname, search, applicationId, folderId } = getLocationIfo(useLocation());
+  const history = useHistory();
+  const { pathname, search, applicationId, folderId, folderPage, folderSearch, page } = getLocationIfo(
+    history.location,
+  );
 
-  const handleAuthorize = (open: boolean, file: File) => {
-    if (typeof openAuthDrawer === 'function') {
-      openAuthDrawer(open, file);
-    }
-  };
-
-  const authorizeAdmin = useMemo(() => type === 'personal' || type === 'application', [type]);
+  // i18n
+  const { locale } = useContext(GlobalContext);
+  const { global, file } = locale.business;
 
   const columns: any = [
     {
       title: '',
       dataIndex: '',
       width: 40,
-      render: (_, record: File) => (record?.type === FileType.page ? <FileTextOutlined /> : <FileOutlined />),
+      render: (_, record: File) => (
+        <>
+          {record?.type === FileType.page && <FileTextOutlined />}
+          {record?.type === FileType.template && <FileOutlined />}
+          {record?.type === FileType.block && <BlockOutlined />}
+        </>
+      ),
     },
     {
       title: global.nameLabel,
       dataIndex: 'name',
-      render: (text: string, record: File) => {
-        const slugMap = {
-          application: `/applications/${applicationId}/projects/content`,
-          personal: '/workspace/projects/personal',
-          involved: '/workspace/projects/involved',
-          projects: '/projects',
-        };
-
-        return (
-          <Link
-            onClick={() => {
-              localStorage['foxpage_project_file'] = JSON.stringify(record);
-            }}
-            to={`${slugMap[type]}/content?applicationId=${applicationId}&fileId=${record.id}`}>
-            <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
-              <Name style={{ maxWidth: type === 'projects' ? 260 : 240 }}>{text}</Name>
-            </Tooltip>
-          </Link>
-        );
-      },
+      render: (text: string, record: File) => (
+        <Link
+          onClick={() => {
+            localStorage['foxpage_project_file'] = JSON.stringify(record);
+          }}
+          to={{
+            pathname: `${ROUTE_CONTENT_MAP[type].replace(':applicationId', applicationId)}`,
+            search: `?applicationId=${applicationId}&fileId=${record.id}&filePage=${page || ''}&folderPage=${
+              folderPage || ''
+            }&folderSearch=${folderSearch || ''}`,
+          }}>
+          <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
+            <Name style={{ maxWidth: type === 'projects' ? 260 : 240 }}>{text}</Name>
+          </Tooltip>
+        </Link>
+      ),
     },
     {
       title: global.idLabel,
@@ -89,13 +80,18 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
       title: global.type,
       dataIndex: 'type',
       key: 'type',
-      render: (text: string) => <Tag color={suffixTagColor[text]} style={{minWidth: '38px', textAlign: 'center'}}>{file[text]}</Tag>,
+      render: (text: string) => (
+        <Tag color={suffixTagColor[text]} style={{ minWidth: '38px', textAlign: 'center' }}>
+          {file[text]}
+        </Tag>
+      ),
     },
     {
       title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
-      render: (creator) => creator?.account || '--',
+      width: 200,
+      render: (creator) => creator?.email || '--',
     },
     {
       title: global.createTime,
@@ -107,71 +103,36 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
     {
       title: global.actions,
       key: '',
-      width: authorizeAdmin ? 160 : 80,
+      width: 80,
       render: (_text: string, record: File) => (
-        <>
-          <Button
-            type="default"
-            size="small"
-            shape="circle"
-            title={global.build}
-            disabled={!record?.hasContent}>
-            <Link
-              to={{
-                pathname: '/builder',
-                search: `?applicationId=${applicationId}&folderId=${folderId}&fileId=${record.id}`,
-                state: { backPathname: pathname, backSearch: search },
-              }}
-              onClick={() => {
-                localStorage['foxpage_project_file'] = JSON.stringify(record);
-              }}>
-              <BuildOutlined />
-            </Link>
-          </Button>
-          {authorizeAdmin && (
-            <>
-              <Button
-                type="default"
-                size="small"
-                shape="circle"
-                title={global.edit}
-                onClick={() => openDrawer(true, record)}
-                style={{ marginLeft: 8 }}>
-                <EditOutlined />
-              </Button>
-              <Popconfirm
-                cancelText={global.no}
-                okText={global.yes}
-                title={`${file.deleteMessage}${file[record.type]}?`}
-                onConfirm={() => {
-                  deleteFile({
-                    id: record.id,
-                    applicationId: applicationId as string,
-                    folderId: folderId as string,
-                  });
-                }}>
-                <DeleteButton
-                  type="default"
-                  size="small"
-                  shape="circle"
-                  title={global.remove}
-                  style={{ marginLeft: 8 }}
-                />
-              </Popconfirm>
-              <Button
-                type="default"
-                size="small"
-                shape="circle"
-                title={global.userPermission}
-                onClick={() => handleAuthorize(true, record)}>
-                <UserOutlined />
-              </Button>
-            </>
-          )}
-        </>
+        <Button
+          type="default"
+          size="small"
+          shape="circle"
+          title={global.build}
+          disabled={!record?.hasContent}>
+          <Link
+            to={{
+              pathname: '/builder',
+              search: `?applicationId=${applicationId}&folderId=${folderId}&fileId=${record.id}`,
+              state: { backPathname: pathname, backSearch: search },
+            }}
+            onClick={() => {
+              localStorage['foxpage_project_file'] = JSON.stringify(record);
+            }}>
+            <BuildOutlined />
+          </Link>
+        </Button>
       ),
     },
   ];
+
+  const handlePaginationChange = (pagination) => {
+    history.push({
+      pathname,
+      search: `?applicationId=${applicationId}&folderId=${folderId}&folderPage=${folderPage}&folderSearch=${folderSearch}&page=${pagination.current}`,
+    });
+  };
 
   return (
     <Table
@@ -190,14 +151,7 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
             }
           : false
       }
-      onChange={(pagination) => {
-        fetchFileList({
-          id: folderId as string,
-          applicationId: applicationId as string,
-          page: pagination.current || 1,
-          size: pagination.pageSize || PAGE_SIZE,
-        });
-      }}
+      onChange={handlePaginationChange}
     />
   );
 };

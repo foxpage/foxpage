@@ -1,23 +1,17 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Empty } from 'antd';
-import _ from 'lodash';
-import styled from 'styled-components';
+import throttle from 'lodash/throttle';
 
 import { Scrollbar } from '@/components/index';
 import { STRUCTURE_DROP_IN } from '@/constant/index';
-import { EditorContext, FoxContext } from '@/context/index';
+import { EditorContext, FoxContext, StructureTreeContext } from '@/context/index';
 import { DRAG_DATA, initDragInfo } from '@/dnd/index';
 import { DndData, RenderStructureNode } from '@/types/index';
 
 import { Placeholder, Tree } from './components/index';
 import { getAttrData, getComponentNode } from './utils/utils';
-import { Toolbar, Tools } from './tools';
-
-const Container = styled(Scrollbar)`
-  height: 100%;
-  position: relative;
-`;
+import { Tools } from './tools';
 
 const DISTANCE = 10;
 
@@ -28,17 +22,21 @@ let _dndInfo: DndData = {
 let levelMark = new Date().getTime();
 
 function initThrottle(fn: (...args: any) => any) {
-  return _.throttle(fn, 60, { trailing: true });
+  return throttle(fn, 60, { trailing: true });
 }
 
 let throttleOver = (..._args: any) => {};
 
 const Structure = () => {
-  const { structure, events, structureList = [] } = useContext(FoxContext);
-  const { selectComponent } = useContext(EditorContext).events;
+  const { pageStructure: structure, events, structureList = [] } = useContext(FoxContext);
+  const { selectComponent, setSelectNodeFrom } = useContext(EditorContext).events;
   const [dragId, setDragId] = useState<string>('');
   const [dndInfo, setDndInfo] = useState<DndData | null>();
-  const [expendIds, setExpendIds] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [_, setExpandIds] = useState<string[]>([]);
+  const [scTop, setScrollTop] = useState<number>(0);
+  const dragStartRef = useRef<number>(0);
+  const treeRef = useRef<{ maxScrollTop: number }>(null);
   const { onDropComponent } = events;
 
   useEffect(() => {
@@ -46,26 +44,33 @@ const Structure = () => {
     handleDragEnd();
   }, []);
 
+  const computedScrollTop = useMemo(() => {
+    const computed = (dndInfo?.clientY || 0) - dragStartRef.current + scTop;
+    return Math.min(treeRef.current?.maxScrollTop || 99999, Math.max(0, computed));
+  }, [dndInfo, dragStartRef.current, scTop, treeRef.current]);
+
   const dragOver = () => {
     setDndInfo(Object.assign({}, _dndInfo));
   };
 
-  const handleDragStart = (ev: DragEvent, node: RenderStructureNode) => {
+  const handleDragStart = (ev: React.DragEvent, node: RenderStructureNode) => {
     if (node.id !== dragId) {
       const dragInfo = initDragInfo('move', node);
       ev?.dataTransfer?.setData(DRAG_DATA, JSON.stringify(dragInfo));
-
+      dragStartRef.current = ev.clientY;
       setTimeout(() => {
         setDragId(node.id);
+        setIsDragging(true);
       }, 10);
     }
   };
 
-  const handleDragOver = (e: MouseEvent) => {
+  const handleDragOver = (e: React.DragEvent) => {
     const { target, clientY } = e;
     // init new dndInfo
     const newDnd: DndData = {
       placement: 'in',
+      clientY,
     };
     levelMark = new Date().getTime();
     const nodeType = getAttrData(target, 'data-type');
@@ -75,11 +80,10 @@ const Structure = () => {
       newDnd.noUpdate = true;
     } else {
       // over general component
-      const overNode = getComponentNode(target);
+      const overNode = getComponentNode(target as HTMLElement);
       if (overNode) {
         const { top, height, bottom } = overNode.getBoundingClientRect();
         newDnd.dropInId = getAttrData(overNode, 'data-component-id');
-
         // could insert child
         const withChildren = getAttrData(overNode, 'data-with-children');
         if (withChildren !== 'true') {
@@ -103,18 +107,22 @@ const Structure = () => {
     if (
       _dndInfo.placement !== newDnd.placement ||
       _dndInfo.dropInId !== newDnd.dropInId ||
-      _dndInfo.noUpdate !== newDnd.noUpdate
+      _dndInfo.noUpdate !== newDnd.noUpdate ||
+      _dndInfo.clientY !== newDnd.clientY
     ) {
       _dndInfo.placement = newDnd.placement;
       _dndInfo.noUpdate = newDnd.noUpdate;
       _dndInfo.dropInId = newDnd.dropInId;
+      _dndInfo.clientY = newDnd.clientY;
       throttleOver();
     }
-
     e.preventDefault();
   };
 
   const handleDragEnd = (restDragId: boolean = true) => {
+    setIsDragging(false);
+    dragStartRef.current = 0;
+    setScrollTop(computedScrollTop);
     if (restDragId) {
       setDragId('');
     }
@@ -124,7 +132,7 @@ const Structure = () => {
     };
   };
 
-  const handleOnDrop = (e: any) => {
+  const handleOnDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const dragInfo: DndData['dragInfo'] = JSON.parse(e.dataTransfer.getData(DRAG_DATA));
     _dndInfo.dragInfo = dragInfo;
@@ -135,41 +143,51 @@ const Structure = () => {
     if (!_dndInfo.noUpdate && typeof onDropComponent === 'function') {
       onDropComponent(_dndInfo);
     }
+    setSelectNodeFrom(undefined);
     handleDragEnd();
   };
 
-  const handleLevel = () => {
+  const handleLeave = () => {
     const _levelMark = levelMark;
     setTimeout(() => {
       if (_levelMark === levelMark) {
-        console.log('level');
         handleDragEnd(false);
       }
     }, 100);
   };
 
   if (!structure || structure.length === 0) {
-    return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+    return (
+      <Empty
+        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        className="h-full flex flex-col items-center justify-center"
+      />
+    );
   }
 
-  const tree = (<Tree
-    dragId={dragId}
-    onDragStart={handleDragStart}
-    onDragOver={handleDragOver}
-    onDrop={handleOnDrop}
-    onDragEnd={handleDragEnd}
-    onDragLevel={handleLevel}
-    onExpend={setExpendIds}
-    onSelect={selectComponent}
-  />)
-
   return (
-    <Container id="structure-root" data-type="structure-root">
-      {tree}
-      <Placeholder dndInfo={dndInfo} />
-      <Tools dndInfo={dndInfo} />
-      <Toolbar expendIds={expendIds} />
-    </Container>
+    <Scrollbar id="structure-root" data-type="structure-root">
+      <StructureTreeContext.Provider
+        value={{
+          dragId,
+          isDragging,
+          dndInfo,
+          scTop,
+          computedScrollTop,
+          onScroll: (scroll) => setScrollTop(scroll),
+          onDragStart: handleDragStart,
+          onDragOver: handleDragOver,
+          onDrop: handleOnDrop,
+          onDragEnd: handleDragEnd,
+          onDragLeave: handleLeave,
+          onExpand: setExpandIds,
+          onSelect: selectComponent,
+        }}>
+        <Tree ref={treeRef} />
+        <Placeholder />
+        <Tools />
+      </StructureTreeContext.Provider>
+    </Scrollbar>
   );
 };
 

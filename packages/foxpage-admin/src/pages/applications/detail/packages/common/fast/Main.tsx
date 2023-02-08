@@ -113,7 +113,7 @@ const mapDispatchToProps = {
   updateSelected: ACTIONS.updateSelected,
   selectGroup: ACTIONS.selectGroup,
   updateSearchName: ACTIONS.updateSearchName,
-  updateComponentRemoteInfo: ACTIONS.updateComponentRemoteInfo
+  updateComponentRemoteInfo: ACTIONS.updateComponentRemoteInfo,
 };
 
 type PackagesProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -132,7 +132,7 @@ const Main = (props: PackagesProps) => {
     updateSelected,
     selectGroup,
     updateSearchName,
-    updateComponentRemoteInfo
+    updateComponentRemoteInfo,
   } = props;
   const [groupId, setGroupId] = useState<string>('');
   const [expendIds, setExpendIds] = useState<string[]>([]);
@@ -276,7 +276,7 @@ const Main = (props: PackagesProps) => {
         <GoResource>
           <Link
             to={{
-              pathname: `/applications/${applicationId}/resources/list`,
+              pathname: `/applications/${applicationId}/package/resources/list`,
             }}>
             {packageI18n.noGroupTips}
           </Link>

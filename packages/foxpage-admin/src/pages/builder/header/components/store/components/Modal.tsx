@@ -11,7 +11,7 @@ import * as PAGE_ACTIONS from '@/actions/builder/main';
 import { LocaleView, Pagination, ScrollBar } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import { getTemplateRelationKey } from '@/store/sagas/builder/utils';
-import { getImageUrlByEnv, objectEmptyCheck } from '@/utils/index';
+import { getContentsFirstPicture, objectEmptyCheck } from '@/utils/index';
 
 export enum TabEnum {
   application = 'application',
@@ -215,7 +215,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
       destroyOnClose
       maskClosable={false}
       title={title}
-      visible={open}
+      open={open}
       width={1130}
       onOk={handleOk}
       onCancel={handleClose}
@@ -230,7 +230,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
           <Tabs centered destroyInactiveTabPane defaultActiveKey="application" onChange={handleTabsChange}>
             <TabPane tab={global.application} key={TabEnum.application} />
             <TabPane tab={global.personal} key={TabEnum.user} />
-            <TabPane tab={projectI18n.involved} key={TabEnum.permission} />
+            <TabPane tab={projectI18n.shared} key={TabEnum.permission} />
           </Tabs>
         </Header>
         <Body>
@@ -239,7 +239,13 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
               {templates &&
                 templates.map((resource) => (
                   <Card
-                    cover={<img alt="example" src={getImageUrlByEnv('/images/placeholder.png')} />}
+                    cover={
+                      <img
+                        alt="example"
+                        src={getContentsFirstPicture(resource?.contents)}
+                        style={{ height: '130px', objectFit: 'contain', background: '#f4f4f4' }}
+                      />
+                    }
                     hoverable
                     key={resource.id}
                     onMouseEnter={() => setFileId(resource.id)}
@@ -273,11 +279,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
                               </DrawerTitle>
                               <LocaleView
                                 maxLocaleCount={100}
-                                locales={
-                                  item.tags
-                                    .filter((item) => item.locale)
-                                    .map((item) => item.locale) as string[]
-                                }
+                                locales={item.tags.filter((item) => item.locale)}
                               />
                             </Radio>
                           </RadioContainer>

@@ -42,6 +42,7 @@ export interface FoxI18n extends Locale {
       delete: string;
       apply: string;
       save: string;
+      record: string;
       publish: string;
       remove: string;
       view: string;
@@ -67,6 +68,8 @@ export interface FoxI18n extends Locale {
       saveSuccess: string;
       commitSuccess: string;
       revokeSuccess: string;
+      offlineSuccess: string;
+      copySuccess: string;
       fetchListSuccess: string;
       deleteFailed: string;
       publishFailed: string;
@@ -76,6 +79,8 @@ export interface FoxI18n extends Locale {
       saveFailed: string;
       commitFailed: string;
       revokeFailed: string;
+      offlineFailed: string;
+      copyFailed: string;
       previewFailed: string;
       fetchListFailed: string;
       addFailed: string;
@@ -97,6 +102,11 @@ export interface FoxI18n extends Locale {
       searchPlaceholder: string;
       props: string;
       level: string;
+      accessDeny: string;
+      lockFailed: string;
+      unlockFailed: string;
+      browserNotice: string;
+      notice: string;
     };
     workspace: {
       name: string;
@@ -137,18 +147,20 @@ export interface FoxI18n extends Locale {
       id: string;
       name: string;
       add: string;
+      authorize: string;
       edit: string;
       delete: string;
       nameLabel: string;
       deleteMessage: string;
       all: string;
       authorized: string;
-      involved: string;
+      shared: string;
       myProject: string;
       personal: string;
       starred: string;
       teamProject: string;
       recycleBin: string;
+      searchTips: string;
     };
     application: {
       name: string;
@@ -185,6 +197,8 @@ export interface FoxI18n extends Locale {
     folder: {
       name: string;
       add: string;
+      authorize: string;
+      countLimit: string;
       nameLabel: string;
       deleteTitle: string;
       deleteMsg: string;
@@ -193,20 +207,34 @@ export interface FoxI18n extends Locale {
       id: string;
       name: string;
       add: string;
+      authorize: string;
       edit: string;
       nameLabel: string;
       page: string;
       template: string;
       package: string;
       pathname: string;
+      delete: string;
       deleteMessage: string;
       filePath: string;
       relPath: string;
       fetchDetailFailed: string;
       fetchPageListFailed: string;
+      pathSetting: string;
+      addPath: string;
+      previewUrl: string;
+      pathErrorTips: string;
+      pathDuplicateTips: string;
+      pathReset: string;
+      pathResetTips: string;
+      fileCommitToStoreTips: string;
+      filePageLiveTips: string;
       block: string;
+      sellingStatus: string;
+      inStore: string;
     };
     content: {
+      id: string;
       name: string;
       add: string;
       addBase: string;
@@ -217,10 +245,22 @@ export interface FoxI18n extends Locale {
       edit: string;
       nameLabel: string;
       deleteMessage: string;
+      offlineMessage: string;
       query: string;
       addMultipleContent: string;
       localeTips: string;
       fetchFailed: string;
+      copy: string;
+      saveAsBaseTemplate: string;
+      offline: string;
+      lock: string;
+      unlock: string;
+      contentIsLockedBy: string;
+      contentWillBeReleased: string;
+      lockedAlert: string;
+      lockedContentChanged: string;
+      lockedContentFreshButton: string;
+      lockerRefreshTip: string;
     };
     team: {
       add: string;
@@ -351,6 +391,7 @@ export interface FoxI18n extends Locale {
       template: string;
       componentTab: string;
       blockTab: string;
+      componentCoverSizeExceedError: string;
     };
     builder: {
       componentList: string;
@@ -377,6 +418,7 @@ export interface FoxI18n extends Locale {
       componentDeleteMsg: string;
       componentRollBackMsg: string;
       fetchDslFailed: string;
+      fetchHtmlFailed: string;
       fetchCatalogFailed: string;
       fetchTemplateFailed: string;
       fetchMockFailed: string;
@@ -386,6 +428,31 @@ export interface FoxI18n extends Locale {
       deleteTips: string;
       commitTips: string;
       previewUrlEmptyTips: string;
+      publishTips: string;
+      publishTitle: string;
+      publishOk: string;
+      publishCancel: string;
+      publishProgressTitle: string;
+      publishSucceedTitle: string;
+      publishErrorTip: string;
+      invalidName: string;
+      conditionBindFail: string;
+      invalidField: string;
+      startPublish: string;
+      rePublish: string;
+      confirmStep: string;
+      saveStep: string;
+      checkStep: string;
+      finishStep: string;
+      realPreview: string;
+      mockPreview: string;
+      debugPreview: string;
+      timePreviewTips: string;
+      previewTips: string;
+      leaveWithoutSave: string;
+      unsavedContentPreviewTip: string;
+      unsavedPreviewIgnored: string;
+      illegalEditorContentTips: string;
     };
     variable: {
       add: string;
@@ -396,6 +463,7 @@ export interface FoxI18n extends Locale {
       mock: string;
       args: string;
       value: string;
+      valueBind: string;
       selectFunction: string;
       fetchFailed: string;
       fetchDetailFailed: string;
@@ -418,6 +486,16 @@ export interface FoxI18n extends Locale {
       deleteConfirm: string;
       placeholderUser: string;
       placeholderRole: string;
+    };
+    data: {
+      name: string;
+      awsMongoDB: string;
+      collection: string;
+      run: string;
+      explain: string;
+      limitEmptyTips: string;
+      pipelineEmptyTips: string;
+      queryEmptyTips: string;
     };
     mock: {
       title: string;
@@ -446,6 +524,47 @@ export interface FoxI18n extends Locale {
       componentSearchPlaceholder: string;
       pageSearchPlaceholder: string;
       removeConfirm: string;
+    };
+    record: {
+      title: string;
+      add: string;
+      update: string;
+      remove: string;
+      move: string;
+      updateBatch: string;
+      publish: string;
+      preStep: string;
+      nextStep: string;
+      clone: string;
+      noData: string;
+      do: string;
+      action: string;
+      local: string;
+      localTips: string;
+      remote: string;
+      beAffected: string;
+      // resource type
+      page: string;
+      structure: string;
+      variable: string;
+      condition: string;
+      function: string;
+      loadMore: string;
+    };
+    history: {
+      versions: string;
+      fetchVersionsFailed: string;
+      fetchVersionsSucceed: string;
+      publishTime: string;
+      live: string;
+      view: string;
+      previewTip: string;
+    };
+    historyRecord: {
+      title: string;
+      loadPrevious: string;
+      version: string;
+      publish: string;
     };
   };
 }

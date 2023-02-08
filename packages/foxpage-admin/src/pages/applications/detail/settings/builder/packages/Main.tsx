@@ -7,7 +7,7 @@ import { Button, Input } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
-import { clearAll, fetchComponentsAction, fetchBlocksAction } from '@/actions/applications/detail/packages/list';
+import { clearAll, fetchBlocksAction, fetchComponentsAction } from '@/actions/applications/detail/packages/list';
 import * as ACTIONS from '@/actions/applications/detail/settings/builder/component';
 import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { GlobalContext } from '@/pages/system';

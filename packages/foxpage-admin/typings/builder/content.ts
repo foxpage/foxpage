@@ -1,6 +1,9 @@
 import {
   AbstractEntity,
+  Application,
+  Component,
   Extension,
+  File,
   FileType,
   Mock,
   Relation,
@@ -19,6 +22,13 @@ export interface Content {
   mock?: Mock;
 }
 
+export interface ContentCreator {
+  id: string;
+  account: string;
+  email: string;
+  nickName: string;
+}
+
 export interface PageContent extends AbstractEntity {
   contentId: string;
   deleted: boolean;
@@ -29,6 +39,9 @@ export interface PageContent extends AbstractEntity {
   content: Content;
   mock: Mock;
   relations: RelationDetails;
+  contentUpdateTime: string;
+  title?: string;
+  id: string;
 }
 
 // api data back up
@@ -44,6 +57,8 @@ export interface ContentFetchParams {
   applicationId: string;
   id: string;
   type?: FileType;
+  // preview
+  versionId?: string;
 }
 
 export interface ContentFetchedRes extends ResponseBody<PageContent> {}
@@ -52,6 +67,7 @@ export interface ContentSaveParams {
   id: string;
   content: Content;
   applicationId: string;
+  contentUpdateTime?: string;
 }
 
 export interface ContentSavedRes extends ResponseBody<PageContent> {}
@@ -75,4 +91,73 @@ export interface ContentCloneParams {
   applicationId: string;
   targetContentId: string;
   sourceContentId: string;
+}
+
+export interface CheckDSLParams {
+  applicationId: string;
+  contentId: string;
+  versionId: string;
+}
+
+export interface CheckDSLMain {
+  versionId: string;
+  contentId: string;
+  extendId: string;
+  structure: [
+    {
+      status: number;
+      data: [
+        {
+          id: string;
+          name?: string;
+          label?: string;
+        },
+      ];
+    },
+  ];
+  relation: Record<string, string>;
+  publishStatus: boolean;
+}
+
+export interface CheckDSLRes extends ResponseBody<CheckDSLMain> {}
+
+export enum PublishSteps {
+  START_PUBLISH = 0,
+  SAVE_BEFORE_PUBLISH = 1,
+  CHECK_BEFORE_PUBLISH = 2,
+  PUBLISH_CONTENT = 3,
+  PUBLISHED = 4,
+}
+
+export enum PublishStatus {
+  PROCESSING = 'process',
+  FINISH = 'finish',
+  ERROR = 'error',
+}
+
+export interface InitStateParams {
+  application: Application;
+  components: Component[];
+  extendPage?: PageContent;
+  file: File;
+  locale?: string;
+  rootNode?: StructureNode;
+  parseInLocal?: boolean;
+}
+
+export interface ContentVersionsParams {
+  applicationId: string;
+  id: string;
+}
+
+export interface ContentVersion {
+  id: string;
+  contentId: string;
+  version: string;
+  createTime: string;
+  creator: ContentCreator;
+}
+
+export interface ContentVersionRes extends ResponseBody {
+  data: ContentVersion[];
 }

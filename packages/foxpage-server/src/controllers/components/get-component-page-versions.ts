@@ -32,7 +32,7 @@ export class GetComponentPageVersionList extends BaseController {
     operationId: 'get-component-page-version-list',
   })
   @ResponseSchema(FileListRes)
-  async index (
+  async index(
     @QueryParams() params: AppComponentVersionListReq,
   ): Promise<ResData<PageData<ContentVersionWithLive>>> {
     try {
@@ -48,7 +48,7 @@ export class GetComponentPageVersionList extends BaseController {
 
       // Get the content ID under the file
       const contentDetail = await this.service.content.info.getDetail({ fileId, deleted: false });
-      if (!contentDetail) {
+      if (this.notValid(contentDetail)) {
         return Response.warning(i18n.component.invalidFileId, 2110901);
       }
 
@@ -57,7 +57,7 @@ export class GetComponentPageVersionList extends BaseController {
         deleted: false,
       });
 
-      const versionContents = _.map(versionList, version => version.content);
+      const versionContents = _.map(versionList, (version) => version.content);
       const componentIds = this.service.content.component.getComponentResourceIds(versionContents);
       const [resourceObject, contentAllParents] = await Promise.all([
         this.service.content.resource.getResourceContentByIds(componentIds),
@@ -83,7 +83,7 @@ export class GetComponentPageVersionList extends BaseController {
             {
               isLiveVersion: version.versionNumber === contentDetail.liveVersionNumber,
             },
-            version,
+            _.omit(version, ['operator', 'contentUpdateTime']),
           ),
         );
       }

@@ -10,6 +10,7 @@ interface IProps {
   onDragEnd?: () => void;
   showPlaceholder?: (visible: boolean, dndParams: any, offSet: { scrollX: number; scrollY: number }) => void;
   component: Component;
+  children: React.ReactNode;
 }
 const DragContent: React.FC<IProps> = (props) => {
   const { children, component, showPlaceholder, onDragStart, onDragEnd } = props;

@@ -25,13 +25,20 @@ describe('Post: /contents/changes', () => {
     jest.spyOn(LogService.prototype, 'getChangesContentList').mockResolvedValueOnce({});
 
     const result = await conInstance.index(params);
-    expect(result.code).toEqual(200);
+    expect(result.status).toEqual(1160101);
+  });
+
+  it('response success 2', async () => {
+    jest.spyOn(LogService.prototype, 'getChangesContentList').mockResolvedValueOnce({});
+    params.timestamp = 1;
+    const result = await conInstance.index(params);
+    expect(result.status).toEqual(1160101);
   });
 
   it('response error', async () => {
     jest.spyOn(LogService.prototype, 'getChangesContentList').mockRejectedValue(new Error('mock error'));
 
     const result = await conInstance.index(params);
-    expect(result.code).toEqual(500);
+    expect(result.status).toEqual(3160101);
   });
 });

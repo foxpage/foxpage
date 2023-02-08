@@ -26,8 +26,12 @@ export default {
     '/pages/draft-infos',
     '/files',
   ],
-  mongodb: mongoConfig || 'mongodb://127.0.0.1:27017/foxpage?retryWrites=false',
+  mongodb: mongoConfig || '',
   locale: 'en',
   plugins: ['@foxpage/foxpage-plugin-unpkg'],
+  metric: {
+    name: '',
+    debug: false,
+  },
   allLocales: ['en-US', 'zh-HK', 'en-HK', 'ko-KR', 'ja-JP'], // Supported locales
 };

@@ -18,7 +18,6 @@ const mapStateToProps = (store: RootState) => ({
   buyIds: store.store.list.buyIds,
   visible: store.store.list.buyModalVisible,
   type: store.store.list.type,
-  organizationId: store.system.user.organizationId,
 });
 
 const mapDispatchToProps = {
@@ -30,21 +29,13 @@ const mapDispatchToProps = {
 type BuyModalProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const BuyModal: React.FC<BuyModalProps> = (props) => {
-  const {
-    applicationList,
-    buyIds,
-    organizationId,
-    type,
-    visible,
-    updateBuyModalVisible,
-    fetchApplicationList,
-    addGoods,
-  } = props;
+  const { applicationList, buyIds, type, visible, updateBuyModalVisible, fetchApplicationList, addGoods } =
+    props;
   const [selectedAppIds, setSelectedAppIds] = useState([]);
   const [deliveryType, setDeliveryType] = useState<StoreGoodsPurchaseType | undefined>();
 
   // i18n
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { application, store } = locale.business;
 
   const deliveryTypeMap = [
@@ -93,7 +84,7 @@ const BuyModal: React.FC<BuyModalProps> = (props) => {
       title={store.buyModalTitle}
       destroyOnClose
       maskClosable={false}
-      visible={visible}
+      open={visible}
       onCancel={handleClose}
       onOk={handleOnOk}>
       <Select

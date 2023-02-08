@@ -1,64 +1,65 @@
 import React, { useEffect, useState } from 'react';
 
-import styled from 'styled-components';
-
 import Main from './Main';
 import Simple from './Simple';
 
-const Container = styled.div`
-  height: 100%;
-  display: flex;
-  flex-direction: row;
-`;
+const STRUCTURE = 'structure';
 
-const DELAY = 250;
-
-interface IProps {
-  expend?: boolean;
-  onExpend?: (status: boolean) => void;
-}
-
-const SidebarIndex = (props: IProps) => {
-  const [menu, setMenu] = useState('');
-  const [delayExpend, setDelayExpend] = useState(false);
-  const { expend, onExpend } = props;
-
-  useEffect(() => {
-    if (expend) {
-      setTimeout(() => {
-        setDelayExpend(expend);
-      }, DELAY);
-    } else {
-      setDelayExpend(expend || false);
-    }
-  }, [expend]);
+const SidebarIndex = ({
+  structurePinned,
+  onStructurePinned,
+}: {
+  structurePinned: boolean;
+  onStructurePinned: (v: boolean) => void;
+}) => {
+  const [menu, setMenu] = useState<{ [key in 'structure' | 'components']?: boolean }>({});
 
   const handlePushpin = (value) => {
-    if (typeof onExpend === 'function') {
-      onExpend(value);
-    }
-    if (value) {
-      setMenu('structure');
-    }
+    onStructurePinned(value);
+    setMenu({ ...menu, [STRUCTURE]: true });
   };
+  // if pinned and not
+  useEffect(() => {
+    if (structurePinned && (!Object.keys(menu).includes(STRUCTURE) || menu.structure !== true)) {
+      setMenu({ ...menu, [STRUCTURE]: true });
+    }
+  }, [structurePinned]);
 
   return (
-    <Container>
-      <div style={{ flex: '0 0 38px', borderRight: '1px solid #f2f2f2' }}>
-        <Simple menu={menu} structurePushpin={expend} onStructurePushpin={handlePushpin} />
+    <div className="flex h-full">
+      <div className="flex-0 basis-[38px] border-r border-r-solid border-slate-100">
+        <Simple
+          onStructurePushpin={onStructurePinned}
+          structurePinned={structurePinned}
+          onMenuChange={setMenu}
+          menu={menu}
+        />
       </div>
-      {delayExpend && (
-        <div style={{ flexGrow: 1, height: 'calc(100% - 32px)' }}>
-          <Main
-            onPushpin={handlePushpin}
-            onClose={() => {
-              handlePushpin(false);
-              setMenu('unknown');
-            }}
-          />
-        </div>
-      )}
-    </Container>
+
+      <div className="relative">
+        {(menu.structure || structurePinned) && (
+          <div
+            className={`h-full${!structurePinned ? ' absolute left-0 top-0 bottom-0 bg-white z-50' : ''}`}
+            style={
+              !structurePinned
+                ? {
+                    boxShadow:
+                      '2px 0 4px -32px rgb(0 0 0 / 4%), 8px 0 24px 0 rgb(0 0 0 / 5%), 8px 0 4px 0 rgb(0 0 0 / 3%)',
+                  }
+                : undefined
+            }>
+            <Main
+              structurePinned={structurePinned}
+              onPushPin={handlePushpin}
+              onClose={() => {
+                handlePushpin(false);
+                setMenu({ ...menu, [STRUCTURE]: false });
+              }}
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

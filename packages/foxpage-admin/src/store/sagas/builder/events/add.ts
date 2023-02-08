@@ -1,9 +1,10 @@
-import { FileType } from '@/constants/global';
-import { Component, FormattedData, RenderStructureNode } from '@/types/index';
-import { store } from '@/store/index';
-import { initNode, initStructure, initStyleWrapper } from '../utils';
-
 import { cloneDeep } from 'lodash';
+
+import { FileType } from '@/constants/global';
+import { store } from '@/store/index';
+import { Component, FormattedData, RenderStructureNode } from '@/types/index';
+
+import { initNode, initStructure, initStyleWrapper } from '../utils';
 
 /**
  * add component
@@ -14,8 +15,8 @@ export const addComponent = (component: Component, opt: { componentMap: Formatte
   if (component.type === FileType.block) {
     const blockDSLMap = store.getState().builder.component.blockDSLMap;
     const blockStructure = blockDSLMap[component.id]?.schemas[0];
-    const copyedStructure = cloneDeep(blockStructure) as RenderStructureNode;
-    return initStructure(copyedStructure);
+    const copiedStructure = cloneDeep(blockStructure) as RenderStructureNode;
+    return initStructure(copiedStructure);
   } else {
     const node = initNode(component);
     const nodeComponent = opt.componentMap[node.name] || {};

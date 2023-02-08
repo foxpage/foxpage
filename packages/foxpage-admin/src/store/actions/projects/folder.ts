@@ -52,12 +52,10 @@ export const openEditDrawer = createAction(
   (open = false, editProject?: ProjectEntity) => ({ open, editProject }),
 )();
 
-export const fetchApps = createAction(
-  'PROJECTS_LIST_APPLICATION_LIST__FETCH_LIST',
-  (params: PaginationReqParams) => ({ params }),
-)();
+export const fetchApps = createAction('PROJECTS_LIST__FETCH_LIST', (params: PaginationReqParams) => ({
+  params,
+}))();
 
-export const pushApps = createAction(
-  'PROJECTS_LIST_APPLICATION_LIST__FETCH_LIST_SUCCEED',
-  (data: Application[]) => ({ data }),
-)();
+export const pushApps = createAction('PROJECTS_LIST__FETCH_LIST_SUCCEED', (data: Application[]) => ({
+  data,
+}))();

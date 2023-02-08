@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useCallback, useContext, useEffect, useState } from 'react';
-import { Controlled as CodeMirror } from 'react-codemirror2';
 import { connect } from 'react-redux';
 
 import { Button, Input, Select } from 'antd';
@@ -8,11 +7,10 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/functions';
 import { Field, Group, Label, OperationDrawer } from '@/components/index';
+import { CodeEditor } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
 
 import './style.css';
-
-require('codemirror/mode/htmlmixed/htmlmixed');
 
 const FN_TYPE = ['sync'];
 
@@ -20,9 +18,6 @@ const { Option } = Select;
 
 const CodeBox = styled.div`
   min-height: 300px;
-  & > .CodeMirror {
-    height: 300px;
-  }
 `;
 
 const mapStateToProps = (store: RootState) => ({
@@ -42,6 +37,7 @@ type FunctionEditDrawerType = ReturnType<typeof mapStateToProps> &
   typeof mapDispatchToProps & {
     applicationId: string;
     folderId?: string;
+    pageContentId?: string;
     search?: string;
   };
 
@@ -49,6 +45,7 @@ function EditDrawer(props: FunctionEditDrawerType) {
   const {
     applicationId,
     folderId,
+    pageContentId,
     pageInfo,
     search,
     type,
@@ -113,6 +110,7 @@ function EditDrawer(props: FunctionEditDrawerType) {
         {
           applicationId,
           folderId,
+          pageContentId,
           id,
           name,
           content: {
@@ -142,17 +140,10 @@ function EditDrawer(props: FunctionEditDrawerType) {
     }
   }, [applicationId, name, code, fnType, saveFunction, handleClose]);
 
-  const codeMirrorOptions = {
-    lineNumbers: true,
-    mode: { name: 'javascript', json: true },
-    lineWrapping: true,
-    readOnly: viewMode,
-  };
-
   return (
     <OperationDrawer
       destroyOnClose
-      width={550}
+      width={480}
       open={visible}
       title={func?.id ? global.edit : global.add}
       actions={
@@ -173,12 +164,7 @@ function EditDrawer(props: FunctionEditDrawerType) {
         </Field>
         <Field>
           <Label>{global.type}</Label>
-          <Select
-            disabled={func.id || viewMode}
-            placeholder="type"
-            value={fnType}
-            onChange={setFnType}
-            style={{ width: 160 }}>
+          <Select disabled={func.id || viewMode} placeholder="type" value={fnType} onChange={setFnType}>
             {FN_TYPE.map((item, idx) => (
               <Option key={item} value={idx}>
                 {item}
@@ -189,14 +175,12 @@ function EditDrawer(props: FunctionEditDrawerType) {
         <Field>
           <Label>{functionI18n.name}</Label>
           <CodeBox>
-            <CodeMirror
+            <CodeEditor
+              language="javascript"
               key={func.id}
-              options={codeMirrorOptions}
+              onChange={setCode}
               value={code}
-              onBeforeChange={(_editor, _data, value) => {
-                setCode(value);
-              }}
-            />
+              readOnly={viewMode}></CodeEditor>
           </CodeBox>
         </Field>
       </Group>

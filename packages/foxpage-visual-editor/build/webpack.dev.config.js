@@ -1,6 +1,7 @@
 const { merge } = require('webpack-merge');
 const path = require('path');
 const webpack = require('webpack');
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const webpackBaseConfig = require('./webpack.base.config');
 
 const PORT = 3003;
@@ -40,7 +41,8 @@ module.exports = merge(webpackBaseConfig, {
       'process.env': {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV),
       },
-      '__DEV__': true
+      __DEV__: true,
     }),
+    // new BundleAnalyzerPlugin(),
   ],
 });

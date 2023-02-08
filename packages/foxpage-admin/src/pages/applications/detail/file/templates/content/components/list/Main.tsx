@@ -1,13 +1,26 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-import { EditOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Table, Tag, Tooltip } from 'antd';
+import {
+  CopyOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  UserOutlined,
+  VerticalAlignBottomOutlined,
+} from '@ant-design/icons';
+import { Button, Dropdown, Menu, Popconfirm, Table, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 
-import { DeleteButton, LocaleView, Name } from '@/components/index';
+import { LocaleView, Name } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
-import { ContentEntity, ProjectContentDeleteParams } from '@/types/index';
+import {
+  ContentEntity,
+  File,
+  ProjectContentCopyParams,
+  ProjectContentDeleteParams,
+  ProjectContentOfflineParams,
+} from '@/types/index';
 import { periodFormat } from '@/utils/period-format';
 
 const IdLabel = styled.div`
@@ -25,18 +38,54 @@ interface ContentListType {
   folderId: string;
   loading: boolean;
   contents: ContentEntity[];
+  fileDetail: File;
   openDrawer: (open: boolean, editContent?: Partial<ContentEntity>) => void;
+  offlineContent: (params: ProjectContentOfflineParams) => void;
+  copyContent: (params: ProjectContentCopyParams, cb?: () => void) => void;
   deleteContent: (params: ProjectContentDeleteParams) => void;
   openAuthDrawer: (visible: boolean, editContent?: ContentEntity) => void;
 }
 
 const ContentList: React.FC<ContentListType> = (props) => {
-  const { applicationId, folderId, loading, contents, deleteContent, openAuthDrawer, openDrawer } = props;
+  const {
+    applicationId,
+    folderId,
+    loading,
+    contents,
+    fileDetail,
+    offlineContent,
+    copyContent,
+    deleteContent,
+    openAuthDrawer,
+    openDrawer,
+  } = props;
   const { pathname, search } = useLocation();
 
   // i18n
   const { locale } = useContext(GlobalContext);
   const { content, global, version } = locale.business;
+
+  const handleOffline = (id, fileId) => {
+    if (typeof offlineContent === 'function') {
+      offlineContent({
+        applicationId,
+        id,
+        fileId,
+      });
+    }
+  };
+
+  const handleCopy = (contentId, fileId) => {
+    if (typeof copyContent === 'function' && applicationId) {
+      copyContent({
+        applicationId,
+        fileId,
+        fileType: fileDetail.type,
+        sourceContentId: contentId,
+        targetContentLocales: [],
+      });
+    }
+  };
 
   const columns = [
     {
@@ -72,15 +121,16 @@ const ContentList: React.FC<ContentListType> = (props) => {
       width: 170,
       render: (_text: string, record: ContentEntity) => {
         const localesTag = record.tags ? record.tags.filter((item) => item.locale) : [];
-        return <LocaleView locales={localesTag.map((item) => item.locale) as string[]} />;
+        return <LocaleView locales={localesTag} />;
       },
     },
     {
       title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
+      width: 200,
       render: (_text: string, record: ContentEntity) => {
-        return record.creator ? record.creator.account : '--';
+        return record.creator ? record.creator.email : '--';
       },
     },
     {
@@ -105,38 +155,73 @@ const ContentList: React.FC<ContentListType> = (props) => {
             <EditOutlined />
           </Button>
           <Popconfirm
-            title={`${content.deleteMessage} ${record.title}?`}
-            disabled={!!record?.version}
-            onConfirm={() => {
-              if (applicationId) {
-                deleteContent({
-                  applicationId,
-                  id: record.id,
-                  status: true,
-                  fileId: record.fileId,
-                  fileType: 'page',
-                });
-              }
-            }}
+            title={`${content.offlineMessage} ${record.title}?`}
+            disabled={fileDetail?.online || !record?.version}
             okText={global.yes}
-            cancelText={global.no}>
-            <DeleteButton
+            cancelText={global.no}
+            onConfirm={() => handleOffline(record.id, record.fileId)}>
+            <Button
+              danger
               type="default"
               size="small"
               shape="circle"
-              title={global.remove}
-              disabled={!!record?.version}
-              style={{ marginLeft: 8 }}
-            />
+              title={content.offline}
+              disabled={fileDetail?.online || !record?.version}
+              style={{ marginLeft: 8 }}>
+              <VerticalAlignBottomOutlined />
+            </Button>
           </Popconfirm>
-          <Button
-            type="default"
-            size="small"
-            shape="circle"
-            title={global.userPermission}
-            onClick={() => openAuthDrawer(true, record)}>
-            <UserOutlined />
-          </Button>
+          <Dropdown
+            overlay={
+              <Menu>
+                <Menu.Item key="copy">
+                  <Button
+                    type="text"
+                    onClick={() => handleCopy(record.id, record.fileId)}
+                    style={{ width: '100%', padding: 0, textAlign: 'left' }}>
+                    <CopyOutlined /> {content.copy}
+                  </Button>
+                </Menu.Item>
+                <Menu.Item key="auth">
+                  <Button
+                    type="text"
+                    onClick={() => openAuthDrawer(true, record)}
+                    style={{ width: '100%', padding: 0, textAlign: 'left' }}>
+                    <UserOutlined /> {global.userPermission}
+                  </Button>
+                </Menu.Item>
+                <Menu.Item key="delete">
+                  <Popconfirm
+                    title={`${content.deleteMessage} ${record.title}?`}
+                    disabled={fileDetail?.online || !!record?.version}
+                    onConfirm={() => {
+                      if (applicationId) {
+                        deleteContent({
+                          applicationId,
+                          id: record.id,
+                          status: true,
+                          fileId: record.fileId,
+                          fileType: 'page',
+                        });
+                      }
+                    }}
+                    okText={global.yes}
+                    cancelText={global.no}>
+                    <Button
+                      danger
+                      type="text"
+                      disabled={fileDetail?.online || !!record?.version}
+                      style={{ width: '100%', padding: 0, textAlign: 'left' }}>
+                      <DeleteOutlined /> {global.delete}
+                    </Button>
+                  </Popconfirm>
+                </Menu.Item>
+              </Menu>
+            }>
+            <Button type="default" size="small" shape="circle" style={{ marginLeft: 8 }}>
+              <EllipsisOutlined />
+            </Button>
+          </Dropdown>
         </>
       ),
     },

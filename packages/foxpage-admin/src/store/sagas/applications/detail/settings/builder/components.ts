@@ -15,6 +15,7 @@ import {
   ComponentCategoryFetchParams,
   ComponentCategoryFetchRes,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchCategoryComponents(action: BuilderComponentSettingsActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -35,7 +36,7 @@ function* handleFetchCategoryComponents(action: BuilderComponentSettingsActionTy
       component: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -61,7 +62,7 @@ function* handleSaveCategory(action: BuilderComponentSettingsActionType) {
       ACTIONS.fetchComponents({ applicationId: params.applicationId, ...pageInfo, search: searchText || '' }),
     );
   } else {
-    message.error(saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -82,7 +83,7 @@ function* handleFetchCategory(action: BuilderComponentSettingsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -104,7 +105,7 @@ function* handleDeleteCategory(action: BuilderComponentSettingsActionType) {
       ACTIONS.fetchComponents({ applicationId: params.applicationId, ...pageInfo, search: searchText || '' }),
     );
   } else {
-    message.error(deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 

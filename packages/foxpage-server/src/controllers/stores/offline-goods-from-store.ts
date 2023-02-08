@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 
-import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -37,7 +36,7 @@ export class OfflineGoodsFromStore extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.GOODS });
 
       // Check offline permission
-      const hasAuth = await this.service.auth.file(params.id, { ctx });
+      const hasAuth = await this.service.auth.file(params.id, { ctx, mask: 1 });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4130701);
       }
@@ -45,7 +44,7 @@ export class OfflineGoodsFromStore extends BaseController {
       // Get product details
       let goodsDetail = await this.service.store.goods.getDetailByAppFileId(params.applicationId, params.id);
 
-      if (!goodsDetail) {
+      if (this.notValid(goodsDetail)) {
         return Response.warning(i18n.store.invalidTypeId, 2130701);
       }
 

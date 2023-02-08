@@ -1,6 +1,6 @@
 import { AbstractEntity, ResponseBody } from '@/types/index';
 
-interface ApplicationHost {
+export interface ApplicationHost {
   url: string;
   locales: string[];
 }

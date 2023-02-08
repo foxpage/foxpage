@@ -1,19 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 
+import { message } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import { fetchComponentList } from '@/actions/builder/components';
 import { selectContent, updateStoreModalVisible } from '@/actions/builder/header';
+import * as LOCKER_ACTIONS from '@/actions/builder/locker';
 import * as ACTIONS from '@/actions/builder/main';
+import * as HISTORY_ACTIONS from '@/actions/history/index';
+import * as RECORD_ACTIONS from '@/actions/record/index';
 import { FileType } from '@/constants/index';
+import { getBusinessI18n } from '@/foxI18n/index';
 import { EditDrawer as ConditionEditDrawer } from '@/pages/applications/detail/file/conditions/components';
-import { EditDrawer as FunctionEditDrawer } from '@/pages/applications/detail/file/functions/components';
 import { EditDrawer as VariableEditDrawer } from '@/pages/applications/detail/file/variables/components';
+import { fetchUserRecordStatus } from '@/store/actions/record';
+import { checkExist, clearCache } from '@/store/sagas/builder/services';
 import { FoxBuilderEvents } from '@/types/builder';
 
+import { Notice } from '../notice';
+
 import { Header } from './header';
+import LockerNotice from './LockerNotice';
 import {
   BUILDER_WINDOW_EDITOR,
   BUILDER_WINDOW_MODAL,
@@ -24,17 +33,29 @@ import {
 import Viewer from './Viewer';
 
 const Container = styled.div`
-  height: 100%;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
   .ant-spin-nested-loading {
-    height: calc(100% - 48px);
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
   }
   .ant-spin-container {
-    height: 100%;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
   }
 `;
 
 const mapStateToProps = (store: RootState) => ({
   application: store.builder.main.application,
+  content: store.builder.main.content,
+  pageContent: store.builder.main.pageContent,
+  lockerState: store.builder.main.lockerState,
   loading: store.builder.main.loading,
   file: store.builder.main.file,
   applicationId: store.builder.header.applicationId,
@@ -50,15 +71,21 @@ const mapDispatchToProps = {
   openToolbarEditor: ACTIONS.updateToolbarEditorVisible,
   openToolbarModal: ACTIONS.updateToolbarModalVisible,
   templateBind: ACTIONS.templateOpenInPage,
-  changeContent: ACTIONS.clearByContentChange,
+  clearByContentChange: ACTIONS.clearByContentChange,
+  resetClientContentTime: LOCKER_ACTIONS.resetClientContentTime,
   clear: ACTIONS.clearAll,
   fetchApp: ACTIONS.fetchApp,
   fetchFile: ACTIONS.fetchFile,
   fetchContent: ACTIONS.fetchContent,
   deleteComponentMock: ACTIONS.deleteComponentMock,
+  clearLocalRecord: RECORD_ACTIONS.clearLocalRecord,
   selectContent: selectContent,
   fetchComponents: fetchComponentList,
   openStoreModal: updateStoreModalVisible,
+  fetchUserRecordStatus,
+  startHeartBeat: () => ACTIONS.handleHeartBeatCheck(true),
+  stopHeartBeat: () => ACTIONS.handleHeartBeatCheck(false),
+  stopLockerManager: () => ACTIONS.handleLockerManager(false),
 };
 
 type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -70,15 +97,18 @@ const Builder = (props: IProps) => {
     file,
     applicationId,
     contentId,
+    content,
     fileId,
     folderId,
     pageList,
     components,
+    pageContent,
     openToolbarEditor,
     openToolbarModal,
     selectContent,
     clear,
-    changeContent,
+    clearByContentChange,
+    resetClientContentTime,
     fetchComponents,
     fetchApp,
     fetchFile,
@@ -87,9 +117,25 @@ const Builder = (props: IProps) => {
     openStoreModal,
     deleteComponentMock,
     locale,
+    fetchUserRecordStatus,
+    startHeartBeat,
+    clearLocalRecord,
+    lockerState,
+    stopHeartBeat,
+    stopLockerManager,
   } = props;
 
+  const lockerStateRef = useRef<boolean | null>(null);
+
   useEffect(() => {
+    lockerStateRef.current = lockerState.blocked;
+  }, [lockerState.blocked]);
+
+  useEffect(() => {
+    // todo: clear all cache on load
+    clearCache('-1').then(() => {
+      clearLocalRecord();
+    });
     return () => {
       clear();
     };
@@ -111,7 +157,6 @@ const Builder = (props: IProps) => {
       if (content) {
         // push to store
         const localeTag = content?.tags.filter((item) => item.locale);
-
         selectContent({
           applicationId,
           fileId: fileId || file?.id,
@@ -137,21 +182,53 @@ const Builder = (props: IProps) => {
   }, [applicationId, fileId]);
 
   useEffect(() => {
-    changeContent();
+    if (contentId) {
+      checkExist(contentId).then((result) => {
+        if (!result) {
+          clearByContentChange(contentId);
+          resetClientContentTime();
+        }
+      });
+    }
   }, [contentId]);
+
+  useEffect(() => {
+    if (applicationId && contentId) {
+      fetchUserRecordStatus({ applicationId, contentId });
+    }
+  }, [applicationId, contentId]);
 
   useEffect(() => {
     if (components.length && application?.id && file?.id && contentId) {
       fetchContent({ applicationId: application.id, id: contentId, type: file.type });
     }
-  }, [application, contentId, file?.id, components.length]);
+  }, [application?.id, contentId, file?.id, components.length]);
+
+  useEffect(() => {
+    if (content.id && pageContent.id && application?.id) {
+      startHeartBeat();
+    }
+    return () => {
+      stopHeartBeat();
+      stopLockerManager();
+    };
+  }, [content.id, pageContent.id, application?.id]);
 
   const handleWindowChange: FoxBuilderEvents['onWindowChange'] = (target, opt) => {
+    // event listener will not work with react state here, use ref to solve it;
+    if (lockerStateRef.current) {
+      message.error(getBusinessI18n().content.lockedAlert);
+      return;
+    }
     if (BUILDER_WINDOW_EDITOR.indexOf(target) > -1) openToolbarEditor(true, target, opt);
     if (BUILDER_WINDOW_MODAL.indexOf(target) > -1) openToolbarModal(true, target, opt);
+
     if (target === 'templateBind') {
       openStoreModal(true, 'template');
       templateBind(true);
+    }
+    if (target === 'pageBind') {
+      openStoreModal(true);
     }
     if (target === 'mockDelete' && opt) {
       deleteComponentMock(opt);
@@ -161,10 +238,11 @@ const Builder = (props: IProps) => {
   return (
     <Container>
       <Header />
-      <Viewer loading={loading} changeWindow={handleWindowChange} />
-      <ConditionEditDrawer applicationId={applicationId} folderId={folderId} />
-      <FunctionEditDrawer applicationId={applicationId} folderId={folderId} />
-      <VariableEditDrawer applicationId={applicationId} folderId={folderId} />
+      <Notice />
+      <LockerNotice />
+      <Viewer key={locale} loading={loading} changeWindow={handleWindowChange} />
+      <ConditionEditDrawer applicationId={applicationId} folderId={folderId} pageContentId={contentId} />
+      <VariableEditDrawer applicationId={applicationId} folderId={folderId} pageContentId={contentId} />
       <ConditionBindDrawer />
       <ToolbarModal />
       <VariableBindModal />

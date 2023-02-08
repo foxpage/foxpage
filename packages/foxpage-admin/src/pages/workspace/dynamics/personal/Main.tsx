@@ -30,7 +30,6 @@ const Step = styled(AntdStep)`
 `;
 
 const mapStateToProps = (store: RootState) => ({
-  organizationId: store.system.user.organizationId,
   loading: store.workspace.dynamics.loading,
   pageInfo: store.workspace.dynamics.pageInfo,
   dynamics: store.workspace.dynamics.dynamics,
@@ -44,10 +43,10 @@ const mapDispatchToProps = {
 type DynamicProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Dynamics: React.FC<DynamicProps> = (props) => {
-  const { organizationId, loading, pageInfo, dynamics, clearAll, searchDynamics } = props;
+  const { loading, pageInfo, dynamics, clearAll, searchDynamics } = props;
 
   // i18n
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { global } = locale.business;
 
   useEffect(() => {

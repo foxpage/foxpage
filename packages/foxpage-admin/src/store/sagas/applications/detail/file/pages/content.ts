@@ -5,6 +5,7 @@ import { getType } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/applications/detail/file/pages/content';
 import * as API from '@/apis/application';
 import * as AUTH_API from '@/apis/authorize';
+import { clonePage } from '@/apis/builder';
 import * as PROJECT_API from '@/apis/project';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationPageContentActionType } from '@/reducers/applications/detail/file/pages/content';
@@ -14,9 +15,13 @@ import {
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
   AuthorizeUserFetchParams,
+  ProjectContentCopyParams,
   ProjectContentDeleteParams,
   ProjectContentFetchParams,
+  ProjectContentOfflineParams,
+  ProjectContentSaveAsBaseParams,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchPageContents(action: ApplicationPageContentActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -31,7 +36,7 @@ function* handleFetchPageContents(action: ApplicationPageContentActionType) {
       content: { fetchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchFailed);
+    errorToast(res, fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -71,10 +76,76 @@ function* handleSaveContent(action: ApplicationPageContentActionType) {
     yield put(ACTIONS.openEditDrawer(false));
     yield put(ACTIONS.fetchPageContentList({ applicationId, fileId }));
   } else {
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
+}
+
+function* handleOfflineContent(action: ApplicationPageContentActionType) {
+  const { applicationId, id, fileId } = action.payload as ProjectContentOfflineParams;
+  const res = yield call(PROJECT_API.offlineProjectPageContent, {
+    applicationId,
+    id,
+  });
+
+  const {
+    global: { offlineSuccess, offlineFailed },
+  } = getBusinessI18n();
+
+  if (res.code === 200) {
+    message.success(offlineSuccess);
+
+    yield put(ACTIONS.fetchPageContentList({ applicationId: applicationId || '', fileId: fileId || '' }));
+  } else {
+    errorToast(res, offlineFailed);
+  }
+}
+
+function* handleCopyContent(action: ApplicationPageContentActionType) {
+  const { params, cb } = action.payload as { params: ProjectContentCopyParams; cb?: () => void };
+  const { applicationId, fileId, sourceContentId, targetContentLocales } = params;
+  const res = yield call(clonePage, {
+    applicationId,
+    sourceContentId,
+    targetContentLocales,
+  });
+
+  const {
+    global: { copySuccess, copyFailed },
+  } = getBusinessI18n();
+
+  if (res.code === 200) {
+    message.success(copySuccess);
+
+    if (typeof cb === 'function') cb();
+
+    yield put(ACTIONS.fetchPageContentList({ applicationId: applicationId || '', fileId: fileId || '' }));
+  } else {
+    errorToast(res, copyFailed);
+  }
+}
+
+function* handleSaveAsBaseContent(action: ApplicationPageContentActionType) {
+  const { applicationId, contentId, fileId } = action.payload as ProjectContentSaveAsBaseParams;
+  const res = yield call(clonePage, {
+    applicationId,
+    sourceContentId: contentId,
+    targetContentLocales: [],
+    includeBase: true,
+  });
+
+  const {
+    global: { saveSuccess, saveFailed },
+  } = getBusinessI18n();
+
+  if (res.code === 200) {
+    message.success(saveSuccess);
+
+    yield put(ACTIONS.fetchPageContentList({ applicationId: applicationId || '', fileId: fileId || '' }));
+  } else {
+    errorToast(res, saveFailed);
+  }
 }
 
 function* handleDeleteContent(action: ApplicationPageContentActionType) {
@@ -94,7 +165,7 @@ function* handleDeleteContent(action: ApplicationPageContentActionType) {
 
     yield put(ACTIONS.fetchPageContentList({ applicationId: applicationId || '', fileId: fileId || '' }));
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -111,7 +182,7 @@ function* handleFetchAuthList(action: ApplicationPageContentActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateAuthListLoading(false));
@@ -128,7 +199,7 @@ function* handleSaveAuth(action: ApplicationPageContentActionType) {
       global: { addFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || addFailed);
+    errorToast(res, addFailed);
   }
 }
 
@@ -145,28 +216,33 @@ function* handleDeleteAuth(action: ApplicationPageContentActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
 function* handleFetchUserList(action: ApplicationPageContentActionType) {
-  const { params } = action.payload as { params: AuthorizeUserFetchParams };
+  const { params, cb } = action.payload as { params: AuthorizeUserFetchParams; cb?: (userList) => void };
   const res = yield call(AUTH_API.authorizeUserFetch, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushUserList(res.data || []));
+
+    if (typeof cb === 'function') cb(res.data);
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchPageContentList), handleFetchPageContents);
   yield takeLatest(getType(ACTIONS.saveContent), handleSaveContent);
+  yield takeLatest(getType(ACTIONS.offlineContent), handleOfflineContent);
+  yield takeLatest(getType(ACTIONS.copyContent), handleCopyContent);
+  yield takeLatest(getType(ACTIONS.saveAsBaseContent), handleSaveAsBaseContent);
   yield takeLatest(getType(ACTIONS.deleteContent), handleDeleteContent);
   yield takeLatest(getType(ACTIONS.fetchAuthList), handleFetchAuthList);
   yield takeLatest(getType(ACTIONS.fetchUserList), handleFetchUserList);

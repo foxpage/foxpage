@@ -5,6 +5,7 @@ import { Content, DSL, DslRelation } from '@foxpage/foxpage-server-types';
 import { TYPE } from '../../../config/constant';
 import * as Model from '../../models';
 import { ContentVersionNumber, ContentVersionString, RelationsRecursive } from '../../types/content-types';
+import { FoxCtx } from '../../types/index-types';
 import { BaseService } from '../base-service';
 import * as Service from '../index';
 
@@ -19,7 +20,7 @@ export class ContentRelationService extends BaseService<Content> {
    * Single instance
    * @returns ContentRelationService
    */
-  public static getInstance (): ContentRelationService {
+  public static getInstance(): ContentRelationService {
     this._instance || (this._instance = new ContentRelationService());
     return this._instance;
   }
@@ -36,7 +37,7 @@ export class ContentRelationService extends BaseService<Content> {
    *  @param {isBuild: boolean} = false, return the details of the build, including the relation
    * @returns Promise
    */
-  async getRelationDetailRecursive (
+  async getRelationDetailRecursive(
     relations: Record<string, DslRelation>,
     relayChain: Record<string, string[]> = {},
     isBuild: boolean = false,
@@ -122,7 +123,7 @@ export class ContentRelationService extends BaseService<Content> {
    * @param  {string='id'} idKey
    * @returns any
    */
-  getTypeContentIdVersionFromRelation (itemList: any[], idKey: string = 'id'): any {
+  getTypeContentIdVersionFromRelation(itemList: any[], idKey: string = 'id'): any {
     let templateIds: string[] = [];
     let otherTypeIds: string[] = [];
     let itemVersions: ContentVersionString[] = [];
@@ -138,5 +139,136 @@ export class ContentRelationService extends BaseService<Content> {
     });
 
     return { templateIds, otherTypeIds, itemVersions };
+  }
+
+  async createNewRelations(
+    relation: Record<string, any>,
+    options: {
+      ctx: FoxCtx;
+      applicationId: string;
+      projectId: string;
+      scope: string;
+      idMaps?: Record<string, any>;
+      appDefaultIds?: string[];
+    },
+  ): Promise<{ idMaps: Record<string, any> }> {
+    !options.idMaps && (options.idMaps = {});
+
+    // get app default folder ids
+    if (!options.appDefaultIds || options.appDefaultIds.length === 0) {
+      options.appDefaultIds = await Service.folder.info.getAppDefaultItemFolderIds(options.applicationId);
+    }
+
+    // get the relation need create
+    const needCreateRelationObject = await this.getNeedCreateRelationIds(
+      relation,
+      Object.assign(options, { appDefaultIds: options.appDefaultIds }),
+    );
+    const needCreateRelationIds = _.keys(needCreateRelationObject);
+
+    if (needCreateRelationIds.length > 0) {
+      const relationDetailObject = await Service.version.list.getLiveVersionByContentIds(
+        needCreateRelationIds,
+      );
+
+      for (const contentId in relationDetailObject) {
+        const dependRelation = relationDetailObject[contentId].content?.relation || {};
+        if (!_.isEmpty(dependRelation)) {
+          const childRelation = await this.createNewRelations(dependRelation, options);
+          options.idMaps = childRelation.idMaps;
+        }
+
+        const newRelations = Service.version.info.createCopyVersion(
+          relationDetailObject[contentId].content,
+          options.idMaps,
+        );
+        const fileInfo = Service.file.info.create(
+          {
+            applicationId: options.applicationId,
+            folderId: options.projectId,
+            name: newRelations.idNameMaps[contentId].newName,
+            type: needCreateRelationObject[contentId].type,
+          },
+          { ctx: options.ctx },
+        );
+        const contentInfo = Service.content.info.create(
+          {
+            title: newRelations.idNameMaps[contentId].newName,
+            fileId: fileInfo.id,
+            applicationId: options.applicationId,
+            type: needCreateRelationObject[contentId].type,
+          },
+          { ctx: options.ctx },
+        );
+        // update variable, condition and function name in version schames
+        if (
+          [TYPE.VARIABLE, TYPE.CONDITION, TYPE.FUNCTION].indexOf(needCreateRelationObject[contentId].type) !==
+            -1 &&
+          newRelations.newVersion.schemas?.[0]
+        ) {
+          newRelations.newVersion.schemas[0].name = newRelations.idNameMaps[contentId].newName;
+        }
+
+        Service.version.info.create(
+          {
+            contentId: contentInfo.id,
+            content: Object.assign({}, newRelations.newVersion, { id: contentInfo.id }),
+          },
+          { ctx: options.ctx },
+        );
+
+        options.idMaps[contentId] = {
+          id: contentInfo.id,
+          name: needCreateRelationObject[contentId].name,
+          newName: newRelations.idNameMaps[contentId].newName,
+        };
+      }
+    }
+
+    return { idMaps: options.idMaps };
+  }
+
+  /**
+   * check the relation in content whether to create new data accroding scope
+   * if scope is project, do not create
+   * if scope is application, create the relation in project
+   * if scope is system, create all relation
+   * @param content
+   * @param options
+   * @returns
+   */
+  async getNeedCreateRelationIds(
+    relation: Record<string, any>,
+    options: { applicationId: string; scope: string; appDefaultIds: string[] },
+  ): Promise<Record<string, any>> {
+    if (options.scope === TYPE.PROJECT) {
+      return {};
+    }
+
+    const relationIds = _.uniq(
+      _.map(
+        _.filter(_.toArray(relation), (relation) => relation.type !== TYPE.TEMPLATE),
+        'id',
+      ),
+    );
+
+    let needCreateRelationObject: Record<string, any> = {};
+    if (relationIds.length > 0) {
+      const contentFileObject = await Service.file.list.getContentFileByIds(relationIds);
+      for (const contentId in contentFileObject) {
+        if (
+          options.scope === TYPE.APPLICATION &&
+          options.appDefaultIds.indexOf(contentFileObject[contentId].folderId) === -1
+        ) {
+          needCreateRelationObject[contentId] = {
+            id: contentId,
+            name: contentFileObject[contentId].name,
+            type: contentFileObject[contentId].type,
+          };
+        }
+      }
+    }
+
+    return needCreateRelationObject;
   }
 }

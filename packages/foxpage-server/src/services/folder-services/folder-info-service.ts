@@ -37,7 +37,7 @@ export class FolderInfoService extends BaseService<Folder> {
    * @param  {Partial<Folder>} params
    * @returns Folder
    */
-  create(params: Partial<Folder>, options: { ctx: FoxCtx; actionType?: string }): Folder {
+  create(params: Partial<Folder>, options: { ctx: FoxCtx }): Folder {
     const folderDetail: Folder = {
       id: params.id || generationId(PRE.FOLDER),
       name: _.trim(params.name) || '',
@@ -51,16 +51,6 @@ export class FolderInfoService extends BaseService<Folder> {
     };
 
     options.ctx.transactions.push(Model.folder.addDetailQuery(folderDetail));
-    options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.CREATE, folderDetail, {
-        actionType: options.actionType || [LOG.CREATE, TYPE.FOLDER].join('_'),
-        category: {
-          type: TYPE.FOLDER,
-          applicationId: params.applicationId || '',
-          folderId: folderDetail.id,
-        },
-      }),
-    );
 
     return folderDetail;
   }
@@ -220,10 +210,7 @@ export class FolderInfoService extends BaseService<Folder> {
 
     // Create folder
     folderDetail.parentFolderId = typeDetail.id;
-    const newFolderDetail = this.create(folderDetail, {
-      ctx: options.ctx,
-      actionType: options.actionType,
-    });
+    const newFolderDetail = this.create(folderDetail, { ctx: options.ctx });
 
     return { code: 0, data: newFolderDetail };
   }
@@ -236,7 +223,7 @@ export class FolderInfoService extends BaseService<Folder> {
    */
   async updateTypeFolderDetail(
     folderDetail: AppTypeFolderUpdate,
-    options: { ctx: FoxCtx; actionType?: string },
+    options: { ctx: FoxCtx },
   ): Promise<Record<string, number>> {
     // Get current folder details
     const typeDetail = await this.model.findOne({
@@ -265,16 +252,6 @@ export class FolderInfoService extends BaseService<Folder> {
     const updateDetail = _.omit(folderDetail, ['applicationId', 'id']);
     if (!_.isEmpty(updateDetail)) {
       options.ctx.transactions.push(Model.folder.updateDetailQuery(folderDetail.id, updateDetail));
-      options.ctx.operations.push(
-        ...Service.log.addLogItem(LOG.UPDATE, folderDetail, {
-          actionType: options.actionType || [LOG.UPDATE, TYPE.FOLDER].join('_'),
-          category: {
-            type: TYPE.FOLDER,
-            applicationId: folderDetail.applicationId || '',
-            folderId: folderDetail.id,
-          },
-        }),
-      );
     }
 
     return { code: 0 };
@@ -288,7 +265,6 @@ export class FolderInfoService extends BaseService<Folder> {
    */
   updateContentItem(id: string, params: Partial<Folder>, options: { ctx: FoxCtx }): void {
     options.ctx.transactions.push(Model.folder.updateDetailQuery(id, params));
-    options.ctx.operations.push(...Service.log.addLogItem(LOG.UPDATE, Object.assign({ id }, params)));
   }
 
   /**
@@ -304,7 +280,7 @@ export class FolderInfoService extends BaseService<Folder> {
     options: { ctx: FoxCtx; checkType?: number },
   ): Promise<Record<string, number>> {
     const folderDetail = await this.getDetailById(params.id);
-    if (!folderDetail) {
+    if (this.notValid(folderDetail)) {
       return { code: 1 }; // Invalid file information
     }
 

@@ -1,19 +1,25 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo } from 'react';
+import { connect } from 'react-redux';
 import { Link, NavLink, useHistory } from 'react-router-dom';
 
-import { DownOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { DownOutlined, LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Dropdown, Layout, Menu } from 'antd';
 import enUS from 'antd/lib/locale/en_US';
 import zhCN from 'antd/lib/locale/zh_CN';
 import styled from 'styled-components';
+import { RootState } from 'typesafe-actions';
 
+import { fetchTeamMembers } from '@/actions/system/common';
 import { OrganizationSelector } from '@/components/index';
-import { LOCALE_EN, LOCALE_ZH_CN } from '@/constants/index';
+import { LOCALE_EN, LOCALE_ZH_CN, superAdminTeamId } from '@/constants/index';
 import businessLocale from '@/foxI18n/index';
 import { GlobalContext } from '@/pages/system/index';
 import { getImageUrlByEnv, getLoginUser, setLoginUser } from '@/utils/index';
 
 const { Header } = Layout;
+
+const PAGE = 1;
+const SIZE = 9999;
 
 const StyledLink = styled(Link)`
   color: #fff;
@@ -109,19 +115,55 @@ const LocaleItem = styled.div`
   }
 `;
 
-const FoxPageHeader = () => {
-  const { userInfo } = getLoginUser();
-  const history = useHistory();
+const mapStateToProps = (store: RootState) => ({
+  admins: store.system.common.administrators,
+});
 
+const mapDispatchToProps = {
+  fetchTeamMembers: fetchTeamMembers,
+};
+
+type FoxPageHeaderProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
+
+const FoxPageHeader = (props: FoxPageHeaderProps) => {
+  const { admins, fetchTeamMembers } = props;
+
+  // config
+  // @ts-ignore
+  const adminTeamId = superAdminTeamId[APP_CONFIG.env];
+
+  // url params
+  const history = useHistory();
+  const { userInfo } = getLoginUser();
+
+  // i18n
   const { locale, setLocale } = useContext(GlobalContext);
-  const { global, workspace, store, login } = locale.business || businessLocale[LOCALE_ZH_CN];
+  const { authorize, global, workspace, store, login } = locale.business || businessLocale[LOCALE_ZH_CN];
+
+  useEffect(() => {
+    if (adminTeamId) {
+      fetchTeamMembers({
+        teamId: adminTeamId,
+        page: PAGE,
+        size: SIZE,
+      });
+    }
+  }, [fetchTeamMembers]);
 
   const handleLogout = useCallback(() => {
     // clear local storage
     setLoginUser();
 
     // back to login page
-    history.push('/login');
+    history.push({
+      pathname: '/login',
+    });
+  }, []);
+
+  const handleAdminManagement = useCallback(() => {
+    history.push({
+      pathname: '/data',
+    });
   }, []);
 
   const handleLocaleChange = () => {
@@ -138,6 +180,10 @@ const FoxPageHeader = () => {
       languagePrefer: locale.locale === LOCALE_ZH_CN ? LOCALE_EN : LOCALE_ZH_CN,
     });
   };
+
+  const isAdmin = useMemo(() => {
+    return !!admins && admins.find((member) => member.userId === userInfo.id);
+  }, [admins]);
 
   return (
     <Header
@@ -227,6 +273,12 @@ const FoxPageHeader = () => {
           trigger={['click']}
           overlay={
             <Menu>
+              {isAdmin && (
+                <Menu.Item key="1" onClick={handleAdminManagement}>
+                  <SettingOutlined style={{ marginRight: 8 }} />
+                  {authorize.admin}
+                </Menu.Item>
+              )}
               <Menu.Item key="0" onClick={handleLogout}>
                 <LogoutOutlined style={{ marginRight: 8 }} />
                 {login.loginOut}
@@ -243,4 +295,4 @@ const FoxPageHeader = () => {
   );
 };
 
-export default FoxPageHeader;
+export default connect(mapStateToProps, mapDispatchToProps)(FoxPageHeader);

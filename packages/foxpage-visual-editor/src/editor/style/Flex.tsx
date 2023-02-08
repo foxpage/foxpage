@@ -32,8 +32,8 @@ const Flex: React.FC<FlexType> = (props) => {
           <InputNumber
             style={{ width: '100%' }}
             value={flexShrink}
-            onChange={(value: string) => {
-              if (typeof onChange === 'function') onChange('flexShrink', value);
+            onChange={(value) => {
+              if (typeof onChange === 'function' && value) onChange('flexShrink', value);
             }}
           />
         </Col>
@@ -46,8 +46,8 @@ const Flex: React.FC<FlexType> = (props) => {
           <InputNumber
             style={{ width: '100%' }}
             value={flexGrow}
-            onChange={(value: string) => {
-              if (typeof onChange === 'function') onChange('flexGrow', value);
+            onChange={(value: string | null) => {
+              if (typeof onChange === 'function' && value) onChange('flexGrow', value);
             }}
           />
         </Col>

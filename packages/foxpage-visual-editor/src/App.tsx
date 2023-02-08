@@ -10,17 +10,62 @@ import { listeners, posters } from './events';
 
 const App = () => {
   const [meta, setMeta] = useState<BuilderData>({});
+  const [pageStructure, setPageStructure] = useState<BuilderData['structure']>([]);
+  const [renderDSL, setRenderDSL] = useState<BuilderData['structure']>([]);
+  const [selectNode, setSelectNode] = useState<BuilderData['selectNode']>(null);
+  const [changed, setChanged] = useState(false);
+  const [nodeChangedStatus, setNodeChangedStatus] = useState({});
+  const readOnly = !!meta.config?.sys?.readOnly;
 
   const events: FoxBuilderEvents = {
-    onSelectComponent: posters.handleSelectComponent,
-    onUpdateComponent: posters.handleUpdateComponent,
-    onRemoveComponent: posters.handleRemoveComponent,
-    onCopyComponent: posters.handleCopyComponent,
-    onDropComponent: posters.handleDropComponent,
+    onSelectComponent: (component) => {
+      if (typeof posters.handleSelectComponent === 'function') {
+        posters.handleSelectComponent(component);
+      }
+    },
+    onUpdateComponent: (...args) => {
+      if (readOnly) {
+        return;
+      }
+      setChanged(true);
+      setTimeout(() => {
+        if (typeof posters.handleUpdateComponent === 'function') {
+          posters.handleUpdateComponent(...args);
+        }
+      }, 300);
+    },
+    onRemoveComponent: (...args) => {
+      if (readOnly) {
+        return;
+      }
+      setChanged(true);
+      if (typeof posters.handleRemoveComponent === 'function') {
+        posters.handleRemoveComponent(...args);
+      }
+    },
+    onCopyComponent: (...args) => {
+      if (readOnly) {
+        return;
+      }
+      setChanged(true);
+      if (typeof posters.handleCopyComponent === 'function') {
+        posters.handleCopyComponent(...args);
+      }
+    },
+    onDropComponent: (...args) => {
+      if (readOnly) {
+        return;
+      }
+      setChanged(true);
+      if (typeof posters.handleDropComponent === 'function') {
+        posters.handleDropComponent(...args);
+      }
+    },
     onWindowChange: posters.handleWindowChange,
     onLinkChange: posters.handleLinkChange,
     onFrameLoaded: posters.handleFrameLoaded,
     onPageCaptured: posters.handlePageCaptured,
+    onFetchComponentVersions: posters.handleFetchComponentVersions,
   };
 
   function handlePageCapture() {
@@ -37,10 +82,30 @@ const App = () => {
    */
   const handlers: FoxBuilderEvents = {
     onInit: (value) => {
-      // console.log('[ VISUAL EDITOR INIT ]:', value);
+      console.log('[ VISUAL EDITOR INIT ]:', value);
       setMeta(value);
     },
+    onChange: () => {
+      setChanged(true);
+    },
+    onRenderDSLChanged: (dsl) => {
+      console.log('[ RENDER DSL CHANGED ]:', dsl);
+      setRenderDSL(dsl);
+      setChanged(false);
+    },
+    onPageStructureChanged: (structure) => {
+      console.log('[ PAGE STRUCTURE CHANGED ]:', structure);
+      setPageStructure(structure);
+    },
+    onSelectedComponentChanged: (newSelectNode) => {
+      console.log('[ SELECTED COMPONENT CHANGED ]:', newSelectNode);
+      setSelectNode(newSelectNode);
+    },
     onPageCapture: handlePageCapture,
+    onStructureChanged: (value) => {
+      console.log('[ STRUCTURE CHANGED ]:', value);
+      setNodeChangedStatus(value);
+    },
   };
 
   const onListeners = (event: MessageEvent) => {
@@ -56,12 +121,15 @@ const App = () => {
 
   return (
     <Container
+      selectNode={selectNode}
+      renderDSL={renderDSL || []}
+      pageStructure={pageStructure || []}
       rootNode={meta.rootNode}
-      selectNode={meta.selectNode}
-      structure={meta.structure || []}
       components={meta.components || []}
       config={meta.config || {}}
       events={events}
+      reRendering={changed}
+      nodeChangedStatus={nodeChangedStatus}
     />
   );
 };

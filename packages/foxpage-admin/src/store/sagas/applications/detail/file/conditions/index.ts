@@ -4,9 +4,11 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/conditions';
 import * as API from '@/apis/application';
+import { RecordActionType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ConditionActionType } from '@/reducers/applications/detail/file/conditions';
 import { getRelation } from '@/sagas/builder/services';
+import * as RECORD_ACTIONS from '@/store/actions/record';
 import { store } from '@/store/index';
 import {
   ConditionDeleteParams,
@@ -22,7 +24,7 @@ import {
   ConditionUpdateRes,
   RelationDetails,
 } from '@/types/index';
-import { objectEmptyCheck } from '@/utils/empty-check';
+import { errorToast, objectEmptyCheck } from '@/utils/index';
 
 function* handleFetchList(actions: ConditionActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -42,7 +44,7 @@ function* handleFetchList(actions: ConditionActionType) {
       condition: { fetchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchFailed);
+    errorToast(res, fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -82,8 +84,21 @@ function* handleSaveCondition(actions: ConditionActionType) {
       id: params.id,
     };
   }
+  if (!!params?.subType) {
+    _params = {
+      ..._params,
+      subType: params.subType,
+    };
+  }
+  if (!!params?.pageContentId) {
+    _params = {
+      ..._params,
+      pageContentId: params.pageContentId,
+    };
+  }
 
-  const res: ConditionSaveResponse = yield call(params?.id ? API.updateCondition : API.addCondition, _params);
+  const editStatus = !!params?.id;
+  const res: ConditionSaveResponse = yield call(editStatus ? API.updateCondition : API.addCondition, _params);
 
   const {
     global: { saveSuccess, saveFailed },
@@ -91,10 +106,26 @@ function* handleSaveCondition(actions: ConditionActionType) {
 
   if (res.code === 200) {
     message.success(saveSuccess);
-
+    if (editStatus) {
+      yield put(
+        RECORD_ACTIONS.addUserRecords(RecordActionType.CONDITION_UPDATE, [_params], {
+          save: true,
+          applicationId: params.applicationId,
+          contentId: params?.content?.id,
+        }),
+      );
+    } else {
+      yield put(
+        RECORD_ACTIONS.addUserRecords(RecordActionType.CONDITION_CREATE, [_params], {
+          save: true,
+          applicationId: params.applicationId,
+          contentId: res.data.contentId,
+        }),
+      );
+    }
     if (typeof cb === 'function') cb(res.data.contentId);
   } else {
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -107,7 +138,8 @@ function* handleDeleteCondition(actions: ConditionActionType) {
     params: ConditionDeleteParams;
     cb?: () => void;
   };
-  const res: ConditionDeleteRes = yield call(API.deleteCondition, params);
+  const { condition, ...rest } = params;
+  const res: ConditionDeleteRes = yield call(API.deleteCondition, rest);
 
   const {
     global: { deleteSuccess, deleteFailed },
@@ -115,10 +147,17 @@ function* handleDeleteCondition(actions: ConditionActionType) {
 
   if (res.code === 200) {
     message.success(deleteSuccess);
+    yield put(
+      RECORD_ACTIONS.addUserRecords(RecordActionType.CONDITION_REMOVE, [params], {
+        save: true,
+        applicationId: params.applicationId,
+        contentId: condition?.contentId,
+      }),
+    );
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -157,24 +196,30 @@ function* handleSaveConditionVersion(actions: ConditionActionType) {
 
     if (typeof cb === 'function') cb(params.content?.id || '');
   } else {
-    message.error(res.msg || updateFailed);
+    errorToast(res, updateFailed);
   }
 }
 
 function* handlePublishCondition(action: ConditionActionType) {
   const { params, cb } = action.payload as { params: ConditionPublishParams; cb?: () => void };
-  const rs = yield call(API.publishCondition, params);
+  const res = yield call(API.publishCondition, params);
 
   const {
     global: { publishSuccess, publishFailed },
   } = getBusinessI18n();
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     message.success(publishSuccess);
-
+    yield put(
+      RECORD_ACTIONS.addUserRecords(RecordActionType.CONDITION_PUBLISH, [params], {
+        save: true,
+        applicationId: params.applicationId,
+        contentId: params.contentId,
+      }),
+    );
     if (typeof cb === 'function') cb();
   } else {
-    message.error(rs.msg || publishFailed);
+    errorToast(res, publishFailed);
   }
 }
 
@@ -194,7 +239,7 @@ function* handleFetchDetail(actions: ConditionActionType) {
       condition: { fetchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchFailed);
+    errorToast(res, fetchFailed);
   }
 }
 

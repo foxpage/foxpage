@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Folder } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { TYPE } from '../../../config/constant';
 import { AppTypeFolderUpdate } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { ProjectDetailRes, UpdateProjectDetailReq } from '../../types/validates/project-validate-types';
@@ -50,10 +50,7 @@ export class UpdateProjectDetail extends BaseController {
         folderPath: params.path || undefined,
       });
 
-      const result = await this.service.folder.info.updateTypeFolderDetail(folderDetail, {
-        ctx,
-        actionType: [LOG.UPDATE, TYPE.PROJECT].join('_'),
-      });
+      const result = await this.service.folder.info.updateTypeFolderDetail(folderDetail, { ctx });
 
       if (result.code === 1) {
         return Response.warning(i18n.folder.invalidFolderId, 2040902);

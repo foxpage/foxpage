@@ -8,9 +8,13 @@ import { Content } from '@/types/index';
 export type ComponentsActionType = ActionType<typeof ACTIONS>;
 
 const components: Component[] = [];
+const versions: Component[] = [];
+const nameVersionDetails: Component[] = [];
 const initialState = {
   components,
-  blockDSLMap: {} as Record<string, Content>
+  blockDSLMap: {} as Record<string, Content>,
+  versions,
+  nameVersionDetails,
 };
 
 type InitialDataType = typeof initialState;
@@ -32,6 +36,18 @@ const reducer = (state: InitialDataType = initialState, action: ComponentsAction
         draft.blockDSLMap = action.payload.data;
         break;
       }
+
+      case getType(ACTIONS.pushComponentVersions): {
+        draft.versions = action.payload.list;
+        break;
+      }
+
+      case getType(ACTIONS.pushComponentVersionDetails): {
+        const list = action.payload.list || [];
+        draft.nameVersionDetails = list.map((item) => item.package);
+        break;
+      }
+
       default:
         break;
     }

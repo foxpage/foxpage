@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Tabs } from 'antd';
 import { RootState } from 'typesafe-actions';
@@ -10,6 +10,7 @@ import { GetComponentSearchsProps } from '@/apis/application';
 import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import { AppComponentFetchParams } from '@/types/application';
+import { getLocationIfo } from '@/utils/location-info';
 
 import { RegisterModal } from '../fast';
 
@@ -17,6 +18,7 @@ import { EditDrawer, List } from './components';
 
 const { TabPane } = Tabs;
 
+const PAGE_NUM = 1;
 const PACKAGES_LENGTH = 8;
 const TYPE = {
   editor: 'editor',
@@ -38,12 +40,18 @@ type PackagesProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPr
 const Packages: React.FC<PackagesProps> = (props) => {
   const { applicationId, selectPackage, updateListState, fetchComponentList } = props;
   const [registerModalState, setRegisterModalState] = useState(false);
+  const [pageNum, setPageNum] = useState(PAGE_NUM);
+  const [search, setSearch] = useState('');
+
+  // url params
+  const history = useHistory();
+  const location = useLocation();
+  const { page: searchPage, searchText } = getLocationIfo(location);
 
   // i18n
   const { locale } = useContext(GlobalContext);
   const { package: packageI18n } = locale.business;
 
-  const location = useLocation();
   const type = useMemo(() => {
     const pathName = location?.pathname || '';
     return (
@@ -51,9 +59,18 @@ const Packages: React.FC<PackagesProps> = (props) => {
       pathName.substring(pathName.indexOf('package/') + PACKAGES_LENGTH, pathName.indexOf('/list') - 1)
     );
   }, [location]);
+
   const packageType: GetComponentSearchsProps['type'] = (TYPE?.[type] ||
     new URLSearchParams(location.search).get('packageType') ||
     'component') as GetComponentSearchsProps['type'];
+
+  useEffect(() => {
+    setPageNum(searchPage || PAGE_NUM);
+  }, [searchPage]);
+
+  useEffect(() => {
+    setSearch(searchText || '');
+  }, [searchText]);
 
   useEffect(() => {
     updateListState({
@@ -71,9 +88,17 @@ const Packages: React.FC<PackagesProps> = (props) => {
       applicationId,
       selectPackage: packageType,
     });
-
-    if (applicationId) fetchComponentList({ applicationId });
   }, [applicationId]);
+
+  useEffect(() => {
+    updateListState({
+      search: searchText,
+    });
+  }, [searchText]);
+
+  useEffect(() => {
+    if (applicationId) fetchComponentList({ applicationId, page: pageNum, search });
+  }, [applicationId, pageNum, search, selectPackage]);
 
   const onChangeSelectedPackage = (val) => {
     updateListState({
@@ -85,7 +110,10 @@ const Packages: React.FC<PackagesProps> = (props) => {
       },
     });
 
-    if (applicationId) fetchComponentList({ applicationId });
+    history.push({
+      pathname: location.pathname,
+      search: `?page=${PAGE_NUM}&searchText=`,
+    });
   };
 
   return (

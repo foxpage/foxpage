@@ -59,6 +59,14 @@ export class GetProjectPageList extends BaseController {
         appIds = _.map(appList, 'id');
       }
 
+      // response empty when app id is invalid
+      if (appIds.length === 0 && [TYPE.TEAM, TYPE.USER, TYPE.INVOLVE].indexOf(params.type) === -1) {
+        return Response.success(
+          { pageInfo: { page: params.page, size: params.size, total: 0 }, data: [] },
+          1040402,
+        );
+      }
+
       let userIds: string[] = [];
       if (params.type === TYPE.TEAM) {
         // get teams users
@@ -106,7 +114,7 @@ export class GetProjectPageList extends BaseController {
           orgFolderData = await this.service.folder.list.getFolderChildrenList(
             Object.assign(baseSearchParams, {
               userIds,
-              searchType: params.searchType || TYPE.PROJECT,
+              searchType: params.searchType || TYPE.PROJECT_FOLDER,
             }),
           );
         }

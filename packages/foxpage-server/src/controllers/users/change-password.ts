@@ -41,13 +41,10 @@ export class AddUsers extends BaseController {
       }
 
       // Check the validity of the original password
-      const validOldPwd = await this.service.user.checkLogin(
-        {
-          account: userInfo?.account || '',
-          password: params.oldPassword,
-        },
-        { ctx },
-      );
+      const validOldPwd = await this.service.user.checkLogin({
+        account: userInfo?.account || '',
+        password: params.oldPassword,
+      });
 
       if (!validOldPwd) {
         return Response.warning(i18n.user.invalidOldPwd, 2060202);
@@ -55,10 +52,7 @@ export class AddUsers extends BaseController {
 
       // 更新密码
       await this.service.user.updateDetail(params.id, {
-        password: crypto
-          .createHash('md5')
-          .update(params.newPassword)
-          .digest('hex'),
+        password: crypto.createHash('md5').update(params.newPassword).digest('hex'),
       });
 
       return Response.success(i18n.user.pwdChangeSuccess, 1060201);

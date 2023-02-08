@@ -3,6 +3,7 @@ import { createAction } from 'typesafe-actions';
 import {
   ApplicationFileListFetchParams,
   AuthorizeAddParams,
+  AuthorizeQueryParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
   AuthorizeListItem,
@@ -58,15 +59,16 @@ export const updateEditFileValue = createAction(
 
 export const saveFile = createAction(
   'APPLICATION_FILE_PAGES_LIST__SAVE_FILE',
-  (params: ProjectFileSaveParams) => ({
-    ...params,
+  (params: ProjectFileSaveParams, cb?: () => void) => ({
+    params,
+    cb,
   }),
 )();
 
 // delete related
 export const deleteFile = createAction(
   'APPLICATION_FILE_PAGES_LIST__DELETE_FILE',
-  (params: ProjectFileDeleteParams) => ({ ...params }),
+  (params: ProjectFileDeleteParams, cb?: () => void) => ({ params, cb }),
 )();
 
 // authorize related
@@ -84,6 +86,14 @@ export const updateAuthListLoading = createAction(
   'APPLICATION_FILE_PAGES_LIST__UPDATE_AUTH_LIST_LOADING',
   (status: boolean) => ({
     status,
+  }),
+)();
+
+export const checkAuthRole = createAction(
+  'APPLICATION_FILE_PAGES_LIST__CHECK_AUTH_ROLE',
+  (params: AuthorizeQueryParams, cb?: (role: number) => void) => ({
+    params,
+    cb,
   }),
 )();
 
@@ -113,7 +123,7 @@ export const deleteAuthUser = createAction(
 
 export const fetchUserList = createAction(
   'APPLICATION_FILE_PAGES_LIST__FETCH_USER_LIST',
-  (params: AuthorizeUserFetchParams, cb?: () => void) => ({
+  (params: AuthorizeUserFetchParams, cb?: (userList) => void) => ({
     params,
     cb,
   }),

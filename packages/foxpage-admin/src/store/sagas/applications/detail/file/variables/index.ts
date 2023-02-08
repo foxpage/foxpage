@@ -5,10 +5,12 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/variables';
 import * as API from '@/apis/application';
+import { RecordActionType } from '@/constants/index';
 import { VariableTypes } from '@/constants/variable';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { VariableActionType } from '@/reducers/applications/detail/file/variables';
 import { getRelation } from '@/sagas/builder/services';
+import * as RECORD_ACTIONS from '@/store/actions/record';
 import { store } from '@/store/index';
 import {
   GoodsCommitParams,
@@ -20,6 +22,7 @@ import {
   VariablesFetchParams,
 } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/empty-check';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchList(action: VariableActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -39,7 +42,7 @@ function* handleFetchList(action: VariableActionType) {
       variable: { fetchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchFailed);
+    errorToast(res, fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -83,8 +86,15 @@ function* handleSaveVariable(action: VariableActionType) {
       folderId,
     };
   }
+  if (!!params?.pageContentId) {
+    _params = {
+      ..._params,
+      pageContentId: params.pageContentId,
+    };
+  }
 
-  const res = yield call(editVariable.id ? API.updateVariables : API.addVariables, _params);
+  const editStatus = !!editVariable.id;
+  const res = yield call(editStatus ? API.updateVariables : API.addVariables, _params);
 
   const {
     global: { saveFailed, saveSuccess },
@@ -92,12 +102,28 @@ function* handleSaveVariable(action: VariableActionType) {
 
   if (res.code === 200) {
     message.success(saveSuccess);
-
+    if (editStatus) {
+      yield put(
+        RECORD_ACTIONS.addUserRecords(RecordActionType.VARIABLE_UPDATE, [_params], {
+          save: true,
+          applicationId: _params.applicationId,
+          contentId: _params.content?.id,
+        }),
+      );
+    } else {
+      yield put(
+        RECORD_ACTIONS.addUserRecords(RecordActionType.VARIABLE_CREATE, [_params], {
+          save: true,
+          applicationId: _params.applicationId,
+          contentId: res.data.contentId,
+        }),
+      );
+    }
     yield put(ACTIONS.openEditDrawer(false));
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 
@@ -121,7 +147,7 @@ function* handleFetchBuildVersion(action: VariableActionType) {
       variable: { fetchDetailFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchDetailFailed);
+    errorToast(res, fetchDetailFailed);
   }
 }
 
@@ -133,29 +159,42 @@ function* handleDeleteVariable(action: VariableActionType) {
     global: { deleteFailed, deleteSuccess },
   } = getBusinessI18n();
 
+  const { variable, ...rest } = params;
   if (res.code === 200) {
     message.success(deleteSuccess);
-
+    yield put(
+      RECORD_ACTIONS.addUserRecords(RecordActionType.VARIABLE_REMOVE, [rest], {
+        save: true,
+        applicationId: params.applicationId,
+        contentId: variable?.contentId,
+      }),
+    );
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
 function* handlePublishVariable(action: VariableActionType) {
   const { params, cb } = action.payload as { params: VariablePublishParams; cb?: () => void };
-  const rs = yield call(API.publish, params);
+  const res = yield call(API.publish, params);
 
   const {
     global: { publishSuccess, publishFailed },
   } = getBusinessI18n();
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     message.success(publishSuccess);
-
+    yield put(
+      RECORD_ACTIONS.addUserRecords(RecordActionType.VARIABLE_PUBLISH, [params], {
+        save: true,
+        applicationId: params.applicationId,
+        contentId: params.contentId,
+      }),
+    );
     if (typeof cb === 'function') cb();
   } else {
-    message.error(rs.msg || publishFailed);
+    errorToast(res, publishFailed);
   }
 }
 
@@ -184,7 +223,7 @@ function* handleCommitToStore(action: VariableActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || isOnline ? revokeFailed : commitFailed);
+    errorToast(res, isOnline ? revokeFailed : commitFailed);
   }
 }
 

@@ -1,3 +1,5 @@
+import { Component } from '@/types/component';
+
 import { StructureNode } from './main';
 
 /**
@@ -11,6 +13,7 @@ export interface RenderStructureNode extends StructureNode {
   __styleNode?: StructureNode | null;
   __renderProps: StructureNode['props'];
   __mock?: RenderStructureNode;
+  __lastModified?: number; // for record node update time 
   __editorConfig?: {
     visible?: boolean; // eye status
     showInStructure?: boolean; // status in structure
@@ -28,6 +31,7 @@ export interface RenderStructureNode extends StructureNode {
     templateBind?: boolean;
     disableTemplateBind?: boolean;
   };
+  __versions?: Component[]
 }
 
 export type RenderStructure = RenderStructureNode[];

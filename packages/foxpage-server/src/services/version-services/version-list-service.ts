@@ -44,14 +44,14 @@ export class VersionListService extends BaseService<ContentVersion> {
   ): Promise<ContentVersion[]> {
     const contentNameObject = _.keyBy(contentList, 'title');
     let contentVersion: ContentVersionString[] = [];
-    let contentLiveInfo: ContentLiveVersion[] = [];
+    let contentLiveIds: string[] = [];
 
     nameVersions.forEach((content) => {
       if (contentNameObject[content.name]) {
         if (content.version) {
           contentVersion.push({ contentId: contentNameObject[content.name].id, version: content.version });
-        } else {
-          contentLiveInfo.push(_.pick(contentNameObject[content.name], ['id', 'liveVersionNumber']));
+        } else if (contentNameObject[content.name].liveVersionId) {
+          contentLiveIds.push(contentNameObject[content.name].liveVersionId as string);
         }
       }
     });
@@ -59,7 +59,7 @@ export class VersionListService extends BaseService<ContentVersion> {
     // Get content details with version, get live details without version
     const contentVersionList = await Promise.all([
       this.getContentInfoByIdAndVersion(contentVersion),
-      this.getContentInfoByIdAndNumber(contentLiveInfo),
+      this.getVersionListChunk(contentLiveIds),
     ]);
 
     // Get the resource information associated with the component,
@@ -100,16 +100,10 @@ export class VersionListService extends BaseService<ContentVersion> {
    * @returns Promise
    */
   async getLiveVersionByContentIds(contentIds: string[]): Promise<Record<string, ContentVersion>> {
-    const contentList = await Service.content.list.getDetailByIds(contentIds);
-    const liveInfo = _.map(
-      _.filter(contentList, (content) => content.liveVersionNumber > 0),
-      (content) => {
-        return _.pick(content, ['id', 'liveVersionNumber']);
-      },
-    );
+    const contentLiveIdObject = await Service.content.list.getContentLiveIds(contentIds);
 
     // Get version information
-    const liveVersionList = await this.getContentInfoByIdAndNumber(liveInfo);
+    const liveVersionList = await this.getVersionListChunk(_.values(contentLiveIdObject));
 
     return _.keyBy(liveVersionList, 'contentId');
   }
@@ -137,10 +131,9 @@ export class VersionListService extends BaseService<ContentVersion> {
     for (const version of versionList) {
       let contentRelationItems: Record<string, any> = {};
       Object.keys(versionObjectItem).forEach((relationKey) => {
-        contentRelationItems[relationKey] = Object.assign(
-          { version: versionObjectItem[relationKey].version || '' },
-          versionObjectItem[relationKey]?.content || {},
-        );
+        contentRelationItems[relationKey] = Object.assign({}, versionObjectItem[relationKey]?.content || {}, {
+          version: versionObjectItem[relationKey].version || '',
+        });
       });
 
       versionObject = _.merge(versionObject, { [version.contentId]: _.toArray(contentRelationItems) });
@@ -201,6 +194,27 @@ export class VersionListService extends BaseService<ContentVersion> {
     });
 
     return fileVersionObject;
+  }
+
+  /**
+   * get version list by ids, 200 version id every requets
+   * @param  {liveVersionIds[]} string[]
+   * @returns {ContentVersion[]} Promise
+   */
+  async getVersionListChunk(liveVersionIds: string[]): Promise<ContentVersion[]> {
+    // Get live details
+    if (liveVersionIds.length > 0) {
+      // 5 concurrent requests at the same time, 200 pieces of data are requested each time
+      const liveVersionIdsArr = _.chunk(liveVersionIds, 200);
+      let contentPromises: Promise<ContentVersion[]>[] = [];
+      const limit = pLimit(5);
+      liveVersionIdsArr.forEach((item) => {
+        contentPromises.push(limit(() => this.getDetailByIds(item)));
+      });
+
+      return _.flatten(await Promise.all(contentPromises));
+    }
+    return [];
   }
 
   /**

@@ -7,7 +7,6 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG } from '../../../config/constant';
 import { VersionPublish } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
@@ -52,20 +51,19 @@ export class SetPageVersionPublishStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4051501);
       }
 
+      const validateResult = await this.service.version.check.versionCanPublish(params.id);
+      if (!validateResult.publishStatus) {
+        return Response.warning(i18n.page.invalidVersionData, 2051502, validateResult);
+      }
+
       // Set publishing status
       const result = await this.service.version.live.setVersionPublishStatus(params as VersionPublish, {
         ctx,
         liveRelation: true,
-        actionType: [LOG.LIVE, apiType].join('_'),
       });
 
       if (result.code === 1) {
         return Response.warning(i18n.page.pageVersionHasPublished, 2051501);
-      } else if (result.code === 2) {
-        return Response.warning(
-          i18n.page.invalidRelations + ':' + Object.keys(result.data).join(','),
-          2051502,
-        );
       }
 
       await this.service.version.live.runTransaction(ctx.transactions);

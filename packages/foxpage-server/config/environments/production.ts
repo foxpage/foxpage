@@ -16,6 +16,7 @@ export default {
     '/pages/lives',
     '/templates/lives',
     '/content/tag-versions',
+    '/content/tag-contents',
     '/contents',
     '/contents/changes',
     '/functions/lives',
@@ -26,8 +27,12 @@ export default {
     '/pages/draft-infos',
     '/files',
   ],
-  mongodb: mongoConfig || 'mongodb://127.0.0.1:27017/foxpage?retryWrites=false',
+  mongodb: mongoConfig || '',
   plugins: ['@foxpage/foxpage-plugin-unpkg'],
+  metric: {
+    name: '',
+    debug: false,
+  },
   allLocales: [
     'en-US',
     'zh-HK',

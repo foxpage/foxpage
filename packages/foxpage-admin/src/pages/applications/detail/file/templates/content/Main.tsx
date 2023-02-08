@@ -1,11 +1,20 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
+import { DeleteOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Modal, Tooltip } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/templates/content';
+import {
+  checkAuthRole,
+  deleteFile,
+  saveFile,
+  updateAuthDrawerVisible,
+} from '@/actions/applications/detail/file/templates/list';
 import { fetchFileDetail } from '@/actions/applications/detail/projects/content';
+import { BasicInfo } from '@/components/business/project/common/index';
 import { AuthorizeDrawer, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import * as SETTINGS_ACTIONS from '@/store/actions/applications/detail/settings/application';
@@ -13,10 +22,7 @@ import { getLocationIfo } from '@/utils/location-info';
 
 import { ContentEditDrawer } from '../../components';
 
-import { BasicInfo, List } from './components/index';
-
-const PAGE_NUM = 1;
-const PAGE_SIZE = 999;
+import { List } from './components/index';
 
 const mapStateToProps = (store: RootState) => ({
   loading: store.applications.detail.file.templates.content.loading,
@@ -36,9 +42,11 @@ const mapStateToProps = (store: RootState) => ({
 const mapDispatchToProps = {
   clearAll: ACTIONS.clearAll,
   fetchTemplateContentList: ACTIONS.fetchTemplateContentList,
-  deleteContent: ACTIONS.deleteContent,
   openDrawer: ACTIONS.openEditDrawer,
   saveContent: ACTIONS.saveContent,
+  offlineContent: ACTIONS.offlineContent,
+  copyContent: ACTIONS.copyContent,
+  deleteContent: ACTIONS.deleteContent,
   updateContentValue: ACTIONS.updateEditContentValue,
   updateContentTags: ACTIONS.updateEditContentTags,
   openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
@@ -48,6 +56,10 @@ const mapDispatchToProps = {
   deleteAuth: ACTIONS.deleteAuthUser,
   fetchFileDetail: fetchFileDetail,
   fetchApplicationInfo: SETTINGS_ACTIONS.fetchApplicationInfo,
+  checkAuthRole,
+  deleteFile,
+  saveFile,
+  updateFile: updateAuthDrawerVisible,
 };
 
 type PageListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -65,45 +77,45 @@ const Main: React.FC<PageListType> = (props) => {
     authDrawerOpen,
     authLoading,
     authList,
-    userList,
     clearAll,
-    deleteContent,
     fetchApplicationInfo,
     fetchFileDetail,
     fetchTemplateContentList,
     openAuthDrawer,
     openDrawer,
     saveContent,
+    offlineContent,
+    copyContent,
+    deleteContent,
     updateContentValue,
     updateContentTags,
+    checkAuthRole,
     fetchAuthList,
     fetchUserList,
     saveAuth,
     deleteAuth,
+    deleteFile,
+    saveFile,
+    updateFile,
   } = props;
   const [folderId, setFolderId] = useState<string | undefined>();
+  const [fileName, setFileName] = useState('');
+  const [authType, setAuthType] = useState('content');
+  const [typeId, setTypeId] = useState('');
 
-  // url search params
-  const { fileId } = getLocationIfo(useLocation());
+  // url params
+  const history = useHistory();
+  const { fileId, filePage, fileSearch } = getLocationIfo(useLocation());
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { file, global } = locale.business;
+  const { file: fileI18n, global } = locale.business;
 
   useEffect(() => {
     return () => {
       clearAll();
     };
   }, []);
-
-  useEffect(() => {
-    if (authDrawerOpen) {
-      fetchUserList({
-        page: PAGE_NUM,
-        size: PAGE_SIZE,
-      });
-    }
-  }, [authDrawerOpen]);
 
   useEffect(() => {
     if (applicationId && fileId) {
@@ -119,6 +131,83 @@ const Main: React.FC<PageListType> = (props) => {
     if (fileDetail?.folderId) setFolderId(fileDetail.folderId);
   }, [fileDetail]);
 
+  useEffect(() => {
+    setFileName(fileDetail?.name);
+  }, [fileDetail?.name]);
+
+  useEffect(() => {
+    if (fileDetail?.id) updateFile(false, fileDetail);
+  }, [fileDetail?.id]);
+
+  useEffect(() => {
+    const newTypeId = editContent?.id;
+    if (newTypeId) setTypeId(newTypeId);
+  }, [editContent]);
+
+  const deleteDisabled = useMemo(() => {
+    let disabled = true;
+
+    const livePage = list && list.find((content) => !!content.version);
+    if (!fileDetail?.online && !livePage) disabled = false;
+
+    return disabled;
+  }, [list, fileDetail]);
+
+  const handleAuthorize = (type, id) => {
+    if (typeof openAuthDrawer === 'function') {
+      setAuthType(type);
+      setTypeId(id);
+
+      openAuthDrawer(true);
+    }
+  };
+
+  const handleDeleteFile = () => {
+    Modal.confirm({
+      title: fileI18n.delete,
+      content: fileI18n.deleteMessage,
+      onOk: () => {
+        if ((fileDetail?.applicationId || fileDetail?.application?.id) && typeof deleteFile === 'function') {
+          deleteFile(
+            {
+              id: fileDetail.id,
+              applicationId: fileDetail?.applicationId || fileDetail.application.id,
+              folderId: fileDetail.folderId,
+            },
+            () => {
+              history.push(
+                `/applications/${applicationId}/file/templates/list?page=${filePage || ''}&searchText=${
+                  fileSearch || ''
+                }`,
+              );
+            },
+          );
+        }
+      },
+      okText: global.yes,
+      cancelText: global.no,
+    });
+  };
+
+  const handleOnBlur = (name: string, cb?: () => void) => {
+    if (name !== fileDetail?.name) {
+      setFileName(name);
+
+      if (typeof saveFile === 'function' && applicationId && folderId) {
+        saveFile(
+          {
+            applicationId,
+            folderId,
+            name,
+          },
+          () => {
+            if (typeof cb === 'function') cb();
+          },
+        );
+      }
+    }
+  };
+
   return (
     <React.Fragment>
       <FoxPageContent
@@ -126,14 +215,33 @@ const Main: React.FC<PageListType> = (props) => {
           <FoxPageBreadcrumb
             breadCrumb={[
               {
-                name: file.template,
-                link: `/applications/${applicationId}/file/templates/list`,
+                name: fileI18n.template,
+                link: `/applications/${applicationId}/file/templates/list?page=${filePage || ''}&searchText=${
+                  fileSearch || ''
+                }`,
               },
-              { name: global.contents },
+              { name: fileName },
             ]}
           />
         }>
-        <BasicInfo fileDetail={fileDetail} />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <Button onClick={() => handleAuthorize('file', fileDetail.id)} style={{ marginRight: 8 }}>
+            <UserOutlined /> {fileI18n.authorize}
+          </Button>
+          <Tooltip
+            title={
+              deleteDisabled
+                ? fileDetail?.online
+                  ? fileI18n.fileCommitToStoreTips
+                  : fileI18n.filePageLiveTips
+                : ''
+            }>
+            <Button danger disabled={deleteDisabled} onClick={handleDeleteFile} style={{ marginRight: 8 }}>
+              <DeleteOutlined /> {fileI18n.delete}
+            </Button>
+          </Tooltip>
+        </div>
+        <BasicInfo fileType="file" fileDetail={fileDetail} onBlur={handleOnBlur} />
         {applicationId && (
           <>
             <List
@@ -141,6 +249,9 @@ const Main: React.FC<PageListType> = (props) => {
               folderId={folderId || ''}
               loading={loading}
               contents={list}
+              fileDetail={fileDetail}
+              offlineContent={offlineContent}
+              copyContent={copyContent}
               deleteContent={deleteContent}
               openDrawer={openDrawer}
               openAuthDrawer={openAuthDrawer}
@@ -158,17 +269,18 @@ const Main: React.FC<PageListType> = (props) => {
             />
             <AuthorizeDrawer
               needFetch
-              type="content"
-              typeId={editContent?.id || ''}
+              type={authType}
+              typeId={typeId}
               applicationId={applicationId as string}
               visible={authDrawerOpen}
               loading={authLoading}
               list={authList}
-              users={userList}
               onClose={openAuthDrawer}
+              onSearch={fetchUserList}
               onFetch={fetchAuthList}
               onAdd={saveAuth}
               onDelete={deleteAuth}
+              onValidate={checkAuthRole}
             />
           </>
         )}

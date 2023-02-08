@@ -1,6 +1,6 @@
 import { createAction } from 'typesafe-actions';
 
-import { UserOrganization } from '@/types/user';
+import { TeamMemberEntity, TeamMembersFetchParams, UserOrganization } from '@/types/index';
 
 export const fetchOrganizationList = createAction('SYSTEM__FETCH_ORGANIZATION_LIST', () => ({}))();
 
@@ -13,4 +13,15 @@ export const pushOrganizationList = createAction(
 
 export const updateOrganizationId = createAction('SYSTEM__UPDATE_ORGANIZATION_ID', (id: string) => ({
   id,
+}))();
+
+export const fetchTeamMembers = createAction(
+  'SYSTEM__FETCH_TEAM_MEMBERS',
+  (params: TeamMembersFetchParams) => ({
+    params,
+  }),
+)();
+
+export const pushTeamMembers = createAction('SYSTEM__PUSH_TEAM_MEMBERS', (members: TeamMemberEntity[]) => ({
+  members,
 }))();

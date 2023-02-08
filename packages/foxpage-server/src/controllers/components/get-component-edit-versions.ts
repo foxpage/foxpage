@@ -13,6 +13,10 @@ import { ContentVersionDetailRes } from '../../types/validates/content-validate-
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+interface ContentVersionWithType extends ContentVersion {
+  componenType: string;
+}
+
 @JsonController('components')
 export class GetComponentVersionDetail extends BaseController {
   constructor() {
@@ -32,18 +36,24 @@ export class GetComponentVersionDetail extends BaseController {
     operationId: 'get-component-edit-version-detail',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index(@QueryParams() params: ComponentVersionEditReq): Promise<ResData<ContentVersion>> {
+  async index(@QueryParams() params: ComponentVersionEditReq): Promise<ResData<ContentVersionWithType>> {
     try {
       const versionDetail = await this.service.version.info.getDetail({ id: params.id, deleted: false });
 
-      if (!versionDetail) {
+      if (this.notValid(versionDetail)) {
         return Response.warning(i18n.component.invalidVersionId, 2110601);
       }
+
+      const contentDetail = await this.service.content.info.getDetailById(versionDetail.contentId);
+      const fileDetail = await this.service.file.info.getDetailById(contentDetail?.id);
 
       const versionContent = await this.service.component.getComponentResourcePath(versionDetail.content);
       versionDetail.content = versionContent;
 
-      return Response.success(versionDetail, 1110601);
+      return Response.success(
+        Object.assign({ componentType: fileDetail?.componentType || '' }, versionDetail),
+        1110601,
+      );
     } catch (err) {
       return Response.error(err, i18n.content.getComponentVersionDetailFailed, 3110601);
     }

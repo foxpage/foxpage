@@ -20,14 +20,11 @@ import {
   ProjectSaveParams,
 } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/empty-check';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchApp(action: ProjectListActionType) {
   const { params } = action.payload as { params: ApplicationListFetchParams };
-  const { organizationId } = store.getState().system.user;
-  const res = yield call(APPLICATION_API.fetchList, {
-    ...params,
-    organizationId,
-  });
+  const res = yield call(APPLICATION_API.fetchList, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushApps(res.data || []));
@@ -36,7 +33,7 @@ function* handleFetchApp(action: ProjectListActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -53,26 +50,26 @@ function* handleFetchAllApp(action: ProjectListActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
 function* handleFetchList(action: ProjectListActionType) {
   yield put(ACTIONS.updateLoading(true));
 
-  const { page = 1, search, searchText, searchType, size = 10 } = action.payload as ProjectListFetchParams;
+  const { page = 1, size = 10, search } = action.payload as ProjectListFetchParams;
   let params: ProjectListFetchParams = {
     page,
     size,
-    search: searchText || '',
-    searchType,
+    searchType: 'project',
     type: 'user',
   };
-  if (search)
+  if (search) {
     params = {
       ...params,
       applicationId: search,
     };
+  }
   const res = yield call(API.fetchProjects, params);
 
   if (res.code === 200) {
@@ -82,7 +79,7 @@ function* handleFetchList(action: ProjectListActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -108,10 +105,10 @@ function* handleSave(action: ProjectListActionType) {
     if (typeof cb === 'function') cb();
   } else {
     const {
-      global: { fetchListFailed },
+      global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, res?.msg || saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -138,7 +135,7 @@ function* handleDelete(action: ProjectListActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -155,24 +152,26 @@ function* handleFetchAuthList(action: ProjectListActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateAuthListLoading(false));
 }
 
 function* handleFetchAuthUserList(action: ProjectListActionType) {
-  const { params } = action.payload as { params: AuthorizeUserFetchParams };
+  const { params, cb } = action.payload as { params: AuthorizeUserFetchParams; cb?: (userList) => void };
   const res = yield call(AUTH_API.authorizeUserFetch, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushUserList(res.data || []));
+
+    if (typeof cb === 'function') cb(res.data);
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -187,7 +186,7 @@ function* handleSaveAuth(action: ProjectListActionType) {
       global: { addFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || addFailed);
+    errorToast(res, addFailed);
   }
 }
 
@@ -204,7 +203,7 @@ function* handleDeleteAuth(action: ProjectListActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 

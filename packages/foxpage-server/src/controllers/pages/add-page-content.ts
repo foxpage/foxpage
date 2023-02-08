@@ -63,6 +63,8 @@ export class AddPageContentDetail extends BaseController {
       const contentParams: Partial<Content> = {
         title: params.title,
         fileId: params.fileId,
+        applicationId: params.applicationId,
+        type: apiType,
         tags: params.tags,
       };
 

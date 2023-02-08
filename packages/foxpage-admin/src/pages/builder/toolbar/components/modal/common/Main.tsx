@@ -23,6 +23,9 @@ export enum ModalTypeEnum {
 }
 
 const Modal = styled(AntModal)`
+  .ant-modal-header {
+    padding: 16px 24px;
+  }
   .ant-modal-content {
     height: 100%;
     .ant-modal-body {
@@ -224,15 +227,17 @@ const ToolbarModal: React.FC<ToolbarModalModalType> = (props) => {
         status: true,
       };
 
-      if (type === ModalTypeEnum.condition) deleteCondition(deleteParams, () => handleFetch(params));
-      if (type === ModalTypeEnum.function) deleteFunction(deleteParams, () => handleFetch(params));
-      if (type === ModalTypeEnum.variable) deleteVariable(deleteParams, () => handleFetch(params));
+      if (type === ModalTypeEnum.condition)
+        deleteCondition({ ...deleteParams, condition: params.entity }, () => handleFetch(params));
+      if (type === ModalTypeEnum.function)
+        deleteFunction({ ...deleteParams, fun: params.entity }, () => handleFetch(params));
+      if (type === ModalTypeEnum.variable)
+        deleteVariable({ ...deleteParams, variable: params.entity }, () => handleFetch(params));
     }
   };
 
   const handleCancel = () => {
     openModal(false, '');
-
     clearAllCondition();
     clearAllFunction();
     clearAllVariable();
@@ -254,7 +259,7 @@ const ToolbarModal: React.FC<ToolbarModalModalType> = (props) => {
       width={isPage ? '400px' : '60%'}
       zIndex={100}
       title={title}
-      visible={open}
+      open={open}
       onOk={handleOk}
       onCancel={handleCancel}
       style={{ height: 600 }}>

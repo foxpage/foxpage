@@ -1,5 +1,6 @@
 import {
   CommonDeleteParams,
+  CommonSearchParams,
   FilesFetchedResponse,
   FilesFetchParams,
   GoodsCommitParams,
@@ -7,6 +8,8 @@ import {
   ParentFileFetchParams,
   ParentFileFetchResponse,
   ProjectAddParams,
+  ProjectContentOfflineParams,
+  ProjectContentSaveAsBaseParams,
   ProjectDeleteParams,
   ProjectFileAddParams,
   ProjectFileFetchParams,
@@ -18,6 +21,13 @@ import {
   ResponseBody,
 } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
+
+export const fetchProjectsItems = (params: ProjectListFetchParams): Promise<ProjectListFetchResponse> =>
+  new Promise((resolve) => {
+    FoxPageApi.get('/projects/items', params, (rs: ProjectListFetchResponse) => {
+      resolve(rs);
+    });
+  });
 
 export const fetchProjects = (params: ProjectListFetchParams): Promise<ProjectListFetchResponse> =>
   new Promise((resolve) => {
@@ -187,6 +197,35 @@ export const fetchProjectTemplateContent = (params: ProjectPageTemplateContentFe
 export const fetchProjectPageContent = (params: ProjectPageTemplateContentFetchParams) =>
   new Promise((resolve) => {
     FoxPageApi.get('/projects/page-content/search', params, (rs: any) => {
+      resolve(rs);
+    });
+  });
+
+export const offlineProjectPageContent = (params: ProjectContentOfflineParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.put('/pages/content-offline', params, (rs: any) => {
+      resolve(rs);
+    });
+  });
+
+export const offlineProjectTemplateContent = (params: ProjectContentOfflineParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.put('/templates/content-offline', params, (rs: any) => {
+      resolve(rs);
+    });
+  });
+
+export const saveAsBaseContent = (params: ProjectContentSaveAsBaseParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.post('/contents/base', params, (rs: any) => {
+      resolve(rs);
+    });
+  });
+
+// common search
+export const fetchProjectItems = (params: CommonSearchParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.get('/search', params, (rs: any) => {
       resolve(rs);
     });
   });

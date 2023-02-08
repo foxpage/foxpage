@@ -6,10 +6,10 @@ import { getType } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/applications/detail/packages/fast';
 import * as LIST_ACTIONS from '@/actions/applications/detail/packages/list';
 import * as API from '@/apis/application';
+import { ComponentType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationPackagesFastActionType } from '@/reducers/applications/detail/packages/fast';
 import { store } from '@/store/index';
-import { ComponentType } from '@/constants/index';
 import {
   ComponentRemote,
   ComponentRemoteSaveParams,
@@ -23,6 +23,7 @@ import {
   RemoteResourceSavedRes,
   RemoteResourceSaveParams,
 } from '@/types/application';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchPackages(action: ApplicationPackagesFastActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -38,7 +39,7 @@ function* handleFetchPackages(action: ApplicationPackagesFastActionType) {
       component: { fetchUpdateInfoFailed },
     } = getBusinessI18n();
 
-    message.error(fetchUpdateInfoFailed);
+    errorToast(res, fetchUpdateInfoFailed);
   }
   yield put(ACTIONS.updateLoading(false));
 }
@@ -150,8 +151,7 @@ function* handleSaveResource(params: RemoteResourceSaveParams) {
       resource: { saveResourceFiled },
     } = getBusinessI18n();
 
-    message.error(saveResourceFiled);
-
+    errorToast(res, saveResourceFiled);
     return null;
   }
 }
@@ -166,8 +166,7 @@ function* handleSaveEditors(params: EditorComponentSaveParams) {
       package: { saveComponentFiled },
     } = getBusinessI18n();
 
-    message.error(saveComponentFiled);
-
+    errorToast(res, saveComponentFiled);
     return null;
   }
 }
@@ -183,7 +182,7 @@ function* handleSaveComponents(params: ComponentRemoteSaveParams) {
     message.success(saveSuccess);
   } else {
     yield put(ACTIONS.updateSaving(false));
-    message.error(saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 
@@ -195,8 +194,7 @@ function* handlePublishEditors(params: EditorBatchPublishParams) {
     const {
       global: { saveFailed },
     } = getBusinessI18n();
-
-    message.error(saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 

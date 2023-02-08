@@ -34,6 +34,12 @@ const Row = styled(AntdRow)`
   margin-bottom: 12px;
 `;
 
+const ScrollCon = styled.div`
+  max-height: ${(props: { maxHeight: number }) => props.maxHeight + 'px'};
+  overflow: auto;
+  overflow-y: overlay;
+`;
+
 const iconStyle = {
   margin: '8px 0 0 8px',
   cursor: 'pointer',
@@ -367,7 +373,7 @@ const Main: React.FC<SettingType> = (props) => {
           <Row>
             <Col span={6}></Col>
             <Col span={10}>
-              <div style={{ maxHeight: 220, overflow: 'auto' }}>
+              <ScrollCon maxHeight={220}>
                 {localeObjects.map((locale, index) => {
                   const languages = region.find((item) => item.name === locale.region)?.languages;
                   return (
@@ -416,7 +422,7 @@ const Main: React.FC<SettingType> = (props) => {
                     </Row>
                   );
                 })}
-              </div>
+              </ScrollCon>
             </Col>
           </Row>
           <Row>
@@ -444,39 +450,45 @@ const Main: React.FC<SettingType> = (props) => {
               </Title>
             </Col>
           </Row>
-          {editApplication?.host?.map((host, index) => (
-            <Row key={`host-${index}`}>
-              <Col span={6}>
-                <Label>{global.host}</Label>
-              </Col>
-              <Col span={10}>
-                <Input
-                  value={host?.url}
-                  onChange={(e) => {
-                    handleUpdateHost(index, 'url', e.target.value);
-                  }}
-                  style={{ width: 180 }}
-                />
-                <span style={{ margin: '0 12px' }}>{global.locale}</span>
-                <Select
-                  showArrow
-                  allowClear
-                  mode="multiple"
-                  maxTagCount={1}
-                  options={localeOptions}
-                  value={host?.locales || []}
-                  onChange={(value) => handleUpdateHost(index, 'locales', value)}
-                  style={{ width: 204 }}
-                />
-                <MinusOutlined
-                  style={iconStyle}
-                  onClick={() => {
-                    handleRemoveHost(index);
-                  }}
-                />
-              </Col>
-            </Row>
-          ))}
+          <Row>
+            <Col span={16}>
+              <ScrollCon maxHeight={220}>
+                {editApplication?.host?.map((host, index) => (
+                  <Row key={`host-${index}`}>
+                    <Col span={9}>
+                      <Label>{global.host}</Label>
+                    </Col>
+                    <Col span={15}>
+                      <Input
+                        value={host?.url}
+                        onChange={(e) => {
+                          handleUpdateHost(index, 'url', e.target.value);
+                        }}
+                        style={{ width: 180 }}
+                      />
+                      <span style={{ margin: '0 12px' }}>{global.locale}</span>
+                      <Select
+                        showArrow
+                        allowClear
+                        mode="multiple"
+                        maxTagCount={1}
+                        options={localeOptions}
+                        value={host?.locales || []}
+                        onChange={(value) => handleUpdateHost(index, 'locales', value)}
+                        style={{ width: 204 }}
+                      />
+                      <MinusOutlined
+                        style={iconStyle}
+                        onClick={() => {
+                          handleRemoveHost(index);
+                        }}
+                      />
+                    </Col>
+                  </Row>
+                ))}
+              </ScrollCon>
+            </Col>
+          </Row>
           <Row>
             <Col span={10} offset={6}>
               <Button

@@ -98,4 +98,31 @@ export class TeamService extends BaseService<Team> {
       } as any),
     );
   }
+
+  /**
+   * Get and specify the member information of the user in the same team
+   * @param userId
+   * @param teamIds
+   * @returns
+   */
+  async getSameTeamUsers(userId: string, teamIds?: string[]): Promise<string[]> {
+    let userIds: string[] = [];
+    let searchParams: Record<string, any> = {
+      members: { $elemMatch: { $and: [{ 'members.userId': userId, status: true }] } },
+      deleted: false,
+    };
+
+    if (teamIds && teamIds.length > 0) {
+      searchParams.id = { $in: teamIds };
+    }
+
+    const teamList = await this.find(searchParams, 'members');
+    teamList.forEach(team => {
+      (team.members || []).forEach(member => {
+        member.status && userIds.push(member.userId);
+      });
+    });
+
+    return _.uniq(userIds);
+  }
 }

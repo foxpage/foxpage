@@ -20,6 +20,7 @@ import {
   OptionsAction,
   RemoteComponentFetchParams,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* fetchComponentInfo(action: ApplicationPackagesDetailActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -44,7 +45,7 @@ function* fetchComponentInfo(action: ApplicationPackagesDetailActionType) {
       component: { fetchDetailFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchDetailFailed);
+    errorToast(res, fetchDetailFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -63,7 +64,10 @@ function* addVersion(action: ApplicationPackagesDetailActionType) {
 
     yield put(ACTIONS.fetchComponentVersionsAction({}));
   } else {
-    message.error(res.msg);
+    const {
+      global: { saveFailed },
+    } = getBusinessI18n();
+    errorToast(res, saveFailed);
   }
 }
 
@@ -80,7 +84,10 @@ function* editVersion(action: ApplicationPackagesDetailActionType) {
 
     yield put(ACTIONS.fetchComponentVersionsAction({}));
   } else {
-    message.error(res.msg);
+    const {
+      global: { saveFailed },
+    } = getBusinessI18n();
+    errorToast(res, saveFailed);
   }
 }
 
@@ -95,11 +102,8 @@ function* fetchVersionList(action: ApplicationPackagesDetailActionType) {
     params: AppComponentDetailFetchComponentVersionsParams;
     options?: OptionsAction;
   };
-  const {
-    applicationId,
-    fileId,
-    pageInfo,
-  } = store.getState().applications.detail.packages.detail.versionList;
+  const { applicationId, fileId, pageInfo } =
+    store.getState().applications.detail.packages.detail.versionList;
   const { size = 10, page = 1 } = pageInfo;
   const res = yield call(API.getComponentsVersionSearchs, {
     applicationId,
@@ -124,7 +128,10 @@ function* fetchVersionList(action: ApplicationPackagesDetailActionType) {
     const { onSuccess } = options;
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-    message.error(res.msg);
+    const {
+      global: { fetchListFailed },
+    } = getBusinessI18n();
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -147,7 +154,7 @@ function* updateVersionStatus(action: ApplicationPackagesDetailActionType) {
     const { onSuccess } = options;
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-    message.error(res.msg || updateFailed);
+    errorToast(res, updateFailed);
   }
 }
 
@@ -164,7 +171,10 @@ function* liveVersion(action: ApplicationPackagesDetailActionType) {
     const { onSuccess } = options;
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-    message.error(res.msg);
+    const {
+      global: { saveFailed },
+    } = getBusinessI18n();
+    errorToast(res, saveFailed);
   }
 }
 
@@ -182,7 +192,7 @@ function* handleFetchFileDetail(action: ApplicationPackagesDetailActionType) {
       file: { fetchDetailFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchDetailFailed);
+    errorToast(res, fetchDetailFailed);
   }
 }
 
@@ -198,7 +208,7 @@ function* handleFetchComponentRemotes(action: ApplicationPackagesDetailActionTyp
       component: { fetchUpdateInfoFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchUpdateInfoFailed);
+    errorToast(res, fetchUpdateInfoFailed);
   }
 }
 
@@ -216,9 +226,42 @@ function* handleSaveComponentRemote(action: ApplicationPackagesDetailActionType)
       global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
   yield put(ACTIONS.updateCloudSyncDrawerLoadingStatus(false));
+}
+
+function* handleFetchComponentUsed() {
+  yield put(
+    ACTIONS.updateVersionListState({
+      loading: true,
+    }),
+  );
+
+  const { applicationId, pageInfo } = store.getState().applications.detail.packages.detail.versionList;
+  const componentInfo = store.getState().applications.detail.packages.detail.componentInfo;
+  const res = yield call(API.fetchComponentUsed, {
+    applicationId,
+    name: componentInfo.title,
+    page: pageInfo.page,
+    size: pageInfo.size,
+  });
+
+  if (res.code === 200) {
+    yield put(ACTIONS.pushComponentUsed(res.data));
+  } else {
+    const {
+      global: { fetchListFailed },
+    } = getBusinessI18n();
+
+    errorToast(res, fetchListFailed);
+  }
+
+  yield put(
+    ACTIONS.updateVersionListState({
+      loading: false,
+    }),
+  );
 }
 
 function* watch() {
@@ -231,6 +274,7 @@ function* watch() {
   yield takeLatest(getType(ACTIONS.fetchFileDetail), handleFetchFileDetail);
   yield takeLatest(getType(ACTIONS.fetchComponentRemotes), handleFetchComponentRemotes);
   yield takeLatest(getType(ACTIONS.saveComponentRemote), handleSaveComponentRemote);
+  yield takeLatest(getType(ACTIONS.fetchComponentUsed), handleFetchComponentUsed);
 }
 
 export default function* rootSaga() {

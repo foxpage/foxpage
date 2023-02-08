@@ -36,7 +36,7 @@ export class AddStorePackageToApplication extends BaseController {
     operationId: 'add-store-packages-to-applications',
   })
   @ResponseSchema(GetStorePackageListRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AddGoodsToApplicationReq): Promise<ResData<any>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AddGoodsToApplicationReq): Promise<ResData<any>> {
     try {
       // Check permission
       const hasAuth = await Promise.all(
@@ -68,7 +68,8 @@ export class AddStorePackageToApplication extends BaseController {
         const existFiles = await this.service.file.list.find({
           applicationId: { $in: params.appIds },
           name: { $in: _.map(fileList, 'name') },
-          deleted: false
+          type: { $in: [TYPE.COMPONENT, TYPE.SYSCOMPONENT, TYPE.EDITOR] },
+          deleted: false,
         });
 
         if (existFiles.length > 0) {
@@ -81,7 +82,11 @@ export class AddStorePackageToApplication extends BaseController {
         let goodsOrders: StoreOrder[] = [];
         for (const appId of params.appIds) {
           // Check if there is a component with the same name under the application
-          const referencedObject = await this.service.file.list.getReferencedByIds(appId, fileIds, params.delivery);
+          const referencedObject = await this.service.file.list.getReferencedByIds(
+            appId,
+            fileIds,
+            params.delivery,
+          );
           for (const file of fileList) {
             if (referencedObject[file.id]) {
               // Has been referenced
@@ -105,18 +110,25 @@ export class AddStorePackageToApplication extends BaseController {
 
             // clone type, need create content and version
             if (params.delivery === TAG.DELIVERY_CLONE) {
-              await this.service.content.component.cloneContent(fileInfo.id, fileObject[file.id]?.id, {ctx});
+              await this.service.content.component.cloneContent(fileInfo.id, fileObject[file.id]?.id, {
+                ctx,
+              });
             }
 
             // add a new component log status
             ctx.operations.push(
-              ...this.service.log.addLogItem(LOG.LIVE, ({
-                id: fileContentObject[file.id].id, contentId: fileContentObject[file.id].id
-              }), {
-                fileId: fileInfo.id,
-                category: { type: TYPE.APPLICATION, id: appId },
-                dataType: TYPE.COMPONENT,
-              }),
+              ...this.service.log.addLogItem(
+                LOG.LIVE,
+                {
+                  id: fileContentObject[file.id]?.id,
+                  contentId: fileContentObject[file.id]?.id,
+                },
+                {
+                  fileId: fileInfo.id,
+                  category: { type: TYPE.APPLICATION, id: appId },
+                  dataType: TYPE.COMPONENT,
+                },
+              ),
             );
 
             goodsOrders.push({
@@ -137,7 +149,7 @@ export class AddStorePackageToApplication extends BaseController {
           ctx.transactions.push(this.service.store.order.addDetailQuery(goodsOrders));
         }
       }
-      
+
       await this.service.file.info.runTransaction(ctx.transactions);
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.goodsIds[0], type: TYPE.GOODS });

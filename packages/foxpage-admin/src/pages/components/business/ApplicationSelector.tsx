@@ -9,18 +9,18 @@ const PAGE = 1;
 const SIZE = 9999;
 
 interface IProps {
-  organizationId?: string;
+  defaultApp?: string;
   list: Application[];
   onFetch?: (params) => void;
   onSelect: (applicationId) => void;
 }
 
 function ApplicationSelector(props: IProps) {
-  const { list, organizationId, onFetch, onSelect } = props;
-  const [currApp, setCurrApp] = useState<string | undefined>();
+  const { defaultApp, list, onFetch, onSelect } = props;
+  const [currApp, setCurrApp] = useState<string | undefined>(defaultApp || undefined);
 
   // i18n
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { application } = locale.business;
 
   useEffect(() => {
@@ -54,6 +54,8 @@ function ApplicationSelector(props: IProps) {
   return (
     <Select
       allowClear
+      showSearch
+      optionFilterProp="label"
       dropdownMatchSelectWidth={false}
       options={options}
       placeholder={application.selectApplication}

@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
+import { Link, useHistory } from 'react-router-dom';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
@@ -8,7 +9,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/functions';
 import { FunctionTypeEnum } from '@/constants/index';
-import { PublishIcon } from '@/pages/components';
+import { Name, PublishIcon } from '@/pages/components';
 import { GlobalContext } from '@/pages/system';
 import { Creator, FuncEntity } from '@/types/index';
 import { periodFormat } from '@/utils/index';
@@ -53,6 +54,9 @@ function FunctionList(props: FunctionListType) {
     publishFunction,
   } = props;
 
+  // url params
+  const history = useHistory();
+
   // i18n
   const { locale } = useContext(GlobalContext);
   const { global, version } = locale.business;
@@ -79,20 +83,34 @@ function FunctionList(props: FunctionListType) {
     }
   };
 
-  const handleDelete = (id) => {
-    if (applicationId && id) {
+  const handleDelete = (record: FuncEntity) => {
+    if (applicationId && record.id) {
       deleteFunction(
         {
           applicationId,
-          id,
+          id: record.id,
           status: true,
+          fun: record,
         },
         handleFetchList,
       );
     }
   };
 
+  const handlePaginationChange = (pagination) => {
+    history.push({
+      pathname: history.location.pathname,
+      search: `?page=${pagination.current}&searchText=${search}`,
+    });
+  };
+
   const columns: any[] = [
+    {
+      title: global.idLabel,
+      dataIndex: 'contentId',
+      key: 'contentId',
+      width: 160,
+    },
     {
       title: global.nameLabel,
       dataIndex: 'name',
@@ -125,7 +143,7 @@ function FunctionList(props: FunctionListType) {
       dataIndex: 'creator',
       key: 'creator',
       width: 200,
-      render: (creator: Creator) => creator?.account || '',
+      render: (creator: Creator) => creator?.email || '',
     },
     {
       title: global.createTime,
@@ -161,7 +179,7 @@ function FunctionList(props: FunctionListType) {
             title={`${global.deleteMsg}${record.name}?`}
             okText="Yes"
             cancelText="No"
-            onConfirm={() => handleDelete(record.id)}>
+            onConfirm={() => handleDelete(record)}>
             <Button size="small" shape="circle" icon={<DeleteOutlined />} />
           </Popconfirm>
         </>
@@ -174,7 +192,17 @@ function FunctionList(props: FunctionListType) {
       title: global.project,
       dataIndex: 'folderName',
       key: 'folderName',
-      render: (folderName) => (folderName !== '_function' ? <span>{folderName}</span> : ''),
+      render: (folderName, record) =>
+        folderName !== '_function' ? (
+          <Link
+            to={`/applications/${
+              record?.applicationId || applicationId
+            }/projects/detail?applicationId=${applicationId}&folderId=${record.folderId}`}>
+            <Name>{folderName}</Name>
+          </Link>
+        ) : (
+          ''
+        ),
     });
   }
 
@@ -195,7 +223,7 @@ function FunctionList(props: FunctionListType) {
             }
           : false
       }
-      onChange={(pagination) => handleFetchList(pagination.current, pagination.pageSize)}
+      onChange={handlePaginationChange}
     />
   );
 }

@@ -12,6 +12,8 @@ import { Field, Group, Label, OperationDrawer } from '@/components/index';
 import { ConditionFormula, ConditionType } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 
+import Expressions from './Expressions';
+
 const { Option } = Select;
 
 const Container = styled.div`
@@ -25,8 +27,7 @@ const FormulaContainer = styled.div`
 `;
 
 const FormulaCTAContainer = styled.div`
-  padding: 0 10px;
-  flex: 0 0 70px;
+  padding-left: 10px;
   align-self: center;
 `;
 
@@ -47,6 +48,7 @@ type ConditionEditDrawer = ReturnType<typeof mapStateToProps> &
   typeof mapDispatchToProps & {
     applicationId: string;
     folderId?: string;
+    pageContentId?: string;
     search?: string;
   };
 
@@ -54,6 +56,7 @@ function EditDrawer(props: ConditionEditDrawer) {
   const {
     applicationId,
     folderId,
+    pageContentId,
     type,
     pageInfo,
     search,
@@ -142,6 +145,7 @@ function EditDrawer(props: ConditionEditDrawer) {
       {
         applicationId,
         folderId,
+        pageContentId,
         id,
         name,
         content: {
@@ -208,7 +212,7 @@ function EditDrawer(props: ConditionEditDrawer) {
   return (
     <OperationDrawer
       destroyOnClose
-      width={550}
+      width={480}
       open={visible}
       title={viewMode ? global.view : condition?.id ? global.edit : global.add}
       actions={
@@ -233,8 +237,7 @@ function EditDrawer(props: ConditionEditDrawer) {
             placeholder="logic"
             disabled={!!condition?.id || viewMode}
             value={logicType}
-            onChange={setLogicType}
-            style={{ width: 160 }}>
+            onChange={setLogicType}>
             {ConditionType &&
               ConditionType.map((item: string, idx: number) => (
                 <Option key={item} value={idx}>
@@ -245,55 +248,57 @@ function EditDrawer(props: ConditionEditDrawer) {
         </Field>
         <Field>
           <Label>{global.expression}</Label>
-          {optData.map((item, index) => (
-            <Container key={index}>
-              <FormulaContainer>
-                <Input
-                  disabled={viewMode}
-                  placeholder="origin"
-                  value={item.props.key}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    handleOptDataChange('key', e.target.value, index)
-                  }
-                />
-                <Select
-                  disabled={viewMode}
-                  dropdownMatchSelectWidth={false}
-                  placeholder="formula"
-                  value={item.props.operation}
-                  onChange={(value: string) => handleOptDataChange('operation', value, index)}
-                  style={{ flex: '0 0 120px', marginRight: 10, marginLeft: 10 }}>
-                  {ConditionFormula &&
-                    ConditionFormula.map((item) => (
-                      <Option key={item.value} value={item.value}>
-                        {item.label}
-                      </Option>
-                    ))}
-                </Select>
-                <Input
-                  disabled={viewMode}
-                  placeholder="expected"
-                  value={item.props.value}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    handleOptDataChange('value', e.target.value, index)
-                  }
-                />
-              </FormulaContainer>
-              <FormulaCTAContainer>
-                {optData.length > 1 && (
-                  <Button
-                    icon={<DeleteOutlined />}
-                    size="small"
-                    type="text"
-                    onClick={() => handleRemoveItem(index)}
+          <Expressions>
+            {optData.map((item, index) => (
+              <Container key={index}>
+                <FormulaContainer>
+                  <Input
+                    disabled={viewMode}
+                    placeholder="origin"
+                    value={item.props.key}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      handleOptDataChange('key', e.target.value, index)
+                    }
                   />
-                )}
-                {index === optData.length - 1 && optData.length < 10 && (
-                  <Button icon={<PlusOutlined />} size="small" type="text" onClick={handleAddItem} />
-                )}
-              </FormulaCTAContainer>
-            </Container>
-          ))}
+                  <Select
+                    disabled={viewMode}
+                    dropdownMatchSelectWidth={false}
+                    placeholder="formula"
+                    value={item.props.operation}
+                    onChange={(value: string) => handleOptDataChange('operation', value, index)}
+                    style={{ flex: '0 0 120px', marginRight: 10, marginLeft: 10 }}>
+                    {ConditionFormula &&
+                      ConditionFormula.map((item) => (
+                        <Option key={item.value} value={item.value}>
+                          {item.label}
+                        </Option>
+                      ))}
+                  </Select>
+                  <Input
+                    disabled={viewMode}
+                    placeholder="expected"
+                    value={item.props.value}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      handleOptDataChange('value', e.target.value, index)
+                    }
+                  />
+                </FormulaContainer>
+                <FormulaCTAContainer>
+                  {optData.length > 1 && (
+                    <Button
+                      icon={<DeleteOutlined />}
+                      size="small"
+                      type="text"
+                      onClick={() => handleRemoveItem(index)}
+                    />
+                  )}
+                </FormulaCTAContainer>
+              </Container>
+            ))}
+            {optData.length < 10 && (
+              <Button icon={<PlusOutlined />} block type="dashed" size="small" onClick={handleAddItem} />
+            )}
+          </Expressions>
         </Field>
       </Group>
     </OperationDrawer>

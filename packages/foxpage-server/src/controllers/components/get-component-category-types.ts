@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import _ from 'lodash';
-import { Get,JsonController, QueryParams } from 'routing-controllers';
+import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';

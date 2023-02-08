@@ -8,6 +8,7 @@ import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationsActionType } from '@/reducers/applications/list';
 import { store } from '@/store/index';
 import { Application, ApplicationListFetchParams, ResponseBody } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchList(actions: ApplicationsActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -21,7 +22,7 @@ function* handleFetchList(actions: ApplicationsActionType) {
       application: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -32,7 +33,7 @@ function* handleSaveApp() {
 
   const { editApp, pageInfo } = store.getState().applications.list;
   const { organizationId } = store.getState().system.user;
-  const rs: ResponseBody = yield call(API.addApp, {
+  const res: ResponseBody = yield call(API.addApp, {
     organizationId,
     ...editApp,
     applicationId: editApp.id,
@@ -42,7 +43,7 @@ function* handleSaveApp() {
     global: { saveFailed, saveSuccess },
   } = getBusinessI18n();
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     message.success(saveSuccess);
 
     // close drawer & refresh application list
@@ -57,7 +58,7 @@ function* handleSaveApp() {
       }),
     );
   } else {
-    message.error(rs.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));

@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 
-import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -39,11 +38,20 @@ export class SetPageContentStatus extends BaseController {
 
     try {
       const apiType = this.getRoutePath(ctx.request.url);
+      let contentDetail = await this.service.content.info.getDetailById(params.id);
+      if (this.notValid(contentDetail)) {
+        return Response.warning(i18n.content.invalidContentId, 2051101);
+      }
 
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: apiType });
       const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051101);
+      }
+
+      // check delete status
+      if (contentDetail.liveVersionNumber > 0) {
+        return Response.warning(i18n.content.contentHasLiveVersion, 2051103);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, {
@@ -57,7 +65,7 @@ export class SetPageContentStatus extends BaseController {
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
-      const contentDetail = await this.service.content.info.getDetailById(params.id);
+      contentDetail = await this.service.content.info.getDetailById(params.id);
 
       return Response.success(contentDetail, 1051101);
     } catch (err) {

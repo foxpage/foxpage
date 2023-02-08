@@ -1,4 +1,5 @@
 'use strict';
+
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -16,8 +17,7 @@ import { routingControllersToSpec } from 'routing-controllers-openapi';
 import { loggerMiddleware, tokenMiddleware } from './src/middlewares';
 import dbConnect from './src/utils/mongoose';
 
-
-const { defaultMetadataStorage } = require('class-transformer/cjs/storage');
+const { defaultMetadataStorage } = require('class-transformer/storage');
 
 export function startService(options: { createSwagger?: boolean }) {
   try {

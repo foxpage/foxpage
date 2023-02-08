@@ -25,6 +25,11 @@
       "tags": [
         {
           "pathname": "four-test-page"
+        },
+        {
+          "reference": {
+            "id": "file_dYjtcxziYi1vewE"
+          }
         }
       ],
       "suffix": "html",
@@ -87,6 +92,29 @@
         "id": "user-dvbfW1qsl8qkz39",
         "account": "fox-user"
       }
+    }
+  ],
+  "componentList": [
+    {
+      "intro": "",
+      "tags": [
+        {
+          "type": "resourceGroup",
+          "resourceGroupId": "fold_TnWsBksFT2gOGf7"
+        }
+      ],
+      "subType": "",
+      "suffix": "",
+      "deleted": false,
+      "id": "file_M9ELHRwxJ8f4BXU",
+      "applicationId": "appl_bR2g2FcmJnsgBkM",
+      "name": "lower-price-card",
+      "folderId": "fold_uGdIkVRgLsDenUb",
+      "type": "component",
+      "componentType": "react.component",
+      "creator": "user_K7rPyHvxxKeyNb4",
+      "createTime": "2022-12-28T15:38:03",
+      "updateTime": "2022-12-28T15:38:03"
     }
   ]
 }

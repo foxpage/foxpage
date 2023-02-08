@@ -6,8 +6,8 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/packages/list';
 import { Group, OperationDrawer } from '@/components/index';
-import { GlobalContext } from '@/pages/system';
 import { ComponentType } from '@/constants/index';
+import { GlobalContext } from '@/pages/system';
 
 const { Option } = Select;
 
@@ -71,7 +71,7 @@ const Drawer: React.FC<DrawerProp> = (props) => {
                 applicationId,
                 name,
                 type: packageType,
-                componentType
+                componentType,
               },
               {
                 onSuccess: () => {
@@ -110,15 +110,11 @@ const Drawer: React.FC<DrawerProp> = (props) => {
             rules={[{ required: true }]}>
             <Input placeholder={global.nameLabel} />
           </Form.Item>
-          <Form.Item
-            name="componentType"
-            label={versionI18n.componentType}
-            rules={[{ required: true }]}>
-              <Select
-                style={{width: '100%'}} >
-                  <Option value={ComponentType.reactComponent}>{ComponentType.reactComponent}</Option>
-                  <Option value={ComponentType.dslTemplate}>{ComponentType.dslTemplate}</Option>
-              </Select>
+          <Form.Item name="componentType" label={versionI18n.componentType} rules={[{ required: true }]}>
+            <Select style={{ width: '100%' }}>
+              <Option value={ComponentType.reactComponent}>{ComponentType.reactComponent}</Option>
+              <Option value={ComponentType.dslTemplate}>{ComponentType.dslTemplate}</Option>
+            </Select>
           </Form.Item>
         </Form>
       </Group>

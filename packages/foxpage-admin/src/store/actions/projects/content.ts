@@ -1,15 +1,24 @@
 import { createAction } from 'typesafe-actions';
 
 import {
+  AuthorizeAddParams,
+  AuthorizeDeleteParams,
+  AuthorizeListFetchParams,
+  AuthorizeListItem,
+  AuthorizeUserFetchParams,
   ContentEntity,
   File,
   FilesFetchParams,
   GoodsCommitParams,
   GoodsOfflineParams,
   ParentFileFetchParams,
+  ProjectContentCopyParams,
   ProjectContentDeleteParams,
   ProjectContentFetchParams,
+  ProjectContentOfflineParams,
+  ProjectContentSaveAsBaseParams,
   ProjectEntity,
+  User,
 } from '@/types/index';
 
 export const clearAll = createAction('PROJECTS_CONTENT__CLEAR_ALL', () => ({}))();
@@ -55,6 +64,24 @@ export const saveContent = createAction(
 export const deleteContent = createAction(
   'PROJECTS_CONTENT__DELETE_CONTENT',
   (params: ProjectContentDeleteParams) => ({ ...params }),
+)();
+
+// offline
+export const offlineContent = createAction(
+  'PROJECTS_CONTENT__OFF_CONTENT',
+  (params: ProjectContentOfflineParams) => ({ ...params }),
+)();
+
+// copy
+export const copyContent = createAction(
+  'PROJECTS_CONTENT__COPY_CONTENT',
+  (params: ProjectContentCopyParams, cb?: () => void) => ({ params, cb }),
+)();
+
+// save as base
+export const saveAsBaseContent = createAction(
+  'PROJECTS_CONTENT__SAVE_AS_BASE_CONTENT',
+  (params: ProjectContentSaveAsBaseParams) => ({ ...params }),
 )();
 
 export const fetchLocales = createAction('PROJECTS_CONTENT__FETCH_LOCALES', (applicationId: string) => ({
@@ -106,3 +133,56 @@ export const pushParentFiles = createAction(
     folder,
   }),
 )();
+
+// authorize
+export const fetchAuthList = createAction(
+  'PROJECTS_CONTENT__FETCH_AUTH_LIST',
+  (params: AuthorizeListFetchParams) => ({ params }),
+)();
+
+export const pushAuthList = createAction('PROJECTS_CONTENT__PUSH_AUTH_LIST', (list: AuthorizeListItem[]) => ({
+  list,
+}))();
+
+export const updateAuthListLoading = createAction(
+  'PROJECTS_CONTENT__UPDATE_AUTH_LIST_LOADING',
+  (status: boolean) => ({
+    status,
+  }),
+)();
+
+export const updateAuthDrawerVisible = createAction(
+  'PROJECTS_CONTENT__UPDATE_AUTH_DRAWER_VISIBLE',
+  (visible = false, editContent?: ContentEntity) => ({
+    visible,
+    editContent,
+  }),
+)();
+
+export const saveAuthUser = createAction(
+  'PROJECTS_CONTENT__AUTH_ADD_USER',
+  (params: AuthorizeAddParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const deleteAuthUser = createAction(
+  'PROJECTS_CONTENT__AUTH_DELETE_USER',
+  (params: AuthorizeDeleteParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const fetchUserList = createAction(
+  'PROJECTS_CONTENT__FETCH_USER_LIST',
+  (params: AuthorizeUserFetchParams, cb?: (userList) => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const pushUserList = createAction('PROJECTS_CONTENT__PUSH_USER_LIST', (list: User[]) => ({
+  list,
+}))();

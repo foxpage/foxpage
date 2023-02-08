@@ -5,8 +5,9 @@ import { CheckOutlined, InfoCircleOutlined, SyncOutlined } from '@ant-design/ico
 import { Button, Checkbox, Input, Select, Tag } from 'antd';
 import styled from 'styled-components';
 
-import { Field, Group, JSONEditor, Label, OperationDrawer } from '@/components/index';
+import { Field, Group, Label, OperationDrawer } from '@/components/index';
 import { FileType } from '@/constants/index';
+import { JSONCodeEditor } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
 import { ContentEntity, FileTag, ProjectContentFetchParams } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/index';
@@ -153,14 +154,10 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
           {drawerOpen && !isBase && (
             <Field>
               <Label>{content.query}</Label>
-              <JSONEditor
-                jsonData={queryTag.query || {}}
-                onChangeJSON={(json) => {
-                  updateContentTags('query', json);
-                }}
-                onError={() => {
-                  updateContentTags('query', undefined);
-                }}
+              <JSONCodeEditor
+                value={queryTag.query || {}}
+                onChange={(v) => updateContentTags('query', v)}
+                height={150}
               />
             </Field>
           )}

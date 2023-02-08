@@ -55,11 +55,12 @@ export class SetOrganizationMemberList extends BaseController {
         this.service.org.getDetailById(params.organizationId),
         this.service.user.getUserBaseObjectByIds(userIds),
       ]);
-      const sourceMembers = sourceOrgDetail?.members || [];
 
-      if (!sourceOrgDetail || sourceOrgDetail.deleted) {
+      if (this.notValid(sourceOrgDetail)) {
         return Response.warning(i18n.org.invalidOrgId, 2010802);
       }
+
+      const sourceMembers = sourceOrgDetail?.members || [];
 
       // New member data to object
       const sourceDataObject: Record<string, Member> = _.keyBy(sourceMembers, 'userId');

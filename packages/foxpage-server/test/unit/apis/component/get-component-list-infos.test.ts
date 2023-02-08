@@ -17,6 +17,7 @@ let params = {
   applicationId: Data.app.id,
   type: [],
   componentIds: [],
+  search: '',
 };
 
 beforeEach(() => {
@@ -28,6 +29,7 @@ beforeEach(() => {
     applicationId: Data.app.id,
     type: [],
     componentIds: [],
+    search: '',
   };
 });
 

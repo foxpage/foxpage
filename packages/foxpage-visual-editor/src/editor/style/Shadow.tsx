@@ -116,7 +116,7 @@ const Shadow: React.FC<ShadowType> = (props) => {
             <InputNumber
               value={offsetX}
               size="small"
-              onChange={(value: number) => {
+              onChange={(value: number | null) => {
                 onChange(
                   'boxShadow',
                   `${type === 'inset' ? 'inset ' : ''}${value}px ${offsetY}px ${blur}px ${speed}px ${color}`,
@@ -134,7 +134,7 @@ const Shadow: React.FC<ShadowType> = (props) => {
               size="small"
               value={offsetY}
               style={{ width: 'auto' }}
-              onChange={(value: number) => {
+              onChange={(value: number | null) => {
                 onChange(
                   'boxShadow',
                   `${type === 'inset' ? 'inset ' : ''}${offsetX}px ${value}px ${blur}px ${speed}px ${color}`,
@@ -153,7 +153,7 @@ const Shadow: React.FC<ShadowType> = (props) => {
             <InputNumber
               value={blur}
               size="small"
-              onChange={(value: number) => {
+              onChange={(value: number | null) => {
                 onChange(
                   'boxShadow',
                   `${
@@ -173,7 +173,7 @@ const Shadow: React.FC<ShadowType> = (props) => {
               value={speed}
               size="small"
               style={{ width: 'auto' }}
-              onChange={(value: number) => {
+              onChange={(value: number | null) => {
                 onChange(
                   'boxShadow',
                   `${

@@ -52,8 +52,8 @@ export class GetAppComponentListInfos extends BaseController {
       // Get App all components live info
       const contentList = await this.service.content.component.getComponentVersionLiveDetails({
         applicationId: params.applicationId,
-        type: (params.type as FileTypes[]) || TYPE.COMPONENT,
         contentIds: params.componentIds,
+        type: (params.type as FileTypes[]) || TYPE.COMPONENT,
         search: params.search || '',
       });
 
@@ -69,7 +69,7 @@ export class GetAppComponentListInfos extends BaseController {
       });
 
       let componentIds = this.service.content.component.getComponentResourceIds(componentCells);
-      const dependenciesIdVersions = this.service.component.getComponentEditorAndDependends(componentCells);
+      const dependenciesIdVersions = this.service.component.getComponentEditorAndDependence(componentCells);
 
       // Get component dependents editor or component
       const [dependencies, fileContentObject, appDetail] = await Promise.all([
@@ -117,7 +117,6 @@ export class GetAppComponentListInfos extends BaseController {
         componentCell.name = content.name;
         componentCell.version = <string>content.version;
         componentCell.components = [];
-
         const componentBuildSet = componentSettingObject[contentFileObject[componentCell.id]?.id || ''] || {};
         componentCell.defaultValue = componentBuildSet.defaultValue || {};
         componentCell.status = componentBuildSet.status || false;

@@ -14,7 +14,8 @@ import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('variables')
+// migration to files/update-type-item.ts
+@JsonController('variables-migrations')
 export class UpdateVariableDetail extends BaseController {
   constructor() {
     super();
@@ -43,7 +44,7 @@ export class UpdateVariableDetail extends BaseController {
 
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.VARIABLE });
-      const hasAuth = await this.service.auth.file(params.id, { ctx });
+      const hasAuth = await this.service.auth.file(params.pageFileId || params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4081501);
       }
@@ -86,17 +87,9 @@ export class UpdateVariableDetail extends BaseController {
         return Response.warning(i18n.variable.variableNameExist, 2081503);
       }
 
-      this.service.content.info.updateContentItem(
-        contentId,
-        { title: contentName },
-        { ctx, actionType: [LOG.UPDATE, TYPE.VARIABLE].join('_') },
-      );
+      this.service.content.info.updateContentItem(contentId, { title: contentName }, { ctx });
       if (versionStatus === VERSION.STATUS_BASE) {
-        this.service.version.info.updateVersionItem(
-          versionId,
-          { content: params.content },
-          { ctx, actionType: [LOG.UPDATE, TYPE.VARIABLE].join('_') },
-        );
+        this.service.version.info.updateVersionItem(versionId, { content: params.content }, { ctx });
       } else {
         // Add new version
         const version = this.service.version.number.getVersionFromNumber(++versionNumber);
@@ -109,7 +102,7 @@ export class UpdateVariableDetail extends BaseController {
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail, 1081501);
+      return Response.success(Object.assign({ contentId }, fileDetail), 1081501);
     } catch (err) {
       return Response.error(err, i18n.variable.updateVariableFailed, 3081501);
     }

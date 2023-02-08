@@ -5,8 +5,9 @@ import { CheckOutlined, InfoCircleOutlined, SyncOutlined } from '@ant-design/ico
 import { Button, Checkbox, Input, message, Select, Tag } from 'antd';
 import styled from 'styled-components';
 
-import { Field, Group, JSONEditor, Label, OperationDrawer } from '@/components/index';
+import { Field, Group, Label, OperationDrawer } from '@/components/index';
 import { FileType } from '@/constants/index';
+import { JSONCodeEditor } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
 import { ContentEntity, File, FileTag, ProjectContentFetchParams } from '@/types/index';
 import { getLocationIfo, objectEmptyCheck } from '@/utils/index';
@@ -127,11 +128,15 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
     }
 
     if (applicationId && fileId) {
-      saveContent({
-        applicationId,
-        fileId,
-        fileType: fileDetail?.type || FileType.page,
-      });
+      setTimeout(
+        () =>
+          saveContent({
+            applicationId,
+            fileId,
+            fileType: fileDetail?.type || FileType.page,
+          }),
+        250,
+      );
     }
   };
 
@@ -155,9 +160,9 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
           <Field>
             <Label>{global.nameLabel}</Label>
             <Input
-              value={editContent.title}
+              defaultValue={editContent.title}
               placeholder={content.nameLabel}
-              onChange={(e) => updateContentValue('title', e.target.value)}
+              onBlur={(e) => updateContentValue('title', e.target.value)}
             />
           </Field>
           {drawerOpen && !isBase && !objectEmptyCheck(locales) && (
@@ -198,14 +203,11 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
           {drawerOpen && !isBase && (
             <Field>
               <Label>{content.query}</Label>
-              <JSONEditor
-                jsonData={queryTag.query || {}}
-                onChangeJSON={(json) => {
-                  updateContentTags('query', json);
-                }}
-                onError={() => {
-                  updateContentTags('query', undefined);
-                }}
+              <JSONCodeEditor
+                //@ts-ignore
+                value={queryTag.query || {}}
+                onChange={(v) => updateContentTags('query', v)}
+                height={150}
               />
             </Field>
           )}

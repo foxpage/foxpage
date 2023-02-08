@@ -48,19 +48,14 @@ export class ContentLiveService extends BaseService<Content> {
       return [];
     }
 
-    const contentFileObject = await Service.file.list.getContentFileByIds(contentIds);
-    const validContentIds: string[] = [];
-    for (const contentId in contentFileObject) {
-      if (_.isString(params.type) && contentFileObject[contentId].type === params.type) {
-        validContentIds.push(contentId);
-      } else if (!_.isString(params.type) && params.type.indexOf(contentFileObject[contentId].type) !== -1) {
-        validContentIds.push(contentId);
-      }
-    }
+    const contentList = await this.getDetailByIds(contentIds);
+    const contentLiveIds = _.map(
+      _.filter(contentList, (content) => content.liveVersionId),
+      'liveVersionId',
+    );
 
     // Get live details
-    const contentLiveInfo = await Service.content.list.getContentLiveInfoByIds(validContentIds);
-    return Service.version.list.getContentInfoByIdAndNumber(contentLiveInfo);
+    return Service.version.list.getVersionListChunk(contentLiveIds);
   }
 
   /**
@@ -78,7 +73,7 @@ export class ContentLiveService extends BaseService<Content> {
       versionNumber: params.versionNumber,
     });
 
-    if (!versionDetail || versionDetail.deleted) {
+    if (this.notValid(versionDetail)) {
       return { code: 1 }; // Invalid version information
     }
 
@@ -93,7 +88,7 @@ export class ContentLiveService extends BaseService<Content> {
     ]);
 
     if (result.code === 0) {
-      this.setLiveContent(versionDetail.contentId, versionDetail.versionNumber, {
+      this.setLiveContent(versionDetail.contentId, versionDetail.versionNumber, versionDetail.id, {
         ctx: options.ctx,
         content: contentDetail,
         actionType: options.actionType,
@@ -114,9 +109,15 @@ export class ContentLiveService extends BaseService<Content> {
   setLiveContent(
     contentId: string,
     versionNumber: number,
+    versionId: string,
     options: { ctx: FoxCtx; content?: Content; actionType?: string },
   ): void {
-    options.ctx.transactions.push(this.updateDetailQuery(contentId, { liveVersionNumber: versionNumber }));
+    options.ctx.transactions.push(
+      this.updateDetailQuery(contentId, {
+        liveVersionNumber: versionNumber,
+        liveVersionId: versionId,
+      }),
+    );
     options.ctx.operations.push(
       ...Service.log.addLogItem(LOG.LIVE, options.content || ({} as Content), {
         actionType: options.actionType || [LOG.LIVE, TYPE.CONTENT].join('_'),
@@ -124,6 +125,7 @@ export class ContentLiveService extends BaseService<Content> {
           type: TYPE.CONTENT,
           fileId: options.content?.fileId as string,
           contentId,
+          versionId,
         },
       }),
     );

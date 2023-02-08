@@ -42,7 +42,11 @@ export class GetPageBuilderSettingList extends BaseController {
 
         // add block data to component list
         if (params.type === TYPE.COMPONENT) {
-          typeList = _.orderBy(_.concat(typeList, appDetail.setting[TYPE.BLOCK] || []), ['createTime'], ['desc']);
+          typeList = _.orderBy(
+            _.concat(typeList, appDetail.setting[TYPE.BLOCK] || []),
+            ['idx', 'createTime'],
+            ['desc', 'desc'],
+          );
         }
 
         const search = params.search?.toLowerCase();
@@ -85,20 +89,17 @@ export class GetPageBuilderSettingList extends BaseController {
 
         buildPageList.push(
           Object.assign(
+            {},
+            _.pick(item, ['idx', 'id', 'name', 'status', 'category', 'defaultValue']),
+            _.pick(fileObject[item.id], ['type', 'createTime', 'updateTime']),
             {
-              id: item.id,
-              name: item.name,
-              status: item.status,
               delivery: fileDelivery[TAG.DELIVERY_CLONE]
                 ? TAG.DELIVERY_CLONE
                 : fileDelivery[TAG.DELIVERY_REFERENCE]
                 ? TAG.DELIVERY_REFERENCE
                 : '',
-              category: item.category || {},
-              defaultValue: item.defaultValue || {},
               creator: userBaseObject[fileObject[item.id]?.creator] || {},
             },
-            _.pick(fileObject[item.id], ['type', 'createTime', 'updateTime']),
           ) as AppSettingInfo,
         );
       });
@@ -110,7 +111,7 @@ export class GetPageBuilderSettingList extends BaseController {
             page: params.page,
             size: params.size,
           },
-          data: _.reverse(buildPageList),
+          data: buildPageList,
         },
         1031101,
       );

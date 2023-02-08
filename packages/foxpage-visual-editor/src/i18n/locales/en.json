@@ -118,7 +118,7 @@
   "yes": "Yes",
   "no": "No",
   "componentListTitle": "Components",
-  "componentAddLink": ">> add now",
+  "componentAddLink": "add now",
   "variableListTitle": "Variables",
   "conditionListTitle": "Conditions",
   "functionListTitle": "Functions",
@@ -127,6 +127,7 @@
   "componentDescTip": "No description ~",
   "structureTitle": "Content structure",
   "editorTitle": "Editor",
+  "editorRenderError": "Load failed, please contact admin.",
   "page": "Page",
   "zoom": "Zoom",
   "pad": "Pad",
@@ -144,5 +145,10 @@
   "deleteMockTips": "Are you sure to delete the mock data of this component?",
   "inheritNode": "Inherit node",
   "usingCondition": "Using condition",
-  "usingVariable": "Using variable"
+  "usingVariable": "Using variable",
+  "selectTemplateTips": "Click to select page to clone",
+  "reRendering": "Take effect immediately...",
+  "labelSupportFollowingChars": "support following characters",
+  "isLive": "Live",
+  "versionTips": "Only take effect in preview, will be clear before the content publish."
 }

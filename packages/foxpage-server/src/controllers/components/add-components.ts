@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Content, File, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { COMPONENT_TYPE, TYPE } from '../../../config/constant';
 import { NewFileInfo } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AddComponentReq } from '../../types/validates/component-validate-types';
@@ -59,7 +59,7 @@ export class AddComponentDetail extends BaseController {
         folderId: appComponentFolderId,
         name: params.name,
         type: params.type as FileTypes,
-        componentType: params.componentType || '',
+        componentType: params.componentType || COMPONENT_TYPE.REACT_COMPONENT,
         suffix: '',
         creator: '',
       };

@@ -49,7 +49,7 @@ const PreviewModal: React.FC<StoreResourcePreviewProps> = (props) => {
       maskClosable={false}
       title={builder.preview}
       footer={null}
-      visible={previewModalVisible}
+      open={previewModalVisible}
       onCancel={handleClose}>
       <BasicInfo />
     </Modal>

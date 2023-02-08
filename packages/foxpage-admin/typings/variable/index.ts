@@ -42,10 +42,13 @@ export interface VariableSearchParams extends PaginationReqParams {
 export interface VariableSaveParams {
   successCb?: () => void;
   folderId?: string;
+  pageContentId?: string;
   applicationId: string;
 }
 
-export type VariableDeleteParams = CommonDeleteParams;
+export type VariableDeleteParams = CommonDeleteParams & {
+  variable?: VariableEntity;
+};
 
 // GetApplicationVariableParams
 export interface VariablesFetchParams extends Omit<CommonFetchParams, 'organizationId'> {

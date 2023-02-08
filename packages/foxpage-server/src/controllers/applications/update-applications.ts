@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Application, AppResource } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, PRE, TYPE } from '../../../config/constant';
+import { PRE, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppDetailRes, UpdateAppReq } from '../../types/validates/app-validate-types';
 import * as Response from '../../utils/response';
@@ -53,6 +53,7 @@ export class UpdateApplicationDetail extends BaseController {
         const duplicationAppDetail = await this.service.application.getDetail({
           organizationId,
           slug: params.slug,
+          deleted: false,
         });
 
         if (!_.isEmpty(duplicationAppDetail) && !duplicationAppDetail.deleted) {
@@ -92,16 +93,6 @@ export class UpdateApplicationDetail extends BaseController {
 
       // Save logs
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.applicationId, type: TYPE.APPLICATION });
-      ctx.operations.push({
-        action: LOG.UPDATE,
-        actionType: [LOG.UPDATE, TYPE.APPLICATION].join('_'),
-        category: {
-          type: LOG.CATEGORY_APPLICATION,
-          applicationId: params.applicationId,
-          organizationId: appDetail.organizationId,
-        },
-        content: { id: params.applicationId, before: appDetail, after: newAppDetail },
-      });
 
       return Response.success(newAppDetail, 1031001);
     } catch (err) {

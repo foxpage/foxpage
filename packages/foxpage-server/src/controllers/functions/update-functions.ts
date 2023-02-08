@@ -14,7 +14,8 @@ import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('functions')
+// migration to files/update-type-item.ts
+@JsonController('functions-migrations')
 export class UpdateFunctionDetail extends BaseController {
   constructor() {
     super();
@@ -43,7 +44,7 @@ export class UpdateFunctionDetail extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.FUNCTION });
 
-      const hasAuth = await this.service.auth.file(params.id, { ctx });
+      const hasAuth = await this.service.auth.file(params.pageFileId || params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4091501);
       }
@@ -85,17 +86,9 @@ export class UpdateFunctionDetail extends BaseController {
         return Response.warning(i18n.function.nameExist, 2091503);
       }
 
-      this.service.content.info.updateContentItem(
-        contentId,
-        { title: contentName },
-        { ctx, actionType: [LOG.UPDATE, TYPE.FUNCTION].join('_') },
-      );
+      this.service.content.info.updateContentItem(contentId, { title: contentName }, { ctx });
       if (versionStatus === VERSION.STATUS_BASE) {
-        this.service.version.info.updateVersionItem(
-          versionId,
-          { content: params.content },
-          { ctx, actionType: [LOG.UPDATE, TYPE.FUNCTION].join('_') },
-        );
+        this.service.version.info.updateVersionItem(versionId, { content: params.content }, { ctx });
       } else {
         // Add new version
         const version = this.service.version.number.getVersionFromNumber(++versionNumber);
@@ -108,7 +101,7 @@ export class UpdateFunctionDetail extends BaseController {
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail, 1091501);
+      return Response.success(Object.assign({ contentId }, fileDetail), 1091501);
     } catch (err) {
       return Response.error(err, i18n.function.updateFunctionFailed, 3091501);
     }

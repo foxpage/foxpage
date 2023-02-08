@@ -38,7 +38,7 @@ export class GetPageTemplateList extends BaseController {
       // TODO search parameter not implemented
       if (params.folderId) {
         const folderDetail = await this.service.folder.info.getDetailById(params.folderId);
-        if (!folderDetail || folderDetail.deleted || folderDetail.applicationId !== params.applicationId) {
+        if (this.notValid(folderDetail) || folderDetail.applicationId !== params.applicationId) {
           return Response.warning(i18n.folder.invalidFolderId, 2070401);
         }
       } else {

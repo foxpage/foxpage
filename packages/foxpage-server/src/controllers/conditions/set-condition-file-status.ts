@@ -14,6 +14,7 @@ import { FileDetailRes } from '../../types/validates/file-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to files/set-type-file-status.ts
 @JsonController('conditions')
 export class SetConditionFileStatus extends BaseController {
   constructor() {
@@ -25,7 +26,7 @@ export class SetConditionFileStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/status')
+  @Put('/status-migrations')
   @OpenAPI({
     summary: i18n.sw.setConditionFileStatus,
     description: '',

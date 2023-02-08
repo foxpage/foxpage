@@ -58,6 +58,13 @@ export interface AuthorizeDeleteResponse extends ResponseBody {
   data: AuthorizeResCommon;
 }
 
+// check
+export interface AuthorizeQueryParams {
+  applicationId: string;
+  type: string;
+  typeId?: string;
+}
+
 // all user
 export interface AuthorizeUserFetchParams extends PaginationReqParams {}
 

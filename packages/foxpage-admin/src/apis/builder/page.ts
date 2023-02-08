@@ -1,4 +1,4 @@
-import { ContentCloneParams, PageTemplateFetchParams, ResponseBody } from '@/types/index';
+import { PageTemplateFetchParams, ResponseBody } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
 export const fetchPageDsl = (params: any) =>
@@ -49,7 +49,7 @@ export const fetchTemplates = (params: { applicationId: string }): Promise<Respo
     });
   });
 
-export const clonePage = (params: ContentCloneParams): Promise<ResponseBody> =>
+export const clonePage = (params: any): Promise<ResponseBody> =>
   new Promise((resolve) => {
     FoxPageApi.put('/pages/clone', params, (rs: ResponseBody) => {
       resolve(rs);

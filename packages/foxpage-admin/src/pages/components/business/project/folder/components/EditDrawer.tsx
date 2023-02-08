@@ -25,7 +25,6 @@ const formItemLayout = {
 
 interface DrawerProps {
   type: string;
-  organizationId: string;
   applicationId?: string;
   saveLoading: boolean;
   pageInfo: PaginationInfo;
@@ -42,7 +41,6 @@ interface DrawerProps {
 
 const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
   const {
-    organizationId,
     applicationId,
     saveLoading,
     search,
@@ -58,7 +56,7 @@ const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
   } = props;
 
   // i18n
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { project, global, application: applicationI18n } = locale.business;
 
   useEffect(() => {

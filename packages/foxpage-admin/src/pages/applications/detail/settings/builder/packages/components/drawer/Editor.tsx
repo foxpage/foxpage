@@ -7,7 +7,8 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/settings/builder/component';
-import { JSONEditor, OperationDrawer } from '@/components/index';
+import { OperationDrawer } from '@/components/index';
+import { JSONCodeEditor } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
 import { Component } from '@/types/component';
 
@@ -109,6 +110,7 @@ const Editor: React.FC<DrawerProp> = (props) => {
           {
             category,
             id: editorState?.data.id,
+            idx: editorState?.data.idx,
             name: editorState?.data.name || '',
             status: editorState?.data.status || false,
             defaultValue,
@@ -139,7 +141,7 @@ const Editor: React.FC<DrawerProp> = (props) => {
         </TabPane>
         <TabPane key="2" tab={global.props}>
           <EditorContainer>
-            <JSONEditor jsonData={defaultValue || {}} onChangeJSON={setDefaultValue} />
+            <JSONCodeEditor value={defaultValue || {}} onChange={setDefaultValue} />
           </EditorContainer>
         </TabPane>
       </Tabs>

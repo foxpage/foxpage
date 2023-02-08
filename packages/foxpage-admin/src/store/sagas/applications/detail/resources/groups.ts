@@ -16,6 +16,7 @@ import {
   BaseResponse,
   OptionsAction,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* fetchResourceGroups(action: AppResourceGroupsActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -36,7 +37,7 @@ function* fetchResourceGroups(action: AppResourceGroupsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+   errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -87,7 +88,7 @@ function* saveResourceGroup(action: AppResourceGroupsActionType) {
       global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || saveFailed);
+   errorToast(res, saveFailed);
 
     if (onFail) onFail();
   }
@@ -118,7 +119,7 @@ function* deleteResourceGroup(action: AppResourceGroupsActionType): any {
 
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-    message.error(res.msg || deleteFailed);
+   errorToast(res, deleteFailed);
 
     if (typeof onFail === 'function') onFail();
   }
@@ -149,7 +150,7 @@ function* handleFetchResourcesGroupTypes(action: AppResourceGroupsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+   errorToast(res, fetchListFailed);
   }
 }
 

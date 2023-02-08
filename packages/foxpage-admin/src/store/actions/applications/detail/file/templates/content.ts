@@ -8,8 +8,10 @@ import {
   AuthorizeUserFetchParams,
   ContentEntity,
   PaginationInfo,
+  ProjectContentCopyParams,
   ProjectContentDeleteParams,
   ProjectContentFetchParams,
+  ProjectContentOfflineParams,
   User,
 } from '@/types/index';
 
@@ -67,6 +69,18 @@ export const saveContent = createAction(
   }),
 )();
 
+// offline
+export const offlineContent = createAction(
+  'APPLICATION_FILE_TEMPLATE_CONTENT__OFFLINE_CONTENT',
+  (params: ProjectContentOfflineParams) => ({ ...params }),
+)();
+
+// copy
+export const copyContent = createAction(
+  'APPLICATION_FILE_TEMPLATE_CONTENT__COPY_CONTENT',
+  (params: ProjectContentCopyParams, cb?: () => void) => ({ params, cb }),
+)();
+
 // delete related
 export const deleteContent = createAction(
   'APPLICATION_FILE_TEMPLATE_CONTENT__DELETE_CONTENT',
@@ -117,7 +131,7 @@ export const deleteAuthUser = createAction(
 
 export const fetchUserList = createAction(
   'APPLICATION_FILE_TEMPLATE_CONTENT__FETCH_USER_LIST',
-  (params: AuthorizeUserFetchParams, cb?: () => void) => ({
+  (params: AuthorizeUserFetchParams, cb?: (userList) => void) => ({
     params,
     cb,
   }),

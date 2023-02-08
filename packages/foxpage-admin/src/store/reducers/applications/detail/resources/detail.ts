@@ -2,7 +2,7 @@ import produce from 'immer';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/resources/detail';
-import { ApplicationResourceGroupDetailEntity,CommonDrawerEntity } from '@/types/index';
+import { ApplicationResourceGroupDetailEntity, CommonDrawerEntity } from '@/types/index';
 
 export type ApplicationResourceDetailActionType = ActionType<typeof ACTIONS>;
 

@@ -4,7 +4,7 @@ import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/projects/content';
 import { FileType } from '@/constants/index';
-import { ContentEntity, File, ProjectEntity } from '@/types/index';
+import { AuthorizeListItem, ContentEntity, File, ProjectEntity } from '@/types/index';
 
 export type ProjectContentActionType = ActionType<typeof ACTIONS>;
 
@@ -17,6 +17,7 @@ const extendRecord: Record<string, string[]> = {};
 const fileDetail: File = {} as File;
 const locales: string[] = [];
 const folder: ProjectEntity = {} as ProjectEntity;
+const authList: AuthorizeListItem[] = [];
 
 const initialState = {
   loading: false,
@@ -28,7 +29,10 @@ const initialState = {
   extendRecord,
   fileDetail,
   locales,
+  authListDrawerVisible: false,
+  authListLoading: false,
   folder,
+  authList,
 };
 
 type InitialDataType = typeof initialState;
@@ -152,6 +156,23 @@ const reducer = (state: InitialDataType = initialState, action: ProjectContentAc
 
       case getType(ACTIONS.pushParentFiles): {
         draft.folder = action.payload.folder;
+        break;
+      }
+
+      case getType(ACTIONS.updateAuthDrawerVisible): {
+        const { visible = false, editContent = {} as ContentEntity } = action.payload;
+        draft.authListDrawerVisible = visible;
+        draft.editContent = editContent;
+        break;
+      }
+
+      case getType(ACTIONS.updateAuthListLoading): {
+        draft.authListLoading = action.payload.status;
+        break;
+      }
+
+      case getType(ACTIONS.pushAuthList): {
+        draft.authList = action.payload.list;
         break;
       }
 

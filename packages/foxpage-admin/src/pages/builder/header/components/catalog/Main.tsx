@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
+import * as MAIN_ACTIONS from '@/actions/builder/main';
 import { CatalogContentSelectParams } from '@/types/builder';
 
 import { List } from './components';
@@ -29,9 +30,13 @@ const mapDispatchToProps = {
   selectContent: ACTIONS.selectContent,
   selectFoldStatus: ACTIONS.updateFileFold,
   updateLocale: ACTIONS.updateLocale,
+  unlockContent: MAIN_ACTIONS.unlockContent,
 };
 
-type Type = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
+type Type = ReturnType<typeof mapStateToProps> &
+  typeof mapDispatchToProps & {
+    readOnly?: boolean;
+  };
 
 const Catalog: React.FC<Type> = (props) => {
   const {
@@ -45,9 +50,12 @@ const Catalog: React.FC<Type> = (props) => {
     selectContent,
     selectFoldStatus,
     updateLocale,
+    unlockContent,
+    readOnly = false,
   } = props;
 
   const handleSelectContent = (params: CatalogContentSelectParams) => {
+    unlockContent();
     selectContent(params);
   };
 
@@ -66,6 +74,7 @@ const Catalog: React.FC<Type> = (props) => {
           folderId={folderId}
           contentList={pageList}
           locale={locale}
+          readOnly={readOnly}
           selectFoldStatus={selectFoldStatus}
           selectContent={handleSelectContent}
           setLocale={handleLocaleChange}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/system/user';
+import { GlobalContext } from '@/pages/system';
 import { getLoginUser, setLoginUser } from '@/utils/index';
 
 const MenuGroupTitle = styled.a`
@@ -53,17 +54,17 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = {
   fetchList: ACTIONS.fetchOrganizationList,
-  updateOrganizationId: ACTIONS.updateOrganizationId,
 };
 
 type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 function OrganizationSelector(props: IProps) {
-  const { list, fetchList, updateOrganizationId } = props;
+  const { list, fetchList } = props;
   const [currOrg, setCurrOrg] = useState<string | undefined>('');
 
+  const { organizationId, setOrganizationId } = useContext(GlobalContext);
+
   const { token, userInfo, languagePrefer, organizationPrefer } = getLoginUser();
-  const organizationId = userInfo?.organizationId;
 
   useEffect(() => {
     fetchList();
@@ -102,10 +103,10 @@ function OrganizationSelector(props: IProps) {
         });
 
         // push new organization id to store
-        updateOrganizationId(newOrganizationId);
+        setOrganizationId(newOrganizationId);
       }
     },
-    [list, updateOrganizationId],
+    [list],
   );
 
   const menu = (
@@ -115,7 +116,7 @@ function OrganizationSelector(props: IProps) {
           <Menu.Item key={item.name}>
             <Link
               to={{
-                pathname: '/workspace/application',
+                pathname: '/workspace/applications',
               }}>
               <MenuItem>{item.name}</MenuItem>
             </Link>

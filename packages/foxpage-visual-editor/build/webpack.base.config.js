@@ -1,10 +1,13 @@
 const path = require('path');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
+const { mainModule } = require('process');
 
 module.exports = {
   context: path.resolve(__dirname),
   output: {
     publicPath: '/dist/',
+    // filename: '[name].bundle.js',
     filename: 'main.bundle.js',
     path: path.resolve(__dirname, '../dist'),
   },
@@ -22,6 +25,7 @@ module.exports = {
       }),
     ],
   },
+  plugins: [new AntdDayjsWebpackPlugin()],
   module: {
     rules: [
       {
@@ -41,8 +45,12 @@ module.exports = {
         loader: 'raw-loader',
       },
       {
+        test: /\.less$/,
+        use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader'],
+      },
+      {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,

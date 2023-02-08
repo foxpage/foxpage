@@ -1,38 +1,21 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
 
-import { JSONEditor } from '@/components/index';
+import { JSONCodeEditor } from '@/pages/components/common';
 
 interface JsonEditorFormItemProps {
-  value?: string;
+  value?: Record<string, any>;
   disabled?: boolean;
-  onChange?(value: string): void;
+  onChange?(value: Record<string, any>): void;
 }
+
+// actually it is a fake form item, do not use it as item in ant design form
 
 const JsonEditorFormItem: React.FC<JsonEditorFormItemProps> = ({
   value = {},
   disabled,
   onChange = () => {},
 }) => {
-  const [refreshFlag, setRefreshFlag] = useState(false);
-  const jsonStrRef = useRef<string>(value as string);
-
-  const onChangeJSON = useCallback(
-    (json) => {
-      jsonStrRef.current = json;
-      onChange(jsonStrRef.current);
-    },
-    [onChange],
-  );
-
-  useEffect(() => {
-    if (value !== jsonStrRef.current) {
-      setRefreshFlag(true);
-    }
-  }, [value]);
-
-  return (
-    <JSONEditor jsonData={value} refreshFlag={refreshFlag} disabled={disabled} onChangeJSON={onChangeJSON} />
-  );
+  return <JSONCodeEditor value={value} readOnly={disabled} onChange={onChange} height={150} />;
 };
 
 export default JsonEditorFormItem;

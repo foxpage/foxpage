@@ -35,7 +35,6 @@ const Card = styled(AntCard)`
 `;
 
 const mapStateToProps = (state: RootState) => ({
-  organizationId: state.system.user.organizationId,
   loading: state.applications.list.loading,
   pageInfo: state.applications.list.pageInfo,
   list: state.applications.list.applicationList,
@@ -52,10 +51,10 @@ const mapDispatchToProps = {
 type ApplicationListProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Applications = (props: ApplicationListProps) => {
-  const { organizationId, loading, list, pageInfo, clearAll, fetchList, openDrawer } = props;
+  const { loading, list, pageInfo, clearAll, fetchList, openDrawer } = props;
 
   // get multi-language
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { application, global } = locale.business;
 
   const history = useHistory();
@@ -74,11 +73,12 @@ const Applications = (props: ApplicationListProps) => {
   }, []);
 
   useEffect(() => {
-    fetchList({
-      organizationId,
-      page: pageInfo.page,
-      size: pageInfo.size,
-    });
+    if (organizationId)
+      fetchList({
+        organizationId,
+        page: pageInfo.page,
+        size: pageInfo.size,
+      });
   }, [fetchList, organizationId, clearAll]);
 
   return (
@@ -113,7 +113,7 @@ const Applications = (props: ApplicationListProps) => {
                       hoverable
                       title={<Title>{application.name}</Title>}
                       onClick={() => {
-                        history.push(`/applications/${application.id}/file/pages/list`);
+                        history.push(`/applications/${application.id}/`);
                       }}
                       style={{ marginBottom: 12 }}>
                       <p>

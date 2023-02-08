@@ -5,7 +5,7 @@ export function getAttrData(node, attr) {
   return '';
 }
 
-function isComponent(node) {
+function isComponent(node: HTMLElement) {
   return getAttrData(node, 'data-type') === 'component' && getAttrData(node, 'data-component-id');
 }
 
@@ -19,14 +19,14 @@ function getParentNode(node) {
   return getParentNode(node.parentNode);
 }
 
-export function getComponentNode(node) {
+export function getComponentNode(node: HTMLElement) {
   if (node.tagName === 'BODY') {
     return undefined;
   }
   if (isComponent(node)) {
     return node;
   }
-  return getComponentNode(node.parentNode);
+  return getComponentNode(node.parentNode as HTMLElement);
 }
 
 export function getParentId(node) {

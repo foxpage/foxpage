@@ -6,7 +6,6 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG } from '../../../config/constant';
 import { NewFileInfo } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailRes, FileVersionDetailReq } from '../../types/validates/file-validate-types';
@@ -15,7 +14,7 @@ import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
 @JsonController('')
-export class AddVariableDetail extends BaseController {
+export class AddTypeItemDetail extends BaseController {
   constructor() {
     super();
   }
@@ -33,7 +32,7 @@ export class AddVariableDetail extends BaseController {
   @OpenAPI({
     summary: i18n.sw.addTypeItemDetail,
     description: '',
-    tags: ['Page'],
+    tags: ['File'],
     operationId: 'add-type-item-detail',
   })
   @ResponseSchema(FileDetailRes)
@@ -47,7 +46,9 @@ export class AddVariableDetail extends BaseController {
 
     try {
       let hasAuth = false;
-      if (params.folderId) {
+      if (params.pageContentId) {
+        hasAuth = await this.service.auth.content(params.pageContentId, { ctx });
+      } else if (params.folderId) {
         hasAuth = await this.service.auth.folder(params.folderId, { ctx });
       } else {
         hasAuth = await this.service.auth.application(params.applicationId, { ctx });
@@ -69,10 +70,7 @@ export class AddVariableDetail extends BaseController {
       }
 
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: apiType });
-      const result = await this.service.file.info.addFileDetail(newFileDetail, {
-        ctx,
-        actionType: [LOG.CREATE, apiType].join('_'),
-      });
+      const result = await this.service.file.info.addFileDetail(newFileDetail, { ctx });
 
       // Check the validity of the application ID
       if (result.code === 1) {

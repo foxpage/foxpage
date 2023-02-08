@@ -1,10 +1,10 @@
-import { DndData, File, FormattedData, RenderStructureNode, StructureNode, Component } from '@/types/index';
+import { PAGE_COMPONENT_NAME } from '@/constants/index';
+import { store } from '@/store/index';
+import { Component, DndData, File, FormattedData, RenderStructureNode, StructureNode } from '@/types/index';
 
 import { findBrothers, findBrothersByParentId } from '../utils';
 
 import { addComponent } from './add';
-import { store } from '@/store/index';
-import { PAGE_COMPONENT_NAME } from '@/constants/index';
 
 type DropComponentOptions = {
   formattedData: FormattedData;

@@ -13,7 +13,6 @@ import { ContentDetailRes, SaveToBaseReq } from '../../types/validates/content-v
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-
 @JsonController('contents')
 export class SaveContentAsBase extends BaseController {
   constructor() {
@@ -33,57 +32,74 @@ export class SaveContentAsBase extends BaseController {
     operationId: 'save-content-as-base',
   })
   @ResponseSchema(ContentDetailRes)
-  async index( @Ctx() ctx: FoxCtx, @Body() params: SaveToBaseReq): Promise<ResData<Content>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: SaveToBaseReq): Promise<ResData<Content>> {
     try {
       // Get content detail
       const contentDetail = await this.service.content.info.getDetailById(params.contentId);
 
       // Get content extend detail
-      const extensionObject = this.service.content.tag.getTagsByKeys(contentDetail.tags || [], [
-        'extendId',
-      ]);
-      
-      let extendContentDetail:Partial<Content> = {};
+      const extensionObject = this.service.content.tag.getTagsByKeys(contentDetail.tags || [], ['extendId']);
+
+      let extendContentDetail: Partial<Content> = {};
       if (extensionObject.extendId) {
         extendContentDetail = await this.service.content.info.getDetailById(extensionObject.extendId);
       }
 
       let contentVersionPromise: Promise<ContentVersion>[] = [];
-      contentVersionPromise[0] = this.service.version.info.getDetail(
-        { contentId: contentDetail.id, versionNumber: contentDetail.liveVersionNumber }
-      );
+      contentVersionPromise[0] = this.service.version.info.getDetail({
+        contentId: contentDetail.id,
+        versionNumber: contentDetail.liveVersionNumber,
+      });
 
       if (extendContentDetail.id) {
-        contentVersionPromise[1] = this.service.version.info.getDetail(
-          { contentId: extendContentDetail.id, versionNumber: extendContentDetail.liveVersionNumber }
-        );
+        contentVersionPromise[1] = this.service.version.info.getDetail({
+          contentId: extendContentDetail.id,
+          versionNumber: extendContentDetail.liveVersionNumber,
+        });
       }
 
       const [pageVersion, baseVersion] = await Promise.all(contentVersionPromise);
 
       // merge content
-      const newContent = merger.merge(baseVersion.content, pageVersion.content, {
-        strategy: merger.MergeStrategy.COMBINE_BY_EXTEND,
-      });
+      let newContent = pageVersion?.content || {};
+      if (baseVersion?.content) {
+        newContent = merger.merge(baseVersion?.content || {}, pageVersion?.content || {}, {
+          strategy: merger.MergeStrategy.COMBINE_BY_EXTEND,
+        });
+      }
 
       // update structure Id
-      const newSchemas = this.service.version.info.updateVersionStructureId(newContent.schemas as DslSchemas[]) as any;
+      const newSchemas = this.service.version.info.updateVersionStructureId(
+        newContent.schemas as DslSchemas[],
+      ) as any;
 
       // save new base content
-      const newContentDetail = this.service.content.info.create({
-        title: contentDetail.title + '_base',
-        fileId: contentDetail.fileId,
-      }, { ctx });
-      this.service.version.info.create({ contentId: newContentDetail.id, content: {
-        schemas: newSchemas,
-        relation: newContent.relation,
-      }, }, { ctx });
+      const newContentDetail = this.service.content.info.create(
+        {
+          title: contentDetail.title + '_base',
+          fileId: contentDetail.fileId,
+          applicationId: contentDetail.applicationId,
+          type: contentDetail.type || '',
+          tags: [{ isBase: true }],
+        },
+        { ctx },
+      );
+      this.service.version.info.create(
+        {
+          contentId: newContentDetail.id,
+          content: {
+            schemas: newSchemas,
+            relation: newContent.relation,
+          },
+        },
+        { ctx },
+      );
 
       await this.service.content.info.runTransaction(ctx.transactions);
 
       return Response.success(newContentDetail, 1161101);
     } catch (err) {
-      return Response.error(err, i18n.content.getTemplateListFailed, 3161101);
+      return Response.error(err, i18n.content.saveToBaseFailed, 3161101);
     }
   }
 }

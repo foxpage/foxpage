@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
-import { JSONEditor } from '@/components/index';
+import { JSONCodeEditor } from '@/pages/components/common';
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -32,21 +32,17 @@ const mapDispatchToProps = {
 type DslProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Dsl: React.FC<DslProps> = (props) => {
-  const { open, loading, dsl, openDSLModal } = props;
+  const { open, loading, dsl: dslObj, openDSLModal } = props;
 
   return (
     <StyledModal
       title="DSL"
-      visible={open}
+      open={open}
       width={1048}
       onCancel={() => openDSLModal(false)}
       onOk={() => openDSLModal(false)}
       style={{ height: '70%' }}>
-      {loading ? (
-        <Spin spinning={loading} />
-      ) : (
-        <JSONEditor jsonData={dsl || {}} refreshFlag={dsl} readOnly options={{ mode: 'code' }} />
-      )}
+      {loading ? <Spin spinning={loading} /> : <JSONCodeEditor value={dslObj} readOnly height={'100%'} />}
     </StyledModal>
   );
 };

@@ -1,21 +1,22 @@
 import {
-  ContentFetchParams,
-  PageContent,
-  ContentSaveParams,
-  ContentSavedRes,
-  ContentPublishParams,
-  ContentPublishedRes,
-  ContentCreateParams,
   BaseResponse,
-  ResponseBody,
+  ComponentEntity,
+  ContentCreateParams,
+  ContentFetchParams,
+  ContentPublishedRes,
+  ContentPublishParams,
+  ContentSavedRes,
+  ContentSaveParams,
+  PageContent,
   ProjectContentFetchParams,
   ProjectFileAddParams,
-  ComponentEntity
+  ResponseBody,
 } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
+
 import { GetComponentSearchsProps } from '../application';
 
-export const fetchLiveBlockDsl = (params: { applicationId: string, ids: string[], locale: string }) =>
+export const fetchLiveBlockDsl = (params: { applicationId: string; ids: string[]; locale: string }) =>
   new Promise((resolve) => {
     FoxPageApi.post('/blocks/locale-live-version', params, (rs: BaseResponse) => {
       resolve(rs);
@@ -93,9 +94,7 @@ export const updateBlockContent = (params: any) =>
   });
 
 // search blocks
-export const getBlockSearchs = (
-  params: GetComponentSearchsProps
-): Promise<ResponseBody<ComponentEntity[]>> =>
+export const getBlockSearchs = (params: GetComponentSearchsProps): Promise<ResponseBody<ComponentEntity[]>> =>
   new Promise((resolve) => {
     FoxPageApi.get('/projects/block-content/searchs', params, (rs) => {
       resolve(rs);

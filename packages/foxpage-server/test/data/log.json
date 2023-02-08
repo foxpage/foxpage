@@ -1,0 +1,22 @@
+{
+  "list": [
+    {
+      "id": "logs_7Uz3hj6ChHp7Uyp",
+      "action": "1",
+      "category": {
+        "contentId": "cver_UQwKFiiOYKA6cDX",
+        "versionId": ""
+      },
+      "content": [
+        {
+          "type": "page",
+          "id": "cver_UQwKFiiOYKA6cDX",
+          "content": "{\"applicationId\":\"appl_O6Rj7weDnMQ5y5o\",\"id\":\"cver_UQwKFiiOYKA6cDX\",\"status\":\"release\"}"
+        }
+      ],
+      "creator": "user_eYqUw3xaorJNXzP",
+      "createTime": "2022-12-30T15:24:56",
+      "updateTime": "2022-12-30T15:26:56"
+    }
+  ]
+}

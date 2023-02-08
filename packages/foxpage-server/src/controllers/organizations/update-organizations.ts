@@ -41,7 +41,7 @@ export class UpdateOrganizationDetail extends BaseController {
       // Check if the organization exists
       let orgDetail = await this.service.org.getDetailById(params.organizationId);
 
-      if (!orgDetail || orgDetail.deleted) {
+      if (this.notValid(orgDetail)) {
         return Response.warning(i18n.org.invalidOrgId, 2010901);
       }
 

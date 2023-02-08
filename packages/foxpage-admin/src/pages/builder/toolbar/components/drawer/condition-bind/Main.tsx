@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 
-import { Button, DatePicker, Select, Switch } from 'antd';
-import moment from 'moment';
+import { Button, Select, Switch } from 'antd';
+import dayjs from 'dayjs';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/conditions';
@@ -16,6 +16,7 @@ import {
   LOCAL_TIME_VARIABLE_NAME,
   ltEqRelations,
 } from '@/constants/index';
+import { DatePicker } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
 import { getSystemVariableRelationKey, isTimeConditionRelation } from '@/sagas/builder/utils';
 import {
@@ -45,10 +46,12 @@ const TIME_ZONE_START_POS = 19;
 const mapStateToProps = (store: RootState) => ({
   applicationId: store.builder.header.applicationId,
   folderId: store.builder.header.folderId,
+  pageContentId: store.builder.header.contentId,
   locale: store.builder.header.locale,
   selectedComponent: store.builder.main.selectedNode,
   editorData: store.builder.main.toolbarEditorData,
   open: store.builder.main.toolbarEditorVisible,
+  readOnly: store.builder.main.readOnly,
 });
 
 const mapDispatchToProps = {
@@ -66,7 +69,9 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
     open,
     applicationId,
     folderId,
+    pageContentId,
     locale,
+    readOnly,
     editorData,
     fetchDetail,
     selectedComponent,
@@ -76,9 +81,10 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
     conditionBind,
   } = props;
   const [conditions, setConditions] = useState<ConditionEntity[]>([]);
-  const [showStartTime, setShowStartTime] = useState<moment.Moment | undefined>(undefined);
-  const [showEndTime, setShowEndTime] = useState<moment.Moment | undefined>(undefined);
+  const [showStartTime, setShowStartTime] = useState<dayjs.Dayjs | undefined>(undefined);
+  const [showEndTime, setShowEndTime] = useState<dayjs.Dayjs | undefined>(undefined);
   const [display, setDisplay] = useState<boolean>(true);
+  const [clearFlag, setClearFlag] = useState(false);
 
   // time zone
   const timezones = getAllTimeZone(locale);
@@ -93,11 +99,17 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
 
   useEffect(() => {
     if (open) {
+      // reset to default value
       setDefaultTimezone(timezones[0]?.value || '');
       setShowStartTime(undefined);
       setShowEndTime(undefined);
       setDisplay(true);
+      setConditions([]);
+      setClearFlag(false);
 
+      timeConditionsContent.current = undefined;
+
+      // check condition bind status & bind condition detail
       const component = selectedComponent;
 
       if (component) {
@@ -132,23 +144,31 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
                     setDisplay(props.value === displayKey);
                   }
                 });
-              } else {
-                newConditions.push(condition);
-                return;
               }
+
+              const alreadyExist = newConditions.find((item) => item.id === condition.id);
+
+              if (!alreadyExist) {
+                newConditions.push(condition);
+
+                setConditions(newConditions);
+              }
+
+              return;
             });
           }
         });
-
-        setConditions(newConditions);
       }
     } else {
       setConditions([]);
+      setClearFlag(false);
     }
   }, [open]);
 
   const handleSelectTimezone = (value: string) => {
     setDefaultTimezone(value);
+
+    setClearFlag(false);
   };
 
   const handleChangeTime = (value) => {
@@ -157,6 +177,14 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
     const newShowEndTime = endTime ? endTime.format() : '';
     setShowStartTime(newShowStartTime);
     setShowEndTime(newShowEndTime);
+
+    setClearFlag(false);
+  };
+
+  const handleChangeDisplay = (value) => {
+    setDisplay(value);
+
+    setClearFlag(false);
   };
 
   const handleUpdateComponentCondition = (ids) => {
@@ -167,12 +195,79 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
     }
   };
 
+  const handleUpdateComponentConditionList = (_conditions) => {
+    // handle time condition delete
+    const timeCondition = _conditions.find((condition) =>
+      condition?.content?.schemas?.[0]?.name.startsWith('__renderConditionTimeAndDisplay'),
+    );
+    if (!timeCondition && !objectEmptyCheck(conditions)) {
+      setDefaultTimezone(timezones?.[0]?.value || '');
+      setShowStartTime(undefined);
+      setShowEndTime(undefined);
+      setDisplay(true);
+    }
+
+    if (objectEmptyCheck(_conditions)) {
+      timeConditionsContent.current = undefined;
+
+      setClearFlag(true);
+    }
+
+    setConditions(_conditions);
+  };
+
   const handleApply = () => {
-    if (!showStartTime || !showEndTime) {
+    if ((!showStartTime || !showEndTime) && display) {
       if (conditions.length > 0) {
-        const conditionContentIds = conditions.map((condition) => condition.contentId);
-        handleUpdateComponentCondition(conditionContentIds);
-        return;
+        const conditionContents = conditions.map((condition) => condition.content);
+        const timeCondition = conditionContents.find((content) =>
+          isTimeConditionRelation(content?.schemas?.[0]),
+        );
+        if (!timeCondition) {
+          const conditionContentIds = conditions.map((condition) => condition.contentId);
+          handleUpdateComponentCondition(conditionContentIds);
+          return;
+        } else {
+          const timeConditionContentEntity = {
+            ...timeCondition,
+            schemas: [
+              {
+                name: timeCondition.schemas[0].name,
+                props: {},
+                type: 1,
+                children: [
+                  {
+                    type: conditionExpression,
+                    props: {
+                      key: displayKey,
+                      operation: eqRelations.value,
+                      value: display ? displayKey : '0',
+                    },
+                  },
+                ],
+              },
+            ],
+          };
+
+          // update condition
+          saveConditionVersion(
+            {
+              applicationId,
+              folderId,
+              pageContentId,
+              name: timeCondition.schemas[0].name,
+              type: 'condition',
+              content: timeConditionContentEntity,
+            },
+            () => {
+              const conditionContentIds = conditions.map((condition) => condition.contentId);
+              handleUpdateComponentCondition(
+                Array.from(new Set(conditionContentIds.concat([timeConditionContentEntity.id]))),
+              );
+            },
+          );
+          return;
+        }
       }
     }
 
@@ -198,45 +293,55 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
       ];
     }
 
-    items.push({
-      type: conditionExpression,
-      props: {
-        key: displayKey,
-        operation: eqRelations.value,
-        value: display ? displayKey : '0',
-      },
-    });
-
-    const timeConditionsName = `__renderConditionTimeAndDisplay_${shortId(10)}`;
-    const timeConditionContentEntity: ConditionContentEntity = {
-      id: timeConditionsContent.current || '',
-      schemas: [{ type: 1, props: {}, name: timeConditionsName, children: items }],
-      relation: {
-        [timeConditionRelationKey]: {
-          type: 'sys_variable',
-          id: '',
-          // content: localTimeVariable.current.content,
+    if (clearFlag) {
+      // clear all condition bind
+      handleUpdateComponentCondition([]);
+    } else {
+      items.push({
+        type: conditionExpression,
+        props: {
+          key: displayKey,
+          operation: eqRelations.value,
+          value: display ? displayKey : '0',
         },
-      },
-    };
+      });
 
-    // generate request
-    const params: ConditionSaveParams = {
-      applicationId,
-      folderId,
-      name: timeConditionsName,
-      type: 'condition',
-      content: timeConditionContentEntity,
-    };
-    const cb = (id?: string) => {
-      timeConditionContentEntity.id = id || timeConditionsContent.current || '';
+      const timeConditionsName = !!timeConditionsContent.current
+        ? conditions.find((condition) => condition.contentId === timeConditionsContent.current)?.content
+            ?.schemas?.[0]?.name || `__renderConditionTimeAndDisplay_${shortId(10)}`
+        : `__renderConditionTimeAndDisplay_${shortId(10)}`;
+      const timeConditionContentEntity: ConditionContentEntity = {
+        id: timeConditionsContent.current || '',
+        schemas: [{ type: 1, props: {}, name: timeConditionsName, children: items }],
+        relation: {
+          [timeConditionRelationKey]: {
+            type: 'sys_variable',
+            id: '',
+            // content: localTimeVariable.current.content,
+          },
+        },
+      };
 
-      const conditionContentIds = conditions.map((condition) => condition.contentId);
-      handleUpdateComponentCondition(conditionContentIds.concat([timeConditionContentEntity.id]));
-    };
+      // generate request
+      const params: ConditionSaveParams = {
+        applicationId,
+        folderId,
+        pageContentId,
+        name: timeConditionsName,
+        type: 'condition',
+        subType: 'timeDisplay',
+        content: timeConditionContentEntity,
+      };
+      const cb = (id?: string) => {
+        timeConditionContentEntity.id = id || timeConditionsContent.current || '';
 
-    // save or update version
-    timeConditionsContent.current ? saveConditionVersion(params, cb) : saveCondition(params, cb);
+        const conditionContentIds = conditions.map((condition) => condition.contentId);
+        handleUpdateComponentCondition(conditionContentIds.concat([timeConditionContentEntity.id]));
+      };
+
+      // save or update version
+      timeConditionsContent.current ? saveConditionVersion(params, cb) : saveCondition(params, cb);
+    }
   };
 
   return (
@@ -247,9 +352,11 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
       title={global.condition}
       onClose={() => closeDrawer(false)}
       actions={
-        <Button type="primary" onClick={handleApply}>
-          {global.apply}
-        </Button>
+        !readOnly && (
+          <Button type="primary" onClick={handleApply}>
+            {global.apply}
+          </Button>
+        )
       }>
       <Group>
         <Title>{condition.general}</Title>
@@ -260,6 +367,7 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
             showSearch
             optionLabelProp="label"
             placeholder={condition.timezoneSelect}
+            disabled={readOnly}
             value={defaultTimezone}
             onChange={handleSelectTimezone}
             style={{ width: 200, marginRight: 10, marginBottom: 8 }}>
@@ -278,9 +386,10 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
             style={{ marginBottom: 8 }}
             value={
               showStartTime && showEndTime
-                ? [moment(showStartTime, dateFormat), moment(showEndTime, dateFormat)]
+                ? [dayjs(showStartTime, dateFormat), dayjs(showEndTime, dateFormat)]
                 : undefined
             }
+            disabled={readOnly}
             onChange={handleChangeTime}
           />
         </Field>
@@ -291,7 +400,8 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
             checkedChildren={condition.show}
             unCheckedChildren={condition.hide}
             checked={display}
-            onChange={(value) => setDisplay(value)}
+            onChange={handleChangeDisplay}
+            disabled={readOnly}
           />
         </Field>
       </Group>
@@ -302,9 +412,8 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
           <Label>{global.terms} </Label>
           <ConditionList
             conditions={conditions}
-            updateComponentCondition={(conditions) => {
-              setConditions(conditions);
-            }}
+            updateComponentCondition={handleUpdateComponentConditionList}
+            disable={readOnly}
           />
         </Field>
       </Group>

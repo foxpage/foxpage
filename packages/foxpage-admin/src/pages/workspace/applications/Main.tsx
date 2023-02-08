@@ -17,7 +17,6 @@ const PAGE_NUM = 1;
 const PAGE_SIZE = 999;
 
 const mapStateToProps = (state: RootState) => ({
-  organizationId: state.system.user.organizationId,
   pageInfo: state.workspace.applications.list.pageInfo,
   drawerVisible: state.workspace.applications.list.editDrawerVisible,
   editApp: state.workspace.applications.list.editApp,
@@ -42,13 +41,11 @@ type IProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 function Application(props: IProps) {
   const {
-    organizationId,
     pageInfo,
     editApp,
     authDrawerVisible,
     authLoading,
     authList,
-    userList,
     fetchList,
     openDrawer,
     openAuthDrawer,
@@ -62,7 +59,7 @@ function Application(props: IProps) {
   const [typeId, setTypeId] = useState('');
 
   // i18n
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { application, global } = locale.business;
 
   useEffect(() => {
@@ -142,8 +139,8 @@ function Application(props: IProps) {
         visible={authDrawerVisible}
         loading={authLoading}
         list={authList}
-        users={userList}
         onClose={openAuthDrawer}
+        onSearch={fetchUserList}
         onFetch={fetchAuthList}
         onAdd={saveUser}
         onDelete={deleteUser}

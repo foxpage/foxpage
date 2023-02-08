@@ -1,10 +1,16 @@
 import {
   BaseResponse,
+  CheckDSLParams,
+  CheckDSLRes,
   ContentFetchParams,
   ContentPublishedRes,
   ContentPublishParams,
   ContentSavedRes,
   ContentSaveParams,
+  ContentVersionRes,
+  ContentVersionsParams,
+  LockerParams,
+  LockerResponse,
   PageContent,
 } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
@@ -70,3 +76,34 @@ export const publishTemplate = (params: ContentPublishParams) =>
       resolve(rs);
     });
   });
+
+export const checkDslBeforePublish = (params: CheckDSLParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.get('/versions/publish-check', params, (rs: CheckDSLRes) => {
+      resolve(rs);
+    });
+  });
+
+export const lockEdit = (params: LockerParams) => {
+  return new Promise((resolve) => {
+    FoxPageApi.put('/contents/lock', params, (rs: LockerResponse) => {
+      resolve(rs);
+    });
+  });
+};
+
+export const unlockEdit = (params: LockerParams) => {
+  return new Promise((resolve) => {
+    FoxPageApi.put('/contents/unlock', params, (rs: LockerResponse) => {
+      resolve(rs);
+    });
+  });
+};
+
+export const heartBeat = (params: LockerParams) => {
+  return new Promise((resolve) => {
+    FoxPageApi.put('/contents/heartbeat', params, (rs: LockerResponse) => {
+      resolve(rs);
+    });
+  });
+};

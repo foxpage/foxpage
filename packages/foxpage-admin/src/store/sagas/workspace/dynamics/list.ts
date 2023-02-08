@@ -1,4 +1,3 @@
-import { message } from 'antd';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
@@ -7,6 +6,7 @@ import * as API from '@/apis/workspace/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { DynamicActionType } from '@/reducers/workspace/dynamics/list';
 import { DynamicFetchParams } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchDynamics(action: DynamicActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -21,7 +21,7 @@ function* handleFetchDynamics(action: DynamicActionType) {
       global: { searchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || searchFailed);
+   errorToast(res, searchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));

@@ -12,6 +12,7 @@ let params = {
   applicationId: Data.app.id,
   name: '@foxpage/component-name',
   type: 'component',
+  componentType: '',
 };
 
 beforeEach(() => {
@@ -23,6 +24,7 @@ beforeEach(() => {
     applicationId: Data.app.id,
     name: '@foxpage/component-name',
     type: 'component',
+    componentType: '',
   };
 });
 

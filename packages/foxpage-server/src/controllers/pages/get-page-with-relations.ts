@@ -6,6 +6,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
 import { DSL_VERSION, METHOD } from '../../../config/constant';
+import metric from '../../third-parties/metric';
 import { PageContentRelationsAndExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
@@ -33,7 +34,7 @@ export class GetAppPageLiveInfoList extends BaseController {
     operationId: 'get-page-live-version-info-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index (
+  async index(
     @Ctx() ctx: FoxCtx,
     @Body() params: AppContentVersionReq,
   ): Promise<ResData<PageContentRelationsAndExternal[]>> {
@@ -51,19 +52,25 @@ export class GetAppPageLiveInfoList extends BaseController {
       }
 
       // Get the live details of the specified contentIds and the relation details
-      const contentVersionList = await this.service.version.live.getContentAndRelationVersion(validContentIds);
+      metric.time('content-relation');
+      const contentVersionList = await this.service.version.live.getContentAndRelationVersion(
+        validContentIds,
+      );
+      metric.block('getContentAndRelationVersion', 'content-relation');
 
       let templateIds: string[] = [];
-      contentVersionList.forEach(version => {
+      contentVersionList.forEach((version) => {
         if (version.relations && version.relations.templates && version.relations.templates[0]) {
           templateIds.push(version.relations.templates[0].id);
         }
       });
 
+      metric.time('content-version');
       const [contentMockObject, contentList] = await Promise.all([
         this.service.content.mock.getMockLiveVersions(_.concat(validContentIds, templateIds)),
         this.service.content.list.getDetailByIds(validContentIds),
       ]);
+      metric.block('getContentAndVersion', 'content-version');
 
       let dependMissing: string[] = [];
       let recursiveItem: string[] = [];
@@ -71,9 +78,8 @@ export class GetAppPageLiveInfoList extends BaseController {
       const contentObject = _.keyBy(contentList, 'id');
 
       contentVersionList.forEach((content) => {
-        const dependMissing: string[] = [];
         if (content.dependMissing && content.dependMissing.length > 0) {
-          dependMissing.concat(content.dependMissing);
+          dependMissing = dependMissing.concat(content.dependMissing);
         }
         if (content.recursiveItem) {
           recursiveItem.push(content.recursiveItem);
@@ -83,19 +89,16 @@ export class GetAppPageLiveInfoList extends BaseController {
           content.relations.templates[0] = _.merge(
             {},
             content.relations.templates[0],
-            contentMockObject[content.relations.templates[0].id] || {}
+            contentMockObject[content.relations.templates[0].id] || {},
           );
         }
 
         const mockRelations = contentMockObject[content.id]?.relations || {};
         content.relations = this.service.version.relation.moveMockRelations(content.relations, mockRelations);
 
-        contentAndRelation.push(Object.assign(
-          {},
-          _.pick(content, ['relations']),
-          {
-            content: Object.assign(
-              {}, content.content, {
+        contentAndRelation.push(
+          Object.assign({}, _.pick(content, ['relations']), {
+            content: Object.assign({}, content.content, {
               dslVersion: content.dslVersion || DSL_VERSION,
               name: contentObject[content?.content?.id]?.title || '',
               version: <string>content.version,
@@ -104,8 +107,8 @@ export class GetAppPageLiveInfoList extends BaseController {
               extension: contentMockObject[content.id]?.extension || {},
             }),
             mock: contentMockObject[content.id]?.mock || {},
-          }
-        ));
+          }),
+        );
       });
 
       if (dependMissing.length > 0) {
@@ -115,6 +118,9 @@ export class GetAppPageLiveInfoList extends BaseController {
       if (recursiveItem.length > 0) {
         return Response.error(new Error(recursiveItem.join(',')), i18n.page.pageHasRecursiveDepend, 3050902);
       }
+
+      // send metric
+      contentAndRelation.length === 0 && metric.empty(ctx.request.url, params.applicationId);
 
       return Response.success(contentAndRelation, 1050901);
     } catch (err) {

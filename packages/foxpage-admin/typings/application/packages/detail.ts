@@ -1,3 +1,4 @@
+import { ComponentType } from '@/constants/index';
 import {
   BaseResponse,
   CommonFetchParams,
@@ -7,9 +8,9 @@ import {
   ComponentsVersionSaveParams,
   ComponentsVersionUpdateParams,
   ComponentVersionEntityResource,
+  PaginationReqParams,
   RemoteResource,
 } from '@/types/index';
-import { ComponentType } from '@/constants/index';
 
 // type api
 export type AppComponentDetailFetchComponentInfoParams = Pick<CommonFetchParams, 'applicationId' | 'id'>;
@@ -80,4 +81,9 @@ export interface RemoteComponentItem {
 export interface EditorBatchPublishParams {
   applicationId: string;
   idVersions: { id: string; version?: string }[];
+}
+
+export interface ComponentUsedFetchParams extends PaginationReqParams {
+  applicationId: string;
+  name: string;
 }

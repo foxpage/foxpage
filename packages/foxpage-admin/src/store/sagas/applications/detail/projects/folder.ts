@@ -15,19 +15,17 @@ import {
   AuthorizeAddParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
+  AuthorizeQueryParams,
   AuthorizeUserFetchParams,
   ProjectListFetchParams,
   ProjectSaveParams,
 } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/empty-check';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchApp(action: ApplicationProjectsListActionType) {
   const { params } = action.payload as { params: ApplicationListFetchParams };
-  const { organizationId } = store.getState().system.user;
-  const res = yield call(APPLICATION_API.fetchList, {
-    ...params,
-    organizationId,
-  });
+  const res = yield call(APPLICATION_API.fetchList, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushApps(res.data || []));
@@ -36,30 +34,22 @@ function* handleFetchApp(action: ApplicationProjectsListActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
 function* handleFetchList(action: ApplicationProjectsListActionType) {
   yield put(ACTIONS.updateLoading(true));
 
-  const {
-    organizationId,
-    applicationId,
-    page = 1,
-    searchText,
-    searchType,
-    size = 10,
-  } = action.payload as ProjectListFetchParams;
+  const { organizationId, applicationId, page = 1, size = 10 } = action.payload as ProjectListFetchParams;
 
   if (applicationId) {
     const params: ProjectListFetchParams = {
       organizationId,
       applicationId,
+      searchType: 'project',
       page,
       size,
-      search: searchText || '',
-      searchType,
     };
     const res = yield call(API.fetchProjects, params);
 
@@ -70,7 +60,7 @@ function* handleFetchList(action: ApplicationProjectsListActionType) {
         global: { fetchListFailed },
       } = getBusinessI18n();
 
-      message.error(res.msg || fetchListFailed);
+      errorToast(res, fetchListFailed);
     }
   }
 
@@ -99,10 +89,10 @@ function* handleSave(action: ApplicationProjectsListActionType) {
     if (typeof cb === 'function') cb();
   } else {
     const {
-      global: { fetchListFailed },
+      global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, res?.msg || saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -129,7 +119,7 @@ function* handleDelete(action: ApplicationProjectsListActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -146,24 +136,26 @@ function* handleFetchAuthList(action: ApplicationProjectsListActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateAuthListLoading(false));
 }
 
 function* handleFetchAuthUserList(action: ApplicationProjectsListActionType) {
-  const { params } = action.payload as { params: AuthorizeUserFetchParams };
+  const { params, cb } = action.payload as { params: AuthorizeUserFetchParams; cb?: (userList) => void };
   const res = yield call(AUTH_API.authorizeUserFetch, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushUserList(res.data || []));
+
+    if (typeof cb === 'function') cb(res.data);
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -178,7 +170,7 @@ function* handleSaveAuth(action: ApplicationProjectsListActionType) {
       global: { addFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || addFailed);
+    errorToast(res, addFailed);
   }
 }
 
@@ -195,7 +187,22 @@ function* handleDeleteAuth(action: ApplicationProjectsListActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
+  }
+}
+
+function* handleQueryMask(action: ApplicationProjectsListActionType) {
+  const { params } = action.payload as { params: AuthorizeQueryParams };
+  const res = yield call(AUTH_API.authorizeCheck, params);
+
+  if (res.code === 200) {
+    yield put(ACTIONS.pushMask(res.data?.mask || 0));
+  } else {
+    const {
+      global: { searchFailed },
+    } = getBusinessI18n();
+
+    errorToast(res, searchFailed);
   }
 }
 
@@ -208,6 +215,7 @@ function* watch() {
   yield takeLatest(getType(ACTIONS.fetchUserList), handleFetchAuthUserList);
   yield takeLatest(getType(ACTIONS.saveAuthUser), handleSaveAuth);
   yield takeLatest(getType(ACTIONS.deleteAuthUser), handleDeleteAuth);
+  yield takeLatest(getType(ACTIONS.queryMask), handleQueryMask);
 }
 
 export default function* rootSaga() {

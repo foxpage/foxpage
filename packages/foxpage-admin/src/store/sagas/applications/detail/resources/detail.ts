@@ -17,6 +17,7 @@ import {
   AppResourcesDetailsUpdateFolderParams,
   OptionsAction,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* addResourceFile(action: ApplicationResourceDetailActionType) {
   const { params, options } = action.payload as {
@@ -24,7 +25,7 @@ function* addResourceFile(action: ApplicationResourceDetailActionType) {
     options?: OptionsAction;
   };
   const { applicationId, curFolderId, filepath } = params || {};
-  const rs = yield call(API.postResourcesContents, {
+  const res = yield call(API.postResourcesContents, {
     applicationId,
     folderId: curFolderId,
     content: {
@@ -36,7 +37,7 @@ function* addResourceFile(action: ApplicationResourceDetailActionType) {
     global: { saveSuccess, saveFailed },
   } = getBusinessI18n();
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     message.success(saveSuccess);
 
     yield put(ACTIONS.fetchResourcesList({ applicationId }));
@@ -44,7 +45,7 @@ function* addResourceFile(action: ApplicationResourceDetailActionType) {
     const { onSuccess } = options || {};
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-    message.error(rs.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 
@@ -74,7 +75,7 @@ function* updateResourceFile(action: ApplicationResourceDetailActionType) {
     const { onSuccess } = options || {};
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-    message.error(res.msg || updateFailed);
+    errorToast(res, updateFailed);
   }
 }
 
@@ -102,7 +103,7 @@ function* addResourceFolder(action: ApplicationResourceDetailActionType) {
     const { onSuccess } = options || {};
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 
@@ -130,7 +131,7 @@ function* updateResourceFolder(action: ApplicationResourceDetailActionType) {
     const { onSuccess } = options || {};
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-    message.error(res.msg || updateFailed);
+    errorToast(res, updateFailed);
   }
 }
 
@@ -155,7 +156,7 @@ function* removeResources(action: ApplicationResourceDetailActionType) {
 
     yield put(ACTIONS.fetchResourcesList({ applicationId: params.applicationId }));
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -170,10 +171,8 @@ function* fetchResourceData(action: ApplicationResourceDetailActionType) {
     params: AppResourcesDetailsFetchResourcesListParams;
   };
   const { applicationId, folderPath } = params;
-  const {
-    applicationId: _applicationId,
-    folderPath: _folderPath,
-  } = store.getState().applications.detail.resources.detail;
+  const { applicationId: _applicationId, folderPath: _folderPath } =
+    store.getState().applications.detail.resources.detail;
   const res = yield call(API.getResourcesByPaths, {
     applicationId: applicationId || _applicationId,
     path: folderPath || _folderPath,
@@ -211,7 +210,7 @@ function* fetchResourceData(action: ApplicationResourceDetailActionType) {
       global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 
@@ -233,7 +232,7 @@ function* fetchGroupInfo(action: ApplicationResourceDetailActionType) {
       global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 

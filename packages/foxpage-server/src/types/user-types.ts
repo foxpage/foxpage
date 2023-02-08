@@ -10,6 +10,7 @@ export type RegisterParams = LoginParams & {
   registerType: number;
   nickName?: string;
   changePwdStatus?: boolean;
+  defaultOrganizationId?: string;
 }; // 系统注册参数
 export type RegisterServiceRes = ServiceRes & { data?: Partial<User> };
 

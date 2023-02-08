@@ -1,6 +1,7 @@
 import { ContentVersion, File } from '@foxpage/foxpage-server-types';
 
 import { SaveRemoteComponents } from '../../../../src/controllers/components/batch-save-components';
+import { AuthService } from '../../../../src/services/authorization-service';
 import { ContentInfoService } from '../../../../src/services/content-services/content-info-service';
 import { ContentListService } from '../../../../src/services/content-services/content-list-service';
 import { FileInfoService } from '../../../../src/services/file-services/file-info-service';
@@ -30,12 +31,14 @@ beforeEach(() => {
 
 describe('Get: /components/remote', () => {
   it('response success', async () => {
+    jest.spyOn(AuthService.prototype, 'application').mockResolvedValue(true);
     jest.spyOn(ContentListService.prototype, 'getContentObjectByFileIds').mockResolvedValue({});
     jest.spyOn(ResourceService.prototype, 'checkRemoteResourceExist').mockResolvedValue({ code: 0 });
     jest.spyOn(ResourceService.prototype, 'saveResources').mockReturnValueOnce({});
     jest.spyOn(ContentInfoService.prototype, 'create').mockReturnValueOnce(<any>{});
     jest.spyOn(VersionInfoService.prototype, 'find').mockResolvedValue([]);
     jest.spyOn(VersionInfoService.prototype, 'create').mockReturnValueOnce(<any>{});
+    jest.spyOn(FileInfoService.prototype, 'create').mockReturnValueOnce(<File>Data.file.list[0]);
     jest.spyOn(FileInfoService.prototype, 'getDetailById').mockResolvedValue(<File>Data.file.list[0]);
     jest.spyOn(FileInfoService.prototype, 'updateDetailQuery').mockReturnValueOnce(<File>Data.file.list[0]);
     jest.spyOn(FileInfoService.prototype, 'runTransaction').mockResolvedValue();
@@ -46,12 +49,14 @@ describe('Get: /components/remote', () => {
   });
 
   it('response success with replace exist data', async () => {
+    jest.spyOn(AuthService.prototype, 'application').mockResolvedValue(true);
     jest.spyOn(ContentListService.prototype, 'getContentObjectByFileIds').mockResolvedValue({});
     jest.spyOn(ResourceService.prototype, 'checkRemoteResourceExist').mockResolvedValue({ code: 1 });
     jest.spyOn(ResourceService.prototype, 'saveResources').mockReturnValueOnce({});
     jest.spyOn(ContentInfoService.prototype, 'create').mockReturnValueOnce(<any>{});
     jest.spyOn(VersionInfoService.prototype, 'find').mockResolvedValue([]);
     jest.spyOn(VersionInfoService.prototype, 'create').mockReturnValueOnce(<any>{});
+    jest.spyOn(FileInfoService.prototype, 'create').mockReturnValueOnce(<File>Data.file.list[0]);
     jest.spyOn(FileInfoService.prototype, 'getDetailById').mockResolvedValue(<File>Data.file.list[0]);
     jest.spyOn(FileInfoService.prototype, 'updateDetailQuery').mockReturnValueOnce(<File>Data.file.list[0]);
     jest.spyOn(FileInfoService.prototype, 'runTransaction').mockResolvedValue();
@@ -62,11 +67,13 @@ describe('Get: /components/remote', () => {
   });
 
   it('response version exist', async () => {
+    jest.spyOn(AuthService.prototype, 'application').mockResolvedValue(true);
     jest.spyOn(ContentListService.prototype, 'getContentObjectByFileIds').mockResolvedValue({});
     jest.spyOn(ResourceService.prototype, 'checkRemoteResourceExist').mockResolvedValue({ code: 1 });
     jest.spyOn(ResourceService.prototype, 'saveResources').mockReturnValueOnce({});
     jest.spyOn(ContentInfoService.prototype, 'create').mockReturnValueOnce(<any>{});
     jest.spyOn(VersionInfoService.prototype, 'find').mockResolvedValue(<ContentVersion[]>Data.version.list);
+    jest.spyOn(FileInfoService.prototype, 'create').mockReturnValueOnce(<File>Data.file.list[0]);
 
     const result = await comInstance.index(<FoxCtx>ctx, params);
 
@@ -74,6 +81,7 @@ describe('Get: /components/remote', () => {
   });
 
   it('response error', async () => {
+    jest.spyOn(AuthService.prototype, 'application').mockResolvedValue(true);
     jest
       .spyOn(ContentListService.prototype, 'getContentObjectByFileIds')
       .mockRejectedValue(new Error('mock error'));

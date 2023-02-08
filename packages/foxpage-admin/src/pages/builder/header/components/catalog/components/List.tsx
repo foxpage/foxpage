@@ -1,9 +1,10 @@
 import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 import { CaretDownOutlined, FolderOpenOutlined, FolderOutlined } from '@ant-design/icons';
 import { Popover, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
+import { RootState } from 'typesafe-actions';
 
 import { BasicTemRing, LocaleTag, Ring, VLine } from '@/components/index';
 import { suffixTagColor } from '@/constants/file';
@@ -24,6 +25,13 @@ const MenuTitle = styled.a`
   }
 `;
 
+const MenuTitleDisplay = styled.span`
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: #5b6b73;
+`;
+
 const MenuTitleText = styled.span`
   display: inline-block;
   max-width: 280px;
@@ -35,12 +43,24 @@ const MenuTitleText = styled.span`
 const Menu = styled.ul`
   width: 320px;
   max-height: 400px;
-  overflow: auto;
   margin: 0;
   padding: 8px;
   list-style: none;
   background: #ffffff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  overflow: auto;
+  ::-webkit-scrollbar-track {
+    background-color: #f5f5f5;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.15);
+    background-color: #dbdbdb;
+    border-radius: 8px;
+  }
 `;
 
 const MenuItem = styled.li`
@@ -89,7 +109,7 @@ const ContentName = styled.div`
   display: inline-block;
   margin-right: 12px;
   padding-left: 18px;
-  width: 150px;
+  width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -104,12 +124,19 @@ interface CatalogList {
   folderId: string;
   contentList: CatalogFileEntity[];
   locale: string;
+  readOnly?: boolean;
   selectContent: (param: CatalogContentSelectParams) => void;
   selectFoldStatus: (id: string, fold: boolean) => void;
   setLocale: (locale: string) => void;
 }
 
-const Main: React.FC<CatalogList> = (props) => {
+const mapStateToProps = (store: RootState) => ({
+  editStatus: store.builder.main.editStatus && !!store.record.main.localRecords.length,
+});
+
+const mapDispatchToProps = {};
+
+const Main: React.FC<CatalogList & ReturnType<typeof mapStateToProps>> = (props) => {
   const {
     root,
     applicationId,
@@ -121,6 +148,8 @@ const Main: React.FC<CatalogList> = (props) => {
     selectContent,
     selectFoldStatus,
     setLocale,
+    editStatus,
+    readOnly = false,
   } = props;
   const [visible, setVisible] = useState(false);
   const [folderOpen, setFolderOpen] = useState<boolean>(true);
@@ -210,6 +239,16 @@ const Main: React.FC<CatalogList> = (props) => {
     transform: 'scale(0.8)',
   };
 
+  const beforeLeave = (e: React.MouseEvent) => {
+    if (editStatus) {
+      const leave = confirm(i18n.business.builder.leaveWithoutSave);
+      if (!leave) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+  };
+
   const menu = (
     <Menu id={CONTENT_LIST}>
       <MenuItem
@@ -230,7 +269,9 @@ const Main: React.FC<CatalogList> = (props) => {
               className={item.contents && item.contents.length > 0 ? '' : 'disabled'}
               onClick={() => handleSecondFolderClick(item)}>
               <CaretDownOutlined rotate={!item.fold ? 0 : 270} style={iconStyle} />
-              <Tag style={{ transform: 'scale(0.8)', minWidth: '38px', textAlign: 'center' }} color={suffixTagColor[item.type]}>
+              <Tag
+                style={{ transform: 'scale(0.8)', minWidth: '38px', textAlign: 'center' }}
+                color={suffixTagColor[item.type]}>
                 {i18n.business.file[item.type]}
               </Tag>
               <MenuTitleText style={{ maxWidth: 190 }}>
@@ -252,7 +293,6 @@ const Main: React.FC<CatalogList> = (props) => {
                       id={id}
                       key={id}
                       className={isSelected ? 'active' : ''}
-                      style={{ paddingLeft: 34, paddingRight: 4 }}
                       onClick={() => {
                         if (!isSelected) {
                           const localeTags = tags.filter((item) => item.locale);
@@ -265,12 +305,12 @@ const Main: React.FC<CatalogList> = (props) => {
                             fileType: item.type,
                           });
                         }
-                      }}>
-                      <Link
-                        to={{
-                          pathname: '/builder',
-                          search: `?applicationId=${applicationId}&folderId=${folderId}&fileId=${item.id}&contentId=${subItem.id}`,
-                        }}>
+                      }}
+                      style={{ padding: 0 }}>
+                      <a
+                        href={`#/builder?applicationId=${applicationId}&folderId=${folderId}&fileId=${item.id}&contentId=${subItem.id}`}
+                        onClick={beforeLeave}
+                        style={{ display: 'block', padding: '8px 4px 8px 50px' }}>
                         <MenuItemSlot>
                           {isBase && <BasicTemRing style={{ left: 34 }} />}
                           {isInherited && (
@@ -305,7 +345,7 @@ const Main: React.FC<CatalogList> = (props) => {
                             <></>
                           )}
                         </MenuItemSlot>
-                      </Link>
+                      </a>
                     </MenuItem>
                   );
                 })}
@@ -318,7 +358,7 @@ const Main: React.FC<CatalogList> = (props) => {
 
   const localeMenu = useMemo(
     () => (
-      <Menu style={{ width: 76, padding: 0 }}>
+      <Menu style={{ width: 100, padding: 0 }}>
         {currentContent &&
           currentContent.tags
             .filter((localeItem) => localeItem.locale)
@@ -326,9 +366,9 @@ const Main: React.FC<CatalogList> = (props) => {
               const locale: string = item.locale as string;
 
               return (
-                <React.Fragment key={locale}>
-                  <MenuItem onClick={() => setLocale(locale)}>{locale}</MenuItem>
-                </React.Fragment>
+                <MenuItem key={locale} onClick={() => setLocale(locale)}>
+                  {locale}
+                </MenuItem>
               );
             })}
       </Menu>
@@ -338,19 +378,26 @@ const Main: React.FC<CatalogList> = (props) => {
 
   return (
     <>
-      <Popover
-        zIndex={99}
-        placement="bottomLeft"
-        overlayClassName="foxpage-builder-header_popover foxpage-builder-header_content_popover"
-        trigger={['hover']}
-        content={menu}
-        getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
-        onVisibleChange={handlePopoverShow}>
-        <MenuTitle>
+      {readOnly ? (
+        <MenuTitleDisplay>
           <MenuTitleText>{currentContent?.title || ''}</MenuTitleText>
-          <CaretDownOutlined style={{ fontSize: 8, marginLeft: 4 }} />
-        </MenuTitle>
-      </Popover>
+        </MenuTitleDisplay>
+      ) : (
+        <Popover
+          zIndex={99}
+          placement="bottomLeft"
+          overlayClassName="foxpage-builder-header_popover foxpage-builder-header_content_popover"
+          trigger={['hover']}
+          content={menu}
+          getPopupContainer={(triggerNode) => triggerNode.parentNode as HTMLElement}
+          onOpenChange={handlePopoverShow}>
+          <MenuTitle>
+            <MenuTitleText>{currentContent?.title || ''}</MenuTitleText>
+            <CaretDownOutlined style={{ fontSize: 8, marginLeft: 4 }} />
+          </MenuTitle>
+        </Popover>
+      )}
+
       {locale && (
         <Popover
           zIndex={99}
@@ -369,4 +416,4 @@ const Main: React.FC<CatalogList> = (props) => {
   );
 };
 
-export default Main;
+export default connect(mapStateToProps, mapDispatchToProps)(Main);

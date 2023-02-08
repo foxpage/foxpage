@@ -13,8 +13,9 @@ import {
   Tag,
 } from '@foxpage/foxpage-server-types';
 
-import { Creator, Search } from './index-types';
 import { AppFileType } from './file-types';
+import { Creator, Search } from './index-types';
+import { UserBase } from './user-types';
 
 export type SearchContentExist = Pick<Content, 'title' | 'fileId'>;
 export type ContentInfo = Exclude<Content, 'creator'> & {
@@ -22,6 +23,7 @@ export type ContentInfo = Exclude<Content, 'creator'> & {
   creator: Creator | string;
   isBase?: boolean;
   extendId?: string;
+  changed?: boolean;
 };
 export type ContentVersionInfo = Exclude<ContentVersion, 'creator'> & { creator: Creator };
 export type ContentVersionNumber = Pick<ContentVersion, 'contentId' | 'versionNumber'>;
@@ -119,6 +121,7 @@ export interface UpdateContentVersion {
   id: string;
   content: DSL | ComponentDSL;
   version: string;
+  contentUpdateTime?: string;
 }
 
 export interface RelationAssocContent {
@@ -207,8 +210,7 @@ export interface FileContentAndVersion {
 
 export interface VersionCheckResult {
   code: number;
-  data: DSL;
-  msg?: string;
+  data: any[];
 }
 
 export interface VersionWithExternal extends DSL {
@@ -217,4 +219,10 @@ export interface VersionWithExternal extends DSL {
   fileId?: string;
   mocks?: Record<string, DSL>;
   extension?: Record<string, string>;
+}
+
+export interface LockContentDetail {
+  status: boolean;
+  operationTime: number;
+  operator: UserBase;
 }

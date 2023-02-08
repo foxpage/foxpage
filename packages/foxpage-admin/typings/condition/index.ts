@@ -67,6 +67,8 @@ export interface ConditionSaveParams
   };
   id?: string;
   type?: string;
+  subType?: string;
+  pageContentId?: string;
 }
 
 // ConditionNewRes
@@ -81,7 +83,9 @@ export interface ConditionUpdateRes extends ResponseBody {
   data: ConditionEntity[];
 }
 
-export type ConditionDeleteParams = CommonDeleteParams;
+export type ConditionDeleteParams = CommonDeleteParams & {
+  condition?: ConditionEntity;
+};
 
 export interface ConditionDeleteRes extends ResponseBody {
   // ConditionDeleteDataItem

@@ -46,7 +46,7 @@ export class UserLogin extends BaseController {
       };
 
       // Check the validity of login information
-      const loginStatus = await this.service.user.checkLogin(userLoginInfo, { ctx });
+      const loginStatus = await this.service.user.checkLogin(userLoginInfo);
 
       // Login failed
       if (!loginStatus) {
@@ -71,7 +71,7 @@ export class UserLogin extends BaseController {
       return Response.success(
         {
           userInfo: Object.assign(
-            { organizationId: userOrgInfo?.id || '' },
+            { organizationId: userInfo.defaultOrganizationId || userOrgInfo?.id || '' },
             _.pick(userInfo, ['id', 'account', 'email', 'nickName', 'changePwdStatus']),
           ),
           token,

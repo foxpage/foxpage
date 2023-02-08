@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getImageUrlByEnv } from '@/utils/image-url-env';
+import { getImageUrlByEnv } from '@/utils/image-url';
 
 const Logo = () => {
   return (

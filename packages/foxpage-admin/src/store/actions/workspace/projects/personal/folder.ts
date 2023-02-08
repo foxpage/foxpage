@@ -12,6 +12,7 @@ import {
   ProjectEntity,
   ProjectListFetchParams,
   ProjectSaveParams,
+  ProjectSearchResult,
   User,
 } from '@/types/index';
 
@@ -39,7 +40,7 @@ export const fetchProjectList = createAction(
 
 export const pushProjectList = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_FOLDER__PUSH_PROJECT_LIST',
-  (projectList: ProjectEntity[], pageInfo: PaginationInfo) => ({ projectList, pageInfo }),
+  (result: ProjectSearchResult | ProjectEntity[], pageInfo: PaginationInfo) => ({ result, pageInfo }),
 )();
 
 // add/edit related

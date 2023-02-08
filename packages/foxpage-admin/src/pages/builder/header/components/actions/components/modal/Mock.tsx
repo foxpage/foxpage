@@ -8,10 +8,10 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
 import * as PAGE_ACTIONS from '@/actions/builder/main';
-import { JSONEditor } from '@/components/index';
+import { JSONCodeEditor } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
-import { MockContent } from '@/types/builder';
 import { wrapperMock } from '@/sagas/builder/utils';
+import { MockContent } from '@/types/builder';
 
 const Modal = styled(AntModal)`
   .ant-modal-content {
@@ -30,7 +30,7 @@ const mapStateToProps = (store: RootState) => ({
   contentId: store.builder.header.contentId,
   visible: store.builder.header.mockModalVisible,
   loading: store.builder.header.mockLoading,
-  editStatus: store.builder.main.editStatus,
+  editStatus: store.builder.main.editStatus && !!store.record.main.localRecords.length,
   file: store.builder.main.file,
   mock: store.builder.main.mock,
 });
@@ -183,15 +183,11 @@ const Mock: React.FC<MockProps> = (props) => {
       title={language.title}
       destroyOnClose
       width={1048}
-      visible={visible}
+      open={visible}
       footer={footer}
       onCancel={handleClose}
       style={{ height: '70%' }}>
-      {loading ? (
-        <Spin spinning={loading} />
-      ) : (
-        <JSONEditor jsonData={jsonData} refreshFlag={jsonData} readOnly options={{ mode: 'code' }} />
-      )}
+      {loading ? <Spin spinning={loading} /> : <JSONCodeEditor value={jsonData} readOnly />}
     </Modal>
   );
 };

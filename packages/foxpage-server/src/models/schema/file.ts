@@ -12,19 +12,20 @@ const fileSchema = new Schema<File>(
     tags: { type: Array, default: [] },
     folderId: { type: String, maxLength: 20, ref: 'fp_application_folder' },
     type: { type: String, maxLength: 50, required: true },
+    subType: { type: String, maxLength: 50, default: '' },
     componentType: { type: String, maxLength: 50 },
     suffix: { type: String, maxLength: 50, default: '' },
-    creator: { type: String, required: true, length: 20 },
+    creator: { type: String, length: 20, required: true },
     createTime: { type: Date, default: Date.now, required: true },
     updateTime: { type: Date, default: Date.now, required: true },
-    deleted: { type: Boolean, required: true, default: false },
+    deleted: { type: Boolean, default: false, required: true },
   },
   {
     versionKey: false,
   },
 );
 
-fileSchema.pre('save', function(next) {
+fileSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {

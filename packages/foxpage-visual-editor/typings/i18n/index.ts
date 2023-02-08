@@ -127,6 +127,7 @@ export interface FoxI18n {
   componentDescTip: string;
   structureTitle: string;
   editorTitle: string;
+  editorRenderError: string;
   page: string;
   zoom: string;
   pc: string;
@@ -145,4 +146,9 @@ export interface FoxI18n {
   inheritNode: string;
   usingCondition: string;
   usingVariable: string;
+  selectTemplateTips: string;
+  reRendering: string;
+  labelSupportFollowingChars: string;
+  isLive: string;
+  versionTips: string;
 }

@@ -1,22 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 import { Input } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/pages/list';
-import { AuthorizeDrawer, FileScopeSelector, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
+import { FileScopeSelector, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
-
-import { FileEditDrawer } from '../../components';
+import { getLocationIfo } from '@/utils/location-info';
 
 import { List } from './components/index';
 
 const { Search } = Input;
 
 const PAGE_NUM = 1;
-const PAGE_SIZE = 999;
 
 const OptionsBox = styled.div`
   display: flex;
@@ -27,60 +26,26 @@ const OptionsBox = styled.div`
 const mapStateToProps = (store: RootState) => ({
   applicationId: store.applications.detail.settings.app.applicationId,
   loading: store.applications.detail.file.pages.list.loading,
-  saveLoading: store.applications.detail.file.pages.list.saveLoading,
   list: store.applications.detail.file.pages.list.list,
   pageInfo: store.applications.detail.file.pages.list.pageInfo,
-  drawerOpen: store.applications.detail.file.pages.list.drawerOpen,
-  editFile: store.applications.detail.file.pages.list.editFile,
-  authDrawerOpen: store.applications.detail.file.pages.list.authListDrawerVisible,
-  authLoading: store.applications.detail.file.pages.list.authListLoading,
-  authList: store.applications.detail.file.pages.list.authList,
-  userList: store.applications.detail.file.pages.list.userList,
 });
 
 const mapDispatchToProps = {
   clearAll: ACTIONS.clearAll,
   fetchPageList: ACTIONS.fetchApplicationPages,
-  deleteFile: ACTIONS.deleteFile,
-  openDrawer: ACTIONS.openEditDrawer,
-  saveFile: ACTIONS.saveFile,
-  updateEditFile: ACTIONS.updateEditFileValue,
-  openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
-  fetchAuthList: ACTIONS.fetchAuthList,
-  deleteUser: ACTIONS.deleteAuthUser,
-  saveUser: ACTIONS.saveAuthUser,
-  fetchUserList: ACTIONS.fetchUserList,
 };
 
 type PageListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Main: React.FC<PageListType> = (props) => {
-  const {
-    applicationId,
-    loading,
-    list,
-    pageInfo,
-    drawerOpen,
-    saveLoading,
-    editFile,
-    authDrawerOpen,
-    authLoading,
-    authList,
-    userList,
-    fetchPageList,
-    clearAll,
-    deleteFile,
-    openDrawer,
-    saveFile,
-    updateEditFile,
-    openAuthDrawer,
-    fetchAuthList,
-    deleteUser,
-    saveUser,
-    fetchUserList,
-  } = props;
+  const { applicationId, loading, list, pageInfo, fetchPageList, clearAll } = props;
   const [pageNum, setPageNum] = useState<number>(pageInfo.page);
-  const [search, setSearch] = useState<string | undefined>();
+
+  // url search params
+  const history = useHistory();
+  const { page: searchPage, searchText } = getLocationIfo(history.location);
+
+  const [search, setSearch] = useState<string | undefined>(searchText);
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -93,13 +58,12 @@ const Main: React.FC<PageListType> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (authDrawerOpen) {
-      fetchUserList({
-        page: PAGE_NUM,
-        size: PAGE_SIZE,
-      });
-    }
-  }, [authDrawerOpen]);
+    setPageNum(searchPage || PAGE_NUM);
+  }, [searchPage]);
+
+  useEffect(() => {
+    setSearch(searchText || '');
+  }, [searchText]);
 
   useEffect(() => {
     if (applicationId) {
@@ -108,9 +72,17 @@ const Main: React.FC<PageListType> = (props) => {
   }, [applicationId, pageNum, search]);
 
   const handleSearch = (search) => {
-    setPageNum(PAGE_NUM);
+    history.push({
+      pathname: history.location.pathname,
+      search: `?page=${PAGE_NUM}&searchText=${search}`,
+    });
+  };
 
-    setSearch(search);
+  const handlePaginationChange = (page) => {
+    history.push({
+      pathname: history.location.pathname,
+      search: `?page=${page}&searchText=${search || ''}`,
+    });
   };
 
   return (
@@ -121,48 +93,22 @@ const Main: React.FC<PageListType> = (props) => {
             <FileScopeSelector scope="project" disabled={['application']} />
           </div>
           <div style={{ flexGrow: 1, textAlign: 'right' }}>
-            <Search placeholder={global.inputSearchText} onSearch={handleSearch} style={{ width: 250 }} />
+            <Search
+              placeholder={global.inputSearchText}
+              defaultValue={search}
+              onSearch={handleSearch}
+              style={{ width: 250 }}
+            />
           </div>
         </OptionsBox>
         {applicationId && (
-          <>
-            <List
-              applicationId={applicationId}
-              loading={loading}
-              pageInfo={pageInfo}
-              list={list}
-              deleteFile={deleteFile}
-              onPaginationChange={(page, size) => {
-                fetchPageList({ applicationId, page, size, search });
-              }}
-              openAuthDrawer={openAuthDrawer}
-              openDrawer={openDrawer}
-            />
-            <FileEditDrawer
-              drawerOpen={drawerOpen}
-              saveLoading={saveLoading}
-              pageInfo={pageInfo}
-              editFile={editFile}
-              updateEditFile={updateEditFile}
-              saveFile={saveFile}
-              fetchFileList={fetchPageList}
-              closeDrawer={openDrawer}
-            />
-            <AuthorizeDrawer
-              needFetch
-              type="file"
-              typeId={editFile?.id}
-              applicationId={applicationId as string}
-              visible={authDrawerOpen}
-              loading={authLoading}
-              list={authList}
-              users={userList}
-              onClose={openAuthDrawer}
-              onFetch={fetchAuthList}
-              onAdd={saveUser}
-              onDelete={deleteUser}
-            />
-          </>
+          <List
+            applicationId={applicationId}
+            loading={loading}
+            pageInfo={pageInfo}
+            list={list}
+            onPaginationChange={handlePaginationChange}
+          />
         )}
       </FoxPageContent>
     </React.Fragment>

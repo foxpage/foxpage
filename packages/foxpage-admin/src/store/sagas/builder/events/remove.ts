@@ -22,7 +22,7 @@ export const removeComponents = <T extends StructureNode>(list: T[] = [], opt: R
     formatted = removeFormattedData(removes, formatted);
   }
 
-  return { formattedData: formatted, updates };
+  return { formattedData: formatted, updates, removes };
 };
 
 const removeFormattedData = (list: StructureNode[] = [], formattedData: FormattedData) => {
@@ -76,6 +76,11 @@ const initUpdatesAndRemoves = <T extends StructureNode>(list: T[], formattedData
         updates.push({ ...item, name: BLANK_NODE });
       }
     } else if (baseNode) {
+      const _originNode = formattedData.originPageNodeMap[item.id];
+      if (_originNode) {
+        // TODO: for solve node extend twice bug
+        removes.push(item);
+      }
       // new blank node
       updates.push({
         ...initNode({ name: BLANK_NODE, label: opt.label || baseNode.label } as Component),

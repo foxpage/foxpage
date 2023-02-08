@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { User, UserRegisterType } from '@foxpage/foxpage-server-types';
 
 import * as appConfig from '../../app.config';
-import { LOG, PRE } from '../../config/constant';
+import { PRE } from '../../config/constant';
 import * as Model from '../models';
 import thirdPartyLogin from '../third-parties/login';
 import { Creator, FoxCtx, Search } from '../types/index-types';
@@ -44,12 +44,7 @@ export class UserService extends BaseService<User> {
       nickName: params.nickName || '',
       registerType: params.registerType as UserRegisterType,
       deleted: false,
-      password: params.password
-        ? crypto
-            .createHash('md5')
-            .update(params.password)
-            .digest('hex')
-        : '',
+      password: params.password ? crypto.createHash('md5').update(params.password).digest('hex') : '',
     };
     options.ctx.transactions.push(Model.user.addDetailQuery(newUserParams));
     return newUserParams.id || '';
@@ -60,7 +55,7 @@ export class UserService extends BaseService<User> {
    * @param  {RegisterParams} params
    * @returns {User} Promise
    */
-  async register(params: RegisterParams, options: { ctx: FoxCtx }): Promise<Partial<User>> {
+  async register(params: RegisterParams): Promise<Partial<User>> {
     // Check if the user already exists
     const userDetail = await Model.user.getUserByAccount(params.account);
     if (userDetail && userDetail.account) {
@@ -74,21 +69,11 @@ export class UserService extends BaseService<User> {
       email: params.email,
       nickName: params.nickName || '',
       registerType: params.registerType as UserRegisterType,
-      password: params.password
-        ? crypto
-            .createHash('md5')
-            .update(params.password)
-            .digest('hex')
-        : '',
+      defaultOrganizationId: params.defaultOrganizationId || '',
+      password: params.password ? crypto.createHash('md5').update(params.password).digest('hex') : '',
     };
 
     const userData = await Model.user.addUser(newUserParams);
-
-    options.ctx.operations.push({
-      action: LOG.CREATE,
-      category: LOG.CATEGORY_APPLICATION,
-      content: { id: newUserParams.id, after: newUserParams },
-    });
 
     return _.pick(userData, ['id', 'account', 'email']);
   }
@@ -98,21 +83,18 @@ export class UserService extends BaseService<User> {
    * @param  {LoginParams} params
    * @returns {Boolean} Promise
    */
-  async checkLogin(params: LoginParams, options: { ctx: FoxCtx }): Promise<Boolean> {
+  async checkLogin(params: LoginParams): Promise<Boolean> {
     // 第三方登录
     if (appConfig.config.login) {
       // TODO Need to check whether the current user has organization information
       const userInfo: UserAccountInfo = await thirdPartyLogin.signIn(params);
       // Save current user information
-      await this.checkAndSaveUserInfo(userInfo, { ctx: options.ctx });
+      await this.checkAndSaveUserInfo(userInfo);
 
       return userInfo.account !== '';
     } else {
       const userPwd = await Model.user.getUserPwdByAccount(params.account);
-      const pwdMd5 = crypto
-        .createHash('md5')
-        .update(params.password)
-        .digest('hex');
+      const pwdMd5 = crypto.createHash('md5').update(params.password).digest('hex');
 
       // verify password
       return userPwd === pwdMd5;
@@ -125,7 +107,7 @@ export class UserService extends BaseService<User> {
    * @param  {UserAccountInfo} userInfo
    * @returns Promise
    */
-  async checkAndSaveUserInfo(userInfo: UserAccountInfo, options: { ctx: FoxCtx }): Promise<string> {
+  async checkAndSaveUserInfo(userInfo: UserAccountInfo): Promise<string> {
     let userId: string = '';
     const userDetail = await this.getUserDetailByAccount(userInfo.account);
 
@@ -137,7 +119,7 @@ export class UserService extends BaseService<User> {
         password: '',
         registerType: 2,
       };
-      const newUserInfo = await this.register(userRegister, { ctx: options.ctx });
+      const newUserInfo = await this.register(userRegister);
       userId = newUserInfo.id || '';
     } else {
       userId = userDetail.id || '';
@@ -166,7 +148,10 @@ export class UserService extends BaseService<User> {
    */
   async getUserBaseObjectByIds(userIds: string[]): Promise<Record<string, UserBase>> {
     const userList = await this.getDetailByIds(userIds);
-    return _.keyBy(_.map(userList, (user) => _.pick(user, ['id', 'account', 'email', 'nickName'])), 'id');
+    return _.keyBy(
+      _.map(userList, (user) => _.pick(user, ['id', 'account', 'email', 'nickName'])),
+      'id',
+    );
   }
 
   /**
@@ -177,7 +162,7 @@ export class UserService extends BaseService<User> {
    */
   async replaceDataUserId<
     T extends { creator: string },
-    K extends Exclude<T, 'creator'> & { creator: Creator }
+    K extends Exclude<T, 'creator'> & { creator: Creator },
   >(dataList: T[], userKey: string = 'creator'): Promise<K[]> {
     const userIds: string[] = _.map(dataList, userKey);
     if (userIds.length === 0) {
@@ -201,12 +186,16 @@ export class UserService extends BaseService<User> {
    */
   async getPageList(params: Search): Promise<{ count: number; list: Partial<User>[] }> {
     const filter: any = { deleted: params.deleted || false };
+    const { page = 1, size = 10 } = params;
     if (params.search) {
-      filter['account'] = { $regex: new RegExp(params.search, 'i') };
+      filter['$or'] = [
+        { account: { $regex: new RegExp(params.search, 'i') } },
+        { nickName: { $regex: new RegExp(params.search, 'i') } },
+      ];
     }
     const [count, list] = await Promise.all([
       Model.user.getCountDocuments(filter),
-      Model.user.getList(Object.assign({ page: params.page, size: params.size }, filter)),
+      Model.user.find(filter, '', { skip: (page - 1) * size, limit: size }),
     ]);
 
     const userList = _.map(list, (user) => _.omit(user, 'password'));

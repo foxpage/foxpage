@@ -105,21 +105,19 @@ export class VersionRelationService extends BaseService<ContentVersion> {
 
       const allRelationContentIds = _.map(allRelations.relationList, 'contentId');
       const contentList = await Service.content.info.getDetailByIds(allRelationContentIds);
-      let idAndVersion = [];
+      let versionIds: string[] = [];
 
       // get all relation build version, if not exist, get live version
       if (buildVersion) {
         const buildList = await Service.version.list.getContentMaxVersionDetail(allRelationContentIds);
-        idAndVersion = _.map(buildList, (content) => _.pick(content, ['contentId', 'versionNumber']));
+        versionIds = _.map(_.toArray(buildList), 'id');
       } else {
-        idAndVersion = _.map(contentList, (content) => {
-          return { contentId: content.id, versionNumber: content.liveVersionNumber };
-        });
+        versionIds = _.pull(_.map(contentList, 'liveVersionId') as string[], '');
       }
 
       const [fileList, versionList] = await Promise.all([
-        Service.file.info.getDetailByIds(_.map(contentList, 'fileId')) as Promise<File[]>,
-        Service.version.list.getContentByIdAndVersionNumber(idAndVersion) as Promise<ContentVersion[]>,
+        Service.file.info.getDetailByIds(_.map(contentList, 'fileId')),
+        Service.version.list.getDetailByIds(versionIds),
       ]);
       contentRelation[contentId] = { files: fileList, contents: contentList, versions: versionList };
     }
@@ -184,8 +182,10 @@ export class VersionRelationService extends BaseService<ContentVersion> {
 
     if (relationContentIds.length > 0) {
       if (liveVersion) {
-        const idVersions = await Service.content.list.getContentLiveInfoByIds(relationContentIds);
-        const relationVersionList = await Service.version.list.getContentInfoByIdAndNumber(idVersions);
+        const contentLiveIdObject = await Service.content.list.getContentLiveIds(relationContentIds);
+        const relationVersionList = await Service.version.list.getVersionListChunk(
+          _.values(contentLiveIdObject),
+        );
         relationVersionObject = _.keyBy(relationVersionList, 'contentId');
       } else {
         relationVersionObject = await Service.version.list.getContentMaxVersionDetail(relationContentIds);

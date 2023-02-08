@@ -39,7 +39,7 @@ export class GetPageComponentList extends BaseController {
     operationId: 'get-page-component-list',
   })
   @ResponseSchema(FileListRes)
-  async index (@QueryParams() params: AppComponentListReq): Promise<ResData<PageData<FileContentUserInfo>>> {
+  async index(@QueryParams() params: AppComponentListReq): Promise<ResData<PageData<FileContentUserInfo>>> {
     try {
       this.service.folder.info.setPageSize(params);
 
@@ -75,36 +75,45 @@ export class GetPageComponentList extends BaseController {
         }
       });
 
-      const [contentList, referenceList, onlineList] = await Promise.all([
+      const [contentList, referenceList, referenceFileList, onlineList] = await Promise.all([
         this.service.content.file.getContentByFileIds(fileIds),
         this.service.content.file.getContentByFileIds(referenceIds),
+        this.service.file.list.getDetailByIds(referenceIds),
         this.service.store.goods.find({ 'details.id': { $in: fileIds }, status: 1, deleted: false }),
       ]);
       const contentObject = _.keyBy(contentList, 'fileId');
       const referenceObject = _.keyBy(referenceList, 'fileId');
+      const referneceFileObject = _.keyBy(referenceFileList, 'id');
       const fileOnlineObject: Record<string, any> = _.keyBy(_.map(onlineList, 'details'), 'id');
 
       const componentBuildVersionObject = await this.service.version.list.getContentMaxVersionDetail(
-        _.concat(_.map(contentList, 'id'), _.map(referenceList, 'id'))
+        _.concat(_.map(contentList, 'id'), _.map(referenceList, 'id')),
       );
 
       let fileContentList: FileContentUserInfo[] = [];
       fileList.list.forEach((file) => {
-        let contentId = contentObject[file.id]?.id || referenceObject[file?.tags?.[0]?.reference?.id]?.id || '';
+        let contentId =
+          contentObject[file.id]?.id || referenceObject[file?.tags?.[0]?.reference?.id]?.id || '';
         let liveVersionNumber = contentObject[file.id]?.liveVersionNumber || 0;
         if (liveVersionNumber === 0 && file.tags?.[0]?.type === TAG.DELIVERY_REFERENCE) {
           liveVersionNumber = referenceObject[file?.tags?.[0]?.reference?.id]?.liveVersionNumber || 0;
+          file.componentType = referneceFileObject[file?.tags?.[0]?.reference?.id]?.componentType || '';
         }
 
         fileContentList.push(
           Object.assign(
             {
-              release: liveVersionNumber > 0 ? this.service.version.number.getVersionFromNumber(liveVersionNumber) : '',
-              base: componentBuildVersionObject[contentId] &&
-                componentBuildVersionObject[contentId].status === VERSION.STATUS_BASE ?
-                componentBuildVersionObject[contentId].version : '',
+              release:
+                liveVersionNumber > 0
+                  ? this.service.version.number.getVersionFromNumber(liveVersionNumber)
+                  : '',
+              base:
+                componentBuildVersionObject[contentId] &&
+                componentBuildVersionObject[contentId].status === VERSION.STATUS_BASE
+                  ? componentBuildVersionObject[contentId].version
+                  : '',
               online: !!fileOnlineObject[file.id],
-              contentId
+              contentId,
             },
             file,
           ),

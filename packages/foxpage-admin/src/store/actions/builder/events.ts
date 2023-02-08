@@ -1,6 +1,6 @@
 import { createAction } from 'typesafe-actions';
 
-import { DndData, FormattedData, PageContent, RenderStructureNode } from '@/types/index';
+import { DndData, PageContent, RenderStructureNode } from '@/types/index';
 
 export const clearAll = createAction('BUILDER_EVENT__CLEAR_ALL', () => ({}))();
 
@@ -10,16 +10,17 @@ export const updateLoading = createAction('BUILDER_EVENT__UPDATE_LOADING', (load
 
 export const updateComponent = createAction(
   'BUILDER_EVENT__UPDATE_COMPONENT',
-  (params: RenderStructureNode) => ({
+  (params: RenderStructureNode, opt?: {}) => ({
     params,
+    opt,
   }),
 )();
 
-export const afterUpdateComponent = createAction(
-  'BUILDER_EVENT__AFTER_UPDATE_COMPONENT',
-  (pageContent: PageContent, formattedData: FormattedData) => ({
+export const forReRender = createAction(
+  'BUILDER_EVENT__FPR_RERENDER',
+  (pageContent: PageContent, oldPageContent?: PageContent) => ({
     pageContent,
-    formattedData,
+    oldPageContent,
   }),
 )();
 

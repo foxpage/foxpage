@@ -1,15 +1,20 @@
+import dayjs from 'dayjs';
 import produce from 'immer';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/store/actions/builder/main';
 import {
   Application,
+  CheckDSLMain,
   Content,
   File,
   FormattedData,
+  LockerManagerState,
+  LockerState,
   Mock,
   PageContent,
+  PublishStatus,
   RelationDetails,
   RenderStructureNode,
   StructureNode,
@@ -28,8 +33,22 @@ const mock = {} as Mock; // cur page mock
 const relations = {} as RelationDetails; // cur page relations
 const extendContent = {} as PageContent;
 const formattedData = {} as FormattedData; // formatted data(contains: formatted page content, maps)
+const renderDSL = [] as RenderStructureNode[];
 const selectedNode = null as RenderStructureNode | null;
 const localVariables = [] as RelationDetails['variables'] | undefined;
+const publishStep = -1;
+const publishStatus = PublishStatus.PROCESSING;
+const publishErrors = undefined as CheckDSLMain | undefined;
+const showPublishModal = false as boolean;
+const lockerState: LockerState = {
+  locked: false,
+  blocked: false,
+  operationTime: dayjs(0).toISOString(),
+  needUpdate: false,
+};
+const lockerManagerState: LockerManagerState = {
+  noticeVisible: false,
+};
 const contentState = {
   content,
   mock,
@@ -37,11 +56,16 @@ const contentState = {
   pageNode,
   extend: extendContent,
   selectedNode,
-  curStep: 1,
+  curStep: 0,
   stepCount: 0,
   localVariables,
   editStatus: false,
+  lockerState,
+  lockerManagerState,
+  serverUpdateTime: dayjs(0).toISOString(),
+  readOnly: false,
 };
+
 const initialState = {
   // toolbar
   toolbarEditorData,
@@ -58,11 +82,18 @@ const initialState = {
   application,
   file,
   formattedData,
+  renderDSL,
   pageContent,
   // content states
   ...contentState,
   // TODO
-  templateOpenInPage: false
+  templateOpenInPage: false,
+  lastModified: 0,
+  publishStep,
+  publishStatus,
+  publishErrors,
+  showPublishModal,
+  completeFetched: 0,
 };
 
 type InitialDataType = typeof initialState;
@@ -70,6 +101,31 @@ type InitialDataType = typeof initialState;
 const reducer = (state: InitialDataType = initialState, action: BuilderContentActionType) =>
   produce(state, (draft) => {
     switch (action.type) {
+      case getType(ACTIONS.updateServerContentTime): {
+        draft.serverUpdateTime = action.payload.serverUpdateTime;
+        break;
+      }
+
+      case getType(ACTIONS.updateLockerState): {
+        draft.lockerState = { ...state.lockerState, ...(action.payload as { data: LockerState }).data };
+        break;
+      }
+
+      case getType(ACTIONS.setLockerManagerState): {
+        draft.lockerManagerState = { ...state.lockerManagerState, ...action.payload.data };
+        break;
+      }
+
+      case getType(ACTIONS.resetLockerManager): {
+        draft.lockerManagerState = { ...lockerManagerState };
+        break;
+      }
+
+      case getType(ACTIONS.resetLockerState): {
+        draft.lockerState = { ...lockerState };
+        break;
+      }
+
       case getType(ACTIONS.clearAll): {
         Object.assign(draft, { ...initialState });
         break;
@@ -102,7 +158,7 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
 
       case getType(ACTIONS.pushFile): {
         const { data = [] } = action.payload;
-        draft.file = data[0];
+        draft.file = data[0] || {};
         break;
       }
 
@@ -114,10 +170,22 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
       case getType(ACTIONS.pushContent): {
         const _pageContent = action.payload.data || ({} as PageContent);
         const { content, mock, relations } = _pageContent;
-        draft.content = _.cloneDeep(content);
-        draft.mock = _.cloneDeep(mock);
-        draft.relations = _.cloneDeep(relations);
-        draft.pageContent = _.cloneDeep(_pageContent);
+        draft.content = cloneDeep(content);
+        draft.mock = cloneDeep(mock);
+        draft.relations = cloneDeep(relations);
+        draft.pageContent = cloneDeep(_pageContent);
+
+        // update select node
+        if (draft.selectedNode) {
+          draft.selectedNode.__lastModified = new Date().getTime();
+        }
+        break;
+      }
+
+      case getType(ACTIONS.pushContentOnly): {
+        const { content, updateTime } = action.payload.data || ({} as PageContent);
+        draft.content = cloneDeep(content);
+        draft.serverUpdateTime = updateTime!;
         break;
       }
 
@@ -129,6 +197,10 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
       case getType(ACTIONS.updateContent): {
         draft.pageContent = action.payload.data;
         draft.editStatus = true;
+        // update select node
+        if (!action.payload.notUpdateSelectNodeLastModified && draft.selectedNode) {
+          draft.selectedNode.__lastModified = new Date().getTime();
+        }
         break;
       }
 
@@ -143,7 +215,12 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
       }
 
       case getType(ACTIONS.pushFormatData): {
-        draft.formattedData = _.cloneDeep(action.payload.data);
+        draft.formattedData = cloneDeep(action.payload.data);
+        break;
+      }
+
+      case getType(ACTIONS.pushRenderDSL): {
+        draft.renderDSL = cloneDeep(action.payload.data);
         break;
       }
 
@@ -174,6 +251,11 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
         break;
       }
 
+      case getType(ACTIONS.configReadOnly): {
+        draft.readOnly = action.payload.value || false;
+        break;
+      }
+
       case getType(ACTIONS.updateToolbarModalVisible): {
         draft.toolbarModalData = action.payload.data || {};
         draft.toolbarModalType = action.payload.type || '';
@@ -184,6 +266,43 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
       case getType(ACTIONS.templateOpenInPage): {
         draft.templateOpenInPage = action.payload.status;
         break;
+      }
+
+      case getType(ACTIONS.updateLastModified): {
+        draft.lastModified = new Date().getTime();
+        break;
+      }
+
+      case getType(ACTIONS.pushPublishStep): {
+        draft.publishStep = action.payload.current;
+        break;
+      }
+
+      case getType(ACTIONS.pushPublishStatus): {
+        draft.publishStatus = action.payload.status;
+        break;
+      }
+
+      case getType(ACTIONS.pushPublishErrors): {
+        draft.publishErrors = action.payload.errors;
+        break;
+      }
+
+      case getType(ACTIONS.updateShowPublishModal): {
+        draft.showPublishModal = action.payload.show;
+        break;
+      }
+
+      case getType(ACTIONS.resetPublishStatus): {
+        draft.publishLoading = false;
+        draft.publishStep = -1;
+        draft.publishStatus = PublishStatus.PROCESSING;
+        draft.publishErrors = undefined;
+        break;
+      }
+
+      case getType(ACTIONS.completeFetched): {
+        draft.completeFetched = new Date().getTime();
       }
 
       default:

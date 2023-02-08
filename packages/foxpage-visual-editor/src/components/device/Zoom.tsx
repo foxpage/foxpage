@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 
 import { CaretDownOutlined, CheckOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import { Popover } from 'antd';
+
+import { EditorContext } from '@/context/index';
 
 import { Area, Row } from '..';
 
@@ -12,11 +14,10 @@ interface IProps {
 }
 
 const Zoom = (props: IProps) => {
-  const [zoom, setZoom] = useState(1);
+  const { zoom } = useContext(EditorContext);
   const { onChange } = props;
 
   const handleChange = (value: number) => {
-    setZoom(value);
     onChange(value);
   };
 

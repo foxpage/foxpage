@@ -45,11 +45,21 @@ export class SetComponentFileStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4111401);
       }
 
+      // check the component's status in store
+      const fileStoreDetail = await this.service.store.goods.getDetail({
+        'detail.id': params.id,
+        deleted: false,
+      });
+
+      if (fileStoreDetail && fileStoreDetail.status === 1) {
+        return Response.warning(i18n.component.componentInStore, 2111401);
+      }
+
       const result = await this.service.file.info.setFileDeleteStatus(params, { ctx });
       if (result.code === 1) {
-        return Response.warning(i18n.file.invalidFileId, 2111401);
+        return Response.warning(i18n.file.invalidFileId, 2111402);
       } else if (result.code === 2) {
-        return Response.warning(i18n.component.fileCannotBeDeleted, 2111402);
+        return Response.warning(i18n.component.fileCannotBeDeleted, 2111403);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);

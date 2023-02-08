@@ -1,7 +1,8 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { PlusOutlined } from '@ant-design/icons';
-import { Button as AntButton, Popconfirm, Select, Spin, Table } from 'antd';
+import { Button as AntButton, Popconfirm, Select, Spin, Table, Tooltip } from 'antd';
+import _ from 'lodash';
 import styled from 'styled-components';
 
 import OperationDrawer from '@/components/business/OperationDrawer';
@@ -12,11 +13,16 @@ import {
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
   AuthorizeListItem,
+  AuthorizeQueryParams,
+  AuthorizeUserFetchParams,
   User,
 } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/index';
 
 import { Role } from './constants/index';
+
+const PAGE = 1;
+const SIZE = 99;
 
 const Container = styled.div`
   display: flex;
@@ -33,15 +39,16 @@ interface DrawerProp {
   visible: boolean;
   loading: boolean;
   list: AuthorizeListItem[];
-  users: User[];
   type: string;
   typeId: string;
   applicationId: string;
   needFetch?: boolean;
   onClose?: (status) => void;
   onFetch?: (params: AuthorizeListFetchParams) => void;
+  onValidate?: (params: AuthorizeQueryParams, cb?: (role: number) => void) => void;
   onAdd?: (params: AuthorizeAddParams, cb: () => void) => void;
   onDelete?: (params: AuthorizeDeleteParams, cb: () => void) => void;
+  onSearch?: (params: AuthorizeUserFetchParams, cb?: (userList) => void) => void;
 }
 
 const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
@@ -49,24 +56,22 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
     visible,
     loading,
     list,
-    users,
     type,
     typeId,
     applicationId,
     needFetch = false,
     onClose,
     onFetch,
+    onValidate,
     onAdd,
     onDelete,
+    onSearch,
   } = props;
   const [childDrawerVisible, setChildDrawerVisible] = useState(false);
   const [selectUserIds, setSelectUserIds] = useState<string[]>([]);
   const [selectRole, setSelectRole] = useState(0);
-
-  useEffect(() => {
-    setSelectUserIds([]);
-    setSelectRole(0);
-  }, []);
+  const [userList, setUserList] = useState<User[]>([]);
+  const [authCheck, setAuthCheck] = useState(false);
 
   useEffect(() => {
     if (visible && needFetch && typeId) {
@@ -76,6 +81,24 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
     }
   }, [visible, needFetch, type, typeId]);
 
+  useEffect(() => {
+    if (visible && typeId) {
+      if (typeof onValidate === 'function') {
+        onValidate({ applicationId, type, typeId }, (role) => {
+          setAuthCheck((role & 1) === 1);
+        });
+      }
+    }
+  }, [visible, type, typeId, onValidate]);
+
+  useEffect(() => {
+    if (!childDrawerVisible) {
+      setSelectUserIds([]);
+      setSelectRole(0);
+      setUserList([]);
+    }
+  }, [childDrawerVisible]);
+
   // get multi-language
   const { locale } = useContext(GlobalContext);
   const { global, authorize } = locale.business;
@@ -83,6 +106,19 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
   const handleClose = useCallback(() => {
     if (typeof onClose === 'function') onClose(false);
   }, [onClose]);
+
+  const handleSearch = _.debounce((search) => {
+    if (typeof onSearch === 'function') {
+      onSearch(
+        {
+          page: PAGE,
+          size: SIZE,
+          search: search || '',
+        },
+        (userList) => setUserList(userList || []),
+      );
+    }
+  }, 500);
 
   const handleAuthDelete = useCallback(
     (roleId: string) => {
@@ -155,13 +191,16 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
     }
   }, [applicationId, typeId, type, selectUserIds, selectRole, onAdd, onFetch]);
 
-  const userSelectOptions =
-    users &&
-    users.map((user) => ({
-      key: user.id,
-      label: user.account,
-      value: user.id,
-    }));
+  const userSelectOptions = useMemo(() => {
+    return (
+      userList &&
+      userList.map((user) => ({
+        key: user.id,
+        label: user.account,
+        value: user.id,
+      }))
+    );
+  }, [userList]);
 
   const userRoleOptions = [
     {
@@ -193,9 +232,17 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
       open={visible}
       onClose={handleClose}>
       <Container>
-        <Button icon={<PlusOutlined />} onClick={() => setChildDrawerVisible(!childDrawerVisible)}>
-          {authorize.add}
-        </Button>
+        <div style={{ textAlign: 'right' }}>
+          <Tooltip placement="topRight" title={type !== 'application' && !authCheck ? global.accessDeny : ''}>
+            <Button
+              icon={<PlusOutlined />}
+              disabled={type !== 'application' && !authCheck}
+              onClick={() => setChildDrawerVisible(!childDrawerVisible)}
+              style={{ marginBottom: 12 }}>
+              {authorize.add}
+            </Button>
+          </Tooltip>
+        </div>
         <Spin spinning={loading}>
           <Table
             bordered={false}
@@ -224,6 +271,7 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
               placeholder={authorize.placeholderUser}
               options={userSelectOptions}
               optionFilterProp="label"
+              onSearch={handleSearch}
               onChange={setSelectUserIds}
               style={{ width: '100%' }}
             />

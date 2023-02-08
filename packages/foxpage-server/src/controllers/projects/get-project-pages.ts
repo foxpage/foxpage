@@ -40,7 +40,7 @@ export class GetProjectPagesList extends BaseController {
 
       // Verify the effectiveness of the project
       const projectDetail = await this.service.folder.info.getDetailById(params.projectId);
-      if (projectDetail.applicationId !== params.applicationId) {
+      if (this.notValid(projectDetail) || projectDetail.applicationId !== params.applicationId) {
         return Response.warning(i18n.project.invalidProjectId, 2040601);
       }
 

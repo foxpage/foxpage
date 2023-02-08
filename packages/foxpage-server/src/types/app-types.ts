@@ -28,6 +28,7 @@ export interface AddAppSetting {
   typeStatus?: boolean;
   category?: Record<string, any>;
   defaultValue?: Record<string, any>;
+  idx?: number;
 }
 
 export interface UpdateAppSetting {
@@ -35,6 +36,7 @@ export interface UpdateAppSetting {
   type: string;
   typeId: string;
   setting: {
+    idx: number;
     id: string;
     name: string;
     status?: boolean;
@@ -46,6 +48,7 @@ export interface UpdateAppSetting {
 }
 
 export interface AppSettingInfo {
+  idx?: number;
   id: string;
   name: string;
   type: string;

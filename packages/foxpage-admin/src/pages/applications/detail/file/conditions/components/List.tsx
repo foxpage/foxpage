@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
+import { Link, useHistory } from 'react-router-dom';
 
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
@@ -7,7 +8,7 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/conditions';
-import { PublishIcon } from '@/components/index';
+import { Name, PublishIcon } from '@/components/index';
 import { ConditionTypeEnum } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ConditionEntity, Creator } from '@/types/index';
@@ -53,6 +54,9 @@ function ConditionList(props: ConditionListType) {
     publishCondition,
   } = props;
 
+  // url params
+  const history = useHistory();
+
   // i18n
   const { locale } = useContext(GlobalContext);
   const { global, version } = locale.business;
@@ -79,20 +83,34 @@ function ConditionList(props: ConditionListType) {
     }
   };
 
-  const handleDelete = (id) => {
-    if (applicationId && id) {
+  const handleDelete = (record: ConditionEntity) => {
+    if (applicationId && record.id) {
       deleteCondition(
         {
           applicationId,
-          id,
+          id: record.id,
           status: true,
+          condition: record,
         },
         handleFetchList,
       );
     }
   };
 
+  const handlePaginationChange = (pagination) => {
+    history.push({
+      pathname: history.location.pathname,
+      search: `?page=${pagination.current}&searchText=${search}`,
+    });
+  };
+
   const columns: any[] = [
+    {
+      title: global.idLabel,
+      dataIndex: 'contentId',
+      key: 'contentId',
+      width: 160,
+    },
     {
       title: global.nameLabel,
       dataIndex: 'name',
@@ -127,7 +145,7 @@ function ConditionList(props: ConditionListType) {
       dataIndex: 'creator',
       key: 'creator',
       width: 200,
-      render: (creator: Creator) => creator?.account || '--',
+      render: (creator: Creator) => creator?.email || '--',
     },
     {
       title: global.createTime,
@@ -165,7 +183,7 @@ function ConditionList(props: ConditionListType) {
             title={`${global.deleteMsg}${record.name}?`}
             okText={global.yes}
             cancelText={global.no}
-            onConfirm={() => handleDelete(record.id)}>
+            onConfirm={() => handleDelete(record)}>
             <Button size="small" shape="circle" icon={<DeleteOutlined />} />
           </Popconfirm>
         </>
@@ -178,7 +196,17 @@ function ConditionList(props: ConditionListType) {
       title: global.project,
       dataIndex: 'folderName',
       key: 'folderName',
-      render: (folderName) => (folderName !== '_condition' ? <span>{folderName}</span> : ''),
+      render: (folderName, record) =>
+        folderName !== '_condition' ? (
+          <Link
+            to={`/applications/${
+              record?.applicationId || applicationId
+            }/projects/detail?applicationId=${applicationId}&folderId=${record.folderId}`}>
+            <Name>{folderName}</Name>
+          </Link>
+        ) : (
+          ''
+        ),
     });
   }
 
@@ -199,7 +227,7 @@ function ConditionList(props: ConditionListType) {
             }
           : false
       }
-      onChange={(pagination) => handleFetchList(pagination.current, pagination.pageSize)}
+      onChange={handlePaginationChange}
     />
   );
 }

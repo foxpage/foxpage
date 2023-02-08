@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 import { EditContext } from '@foxpage/foxpage-component-editor-context';
 import * as widgets from '@foxpage/foxpage-component-editor-widgets';
@@ -20,7 +20,7 @@ const EventListener: React.FC<EventListenerProps> = (props) => {
 
   const handlePropChange = (keys: string, val: string) => {
     if (component) {
-      const componentProps = _.cloneDeep(component.props) || {};
+      const componentProps = cloneDeep(component.props) || {};
       const keyPath: string[] = keys.split('.');
       const key = keyPath.pop() as string;
       const props = keyPath.reduce((a: string | RenderStructureNode['props'], c: string) => {
@@ -73,7 +73,7 @@ const EventListener: React.FC<EventListenerProps> = (props) => {
 
   const editorParams = useMemo(() => {
     return {
-      componentProps: _.cloneDeep(component.props) || {},
+      componentProps: cloneDeep(component.props) || {},
       editor: widgets,
       components: newComponentList,
       propChange: handlePropChange,

@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { FileTypes, StoreGoods } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, PRE, TYPE } from '../../../config/constant';
+import { PRE, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AddGoodsToStoreReq, GetStorePackageListRes } from '../../types/validates/store-validate-types';
 import * as Response from '../../utils/response';
@@ -55,7 +55,7 @@ export class AddGoodsToStore extends BaseController {
         return Response.warning(i18n.store.goodsExist, 2130101);
       }
 
-      if (!fileDetail || fileDetail.deleted) {
+      if (this.notValid(fileDetail)) {
         return Response.warning(i18n.store.invalidTypeId, 2130102);
       }
 
@@ -92,23 +92,6 @@ export class AddGoodsToStore extends BaseController {
       }
 
       const newGoodsDetail = await this.service.store.goods.getDetailById(goodsId);
-
-      // Save log
-      ctx.operations.push(
-        ...this.service.log.addLogItem(
-          [goodsDetail ? LOG.UPDATE : LOG.CREATE, TYPE.GOODS].join('_'),
-          newGoodsDetail,
-          {
-            actionType: '',
-            category: {
-              type: TYPE.FILE,
-              fileId: params.id,
-              folderId: fileDetail.folderId,
-              applicationId: fileDetail.applicationId,
-            },
-          },
-        ),
-      );
 
       return Response.success(newGoodsDetail, 1130101);
     } catch (err) {

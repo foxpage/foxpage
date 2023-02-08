@@ -5,7 +5,7 @@ import pLimit from 'p-limit';
 import { DateTime } from '@foxpage/foxpage-shared';
 
 import { BaseModel } from '../models/base-model';
-import { PageSize, SearchModel } from '../types/index-types';
+import { DBQuery, PageSize, SearchModel } from '../types/index-types';
 
 export class BaseService<T> {
   public model: BaseModel<T>;
@@ -16,6 +16,15 @@ export class BaseService<T> {
 
   async runTransaction(queries?: any[]): Promise<void> {
     await this.model.exec(queries);
+  }
+
+  /**
+   * Check item detail is not valid: item is empty or item.deleted is true
+   * @param item
+   * @returns
+   */
+  notValid(item: Record<string, any>): boolean {
+    return _.isEmpty(item) || item.deleted;
   }
 
   /**
@@ -125,7 +134,7 @@ export class BaseService<T> {
    * Query to generate new data
    * @param  {T} detail
    */
-  addDetailQuery(detail: T | T[]): any {
+  addDetailQuery(detail: T | T[]): DBQuery {
     return this.model.addDetailQuery(detail);
   }
 
@@ -218,5 +227,24 @@ export class BaseService<T> {
   async checkExist(params: any, id?: string): Promise<boolean> {
     const result: any = await this.model.findOne(params);
     return result ? result.id !== id : false;
+  }
+
+  /**
+   * create aggregate query
+   * @param params
+   * @returns
+   */
+  async aggregate(params: any[]): Promise<any> {
+    return this.model.aggregate(params);
+  }
+
+  /**
+   * filter field id distinct data
+   * @param fieldId
+   * @param filter
+   * @returns
+   */
+  async distinct(fieldId: string, filter: any): Promise<any> {
+    return this.model.distinct(fieldId, filter);
   }
 }

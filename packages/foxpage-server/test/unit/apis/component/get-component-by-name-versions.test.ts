@@ -1,4 +1,4 @@
-import { ContentVersion, File, IdVersion, Resources } from '@foxpage/foxpage-server-types';
+import { ContentVersion, File, Resources } from '@foxpage/foxpage-server-types';
 
 import { GetAppComponentListByNameVersion } from '../../../../src/controllers/components/get-component-by-name-versions';
 import { ApplicationService } from '../../../../src/services/application-service';
@@ -41,9 +41,9 @@ describe('Get: /components/version-infos', () => {
       .spyOn(ComponentContentService.prototype, 'getAppComponentByNameVersion')
       .mockResolvedValue(<NameVersionPackage[]>Data.content.nameVersionComponent);
     jest.spyOn(ComponentContentService.prototype, 'getComponentResourceIds').mockReturnValueOnce([]);
-    jest
-      .spyOn(ComponentService.prototype, 'getComponentEditorAndDependends')
-      .mockReturnValueOnce(<IdVersion[]>Data.content.idVersions);
+    // jest
+    //   .spyOn(ComponentService.prototype, 'getComponentEditorAndDependends')
+    //   .mockReturnValueOnce(<IdVersion[]>Data.content.idVersions);
     jest
       .spyOn(ComponentService.prototype, 'getComponentDetailByIdVersion')
       .mockResolvedValue(<Record<string, ContentVersion>>{ versionKey: Data.version.list[0] });
@@ -58,7 +58,8 @@ describe('Get: /components/version-infos', () => {
       .spyOn(VersionComponentService.prototype, 'assignResourceToComponent')
       .mockReturnValueOnce(<Resources>{});
     jest.spyOn(FileListService.prototype, 'getContentFileByIds').mockResolvedValue(<Record<string, File>>{
-      'cont_cuREMD9zcUZEcVU': Object.assign(Data.file.list[0], { type: 'component' }),
+      // eslint-disable-next-line camelcase
+      cont_cuREMD9zcUZEcVU: Object.assign(Data.file.list[0], { type: 'component' }),
     });
     jest
       .spyOn(ComponentService.prototype, 'addNameToEditorAndDepends')
@@ -74,9 +75,9 @@ describe('Get: /components/version-infos', () => {
       .spyOn(ComponentContentService.prototype, 'getAppComponentByNameVersion')
       .mockResolvedValue(<NameVersionPackage[]>Data.content.nameVersionComponent);
     jest.spyOn(ComponentContentService.prototype, 'getComponentResourceIds').mockReturnValueOnce([]);
-    jest
-      .spyOn(ComponentService.prototype, 'getComponentEditorAndDependends')
-      .mockReturnValueOnce(<IdVersion[]>Data.content.idVersions);
+    // jest
+    //   .spyOn(ComponentService.prototype, 'getComponentEditorAndDependends')
+    //   .mockReturnValueOnce(<IdVersion[]>Data.content.idVersions);
     jest
       .spyOn(ComponentService.prototype, 'getComponentDetailByIdVersion')
       .mockResolvedValue(<Record<string, ContentVersion>>{ versionKey: Data.version.list[0] });
@@ -92,7 +93,8 @@ describe('Get: /components/version-infos', () => {
       .mockReturnValueOnce(<Resources>{});
     jest
       .spyOn(FileListService.prototype, 'getContentFileByIds')
-      .mockResolvedValue(<Record<string, File>>{ 'cont_cuREMD9zcUZEcVU': Data.file.list[0] });
+      // eslint-disable-next-line camelcase
+      .mockResolvedValue(<Record<string, File>>{ cont_cuREMD9zcUZEcVU: Data.file.list[0] });
     jest
       .spyOn(ComponentService.prototype, 'addNameToEditorAndDepends')
       .mockReturnValueOnce(<ComponentContentInfo[]>[]);

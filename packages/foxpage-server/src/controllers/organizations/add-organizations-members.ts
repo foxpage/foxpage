@@ -37,7 +37,7 @@ export class AddOrganizationMembers extends BaseController {
     operationId: 'update-organization-member-detail',
   })
   @ResponseSchema(OrgBaseDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AddOrgMembersReq): Promise<ResData<NewUserBase>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AddOrgMembersReq): Promise<ResData<NewUserBase>> {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, {
         type: TYPE.ORGANIZATION,
@@ -82,13 +82,12 @@ export class AddOrganizationMembers extends BaseController {
 
         return Response.success({ id: userId, account: params.account, password: userPwd }, 1010101);
       } else if (params.userId) {
-
         // Check user exist
         const [userDetail, memberObject] = await Promise.all([
           this.service.user.getDetailById(params.userId),
-          this.service.org.checkUserIdInOrg(params.organizationId, params.userId)
+          this.service.org.checkUserIdInOrg(params.organizationId, params.userId),
         ]);
-        if (!userDetail || userDetail.deleted !== false) {
+        if (this.notValid(userDetail)) {
           return Response.warning(i18n.user.invalidUser);
         }
 

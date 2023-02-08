@@ -37,7 +37,7 @@ export class GetStoreProjectList extends BaseController {
     operationId: 'get-store-page-template-page-list',
   })
   @ResponseSchema(GetPageTemplateListRes)
-  async index (
+  async index(
     @Ctx() ctx: FoxCtx,
     @Body() params: GetPageTemplateListReq,
   ): Promise<ResData<ProjectGoodsInfo>> {
@@ -59,20 +59,46 @@ export class GetStoreProjectList extends BaseController {
         this.service.application.getDetailByIds(_.map(projectList, 'applicationId')),
         this.service.user.getUserBaseObjectByIds(projectUserIds),
       ]);
+
+      const fileIds = _.map(projectGoods, (goods) => goods.details.id);
+      const contentList = await this.service.content.file.getContentByFileIds(fileIds);
+      const versionList = await this.service.version.list.getDetailByIds(
+        _.map(contentList, 'liveVersionId') as string[],
+      );
+      const contentPictures: Record<string, any> = {};
+      versionList.map((version) => {
+        if (version.pictures && version.pictures.length > 0) {
+          contentPictures[version.contentId] = version.pictures;
+        }
+      });
+
       const appObject = _.keyBy(appList, 'id');
       const projectGoodsObject = _.keyBy(projectGoods, 'id');
       const projectGoodsList = projectList.map((project) => {
         const goodsList: StoreGoods[] = [];
+        let goodsFileIds: string[] = [];
+        let pictures: any[] = [];
         for (const goodsId in projectGoodsObject) {
           if (projectGoodsObject[goodsId].details?.projectId === project.id) {
             goodsList.push(projectGoodsObject[goodsId]);
+            goodsFileIds.push(projectGoodsObject[goodsId].details.id);
             delete projectGoodsObject[goodsId];
+          }
+        }
+
+        if (goodsFileIds.length > 0) {
+          for (const content of contentList) {
+            if (goodsFileIds.indexOf(content.fileId) !== -1 && contentPictures[content.id]) {
+              pictures.push(contentPictures[content.id][0]);
+              break;
+            }
           }
         }
 
         return Object.assign(
           {
             files: goodsList,
+            pictures,
             type: goodsType,
           },
           {

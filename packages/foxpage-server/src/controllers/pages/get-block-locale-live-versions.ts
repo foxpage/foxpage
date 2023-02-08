@@ -52,10 +52,11 @@ export class GetBlockLocaleLiveVersions extends BaseController {
       }
 
       // get content live version data
-      const liveInfo = _.map(_.toArray(fileContentObject), (content) =>
-        _.pick(content, ['id', 'liveVersionNumber']),
+      const liveVersionIds = _.map(
+        _.filter(_.toArray(fileContentObject), (content) => content.liveVersionId),
+        'liveVersionId',
       );
-      const contentVersionList = await this.service.version.list.getContentInfoByIdAndNumber(liveInfo);
+      const contentVersionList = await this.service.version.list.getDetailByIds(liveVersionIds);
       const versionObject = _.keyBy(contentVersionList, 'contentId');
 
       // get version relations

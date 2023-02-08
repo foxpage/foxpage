@@ -15,12 +15,6 @@ const Container = styled.div`
   height: calc(100% - 32px);
 `;
 
-const Actions = styled.div`
-  width: 40px;
-  display: flex;
-  padding-top: 4px;
-`;
-
 const DELAY = 100; //ms
 const LONG_DELAY = 300; //ms
 
@@ -28,7 +22,7 @@ interface IProps {
   selectNode: RenderStructureNode | null;
   visible?: boolean;
   onShrink?: (status: boolean) => void;
-  onExpend?: (status: boolean) => void;
+  onExpand?: (status: boolean) => void;
 }
 
 const EditorIndex = (props: IProps) => {
@@ -37,7 +31,7 @@ const EditorIndex = (props: IProps) => {
   const [newSelectNode, setNewSelectNode] = useState<RenderStructureNode | null>(null);
   const { foxI18n, events } = useContext(FoxContext);
   const { onUpdateComponent, onWindowChange } = events;
-  const { selectNode, visible, onShrink, onExpend } = props;
+  const { selectNode, visible, onShrink, onExpand } = props;
 
   useEffect(() => {
     const _visible = !!selectNode;
@@ -58,8 +52,8 @@ const EditorIndex = (props: IProps) => {
 
   const handleVisible = (value: boolean) => {
     setShow(value);
-    if (typeof onExpend === 'function') {
-      onExpend(value);
+    if (typeof onExpand === 'function') {
+      onExpand(value);
     }
   };
 
@@ -98,11 +92,11 @@ const EditorIndex = (props: IProps) => {
       <PanelHeader
         key="editor"
         title={foxI18n.editorTitle}
-        extr={
-          <Actions>
+        extra={
+          <div className="flex">
             <CusButton icon={icons} onClick={handleShrink} />
             <CusButton icon={<CloseOutlined />} onClick={handleClose} />
-          </Actions>
+          </div>
         }
       />
       <Container>

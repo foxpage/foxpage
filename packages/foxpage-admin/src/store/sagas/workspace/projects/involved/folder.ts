@@ -19,14 +19,11 @@ import {
   ProjectListFetchParams,
   ProjectSaveParams,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchApp(action: ProjectInvolvedFolderActionType) {
   const { params } = action.payload as { params: ApplicationListFetchParams };
-  const { organizationId } = store.getState().system.user;
-  const res = yield call(APPLICATION_API.fetchList, {
-    ...params,
-    organizationId,
-  });
+  const res = yield call(APPLICATION_API.fetchList, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushApps(res.data || []));
@@ -35,19 +32,18 @@ function* handleFetchApp(action: ProjectInvolvedFolderActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
 function* handleFetchList(action: ProjectInvolvedFolderActionType) {
   yield put(ACTIONS.updateLoading(true));
 
-  const { page = 1, search, searchText, searchType, size = 10 } = action.payload as ProjectListFetchParams;
+  const { page = 1, size = 10, search } = action.payload as ProjectListFetchParams;
   let params: ProjectListFetchParams = {
     page,
     size,
-    search: searchText || '',
-    searchType,
+    searchType: 'project',
     type: 'involve',
   };
   if (search)
@@ -64,7 +60,7 @@ function* handleFetchList(action: ProjectInvolvedFolderActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -90,10 +86,10 @@ function* handleSave(action: ProjectInvolvedFolderActionType) {
     if (typeof cb === 'function') cb();
   } else {
     const {
-      global: { fetchListFailed },
+      global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, res?.msg || saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -120,7 +116,7 @@ function* handleDelete(action: ProjectInvolvedFolderActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -137,24 +133,26 @@ function* handleFetchAuthList(action: ProjectInvolvedFolderActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateAuthListLoading(false));
 }
 
 function* handleFetchAuthUserList(action: ProjectInvolvedFolderActionType) {
-  const { params } = action.payload as { params: AuthorizeUserFetchParams };
+  const { params, cb } = action.payload as { params: AuthorizeUserFetchParams; cb?: (userList) => void };
   const res = yield call(AUTH_API.authorizeUserFetch, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushUserList(res.data || []));
+
+    if (typeof cb === 'function') cb(res.data);
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -169,7 +167,7 @@ function* handleSaveAuth(action: ProjectInvolvedFolderActionType) {
       global: { addFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || addFailed);
+    errorToast(res, addFailed);
   }
 }
 
@@ -186,7 +184,7 @@ function* handleDeleteAuth(action: ProjectInvolvedFolderActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 

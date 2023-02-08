@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import { KoaMiddlewareInterface, Middleware } from 'routing-controllers';
 
-import { RESPONSE_LEVEL } from '../../config/constant';
 import { config, i18n } from '../../app.config';
+import { RESPONSE_LEVEL } from '../../config/constant';
 import { FoxCtx } from '../types/index-types';
 
 @Middleware({ type: 'before' })

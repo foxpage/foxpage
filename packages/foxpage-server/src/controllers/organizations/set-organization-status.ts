@@ -42,7 +42,7 @@ export class SetOrganizationStatus extends BaseController {
 
       // Check the validity of the organization ID
       const sourceOrgDetail = await this.service.org.getDetailById(params.organizationId);
-      if (!sourceOrgDetail || sourceOrgDetail.deleted) {
+      if (this.notValid(sourceOrgDetail)) {
         return Response.warning(i18n.org.invalidOrgId, 2010701);
       }
 

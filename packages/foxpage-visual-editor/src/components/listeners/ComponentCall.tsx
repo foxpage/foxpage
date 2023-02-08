@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { EditOutlined, LeftOutlined, MinusOutlined } from '@ant-design/icons';
 import { Button, Drawer as AntDrawer, Select, Tooltip } from 'antd';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import styled from 'styled-components';
 
 import { EditContext } from '@foxpage/foxpage-component-editor-context';
@@ -91,7 +91,7 @@ export class ComponentCall extends Component<any, any> {
 
   handlePropChange = (keys, value) => {
     const { props: componentProps = {} } = this.state;
-    const newComponentProps = _.cloneDeep(componentProps);
+    const newComponentProps = cloneDeep(componentProps);
     const keypath = keys.split('.');
     const key = keypath.pop();
 
@@ -173,7 +173,7 @@ export class ComponentCall extends Component<any, any> {
             <MinusOutlined />
           </Button>
         </div>
-        <Drawer width={640} closable={false} onClose={this.handleClose} visible={open}>
+        <Drawer width={640} closable={false} onClose={this.handleClose} open={open}>
           <TitBar>
             <BackBtn>
               <Button onClick={this.handleClose}>

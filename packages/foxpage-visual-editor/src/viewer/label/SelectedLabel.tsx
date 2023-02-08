@@ -80,15 +80,17 @@ const SelectedLabel = () => {
   };
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setCurZoom(zoom);
     }, DELAY);
+    return () => clearTimeout(timer);
   }, [zoom]);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setUpdated(new Date().getTime());
     }, DELAY);
+    return () => clearTimeout(timer);
   }, [selectNode]);
 
   useEffect(() => {

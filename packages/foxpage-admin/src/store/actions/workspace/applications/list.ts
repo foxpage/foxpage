@@ -111,7 +111,7 @@ export const deleteAuthUser = createAction(
 
 export const fetchUserList = createAction(
   'WORKSPACE_APPLICATIONS___FETCH_USER_LIST',
-  (params: AuthorizeUserFetchParams, cb?: () => void) => ({
+  (params: AuthorizeUserFetchParams, cb?: (userList) => void) => ({
     params,
     cb,
   }),

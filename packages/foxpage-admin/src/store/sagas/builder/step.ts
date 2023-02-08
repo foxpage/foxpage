@@ -3,88 +3,122 @@ import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/main';
+import { RecordActionType } from '@/constants/index';
+import * as RECORD_ACTIONS from '@/store/actions/record';
 import { store } from '@/store/index';
 import { BuilderContentActionType } from '@/store/reducers/builder/main';
 import { PageContent } from '@/types/index';
 
-import { cache, clearCache, getCached, initState } from './services';
+import { cache, clearCache, clearCacheLogs, getCached, getCurStep, initState, setCurStep } from './services';
 
 function* handlePreStep() {
-  const { curStep, content } = store.getState().builder.main;
-  const steps = getCached(content.id);
-  if (curStep > 0) {
-    const preStep = curStep - 1;
-    const step = steps[preStep];
-    if (step) {
-      yield put(ACTIONS.goStep(step));
+  function* future() {
+    const { curStep, pageContent } = store.getState().builder.main;
+    const steps = yield call(() => getCached(pageContent.contentId));
+    if (curStep > 0) {
+      const preStep = curStep - 1;
+      const step = steps[preStep];
+      yield put(ACTIONS.updateLastModified());
+      if (step) {
+        yield put(ACTIONS.goStep(step));
+        yield put(RECORD_ACTIONS.addUserRecords(RecordActionType.PAGE_PRE_STEP, [{ id: step.id }]));
+        yield call(() => setCurStep(pageContent.contentId, preStep));
+      }
+      yield put(ACTIONS.setCurStep(preStep));
     }
-    yield put(ACTIONS.setCurStep(preStep));
   }
+  yield put(ACTIONS.guard(future));
 }
 
 function* handleNextStep() {
-  const { curStep = 0, content } = store.getState().builder.main;
-  const steps = getCached(content.id);
-  if (curStep < steps.length) {
-    const nextStep = curStep + 1;
-    const step = steps[nextStep];
-    if (step) {
-      yield put(ACTIONS.goStep(step));
+  function* future() {
+    const { curStep = 0, pageContent } = store.getState().builder.main;
+    const steps = yield call(() => getCached(pageContent.contentId));
+    if (curStep < steps.length) {
+      const nextStep = curStep + 1;
+      const step = steps[nextStep];
+      yield put(ACTIONS.updateLastModified());
+      if (step) {
+        yield put(ACTIONS.goStep(step));
+        yield put(RECORD_ACTIONS.addUserRecords(RecordActionType.PAGE_NEXT_STEP, [{ id: step.id }]));
+        yield call(() => setCurStep(pageContent.contentId, nextStep));
+      }
+      yield put(ACTIONS.setCurStep(nextStep));
     }
-    yield put(ACTIONS.setCurStep(nextStep));
+  }
+  yield put(ACTIONS.guard(future));
+}
+
+function* handleGoStep(actions: BuilderContentActionType) {
+  const { params } = actions.payload as { params: PageContent };
+  const { pageContent, application } = store.getState().builder.main;
+  if (application) {
+    yield put(ACTIONS.pushContent({ ...params, id: pageContent.id }));
+    yield put(ACTIONS.updateEditState(true));
+    const initParams = {
+      application,
+      locale: store.getState().builder.header.locale, // for parse
+      components: store.getState().builder.component.components,
+      extendPage: store.getState().builder.main.extend,
+      file: store.getState().builder.main.file,
+      relations: store.getState().builder.main.relations,
+      parseInLocal: true,
+    };
+    const state = yield call(initState, params, initParams);
+    yield put(ACTIONS.pushFormatData(state));
+    yield put(ACTIONS.prasePageInServer(params, initParams));
   }
 }
 
-function* handleDoStep(actions: BuilderContentActionType) {
-  const { params } = actions.payload as { params: PageContent };
-  // @ts-ignore
-  const state = yield call(initState, params, {
-    application: store.getState().builder.main.application,
-    locale: store.getState().builder.header.locale, // for parse
-    components: store.getState().builder.component.components,
-    extendPage: store.getState().builder.main.extend,
-    file: store.getState().builder.main.file,
-    relations: store.getState().builder.main.relations
-  });
-  yield put(ACTIONS.pushContent(params));
-  yield put(ACTIONS.pushFormatData(state));
-  yield put(ACTIONS.updateEditState(true));
-}
-
-function* handleClearStep() {
-  clearCache();
+function* handleClearStep(actions: BuilderContentActionType) {
+  const { contentId } = actions.payload as { contentId: string };
+  // if (!ignoreStepCache) {
+  yield call(() => clearCache(contentId));
+  // }
+  clearCacheLogs(contentId);
 }
 
 function* handleGetSteps() {
-  const { content } = store.getState().builder.main;
-  const steps = getCached(content.id);
+  const { pageContent } = store.getState().builder.main;
+  const steps = yield call(() => getCached(pageContent?.contentId));
+  const curStep = yield call(() => getCurStep(pageContent?.contentId));
+  const lastStep = steps[curStep];
+  if (lastStep) {
+    yield put(ACTIONS.goStep(lastStep));
+  }
   yield put(ACTIONS.setSteps(steps.length));
-  yield put(ACTIONS.setCurStep(steps.length));
+  yield put(ACTIONS.setCurStep(curStep));
 }
 
 function* handlePushStep(actions: BuilderContentActionType) {
-  const { params } = actions.payload as { params: PageContent };
-  const cached = getCached(params.contentId);
-  if (cached.length === 0) {
-    const { pageContent } = store.getState().builder.main;
-    if (pageContent.contentId) {
+  const { params, oldContent, curStep } = actions.payload as {
+    params: PageContent;
+    oldContent?: PageContent;
+    curStep: number;
+  };
+  const cached = yield call(() => getCached(params?.contentId));
+  let count = cached.length;
+  // first cache
+  if (count === 0) {
+    if (oldContent?.contentId) {
       // cache origin first
-      cache(pageContent);
+      yield call(() => cache(oldContent, 0));
+      count = count + 1;
     }
   }
+  const _curStep = curStep || count;
   // cache
-  const count = cache(params);
-  yield put(ACTIONS.setCurStep(count > 0 ? count - 1 : 0));
-  yield put(ACTIONS.setSteps(count));
+  yield call(() => cache(params, _curStep));
+  yield put(ACTIONS.setCurStep(_curStep));
+  yield put(ACTIONS.setSteps(count + 1));
 }
 
 function* watch() {
   yield takeLatest(getType(ACTIONS.preStep), handlePreStep);
   yield takeLatest(getType(ACTIONS.nextStep), handleNextStep);
-  yield takeLatest(getType(ACTIONS.goStep), handleDoStep);
+  yield takeLatest(getType(ACTIONS.goStep), handleGoStep);
   yield takeLatest(getType(ACTIONS.getSteps), handleGetSteps);
   yield takeLatest(getType(ACTIONS.pushStep), handlePushStep);
-  yield takeLatest(getType(ACTIONS.clearAll), handleClearStep);
   yield takeLatest(getType(ACTIONS.clearByContentChange), handleClearStep);
 }
 

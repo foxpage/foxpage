@@ -38,7 +38,7 @@ export class UpdatePageDetail extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateFileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
     if (!checkName(params.name)) {
-      return Response.warning(i18n.file.invalidPageName, 2051801);
+      return Response.warning(i18n.file.invalidName, 2051801);
     }
 
     try {

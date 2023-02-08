@@ -7,6 +7,9 @@ import htmlToDraft from 'html-to-draftjs';
 
 import BindContext from './BindContext';
 
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import './style.css';
+
 const JSONBind: React.ForwardRefRenderFunction<any> = (_props, forwardedRef) => {
   const { value, setValue } = useContext(BindContext);
   const contentBlock = htmlToDraft(value || '');
@@ -43,7 +46,7 @@ const JSONBind: React.ForwardRefRenderFunction<any> = (_props, forwardedRef) => 
   };
 
   return (
-    <div style={{ height: '70%' }}>
+    <div style={{ border: '1px solid #bbc3cc', height: '100%' }}>
       <DraftEditor
         ref={editorRef}
         placeholder="Enter some text..."

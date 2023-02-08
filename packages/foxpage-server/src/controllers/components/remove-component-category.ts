@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import _ from 'lodash';
-import { Ctx, Delete, JsonController,QueryParams } from 'routing-controllers';
+import { Ctx, Delete, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
@@ -19,7 +19,7 @@ export class RemoveComponentCategory extends BaseController {
   }
 
   /**
-   * Delete component category 
+   * Delete component category
    * @param  {AppIDReq} params
    * @returns {Content}
    */
@@ -31,8 +31,10 @@ export class RemoveComponentCategory extends BaseController {
     operationId: 'remove-components-category',
   })
   @ResponseSchema(FileDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @QueryParams() params: DeleteComponentCategoryReq): Promise<ResData<FileDetailRes>> {
-
+  async index(
+    @Ctx() ctx: FoxCtx,
+    @QueryParams() params: DeleteComponentCategoryReq,
+  ): Promise<ResData<FileDetailRes>> {
     try {
       const hasAuth = await this.service.auth.application(params.applicationId, { ctx, mask: 1 });
       if (!hasAuth) {
@@ -41,7 +43,7 @@ export class RemoveComponentCategory extends BaseController {
 
       // Validate component file
       const fileDetail = await this.service.file.info.getDetailById(params.id);
-      if(!fileDetail || fileDetail.deleted || fileDetail.type !== TYPE.COMPONENT) {
+      if (this.notValid(fileDetail) || fileDetail.type !== TYPE.COMPONENT) {
         return Response.warning(i18n.component.invalidFileId, 2112701);
       }
 

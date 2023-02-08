@@ -64,16 +64,14 @@ export class ContentListService extends BaseService<Content> {
 
       // replace referenced file id, use fileId as key is to avoid has multi same reference content id
       if (referenceIds.length > 0) {
-        let referenceContentObject:Record<string, Content> = _.pick(contentObject, referenceIds);
+        let referenceContentObject: Record<string, Content> = _.pick(contentObject, referenceIds);
         contentObject = _.omit(contentObject, referenceIds);
-        
+
         for (const fileId in referenceFileObject) {
           if (referenceContentObject[referenceFileObject[fileId]]) {
-            contentObject[fileId] = Object.assign(
-              {}, 
-              referenceContentObject[referenceFileObject[fileId]], 
-              { fileId }
-            );
+            contentObject[fileId] = Object.assign({}, referenceContentObject[referenceFileObject[fileId]], {
+              fileId,
+            });
           }
         }
       }
@@ -100,17 +98,19 @@ export class ContentListService extends BaseService<Content> {
 
   /**
    * Get the first validate content in file, sort by create time asc
-   * @param fileIds 
-   * @returns 
+   * @param fileIds
+   * @returns
    */
-  async getFirstContentByFileIds(fileIds:string[]):Promise<Record<string, Content>> {
-    if(fileIds.length === 0) {
+  async getFirstContentByFileIds(fileIds: string[]): Promise<Record<string, Content>> {
+    if (fileIds.length === 0) {
       return {};
     }
 
-    const contentList = await this.find({ fileId: { $in: fileIds }, deleted: false }, '', { sort: { _id: 1 } });
+    const contentList = await this.find({ fileId: { $in: fileIds }, deleted: false }, '', {
+      sort: { _id: 1 },
+    });
     let fileContentObject: Record<string, Content> = {};
-    contentList.forEach(content => {
+    contentList.forEach((content) => {
       if (!fileContentObject[content.fileId]) {
         fileContentObject[content.fileId] = content;
       }
@@ -120,13 +120,13 @@ export class ContentListService extends BaseService<Content> {
 
   /**
    * Get file content list
-   * @param fileIds 
-   * @returns 
+   * @param fileIds
+   * @returns
    */
-   async getFileContentList(
-     fileIds: string[], 
-     options?: { fileList?: File[]}
-    ): Promise<Record<string, Content[]>> {
+  async getFileContentList(
+    fileIds: string[],
+    options?: { fileList?: File[] },
+  ): Promise<Record<string, Content[]>> {
     if (fileIds.length === 0) {
       return {};
     }
@@ -139,11 +139,11 @@ export class ContentListService extends BaseService<Content> {
     // Get reference file ids
     const referenceFileMap = Service.file.info.filterReferenceFile(fileList);
     const contentList = await Service.content.file.getContentByFileIds(
-      _.concat(fileIds, _.keys(referenceFileMap))
+      _.concat(fileIds, _.keys(referenceFileMap)),
     );
 
     let fileContentList: Record<string, Content[]> = {};
-    contentList.forEach(content => {
+    contentList.forEach((content) => {
       const fileId = referenceFileMap[content.fileId] || content.fileId;
       !fileContentList[fileId] && (fileContentList[fileId] = []);
       fileContentList[fileId].push(Object.assign({}, content, { fileId }));
@@ -214,19 +214,20 @@ export class ContentListService extends BaseService<Content> {
   /**
    * Get content id, and get the content reference file id
    * then, set the content info's fileId to reference file id
-   * @param contentList 
-   * @returns 
+   * @param contentList
+   * @returns
    */
-   async setContentReferenceFileId(applicationId: string, contentList: Content[]): Promise<Content[]>{
+  async setContentReferenceFileId(applicationId: string, contentList: Content[]): Promise<Content[]> {
     const fileIds = _.map(contentList, 'fileId');
     const fileContentObject = _.keyBy(contentList, 'fileId');
     if (fileIds.length > 0) {
-      const fileList = await Service.file.list.find({ 
-        applicationId, 
-        deleted: false, 
-        'tags.reference.id' : { $in: fileIds } 
+      const fileList = await Service.file.list.find({
+        applicationId,
+        deleted: false,
+        'tags.reference.id': { $in: fileIds },
       });
-      (fileList || []).forEach(file => {
+
+      (fileList || []).forEach((file) => {
         const referenceFileTag = _.find(file.tags, { type: TAG.DELIVERY_REFERENCE });
         if (referenceFileTag?.reference?.id && fileContentObject[referenceFileTag.reference.id]) {
           fileContentObject[referenceFileTag.reference.id].fileId = file.id;
@@ -235,5 +236,22 @@ export class ContentListService extends BaseService<Content> {
     }
 
     return _.toArray(fileContentObject);
+  }
+
+  /**
+   * Get the content live version id by content Ids
+   * @param contentIds
+   * @returns
+   */
+  async getContentLiveIds(contentIds: string[]): Promise<Record<string, string>> {
+    const contentList = await this.getDetailByIds(contentIds);
+    let contentLiveIdMap: Record<string, string> = {};
+    contentList.map((content) => {
+      if (content.liveVersionId) {
+        contentLiveIdMap[content.id] = content.liveVersionId;
+      }
+    });
+
+    return contentLiveIdMap;
   }
 }

@@ -7,7 +7,6 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
@@ -49,11 +48,11 @@ export class UpdatePageVersionDetail extends BaseController {
       const checkResult = this.service.version.check.structure(params.content || {});
       if (checkResult.code !== 0) {
         if (checkResult.code === 1) {
-          return Response.warning(i18n.page.invalidPageContentId + ': ' + checkResult?.msg || '', 2051901);
+          return Response.warning(i18n.page.invalidPageContentId, 2051901, checkResult.data);
         } else if (checkResult.code === 2) {
-          return Response.warning(i18n.page.invalidRelationFormat + ': ' + checkResult?.msg || '', 2051902);
+          return Response.warning(i18n.page.invalidRelationFormat, 2051902, checkResult.data);
         } else if (checkResult.code === 3) {
-          return Response.warning(i18n.page.invalidStructureNames + ': ' + checkResult?.msg || '', 2051903);
+          return Response.warning(i18n.page.invalidStructureNames, 2051903, checkResult.data);
         }
       }
 
@@ -61,10 +60,7 @@ export class UpdatePageVersionDetail extends BaseController {
       params.content = <any>_.omit(params.content || {}, ['extension']);
       let result: Record<string, any> = {};
       [result] = await Promise.all([
-        this.service.version.info.updateVersionDetail(params, {
-          ctx,
-          actionType: [LOG.UPDATE, apiType].join('_'),
-        }),
+        this.service.version.info.updateVersionDetail(params, { ctx }),
         this.service.content.tag.updateExtensionTag(params.id, { mockId }, { ctx }),
       ]);
 
@@ -77,6 +73,8 @@ export class UpdatePageVersionDetail extends BaseController {
           return Response.warning(i18n.page.versionExist, 2051906);
         } else if (result.code === 4) {
           return Response.warning(i18n.page.missingFields + ': ' + result.data.join(','), 2051907);
+        } else if (result.code === 5) {
+          return Response.warning(i18n.page.contentHadUpdatedBefore, 2051908);
         }
       }
 

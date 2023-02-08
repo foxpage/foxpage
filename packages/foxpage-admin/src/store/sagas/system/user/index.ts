@@ -1,21 +1,21 @@
-import { message } from 'antd';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/system/user';
 import * as API from '@/apis/system/user/index';
 import { getBusinessI18n } from '@/foxI18n/index';
+import { errorToast } from '@/utils/error-toast';
 
 export function* handleFetchOrganizationList() {
-  const rs = yield call(API.fetchOrganizationList);
-  if (rs.code === 200) {
-    yield put(ACTIONS.pushOrganizationList(rs.data));
+  const res = yield call(API.fetchOrganizationList);
+  if (res.code === 200) {
+    yield put(ACTIONS.pushOrganizationList(res.data));
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(rs.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 

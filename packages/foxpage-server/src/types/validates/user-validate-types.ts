@@ -27,6 +27,11 @@ export class UserBase {
   @JSONSchema({ description: 'registered email' })
   @IsEmail()
   email: string;
+
+  @JSONSchema({ description: 'User nick name' })
+  @IsString()
+  @IsOptional()
+  nickName: string;
 }
 
 export class RegisterReq {

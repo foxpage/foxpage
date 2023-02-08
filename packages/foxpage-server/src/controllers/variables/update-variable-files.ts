@@ -14,6 +14,7 @@ import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
+// migration to files/update-type-item-files.ts
 @JsonController('variables')
 export class UpdateVariableFileDetail extends BaseController {
   constructor() {
@@ -25,7 +26,7 @@ export class UpdateVariableFileDetail extends BaseController {
    * @param  {UpdateFileDetailReq} params
    * @returns {File}
    */
-  @Put('/files')
+  @Put('/files-migrations')
   @OpenAPI({
     summary: i18n.sw.updateVariableFileDetail,
     description: '',
@@ -41,7 +42,7 @@ export class UpdateVariableFileDetail extends BaseController {
 
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.VARIABLE });
-      const hasAuth = await this.service.auth.file(params.id, { ctx });
+      const hasAuth = await this.service.auth.file(params.pageFileId || params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4081301);
       }

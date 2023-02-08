@@ -1,13 +1,13 @@
 import 'reflect-metadata';
 
-import { Body, Ctx, JsonController, Post } from 'routing-controllers';
+import { Body, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { UserRegisterRes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import * as Service from '../../services';
-import { FoxCtx, ResData } from '../../types/index-types';
+import { ResData } from '../../types/index-types';
 import { RegisterParams } from '../../types/user-types';
 import { RegisterReq, RegisterRes } from '../../types/validates/user-validate-types';
 import * as Response from '../../utils/response';
@@ -33,7 +33,7 @@ export class UserRegister extends BaseController {
     operationId: 'user-register',
   })
   @ResponseSchema(RegisterRes)
-  async index(@Ctx() ctx: FoxCtx, @Body() params: RegisterReq): Promise<ResData<UserRegisterRes>> {
+  async index(@Body() params: RegisterReq): Promise<ResData<UserRegisterRes>> {
     try {
       // Check the validity of the name and email address
       if (!checkName(params.account)) {
@@ -53,7 +53,7 @@ export class UserRegister extends BaseController {
       };
 
       // Save new user information
-      const result = await Service.user.register(userInfo, { ctx });
+      const result = await Service.user.register(userInfo);
       if (!result.account) {
         return Response.warning(i18n.user.exist, 2060603);
       }

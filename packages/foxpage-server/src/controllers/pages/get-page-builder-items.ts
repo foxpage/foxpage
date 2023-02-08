@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Ctx, Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { File } from '@foxpage/foxpage-server-types';
+import { File, PicType } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { TYPE } from '../../../config/constant';
@@ -14,8 +14,12 @@ import { AppContentListRes, AppPageBuilderItemReq } from '../../types/validates/
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+interface ContentWithPic extends ContentInfo{
+  pictures: PicType[];
+}
+
 interface FileContents extends File {
-  contents: ContentInfo[];
+  contents: ContentWithPic[];
 }
 
 @JsonController('pages')
@@ -101,12 +105,31 @@ export class GetPageBuilderItemList extends BaseController {
         { fileList },
       );
 
+      const liveVersionIds = _.map(
+        _.filter(_.flatten(_.toArray(fileContentObject)), (content) => content.liveVersionId),
+        'liveVersionId',
+      );
+
+      const contentVersion = await this.service.version.list.getVersionListChunk(liveVersionIds);
+      const contentVersionObject = _.keyBy(contentVersion, 'contentId');
+
+      // get content pictures
+      let fileContentWithPics: Record<string, ContentWithPic[]> = {};
       let fileContentList: FileContents[] = [];
       fileList.forEach((file) => {
+        !fileContentWithPics[file.id] && (fileContentWithPics[file.id] = []);
+        (fileContentObject[file.id] || []).forEach(content => {
+          if(content.liveVersionNumber > 0) {
+            fileContentWithPics[file.id].push(
+              Object.assign({}, content, { pictures: contentVersionObject[content.id]?.pictures || [] })
+            );
+          }
+        });
+
         fileContentList.push(
           Object.assign({}, file, {
-            contents: _.filter(fileContentObject[file.id] || [], 'liveVersionNumber'),
-          }),
+            contents: fileContentWithPics[file.id],
+          }) as FileContents,
         );
       });
 

@@ -47,7 +47,7 @@ export class FileCheckService extends BaseService<File> {
     if (pathNames) {
       const fileList = await Service.file.list.find({
         applicationId: params.applicationId,
-        tags: { $elemMatch: { pathname: { $in: pathNames } } },
+        'tags.pathname': { $in: pathNames },
         id: { $ne: params.fileId },
         deleted: false,
       });
@@ -86,6 +86,10 @@ export class FileCheckService extends BaseService<File> {
    * @returns
    */
   async checkFileHasLiveContent(fileIds: string[]): Promise<string[]> {
+    if (fileIds.length === 0) {
+      return [];
+    }
+
     const [fileContentList, fileList] = await Promise.all([
       Service.content.file.getContentByFileIds(fileIds),
       Service.file.list.getDetailByIds(fileIds),

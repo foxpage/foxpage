@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 
-import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -40,11 +39,21 @@ export class SetPageFileStatus extends BaseController {
 
     try {
       const apiType = this.getRoutePath(ctx.request.url);
+      let fileDetail = await this.service.file.info.getDetailById(params.id);
+      if (this.notValid(fileDetail)) {
+        return Response.warning(i18n.page.invalidPageId, 2051201);
+      }
 
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: apiType });
       const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051201);
+      }
+
+      // check delete status
+      const hasLiveContentFileIds = await this.service.file.check.checkFileHasLiveContent([params.id]);
+      if (hasLiveContentFileIds.length > 0) {
+        return Response.warning(i18n.page.pageContentHasLiveChildren, 2051203);
       }
 
       const result = await this.service.file.info.setFileDeleteStatus(params, {
@@ -54,11 +63,11 @@ export class SetPageFileStatus extends BaseController {
       if (result.code === 1) {
         return Response.warning(i18n.file.invalidFileId, 2051201);
       } else if (result.code === 2) {
-        return Response.warning(i18n.page.fileCannotBeDeleted, 251202);
+        return Response.warning(i18n.page.fileCannotBeDeleted, 2051202);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
-      const fileDetail = await this.service.file.info.getDetailById(params.id);
+      fileDetail = await this.service.file.info.getDetailById(params.id);
 
       return Response.success(fileDetail, 4151201);
     } catch (err) {

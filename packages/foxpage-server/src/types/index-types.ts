@@ -29,6 +29,7 @@ export interface FoxCtx extends Context {
     response?: any;
     user: string;
   };
+  request: any;
 }
 
 // Common response

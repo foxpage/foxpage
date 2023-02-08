@@ -3,11 +3,13 @@ import { connect } from 'react-redux';
 
 import { RootState } from 'typesafe-actions';
 
+import { fetchApplicationInfo } from '@/actions/applications/detail/settings/application';
 import * as ACTIONS from '@/actions/workspace/projects/personal/file';
 import { deleteProject, saveProject } from '@/actions/workspace/projects/personal/folder';
 import { ProjectFile } from '@/components/index';
 
 const mapStateToProps = (store: RootState) => ({
+  application: store.applications.detail.settings.app.application,
   loading: store.workspace.projects.personal.file.loading,
   saveLoading: store.workspace.projects.personal.file.saveLoading,
   pageInfo: store.workspace.projects.personal.file.pageInfo,
@@ -27,20 +29,22 @@ const mapDispatchToProps = {
   openDrawer: ACTIONS.openEditDrawer,
   updateEditFile: ACTIONS.updateEditFileValue,
   saveFile: ACTIONS.saveFile,
-  deleteFile: ACTIONS.deleteFile,
   openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
+  checkAuthRole: ACTIONS.checkAuthRole,
   fetchAuthList: ACTIONS.fetchAuthList,
   fetchUserList: ACTIONS.fetchUserList,
   saveUser: ACTIONS.saveAuthUser,
   deleteUser: ACTIONS.deleteAuthUser,
   deleteProject,
   saveProject,
+  fetchApplicationInfo,
 };
 
 type FileListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Main: React.FC<FileListType> = (props) => {
   const {
+    application,
     loading,
     saveLoading,
     pageInfo,
@@ -57,14 +61,15 @@ const Main: React.FC<FileListType> = (props) => {
     openDrawer,
     updateEditFile,
     saveFile,
-    deleteFile,
     openAuthDrawer,
+    checkAuthRole,
     fetchAuthList,
     fetchUserList,
     saveUser,
     deleteUser,
     deleteProject,
     saveProject,
+    fetchApplicationInfo,
   } = props;
 
   useEffect(() => {
@@ -86,19 +91,21 @@ const Main: React.FC<FileListType> = (props) => {
       authLoading={authLoading}
       authList={authList}
       userList={userList}
+      application={application}
       fetchFileList={fetchFileList}
       fetchParentFiles={fetchParentFiles}
       openDrawer={openDrawer}
       updateEditFile={updateEditFile}
       saveFile={saveFile}
-      deleteFile={deleteFile}
       openAuthDrawer={openAuthDrawer}
+      checkAuthRole={checkAuthRole}
       fetchAuthList={fetchAuthList}
       fetchUserList={fetchUserList}
       saveUser={saveUser}
       deleteUser={deleteUser}
       deleteProject={deleteProject}
       saveProject={saveProject}
+      fetchApplicationInfo={fetchApplicationInfo}
     />
   );
 };

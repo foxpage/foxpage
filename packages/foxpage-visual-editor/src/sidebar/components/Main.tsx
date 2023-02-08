@@ -1,36 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 
 import { SearchOutlined } from '@ant-design/icons';
-import { Empty, Input } from 'antd';
-import styled from 'styled-components';
+import { Button, Empty, Input } from 'antd';
 
-import { Scrollbar } from '@/components/index';
 import { FoxContext } from '@/context/index';
 
 import ComponentCategory, { Category } from './CategoryList';
-
-const Container = styled.div`
-  height: 100%;
-`;
-
-const SearchBox = styled.div`
-  padding: 2px 12px;
-  display: flex;
-  flex-direction: row;
-  border-bottom: 1px solid #f2f2f2;
-`;
-
-const ListPanel = styled(Scrollbar)`
-  height: calc(100% - 35px);
-  padding: 4px 0 50px 0;
-`;
-
-const Link = styled.a`
-  text-align: center;
-  display: inherit;
-  color: #656565;
-  font-size: 12px;
-`;
 
 const ComponentList = () => {
   const [category, setCategory] = useState<Category | null>(null);
@@ -40,13 +15,16 @@ const ComponentList = () => {
 
   const showList = components
     .filter((item) => item.status && !!item.category?.categoryName)
-    .sort((a, b) => (a.category?.sort || 0) - (b.category?.sort || 0));
+    .sort((a, b) => (b.category?.sort || 0) - (a.category?.sort || 0));
 
   useEffect(() => {
     if (components) {
       const _list = searchText
         ? showList.filter(
-            (item) => item.name?.indexOf(searchText) > -1 || item.label?.indexOf(searchText) > -1,
+            (item) =>
+              item.name?.indexOf(searchText) > -1 ||
+              item.label?.indexOf(searchText) > -1 ||
+              item.category?.name?.includes(searchText),
           )
         : showList;
 
@@ -80,9 +58,9 @@ const ComponentList = () => {
   };
 
   return (
-    <Container>
-      <SearchBox>
-        <SearchOutlined style={{ lineHeight: '30px', color: '#bfbfbf' }} />
+    <>
+      <div className="px-3 py-1 flex border-b border-b-colid border-b-gray-100 items-center">
+        <SearchOutlined className="text-gray-200" />
         <Input
           size="middle"
           bordered={false}
@@ -92,19 +70,26 @@ const ComponentList = () => {
             setSearchText(e.target.value);
           }}
         />
-      </SearchBox>
+      </div>
 
-      <ListPanel>
+      <div className="component-list flex flex-col overflow-auto flex-1 min-h-0">
         {category ? (
           <ComponentCategory category={category} />
         ) : (
           <>
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-            {!!config.app?.appId && <Link onClick={handleLink}>{foxI18n.componentAddLink}</Link>}
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              className="h-full flex flex-col items-center justify-center">
+              {!!config.app?.appId && (
+                <Button type="primary" onClick={handleLink}>
+                  {foxI18n.componentAddLink}
+                </Button>
+              )}
+            </Empty>
           </>
         )}
-      </ListPanel>
-    </Container>
+      </div>
+    </>
   );
 };
 

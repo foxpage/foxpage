@@ -10,7 +10,7 @@ export interface User {
   organizationId?: string;
 }
 
-export type Creator = Pick<User, 'id' | 'account' | 'nickName'>;
+export type Creator = Pick<User, 'id' | 'account' | 'nickName' | 'email'>;
 
 export interface UserOrganization {
   name: string;

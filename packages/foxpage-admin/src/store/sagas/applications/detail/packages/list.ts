@@ -14,6 +14,7 @@ import {
   AppComponentFetchComponentsParams,
   OptionsAction,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchComponentList(action: ApplicationPackagesActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -23,6 +24,7 @@ function* handleFetchComponentList(action: ApplicationPackagesActionType) {
   const {
     applicationId: appId,
     pageInfo,
+    search: storeSearch,
     selectPackage,
   } = store.getState().applications.detail.packages.list;
   const res = yield call(API.getComponentSearchs, {
@@ -30,7 +32,7 @@ function* handleFetchComponentList(action: ApplicationPackagesActionType) {
     type: !!type ? type : selectPackage,
     page: page || pageInfo.page,
     size: size || pageInfo.size,
-    search: search || '',
+    search: search || storeSearch || '',
   });
 
   if (res.code === 200) {
@@ -45,7 +47,7 @@ function* handleFetchComponentList(action: ApplicationPackagesActionType) {
       package: { fetchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchFailed);
+    errorToast(res, fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -81,7 +83,7 @@ function* handleFetchBlockList(action: ApplicationPackagesActionType) {
       package: { fetchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchFailed);
+    errorToast(res, fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -98,7 +100,7 @@ function* handleSaveComponent(action: ApplicationPackagesActionType) {
     applicationId,
     name: name,
     type,
-    componentType
+    componentType,
   });
 
   const {
@@ -115,7 +117,7 @@ function* handleSaveComponent(action: ApplicationPackagesActionType) {
     );
     yield put(ACTIONS.fetchComponentsAction({ applicationId }));
   } else {
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 
@@ -143,7 +145,7 @@ function* handleDeleteComponent(action: ApplicationPackagesActionType) {
 
     yield put(ACTIONS.fetchComponentsAction({ applicationId }));
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 

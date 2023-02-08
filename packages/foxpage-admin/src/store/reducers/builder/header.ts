@@ -37,6 +37,10 @@ const initialState = {
   dslLoading: false,
   dsl,
   dslModalVisible: false,
+  // html related
+  htmlLoading: false,
+  html: '',
+  htmlModalVisible: false,
   // mock related
   mockLoading: false,
   mockModalVisible: false,
@@ -153,6 +157,22 @@ const reducer = (state: InitialDataType = initialState, action: BuilderHeaderAct
 
       case getType(ACTIONS.pushDsl): {
         draft.dsl = action.payload.dsl;
+        break;
+      }
+
+      // html related
+      case getType(ACTIONS.updateHTMLLoading): {
+        draft.htmlLoading = action.payload.loading;
+        break;
+      }
+
+      case getType(ACTIONS.updateHTMLModalVisible): {
+        draft.htmlModalVisible = action.payload.open;
+        break;
+      }
+
+      case getType(ACTIONS.pushHtml): {
+        draft.html = action.payload.html;
         break;
       }
 

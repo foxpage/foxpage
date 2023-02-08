@@ -67,16 +67,18 @@ export const updateContent = <K extends StructureNode | RenderStructureNode, T e
         [newParent.id]: newParent,
         [newNode.id]: newNode,
       };
-    } else {
+    } else if (!formatted.extendPageNodeMap[newNode.id]) {
       formatted.originPageNodeMap = { ...formatted.originPageNodeMap, [newNode.id]: newNode };
     }
   };
 
-  list.forEach((item) => mapper(item as K));
+  list.forEach((item) => mapper(item as unknown as K));
   // to generate new content
   let newContent = mapToTree(formatted.originPageNodeMap);
   // extend page node
-  const extendPageNode = newContent.find((item) => item.name === PAGE_COMPONENT_NAME && !!item.extension.extendId);
+  const extendPageNode = newContent.find(
+    (item) => item.name === PAGE_COMPONENT_NAME && !!item.extension.extendId,
+  );
   if (extendPageNode) {
     const { children = [] } = extendPageNode;
     extendPageNode.children = [];
@@ -108,7 +110,7 @@ export const updateMockContent = <K extends StructureNode | RenderStructureNode,
     }
   };
 
-  list.forEach((item) => mapper(item as K));
+  list.forEach((item) => mapper(item as unknown as K));
   return schemas;
 };
 

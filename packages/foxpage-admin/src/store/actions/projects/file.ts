@@ -1,6 +1,12 @@
 import { createAction } from 'typesafe-actions';
 
 import {
+  AuthorizeAddParams,
+  AuthorizeQueryParams,
+  AuthorizeDeleteParams,
+  AuthorizeListFetchParams,
+  AuthorizeListItem,
+  AuthorizeUserFetchParams,
   File,
   PaginationInfo,
   ParentFileFetchParams,
@@ -8,6 +14,7 @@ import {
   ProjectFileDeleteParams,
   ProjectFileFetchParams,
   ProjectFileSaveParams,
+  User,
 } from '@/types/index';
 
 export const clearAll = createAction('PROJECTS_FILE__CLEAR_ALL', () => ({}))();
@@ -50,8 +57,9 @@ export const saveFile = createAction(
 
 export const deleteFile = createAction(
   'PROJECTS_DETAILS__DELETE_FILE',
-  (params: ProjectFileDeleteParams) => ({
-    ...params,
+  (params: ProjectFileDeleteParams, cb?: () => void) => ({
+    params,
+    cb,
   }),
 )();
 
@@ -70,3 +78,64 @@ export const pushParentFiles = createAction(
     folder,
   }),
 )();
+
+// authorize related
+export const fetchAuthList = createAction(
+  'PROJECTS_DETAILS__FETCH_AUTH_LIST',
+  (params: AuthorizeListFetchParams) => ({ params }),
+)();
+
+export const pushAuthList = createAction('PROJECTS_DETAILS__PUSH_AUTH_LIST', (list: AuthorizeListItem[]) => ({
+  list,
+}))();
+
+export const updateAuthListLoading = createAction(
+  'PROJECTS_DETAILS__UPDATE_AUTH_LIST_LOADING',
+  (status: boolean) => ({
+    status,
+  }),
+)();
+
+export const checkAuthRole = createAction(
+  'PROJECTS_DETAILS__CHECK_AUTH_ROLE',
+  (params: AuthorizeQueryParams, cb?: (role: number) => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const updateAuthDrawerVisible = createAction(
+  'PROJECTS_DETAILS__UPDATE_AUTH_DRAWER_VISIBLE',
+  (visible = false, editFile?: File) => ({
+    visible,
+    editFile,
+  }),
+)();
+
+export const saveAuthUser = createAction(
+  'PROJECTS_DETAILS__SAVE_AUTH_USER',
+  (params: AuthorizeAddParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const deleteAuthUser = createAction(
+  'PROJECTS_DETAILS__DELETE_AUTH_USER',
+  (params: AuthorizeDeleteParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const fetchUserList = createAction(
+  'PROJECTS_DETAILS__FETCH_USER_LIST',
+  (params: AuthorizeUserFetchParams, cb?: (userList) => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const pushUserList = createAction('PROJECTS_DETAILS__PUSH_USER_LIST', (list: User[]) => ({
+  list,
+}))();

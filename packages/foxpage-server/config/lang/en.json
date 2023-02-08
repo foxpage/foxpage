@@ -63,7 +63,13 @@
     "setStatusFailed": "Failed to set file deletion status",
     "fileIsInvalidOrDeleted": "File id is invalid or has been deleted",
     "getFileParentListFailed": "Failed to get file all parent list",
-    "allowMax20Files": "Max allow create 20 files in folder"
+    "allowMax20Files": "Max allow create 20 files in folder",
+    "invalidItemId": "Invalid item id",
+    "itemVersionHasPublished": "The version had published",
+    "invalidItemIdOrHasPublished": "Invalid item id or the version has published",
+    "setItemVersionPublishFailed": "Failed to set item version to publish status",
+    "fileCannotBeDeleted": "The file cannot be deleted",
+    "updateTypeItemFailed": "Failed to update type item file"
   },
   "folder": {
     "nameExist": "The folder name already exists in the current directory",
@@ -106,6 +112,7 @@
   "content": {
     "addContentBaseFailed": "Failed to create page",
     "contentExist": "Page already exists",
+    "versionExist": "Version already exists",
     "invalidContentId": "Invalid Page ID",
     "updateContentBaseFailed": "Failed to update the page",
     "getContentListFailed": "Failed to get the file list",
@@ -129,12 +136,32 @@
     "getTemplateListFailed": "Failed to get the template list",
     "getContentDetailsFailed": "Failed to get the content details list",
     "getContentChangesFailed": "Failed to get the changed content list",
+    "saveToBaseFailed": "Failed to save base content",
     "versionIsNotReleaseStatus": "The version is not released",
     "ComponentInfoNotExist": "Component information does not exist",
     "ComponentDependRecursive": "Component information has a circular dependency",
     "RelationInfoNotExist": "Relation information does not exist",
     "RelationDependRecursive": "Relational information has a circular dependency",
-    "unEditedStatus": "The current version cannot be edited"
+    "unEditedStatus": "The current version cannot be edited",
+    "updateVersionTemplateSuccess": "Update the version template success",
+    "updateVersionTemplateFailed": "Failed to update the version template",
+    "invalidTemplateId": "Invalid Template ID",
+    "getPageContentLogFailed": "Failed to get content log list",
+    "invalidAppOrContentId": "Invalid application id, content id",
+    "invalidAppOrContentIdOrVersionId": "Invalid application id, content id, version id",
+    "contentHasLiveVersion": "Content has live version",
+    "lockBuildContentFailed": "Failed to lock build content",
+    "unlockBuildContentFailed": "Failed to unlock build content",
+    "saveToBaseContentSuccess": "Save to base content success",
+    "saveToBaseContentFailed": "Failed to save to base content",
+    "getContentVersionsFailed": "Failed to get the content versions info",
+    "getPageTypeItemsFailed": "Failed to get page type items",
+    "getAppScopeItemFailed": "Failed to get type item scope info",
+    "setTypeItemContentDeletedFailed": "Failed to set type item content status",
+    "contentCannotBeDeleted": "Content cannot be deleted",
+    "versionCannotBeDeleted": "Version cannot be deleted",
+    "typeItemNameExist": "Type item name has exist",
+    "missingFields": "The version details are missing necessary fields"
   },
   "registry": {
     "addRegistryDetailFailed": "Adding registration details failed",
@@ -162,7 +189,8 @@
     "setProjectPageToLiveFailed": "Failed to set the page publishing status",
     "getWorkspaceProjectListFailed": "Failed to get workspace project list",
     "getWorkspaceRecycleListFailed": "Failed to get workspace recycle list",
-    "projectIsInvalidOrDeleted": "Project id is invalid or has been deleted"
+    "projectIsInvalidOrDeleted": "Project id is invalid or has been deleted",
+    "hasLiveContentFile": "Project has live content files"
   },
   "resource": {
     "addResourceFileFailed": "Failed to add resource file",
@@ -214,6 +242,7 @@
     "invalidApplicationId": "Invalid Application ID",
     "invalidFolderType": "Invalid Data Type",
     "invalidFileId": "Invalid Component ID",
+    "invalidIdOrName": "Invalid component Id or name",
     "invalidContentId": "Invalid component content ID",
     "invalidVersionId": "Invalid component version ID",
     "invalidCategoryName": "Invalid component category name",
@@ -242,7 +271,9 @@
     "setComponentCategoryFailed": "Failed to set component category",
     "getCategoryComponentsFailed": "Failed to get category components",
     "getComponentsCategoryTypeFailed": "Failed to get component category types",
-    "removeComponentsCategoryFailed": "Failed to remove component category"
+    "removeComponentsCategoryFailed": "Failed to remove component category",
+    "componentInStore": "The component is available in the store",
+    "invalidVersionData": "The version data of component is invalid"
   },
   "variable": {
     "addNewVariableFailed": "Adding variable details failed",
@@ -423,7 +454,14 @@
     "getWorkspaceRequestDetailFailed": "Failed to get workspace request detail",
     "getWorkspaceDataHistoryFailed": "Failed to get workspace data history",
     "getPageBuilderItemFailed": "Failed to get page builder item list",
-    "getBlockContentLiveVersionFailed": "Failed to get block content live version"
+    "getBlockContentLiveVersionFailed": "Failed to get block content live version",
+    "pageContentIsOffline": "The page content had set to offline",
+    "pageIsOnline": "The page has commit to store",
+    "pageContentHasLiveChildren": "The page content has live children",
+    "setPageContentOfflineSuccess": "Set page content offline success",
+    "invalidVersionData": "The version data of page is invalid",
+    "contentHadUpdatedBefore": "The content had updated before",
+    "getPageVersionsFailed": "Failed to get page versions"
   },
   "store": {
     "getStorePageListFailed": "Failed to get product page data",
@@ -452,7 +490,7 @@
     "addNewItemFailed": "Failed to add new item detail"
   },
   "sw": {
-    "userLogin": "User account login",
+    "userLogin": "User login",
     "userRegister": "User Register",
     "changeUserPassword": "Change User Password",
     "addNewUser": "Add User",
@@ -626,6 +664,7 @@
     "setPageContentStatus": "Set the delete status of page content",
     "setPageVersionStatus": "Set the delete status of the page version",
     "setPageContentLive": "Set the live version of the page content",
+    "setPageContentOffline": "Set the page content to offline",
     "setPageVersionPublishStatus": "Set the publishing status of the page content version",
     "setPageVersionPublishLiveStatus": "Publish the page and set it as the Live version",
     "getPageBuildVersion": "Get page build version details",
@@ -706,6 +745,12 @@
     "updateAuthorizeDetail": "Update the type data authorize data",
     "setAuthorizeStatus": "Set the target authorize delete status to the type data",
     "getAuthorizeList": "Get the type data authorize list",
-    "addTypeItemDetail": "Add Type item (variable, function, condition, mock) detail"
+    "addTypeItemDetail": "Add Type item (variable, function, condition, mock) detail",
+    "addContentLogs": "Add content logs",
+    "getContentLogs": "Get content log list",
+    "setItemVersionPublishStatus": "Set item (variable, function, condition) version to publish status",
+    "lockBuildContent": "Lock build content operate action",
+    "unlockBuildContent": "Unlock build content operate action",
+    "getPageTypeItemVersions": "Get Page type item versions"
   }
 }

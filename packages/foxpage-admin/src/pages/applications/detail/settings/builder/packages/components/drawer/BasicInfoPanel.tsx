@@ -1,21 +1,19 @@
 import React, { useContext } from 'react';
-import MdEditor from 'react-markdown-editor-lite';
 
-// import { FireFilled } from '@ant-design/icons';
-import { Input, InputNumber } from 'antd';
-import MarkdownIt from 'markdown-it';
+import { Input, InputNumber, message, Upload } from 'antd';
+import type { RcFile } from 'antd/es/upload/interface';
 import styled from 'styled-components';
 
-import { Field, Group, Label } from '@/components/index';
+import { Field, Group, Label, MarkdownCodeEditor } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import { CategoryType, Component } from '@/types/index';
+import { getImageUrlByEnv } from '@/utils/index';
 
 // import { getRankColor } from '../rank';
 import Category from './Category';
 
 // import CoverUpload from './CoverUpload';
 import 'react-markdown-editor-lite/lib/index.css';
-import { getImageUrlByEnv } from '@/utils/index';
 
 const TooltipContainer = styled.p`
   color: #f90;
@@ -49,11 +47,9 @@ function BasicInfoPanel(props: IProps) {
   const { category, categories, onChange } = props;
   const { name, categoryName = '', groupName = '', sort, description, screenshot = '' } = category || {};
 
-  const mdParser = new MarkdownIt();
-
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { category: i18n } = locale.business;
+  const { category: i18n, setting: settingI18n } = locale.business;
 
   const handleValueChange = (key, value) => {
     if (value && /{{+.+}}/.test(value)) {
@@ -62,8 +58,29 @@ function BasicInfoPanel(props: IProps) {
     onChange(Object.assign({}, category, { [key]: value }));
   };
 
-  const handleEditorChange = ({ text }) => {
-    handleValueChange('description', text);
+  const handleEditorChange = (v: string) => {
+    handleValueChange('description', v);
+  };
+
+  const beforeUpload = (file: RcFile) => {
+    const isLt1M = file.size / 1024 / 1024 < 1;
+    if (!isLt1M) {
+      message.error(settingI18n.componentCoverSizeExceedError);
+    }
+    return isLt1M;
+  };
+
+  const getBase64File = (file: RcFile, callback: (url: string) => void) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => callback(reader.result as string));
+    reader.readAsDataURL(file);
+  };
+
+  const uploadBase64File = (file: RcFile) => {
+    getBase64File(file, (base64) => {
+      // TODO: do upload here
+      return base64;
+    });
   };
 
   return (
@@ -101,9 +118,16 @@ function BasicInfoPanel(props: IProps) {
           <Label>{i18n.cover}</Label>
           <Input value={screenshot} onChange={(e) => handleValueChange('screenshot', e.target.value)} />
           <CoverBox>
-            <div>
-              <img src={screenshot || getImageUrlByEnv('/images/placeholder.png')} width="100%" />
-            </div>
+            <Upload
+              accept="image/*"
+              maxCount={1}
+              showUploadList={false}
+              beforeUpload={beforeUpload}
+              customRequest={(img) => uploadBase64File(img.file as RcFile)}>
+              <div>
+                <img src={screenshot || getImageUrlByEnv('/images/placeholder.png')} width="100%" />
+              </div>
+            </Upload>
           </CoverBox>
         </Field>
 
@@ -138,12 +162,7 @@ function BasicInfoPanel(props: IProps) {
         <Field>
           <Label>{i18n.description}</Label>
           <TooltipContainer>{i18n.descriptionTips}</TooltipContainer>
-          <MdEditor
-            style={{ height: '500px', overflow: 'hidden auto' }}
-            value={description}
-            renderHTML={(text) => mdParser.render(text)}
-            onChange={handleEditorChange}
-          />
+          <MarkdownCodeEditor value={description || ''} onChange={handleEditorChange} />
         </Field>
       </Group>
     </div>

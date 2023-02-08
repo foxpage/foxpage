@@ -13,6 +13,7 @@ import { AppContentLiveReq, ContentDetailRes } from '../../types/validates/conte
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to contents/set-type-item-version-live.ts
 @JsonController('mocks')
 export class SetMockLiveVersions extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class SetMockLiveVersions extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/live-versions')
+  @Put('/live-versions-migrations')
   @OpenAPI({
     summary: i18n.sw.setMockContentLive,
     description: '',

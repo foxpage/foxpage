@@ -392,10 +392,20 @@ export class FileVersionDetailReq {
   @IsOptional()
   folderId: string;
 
+  @JSONSchema({ description: 'The file assoc content id' })
+  @IsString()
+  @IsOptional()
+  pageContentId: string;
+
   @JSONSchema({ description: 'File type' })
   @IsString()
   @IsOptional()
   type: FileTypes;
+
+  @JSONSchema({ description: 'File sub type' })
+  @IsString()
+  @IsOptional()
+  subType: string;
 
   @JSONSchema({ description: 'File suffix' })
   @IsString()
@@ -456,6 +466,11 @@ export class UpdateFileDetailReq {
   @IsArray()
   @IsOptional()
   tags: Array<any>;
+
+  @JSONSchema({ description: 'Depended file ID' })
+  @IsString()
+  @IsOptional()
+  pageFileId: string;
 }
 
 export class UpdateTypeFileDetailReq {
@@ -491,6 +506,11 @@ export class UpdateTypeFileDetailReq {
   @IsString()
   @IsOptional()
   type: string;
+
+  @JSONSchema({ description: 'Depended File ID' })
+  @IsString()
+  @IsOptional()
+  pageFileId: string;
 }
 
 export class UpdateFolderDetailReq {
@@ -538,6 +558,35 @@ export class DeleteFolderReq {
   @IsBoolean()
   @IsOptional()
   status: boolean;
+}
+
+export class PicTypeItem {
+  @JSONSchema({ description: 'Picture url' })
+  @IsString()
+  url: string;
+
+  @JSONSchema({ description: 'Item type' })
+  @IsString()
+  type: string;
+
+  @JSONSchema({ description: 'Item sort' })
+  @IsNumber()
+  sort: number;
+}
+
+export class SetVersionPictureReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Item type id, default is version id' })
+  @IsString()
+  id: string;
+
+  @JSONSchema({ description: 'Item picture list' })
+  @IsArray()
+  @ValidateNested({ each: true })
+  pictures: PicTypeItem[];
 }
 
 export class AddTypeFolderDetailReq {

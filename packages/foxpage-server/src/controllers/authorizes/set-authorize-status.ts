@@ -11,7 +11,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('authorizes')
-export class UpdateAuthorizeDetail extends BaseController {
+export class SetAuthorizeStatus extends BaseController {
   constructor() {
     super();
   }

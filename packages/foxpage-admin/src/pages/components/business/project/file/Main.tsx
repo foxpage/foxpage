@@ -1,38 +1,35 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 
-import { DeleteOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Input, Modal } from 'antd';
+import { Modal } from 'antd';
 
 import { AuthorizeDrawer, Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
-import { WIDTH_DEFAULT } from '@/constants/global';
+import { ROUTE_FOLDER_MAP, ROUTE_SEARCH_MAP, WIDTH_DEFAULT } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import {
+  Application,
   AuthorizeAddParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
   AuthorizeListItem,
+  AuthorizeQueryParams,
   AuthorizeUserFetchParams,
   File,
   PaginationInfo,
   ParentFileFetchParams,
   ProjectEntity,
-  ProjectFileDeleteParams,
   ProjectFileFetchParams,
   ProjectFileSaveParams,
   ProjectSaveParams,
   User,
 } from '@/types/index';
-import { getLocationIfo, getLoginUser, getProjectFolder } from '@/utils/index';
+import { getLocationIfo } from '@/utils/index';
 
-import { BasicInfo } from '../common/index';
+import { BasicInfo, Toolbar } from '../common/index';
 
 import { EditDrawer, List } from './components/index';
 
-const { Search } = Input;
-
 const PAGE_NUM = 1;
-const PAGE_SIZE = 999;
 
 interface ProjectFileType {
   type: 'application' | 'involved' | 'personal' | 'projects' | 'workspace';
@@ -44,21 +41,23 @@ interface ProjectFileType {
   saveLoading: boolean;
   authDrawerOpen?: boolean;
   authLoading?: boolean;
-  authList?: AuthorizeListItem[];
   userList?: User[];
+  authList?: AuthorizeListItem[];
+  application?: Application;
   fetchFileList: (params: ProjectFileFetchParams) => void;
   fetchParentFiles: (params: ParentFileFetchParams, cb?: (folder) => void) => void;
   openDrawer: (open: boolean, editFile?: File) => void;
   updateEditFile: (name: string, value: unknown) => void;
   saveFile: (params: ProjectFileSaveParams, cb?: () => void) => void;
-  deleteFile: (params: ProjectFileDeleteParams) => void;
+  checkAuthRole?: (params: AuthorizeQueryParams, cb?: (role: number) => void) => void;
   fetchAuthList?: (params: AuthorizeListFetchParams) => void;
-  fetchUserList?: (params: AuthorizeUserFetchParams, cb?: () => void) => void;
+  fetchUserList?: (params: AuthorizeUserFetchParams, cb?: (userList) => void) => void;
   saveUser?: (params: AuthorizeAddParams, cb?: () => void) => void;
   deleteUser?: (params: AuthorizeDeleteParams, cb?: () => void) => void;
   openAuthDrawer?: (visible: boolean, editFile?: File) => void;
   deleteProject: (id: string, applicationId: string, cb?: () => void) => void;
   saveProject?: (params: ProjectSaveParams, cb?: () => void) => void;
+  fetchApplicationInfo?: (applicationId: string) => void;
 }
 
 const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType) => {
@@ -73,13 +72,13 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
     authDrawerOpen = false,
     authLoading = false,
     authList = [],
-    userList = [],
+    application,
     fetchFileList,
     fetchParentFiles,
     openDrawer,
     updateEditFile,
     saveFile,
-    deleteFile,
+    checkAuthRole,
     fetchAuthList,
     fetchUserList,
     saveUser,
@@ -87,31 +86,27 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
     openAuthDrawer,
     deleteProject,
     saveProject,
+    fetchApplicationInfo,
   } = props;
   const [folder, setFolder] = useState<ProjectEntity | undefined>();
-  const [folderName, setFolderName] = useState<string>(getProjectFolder()?.name || 'Project details');
+  const [folderName, setFolderName] = useState<string>('');
   const [authType, setAuthType] = useState('');
   const [typeId, setTypeId] = useState('');
-  const [search, setSearch] = useState<string | undefined>();
+  const [pageNum, setPageNum] = useState(pageInfo.page || PAGE_NUM);
+
+  // url search params
+  const history = useHistory();
+  const {
+    applicationId,
+    folderId,
+    folderPage,
+    folderSearch,
+    page: searchPage,
+  } = getLocationIfo(history.location);
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { authorize, file, global, project } = locale.business;
-
-  // url search params
-  const { applicationId, folderId } = getLocationIfo(useLocation());
-
-  // auth check
-  const { userInfo } = getLoginUser();
-
-  // route map with different type
-  const history = useHistory();
-  const typeRouteMap = {
-    application: `/applications/${applicationId}/projects/list?applicationId=${applicationId}`,
-    involved: '/workspace/projects/involved/list',
-    personal: '/workspace/projects/personal/list',
-    projects: '/projects/list',
-  };
+  const { global, project } = locale.business;
 
   // fetch project detail
   useEffect(() => {
@@ -132,17 +127,20 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
   }, []);
 
   useEffect(() => {
+    setPageNum(!!searchPage ? Number(searchPage) : PAGE_NUM);
+  }, [searchPage]);
+
+  useEffect(() => {
     if (applicationId && folderId) {
       // fetch file list
       fetchFileList({
         applicationId,
         id: folderId,
-        page: !!search ? PAGE_NUM : pageInfo.page,
+        page: pageNum,
         size: pageInfo.size,
-        search: search || '',
       });
     }
-  }, [search]);
+  }, [pageNum]);
 
   useEffect(() => {
     const newTypeId = editFile?.id;
@@ -152,42 +150,13 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
     }
   }, [editFile?.id]);
 
-  // fetch file selected authorize list
   useEffect(() => {
-    if (authDrawerOpen && applicationId && typeId) {
-      if (typeof fetchAuthList === 'function')
-        fetchAuthList({
-          applicationId: applicationId as string,
-          type: authType,
-          typeId,
-        });
+    if (type !== 'application') {
+      if (applicationId && typeof fetchApplicationInfo === 'function') {
+        fetchApplicationInfo(applicationId);
+      }
     }
-  }, [authDrawerOpen, authType, typeId, fetchAuthList]);
-
-  // fetch file selected authorize user available list
-  useEffect(() => {
-    if (authDrawerOpen) {
-      if (typeof fetchUserList === 'function')
-        fetchUserList({
-          page: PAGE_NUM,
-          size: PAGE_SIZE,
-        });
-    }
-  }, [authDrawerOpen, fetchUserList]);
-
-  const authCheck = useMemo(() => {
-    let disable = true;
-
-    if (type === 'projects' && userInfo?.id === folder?.creator?.id) {
-      disable = false;
-    } else if (type === 'personal') {
-      disable = false;
-    } else if (type === 'application') {
-      disable = false;
-    }
-
-    return disable;
-  }, [type, userInfo?.id, folder?.creator]);
+  }, [type]);
 
   const handleAuthorize = () => {
     if (typeof openAuthDrawer === 'function') {
@@ -205,16 +174,50 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
       onOk: () => {
         if (folder && folder.application?.id)
           deleteProject(folder.id, folder.application.id, () => {
-            const backPathName = {
-              application: `/applications/${applicationId}/projects/list?applicationId=${applicationId}`,
-              personal: '/workspace',
-              projects: '/projects',
-            };
-            history.push(backPathName[type]);
+            history.push({
+              pathname: ROUTE_FOLDER_MAP[type].replace(':applicationId', applicationId),
+              search: `?page=${folderPage || 1}&appId=${folderSearch}`,
+            });
           });
       },
       okText: global.yes,
       cancelText: global.no,
+    });
+  };
+
+  const handleOnBlur = (name: string, cb?: () => void) => {
+    if (name !== folderName) {
+      setFolderName(name);
+
+      if (applicationId && typeof saveProject === 'function') {
+        saveProject(
+          {
+            applicationId,
+            editProject: {
+              id: folder?.id || '',
+              application: {
+                id: folder?.application?.id || applicationId,
+                name: folder?.application?.name || '',
+              },
+              name: name,
+            },
+          },
+          () => {
+            if (typeof cb === 'function') cb();
+          },
+        );
+      }
+    }
+  };
+
+  const handleSearch = (search: string, searchType?: string) => {
+    history.push({
+      pathname: ROUTE_SEARCH_MAP[type].replace(':applicationId', applicationId),
+      search: `?application=&type=${searchType}&typeId=${
+        folderId || folder?.id
+      }&search=${search}&folderPage=${folderPage || ''}&folderSearch=${
+        folderSearch || ''
+      }&filePage=${pageNum}`,
     });
   };
 
@@ -227,7 +230,9 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
               breadCrumb={[
                 {
                   name: global.project,
-                  link: typeRouteMap[type],
+                  link: `${ROUTE_FOLDER_MAP[type].replace(':applicationId', applicationId)}?page=${
+                    folderPage || 1
+                  }&appId=${folderSearch || ''}`,
                 },
                 { name: folderName },
               ]}
@@ -237,53 +242,25 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
             maxWidth: type === 'projects' ? WIDTH_DEFAULT : '100%',
             overflow: type === 'projects' ? 'unset' : 'hidden auto',
           }}>
-          <>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                marginBottom: 8,
-              }}>
-              <Search
-                placeholder={global.searchPlaceholder}
-                defaultValue={search}
-                onSearch={setSearch}
-                style={{ width: 250 }}
-              />
-              {!authCheck && (
-                <>
-                  {type !== 'projects' && (
-                    <Button type="ghost" onClick={handleAuthorize} style={{ marginLeft: 8 }}>
-                      <UserOutlined /> {authorize.name}
-                    </Button>
-                  )}
-                  <Button type="ghost" danger onClick={handleDeleteProject} style={{ marginLeft: 8 }}>
-                    <DeleteOutlined /> {project.delete}
-                  </Button>
-                </>
-              )}
-              <Button type="primary" onClick={() => openDrawer(true)} style={{ marginLeft: 8 }}>
-                <PlusOutlined /> {file.add}
-              </Button>
-            </div>
-            <BasicInfo
-              env={type}
-              fileType="project"
-              fileDetail={folder}
-              saveProject={saveProject}
-              updateFolderName={setFolderName}
-            />
-            <List
-              type={type}
-              loading={loading}
-              pageInfo={pageInfo}
-              fileList={fileList}
-              fetchFileList={fetchFileList}
-              deleteFile={deleteFile}
-              openDrawer={openDrawer}
-              openAuthDrawer={openAuthDrawer}
-            />
-          </>
+          <Toolbar
+            env={type}
+            type="folder"
+            folderDetail={folder}
+            createDisabled={pageInfo.total >= 20}
+            deleteDisabled={false}
+            onAuthorize={handleAuthorize}
+            onCreate={openDrawer}
+            onDelete={handleDeleteProject}
+            onSearch={handleSearch}
+          />
+          <BasicInfo env={type} fileType="project" fileDetail={folder} onBlur={handleOnBlur} />
+          <List
+            type={type}
+            loading={loading}
+            pageInfo={pageInfo}
+            fileList={fileList}
+            openDrawer={openDrawer}
+          />
         </FoxPageContent>
       </Content>
       <EditDrawer
@@ -291,21 +268,24 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
         saveLoading={saveLoading}
         pageInfo={pageInfo}
         editFile={editFile}
+        application={application}
         updateEditFile={updateEditFile}
         saveFile={saveFile}
         fetchFileList={fetchFileList}
         closeDrawer={openDrawer}
       />
       <AuthorizeDrawer
+        needFetch
         type={authType}
         typeId={typeId}
         applicationId={applicationId as string}
         visible={authDrawerOpen}
         loading={authLoading}
         list={authList}
-        users={userList}
         onClose={openAuthDrawer}
+        onSearch={fetchUserList}
         onFetch={fetchAuthList}
+        onValidate={checkAuthRole}
         onAdd={saveUser}
         onDelete={deleteUser}
       />

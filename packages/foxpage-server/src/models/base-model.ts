@@ -210,4 +210,14 @@ export class BaseModel<T> {
   async aggregate(params: any = {}): Promise<any> {
     return this.model.aggregate(params);
   }
+
+  /**
+   * get the distinct field values
+   * @param fieldId
+   * @param filter
+   * @returns
+   */
+  async distinct(fieldId: string, filter?: mongoose.FilterQuery<T>): Promise<any> {
+    return this.model.distinct(fieldId, filter);
+  }
 }

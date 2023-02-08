@@ -1,4 +1,5 @@
 import { ApplicationService } from '../../src/services/application-service';
+import { AuthService } from '../../src/services/authorization-service';
 import { ComponentContentService } from '../../src/services/content-services/component-content-service';
 import { ContentListService } from '../../src/services/content-services/content-list-service';
 import { FileListService } from '../../src/services/file-services/file-list-service';
@@ -6,6 +7,7 @@ import { FolderListService } from '../../src/services/folder-services/folder-lis
 import { UserService } from '../../src/services/user-service';
 
 const MockedAppService = ApplicationService as jest.MockedClass<typeof ApplicationService>;
+const MockedAuthService = AuthService as jest.MockedClass<typeof AuthService>;
 const MockedContentComponentService = ComponentContentService as jest.MockedClass<
   typeof ComponentContentService
 >;
@@ -18,6 +20,7 @@ jest.mock('../../src/services/index');
 // jest.mock('../../src/services/content-services/index');
 
 export const appService = MockedAppService.getInstance();
+export const authService = MockedAuthService.getInstance();
 export const contentComponentService = MockedContentComponentService.getInstance();
 export const contentListService = MockedContentListService.getInstance();
 export const folderListService = MockedFolderListService.getInstance();

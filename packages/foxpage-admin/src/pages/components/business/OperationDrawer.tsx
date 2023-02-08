@@ -42,6 +42,7 @@ const TitCon = styled.div`
 const Tit = styled.span`
   font-size: 16px;
   color: #666;
+  font-weight: 500;
 `;
 
 const Content = styled(ScrollBar)`
@@ -155,7 +156,7 @@ const OperationDrawer: React.FC<OperationDrawerProps> = (props) => {
       maskClosable={maskClosable}
       width={expendScreen ? '80%' : width}
       onClose={handleClose}
-      visible={visible}
+      open={visible}
       destroyOnClose={destroyOnClose}
       {...otherProps}>
       <Container data-id={key}>

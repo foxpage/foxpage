@@ -5,13 +5,14 @@ import { getType } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/workspace/projects/involved/content';
 import * as APPLICATION_API from '@/apis/application';
 import * as AUTH_API from '@/apis/authorize';
+import { addBlockContent, updateBlockContent } from '@/apis/builder/block';
+import { fetchLiveComponentList } from '@/apis/builder/component';
 import * as API from '@/apis/project';
-import { updateBlockContent, addBlockContent } from '@/apis/builder/block';
-import { FileType, BLOCK_COMPONENT_NAME, PAGE_COMPONENT_NAME } from '@/constants/index';
+import { BLOCK_COMPONENT_NAME, FileType, PAGE_COMPONENT_NAME } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectInvolvedContentActionType } from '@/reducers/workspace/projects/involved/content';
 import { store } from '@/store/index';
-import { initRootContentNode } from '@/store/sagas/builder/utils'; 
+import { initRootContentNode } from '@/store/sagas/builder/utils';
 import {
   AuthorizeAddParams,
   AuthorizeDeleteParams,
@@ -24,7 +25,7 @@ import {
   ProjectContentDeleteParams,
   ProjectContentFetchParams,
 } from '@/types/index';
-import { fetchLiveComponentList } from '@/apis/builder/component';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchList(action: ProjectInvolvedContentActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -42,7 +43,7 @@ function* handleFetchList(action: ProjectInvolvedContentActionType) {
       content: { fetchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchFailed);
+    errorToast(res, fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -77,21 +78,21 @@ function* handleSave(action: ProjectInvolvedContentActionType) {
   const isExtend = !!content.extendId;
   const fileTypeRootNodeMap: Record<string, string> = {
     [FileType.page]: PAGE_COMPONENT_NAME,
-    [FileType.block]: BLOCK_COMPONENT_NAME
-  }
+    [FileType.block]: BLOCK_COMPONENT_NAME,
+  };
   // create new root content node for base and content without extendId
   if (isNew && !isExtend && fileTypeRootNodeMap[fileType]) {
     const componentName = fileTypeRootNodeMap[fileType];
     const { data: components } = yield call(fetchLiveComponentList, {
       applicationId,
-      type: ["component", "systemComponent"],
-      search: componentName
+      type: ['component', 'systemComponent'],
+      search: componentName,
     });
-    const component = components.find(item => item.name === componentName);
+    const component = components.find((item) => item.name === componentName);
     if (component) {
-        params = {
+      params = {
         ...params,
-        content: initRootContentNode(component)
+        content: initRootContentNode(component),
       };
     }
   }
@@ -99,8 +100,8 @@ function* handleSave(action: ProjectInvolvedContentActionType) {
   const apis = {
     [FileType.page]: [API.updatePageContent, API.addPageContent],
     [FileType.template]: [API.updateTemplateContent, API.addTemplateContent],
-    [FileType.block]: [updateBlockContent, addBlockContent]
-  }
+    [FileType.block]: [updateBlockContent, addBlockContent],
+  };
   const saveApi = content.id ? apis[fileType][0] : apis[fileType][1];
   const res = yield call(saveApi, params);
 
@@ -110,7 +111,7 @@ function* handleSave(action: ProjectInvolvedContentActionType) {
     yield put(ACTIONS.openEditDrawer(false));
     yield put(ACTIONS.fetchContentList({ applicationId, fileId, fileType }));
   } else {
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -135,7 +136,7 @@ function* handleDelete(action: ProjectInvolvedContentActionType) {
       ACTIONS.fetchContentList({ applicationId: applicationId || '', fileId: fileId || '', fileType }),
     );
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -152,7 +153,7 @@ function* handleFetchLocales(action: ProjectInvolvedContentActionType) {
       application: { fetchLocalesFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchLocalesFailed);
+    errorToast(res, fetchLocalesFailed);
   }
 }
 
@@ -169,7 +170,7 @@ function* handleCommitToStore(action: ProjectInvolvedContentActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || commitFailed);
+    errorToast(res, commitFailed);
   }
 }
 
@@ -186,7 +187,7 @@ function* handleOfflineFromStore(action: ProjectInvolvedContentActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || revokeFailed);
+    errorToast(res, revokeFailed);
   }
 }
 
@@ -203,7 +204,7 @@ function* handleFetchFileDetail(action: ProjectInvolvedContentActionType) {
       file: { fetchDetailFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchDetailFailed);
+    errorToast(res, fetchDetailFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -222,7 +223,7 @@ function* handleFetchParentFiles(action: ProjectInvolvedContentActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -239,7 +240,7 @@ function* handleFetchAuthList(action: ProjectInvolvedContentActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateAuthListLoading(false));
@@ -256,7 +257,7 @@ function* handleSaveAuth(action: ProjectInvolvedContentActionType) {
       global: { addFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || addFailed);
+    errorToast(res, addFailed);
   }
 }
 
@@ -273,22 +274,24 @@ function* handleDeleteAuth(action: ProjectInvolvedContentActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
 function* handleFetchAuthUserList(action: ProjectInvolvedContentActionType) {
-  const { params } = action.payload as { params: AuthorizeUserFetchParams };
+  const { params, cb } = action.payload as { params: AuthorizeUserFetchParams; cb?: (userList) => void };
   const res = yield call(AUTH_API.authorizeUserFetch, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushUserList(res.data || []));
+
+    if (typeof cb === 'function') cb(res.data);
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 

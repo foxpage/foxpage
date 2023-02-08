@@ -7,10 +7,12 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { i18n } from '../../../app.config';
 import { FileContents } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
-import { AppPageItemListContentReq, AppProjectItemContentDetailRes } from '../../types/validates/page-validate-types';
+import {
+  AppPageItemListContentReq,
+  AppProjectItemContentDetailRes,
+} from '../../types/validates/page-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
-
 
 @JsonController('projects')
 export class GetPageProjectItemListWithContents extends BaseController {
@@ -27,7 +29,7 @@ export class GetPageProjectItemListWithContents extends BaseController {
   @Get('/page-content/search')
   @Get('/template-content/search')
   @Get('/page-content/searchs')
-  @Get('/template-content/searchs')  
+  @Get('/template-content/searchs')
   @Get('/block-content/searchs')
   @OpenAPI({
     summary: i18n.sw.getAppProjectItemPageList,
@@ -36,7 +38,10 @@ export class GetPageProjectItemListWithContents extends BaseController {
     operationId: 'get-page-item-content-list',
   })
   @ResponseSchema(AppProjectItemContentDetailRes)
-  async index(@Ctx() ctx: FoxCtx, @QueryParams() params: AppPageItemListContentReq): Promise<ResData<FileContents[]>> {
+  async index(
+    @Ctx() ctx: FoxCtx,
+    @QueryParams() params: AppPageItemListContentReq,
+  ): Promise<ResData<FileContents[]>> {
     try {
       const apiType = this.getRoutePath(ctx.request.url, 2);
 
@@ -53,12 +58,13 @@ export class GetPageProjectItemListWithContents extends BaseController {
       if (params.search) {
         searchParams['$or'] = [{ name: { $regex: new RegExp(params.search, 'i') } }, { id: params.search }];
       }
-      
+
       const pageSize = this.service.file.list.setPageSize(params);
       const [counts, fileList] = await Promise.all([
         this.service.file.list.getCount(searchParams),
-        this.service.file.list.find(searchParams, '', { 
-          skip: (pageSize.page - 1) * pageSize.size, limit: pageSize.size 
+        this.service.file.list.find(searchParams, '', {
+          skip: (pageSize.page - 1) * pageSize.size,
+          limit: pageSize.size,
         }),
       ]);
 
@@ -67,19 +73,20 @@ export class GetPageProjectItemListWithContents extends BaseController {
       const referenceFileIds = _.keys(fileIdMap);
 
       // get file content list
-      const contentList = await this.service.content.list.find({ 
+      const contentList = await this.service.content.list.find({
         fileId: { $in: _.map(fileList, 'id').concat(referenceFileIds) },
         deleted: false,
       });
-      
+
       let fileContentObject: Record<string, FileContents> = {};
-      fileList.forEach(file => {
+      fileList.forEach((file) => {
         fileContentObject[file.id] = Object.assign({}, file, { contents: [] });
       });
-      contentList.forEach(content => {
+
+      contentList.forEach((content) => {
         if (fileContentObject[content.fileId]) {
           fileContentObject[content.fileId].contents.push(content);
-        } else if(fileIdMap[content.fileId] && fileContentObject[fileIdMap[content.fileId]]) {
+        } else if (fileIdMap[content.fileId] && fileContentObject[fileIdMap[content.fileId]]) {
           content.fileId = fileIdMap[content.fileId];
           fileContentObject[content.fileId].contents.push(content);
         }

@@ -26,6 +26,11 @@ export interface StoreFileResource extends Pick<StoreResource, 'id' | 'name'> {
   details: StoreResourceDetail;
   type: FileType;
   contents?: ContentEntity[];
+  pictures: [{
+    url: string;
+    type: string;
+    sort: number;
+  }]
 }
 
 export interface StoreProjectResource extends StoreResource {

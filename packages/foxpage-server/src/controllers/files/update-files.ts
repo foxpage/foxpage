@@ -47,7 +47,7 @@ export class UpdateFileDetail extends BaseController {
       }
 
       const fileDetail = await this.service.file.info.getDetailById(params.id);
-      if (!fileDetail || fileDetail.deleted) {
+      if (this.notValid(fileDetail)) {
         return Response.warning(i18n.file.invalidFileId, 2170602);
       }
 

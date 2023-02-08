@@ -47,7 +47,7 @@ export class UpdateComponentVersionDetail extends BaseController {
 
       // Check the validity of the version ID
       const versionDetail = await this.service.version.info.getDetailById(params.id);
-      if (!versionDetail || versionDetail.deleted) {
+      if (this.notValid(versionDetail)) {
         return Response.warning(i18n.content.invalidVersionId, 2111901);
       }
 
@@ -76,7 +76,7 @@ export class UpdateComponentVersionDetail extends BaseController {
             version: params.version,
             deleted: false,
           });
-          if (newVersionDetail && newVersionDetail.id !== versionDetail.id) {
+          if (this.notValid(newVersionDetail) && newVersionDetail.id !== versionDetail.id) {
             return Response.warning(i18n.component.versionExist, 2111903);
           }
         }

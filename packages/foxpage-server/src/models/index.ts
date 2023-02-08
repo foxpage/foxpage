@@ -1,5 +1,6 @@
 import { ApplicationModel } from './application-model';
 import { AuthorizeModel } from './authorize-model';
+import { ContentLogModel } from './content-log-model';
 import { ContentModel } from './content-model';
 import { RelationModel } from './content-relation-model';
 import { FileModel } from './file-model';
@@ -20,6 +21,7 @@ const file: FileModel = FileModel.getInstance();
 const org: OrgModel = OrgModel.getInstance();
 const team: TeamModel = TeamModel.getInstance();
 const content: ContentModel = ContentModel.getInstance();
+const contentLog: ContentLogModel = ContentLogModel.getInstance();
 const version: VersionModel = VersionModel.getInstance();
 const log: LogModel = LogModel.getInstance();
 const relation: RelationModel = RelationModel.getInstance();
@@ -30,6 +32,7 @@ export {
   application,
   auth,
   content,
+  contentLog,
   file,
   folder,
   log,

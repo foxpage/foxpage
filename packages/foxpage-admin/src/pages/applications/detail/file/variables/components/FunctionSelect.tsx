@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
+import { PlusOutlined } from '@ant-design/icons';
 import { Button, Table } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
@@ -8,8 +9,9 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/applications/detail/file/functions';
 import { Group, OperationDrawer, ScopeSelector } from '@/components/index';
 import { ScopeEnum } from '@/constants/index';
+import { EditDrawer as FuncEditDrawer } from '@/pages/applications/detail/file/functions/components';
 import { GlobalContext } from '@/pages/system';
-import { FuncEntity,FuncFetchParams } from '@/types/index';
+import { FuncEntity, FuncFetchParams } from '@/types/index';
 
 const Toolbar = styled.div`
   display: flex;
@@ -33,8 +35,10 @@ interface IProps {
   funcId?: string;
   applicationId: string;
   folderId?: string;
+  pageContentId?: string;
   onChange: (selectedFunction: FuncEntity | undefined) => void;
   onClose: () => void;
+  onFuncOpen: () => void;
 }
 
 type FunctionSelectType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
@@ -45,12 +49,14 @@ const ConditionSelect: React.FC<FunctionSelectType> = (props) => {
     funcId,
     applicationId,
     folderId,
+    pageContentId,
     list,
     loading,
     pageInfo,
     fetchList,
     onChange,
     onClose,
+    onFuncOpen,
     clearAll,
   } = props;
   const [group, setGroup] = useState<ScopeEnum>(!!folderId ? ScopeEnum.project : ScopeEnum.application);
@@ -58,7 +64,7 @@ const ConditionSelect: React.FC<FunctionSelectType> = (props) => {
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, variable } = locale.business;
+  const { function: functionI18n, global, variable } = locale.business;
 
   useEffect(() => {
     if (applicationId && visible) {
@@ -132,6 +138,9 @@ const ConditionSelect: React.FC<FunctionSelectType> = (props) => {
               setGroup(group);
             }}
           />
+          <Button type="link" icon={<PlusOutlined />} onClick={onFuncOpen}>
+            {functionI18n.add}
+          </Button>
         </Toolbar>
         <Table
           bordered
@@ -166,6 +175,7 @@ const ConditionSelect: React.FC<FunctionSelectType> = (props) => {
             },
           }}
         />
+        <FuncEditDrawer applicationId={applicationId} folderId={folderId} pageContentId={pageContentId} />
       </Group>
     </OperationDrawer>
   );

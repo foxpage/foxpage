@@ -3,12 +3,7 @@ import _ from 'lodash';
 import { Content, ContentVersion } from '@foxpage/foxpage-server-types';
 
 import * as Model from '../../models';
-import {
-  ContentLiveVersion,
-  ContentVersionNumber,
-  ContentVersionString,
-  NameVersion,
-} from '../../types/content-types';
+import { ContentVersionNumber, ContentVersionString, NameVersion } from '../../types/content-types';
 import { BaseService } from '../base-service';
 import * as Service from '../index';
 
@@ -126,21 +121,21 @@ export class VersionNumberService extends BaseService<ContentVersion> {
   ): Promise<ContentVersion[]> {
     const contentNameObject = _.keyBy(contentInfos, 'title');
     let contentVersionString: ContentVersionString[] = [];
-    let contentVersionNumber: ContentLiveVersion[] = [];
+    let contentLiveIds: string[] = [];
     contentNameInfos.forEach((content) => {
       if (contentNameObject[content.name] && content.version) {
         contentVersionString.push({
           contentId: contentNameObject[content.name].id,
           version: content.version,
         });
-      } else {
-        contentVersionNumber.push(_.pick(contentNameObject[content.name], ['id', 'liveVersionNumber']));
+      } else if (contentNameObject[content.name]?.liveVersionId) {
+        contentLiveIds.push(contentNameObject[content.name].liveVersionId as string);
       }
     });
 
     // Get content containing different versions of the same component
     const versionList = await Promise.all([
-      Service.version.list.getContentInfoByIdAndNumber(contentVersionNumber),
+      Service.version.list.getVersionListChunk(contentLiveIds),
       Service.version.list.getContentInfoByIdAndVersion(contentVersionString),
     ]);
 

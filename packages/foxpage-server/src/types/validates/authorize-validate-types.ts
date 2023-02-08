@@ -130,16 +130,15 @@ export class SetAuthStatusReq {
 export class GetAuthReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
-  @Length(20, 20)
   applicationId: string;
 
-  @JSONSchema({ description: 'Data type ' })
+  @JSONSchema({ description: 'Data type, folder|file|content ' })
   @IsString()
   type: string;
 
   @JSONSchema({ description: 'Data type id' })
   @IsString()
-  @Length(20, 20)
+  @IsOptional()
   typeId: string;
 }
 

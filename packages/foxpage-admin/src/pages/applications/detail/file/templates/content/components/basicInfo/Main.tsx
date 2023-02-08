@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 
 import { CalendarOutlined, CodeOutlined, UserOutlined } from '@ant-design/icons';
-import { Avatar, Tooltip } from 'antd';
+import { Avatar, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 
 import { GlobalContext } from '@/pages/system';
@@ -77,12 +77,17 @@ const BasicInfo: React.FC<IProps> = (props) => {
               </Tooltip>
               <Tooltip placement="top" title={global.creator}>
                 <UserOutlined />
-                <Text>{creator?.account || ''}</Text>
+                <Text style={{ userSelect: 'none' }}>{creator?.account || ''}</Text>
               </Tooltip>
               <Tooltip placement="top" title={global.createTime}>
                 <CalendarOutlined />
-                <Text>{periodFormat(createTime, 'unknown') || ''}</Text>
+                <Text style={{ userSelect: 'none' }}>{periodFormat(createTime, 'unknown') || ''}</Text>
               </Tooltip>
+              {fileDetail?.online && (
+                <Tooltip placement="top" title={file.sellingStatus}>
+                  <Tag color="#FF5500">{file.inStore}</Tag>
+                </Tooltip>
+              )}
             </Meta>
           </Information>
         </Container>

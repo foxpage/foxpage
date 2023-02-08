@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Content, File, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TAG, TYPE } from '../../../config/constant';
+import { COMPONENT_TYPE, TAG, TYPE } from '../../../config/constant';
 import { NewResourceDetail } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { SaveRemotePackageReq } from '../../types/validates/component-validate-types';
@@ -80,14 +80,14 @@ export class SaveRemoteComponents extends BaseController {
             deleted: false,
           });
 
-          if (!componentDetail || _.isEmpty(componentDetail)) {
+          if (this.notValid(componentDetail)) {
             const fileDetail = this.service.file.info.create(
               {
                 applicationId: params.applicationId || '',
                 name: _.trim(item.resource.name) || '',
                 folderId: appTypeId,
                 type: TYPE.COMPONENT as FileTypes,
-                componentType: item.componentType || '',
+                componentType: item.componentType || COMPONENT_TYPE.REACT_COMPONENT,
               },
               { ctx },
             );
@@ -170,7 +170,12 @@ export class SaveRemoteComponents extends BaseController {
         if (!componentContentId) {
           // Add component content
           const contentDetail = this.service.content.info.create(
-            { title: item.resource.name || '', fileId: item.component.id },
+            {
+              title: item.resource.name || '',
+              fileId: item.component.id,
+              applicationId: params.applicationId,
+              type: TYPE.COMPONENT,
+            },
             { ctx },
           );
           componentContentId = contentDetail.id;

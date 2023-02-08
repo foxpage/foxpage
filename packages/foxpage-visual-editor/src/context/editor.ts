@@ -3,7 +3,7 @@ import React from 'react';
 import { Component, FoxBuilderEvents, RenderStructureNode } from '@/types/index';
 
 /**
- * editor context 
+ * editor context
  * for dynamic update frequently
  */
 export interface EditorContext {
@@ -15,6 +15,7 @@ export interface EditorContext {
   events: {
     selectComponent: FoxBuilderEvents['onSelectComponent'];
     openMock?: (status: boolean) => void;
+    setSelectNodeFrom: (v: 'viewer' | 'sider' | undefined) => void;
   };
 }
 
@@ -23,6 +24,7 @@ const context = React.createContext<EditorContext>({
   viewWidth: '100%',
   events: {
     selectComponent: () => {},
+    setSelectNodeFrom() {},
   },
 });
 

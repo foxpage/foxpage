@@ -1,10 +1,12 @@
 import React from 'react';
 
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { LocaleTag } from '@/components/index';
+import { FileTag } from '@/types/index';
 
 const MAX_LOCALE_SHOW = 5;
 
@@ -16,19 +18,38 @@ const MoreContent = styled.div`
     cursor: default;
   }
 `;
+const Container = styled.span`
+  position: relative;
+`;
+const ErrorHint = styled.span`
+  position: absolute;
+  top: -6px;
+  left: -2px;
+  color: #cf1322;
+  font-size: 14px;
+`;
 
-function LocalsView(props: { maxLocaleCount?: number; locales: string[] }) {
+function LocalsView(props: { maxLocaleCount?: number; locales: FileTag[] }) {
   const { locales, maxLocaleCount = MAX_LOCALE_SHOW } = props;
 
   return (
     <span>
       {locales &&
-        locales.map((tag: React.Key | null | undefined, idx: number) => {
+        locales.map((tag: any, idx: number) => {
           if (idx < maxLocaleCount) {
             return (
-              <LocaleTag color="green" key={tag}>
-                {tag}
-              </LocaleTag>
+              <Container key={`${tag.locale}-${idx}`}>
+                <Tooltip title={tag.duplicate ? 'Duplicated' : ''}>
+                  <LocaleTag color="green" key={`${tag.locale}-${idx}`}>
+                    {tag.locale}
+                  </LocaleTag>
+                  {tag.duplicate && (
+                    <ErrorHint>
+                      <InfoCircleOutlined />
+                    </ErrorHint>
+                  )}
+                </Tooltip>
+              </Container>
             );
           }
           return null;

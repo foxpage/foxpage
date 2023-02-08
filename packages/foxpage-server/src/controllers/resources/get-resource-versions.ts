@@ -39,7 +39,7 @@ export class GetResourceVersionList extends BaseController {
     try {
       // Check the validity of the page
       const contentDetail = await this.service.content.info.getDetailById(params.id);
-      if (!contentDetail || contentDetail.deleted) {
+      if (this.notValid(contentDetail)) {
         return Response.warning(i18n.content.invalidContentId, 2121301);
       }
 

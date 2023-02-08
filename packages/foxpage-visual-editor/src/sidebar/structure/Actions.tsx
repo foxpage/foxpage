@@ -1,12 +1,6 @@
 import React, { CSSProperties } from 'react';
 
-import styled from 'styled-components';
-
 import { CusButton, PushFillIcon, PushIcon, RightCloseIcon } from '@/components/index';
-
-const Container = styled.div`
-  display: flex;
-`;
 
 interface IProps {
   pushpin?: boolean;
@@ -18,10 +12,10 @@ interface IProps {
 const Actions = (props: IProps) => {
   const { pushpin, style = {}, onClose, onPushpin } = props;
   return (
-    <Container style={style}>
-      <CusButton icon={!pushpin ? <PushIcon /> : <PushFillIcon />} onClick={onPushpin} />
+    <div style={style} className="flex">
+      <CusButton icon={pushpin ? <PushFillIcon /> : <PushIcon />} onClick={onPushpin} />
       <CusButton icon={<RightCloseIcon />} onClick={onClose} />
-    </Container>
+    </div>
   );
 };
 

@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -12,9 +13,9 @@ import { FileDetailRes, UpdateTypeFileDetailReq } from '../../types/validates/fi
 import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
-import _ from 'lodash';
 
-@JsonController('conditions')
+// migration to files/update-type-item.ts
+@JsonController('conditions-migrations')
 export class UpdateConditionDetail extends BaseController {
   constructor() {
     super();
@@ -44,7 +45,7 @@ export class UpdateConditionDetail extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.CONDITION });
 
       // Permission check
-      const hasAuth = await this.service.auth.file(params.id, { ctx });
+      const hasAuth = await this.service.auth.file(params.pageFileId || params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4101601);
       }
@@ -87,19 +88,11 @@ export class UpdateConditionDetail extends BaseController {
         return Response.warning(i18n.condition.conditionNameExist, 2101603);
       }
 
-      this.service.content.info.updateContentItem(
-        contentId,
-        { title: contentName },
-        { ctx, fileId: params.id },
-      );
+      this.service.content.info.updateContentItem(contentId, { title: contentName }, { ctx });
 
       if (versionStatus === VERSION.STATUS_BASE) {
         // Update version
-        this.service.version.info.updateVersionItem(
-          versionId,
-          { content: params.content },
-          { ctx, fileId: params.id, actionType: [LOG.UPDATE, TYPE.CONDITION].join('_') },
-        );
+        this.service.version.info.updateVersionItem(versionId, { content: params.content }, { ctx });
       } else {
         // Add new version
         const version = this.service.version.number.getVersionFromNumber(++versionNumber);
@@ -112,7 +105,7 @@ export class UpdateConditionDetail extends BaseController {
       await this.service.file.info.runTransaction(ctx.transactions);
       const fileDetail = await this.service.file.info.getDetailById(params.id);
 
-      return Response.success(fileDetail, 1101601);
+      return Response.success(Object.assign({ contentId }, fileDetail), 1101601);
     } catch (err) {
       return Response.error(err, i18n.condition.updateConditionFailed, 3101601);
     }

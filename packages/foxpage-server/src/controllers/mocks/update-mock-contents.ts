@@ -13,6 +13,7 @@ import { ContentDetailRes, UpdateContentReq } from '../../types/validates/conten
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to content/update-type-item-contents.ts
 @JsonController('mocks')
 export class UpdateMockContentDetail extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class UpdateMockContentDetail extends BaseController {
    * @param  {UpdateContentReq} params
    * @returns {Content}
    */
-  @Put('/contents')
+  @Put('/contents-migrations')
   @OpenAPI({
     summary: i18n.sw.updateMockContentDetail,
     description: '',
@@ -36,7 +37,7 @@ export class UpdateMockContentDetail extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.MOCK });
 
-      const hasAuth = await this.service.auth.content(params.id, { ctx });
+      const hasAuth = await this.service.auth.content(params.pageContentId || params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4191201);
       }

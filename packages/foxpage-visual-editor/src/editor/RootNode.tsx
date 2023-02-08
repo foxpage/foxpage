@@ -18,7 +18,7 @@ const getTemplateId = (directive: RenderStructureNode['directive'] = {}) => {
 };
 
 const RootNodeEditor = (props: IProps) => {
-  const { foxI18n, events } = useContext(FoxContext);
+  const { foxI18n, events, config } = useContext(FoxContext);
   const { node } = props;
   const { onWindowChange } = events;
   const { templateBind = false, disableTemplateBind = true } = node.__editorConfig || {};
@@ -45,14 +45,16 @@ const RootNodeEditor = (props: IProps) => {
         <Label>{foxI18n.template}</Label>
         <Field>
           <span style={{ display: 'inline-block' }}>{tplId}</span>
-          <Button
-            type="dashed"
-            size="small"
-            style={{ float: 'right' }}
-            disabled={disableTemplateBind}
-            onClick={handleTemplateBind}>
-            {foxI18n.select}
-          </Button>
+          {!config.sys?.readOnly && (
+            <Button
+              type="dashed"
+              size="small"
+              style={{ float: 'right' }}
+              disabled={disableTemplateBind}
+              onClick={handleTemplateBind}>
+              {foxI18n.select}
+            </Button>
+          )}
         </Field>
       </Field>
     </Group>

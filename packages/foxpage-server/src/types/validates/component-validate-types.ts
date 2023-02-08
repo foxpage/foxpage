@@ -188,10 +188,28 @@ export class ComponentFileContentReq {
   @Length(20, 20)
   applicationId: string;
 
-  @JSONSchema({ description: 'Component file ID' })
+  @JSONSchema({ description: 'Component file ID or content ID' })
   @IsString()
   @Length(20, 20)
   id: string;
+}
+
+export class ComponentContentVersionReq {
+  @JSONSchema({ description: 'Application' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'Component file ID or content ID' })
+  @IsString()
+  @IsOptional()
+  @Length(20, 20)
+  id: string;
+
+  @JSONSchema({ description: 'Component name' })
+  @IsString()
+  @IsOptional()
+  name: string;
 }
 
 export class ComponentFileVersionReq {
@@ -617,4 +635,15 @@ export class ComponentCategoryTypesRes extends ResponseBase {
   @ValidateNested({ each: true })
   @Type(() => ComponentCategoryTypes)
   data: Array<ComponentCategoryTypes>;
+}
+
+export class GetComponentUsedReq extends PagingReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'Component name' })
+  @IsString()
+  name: string;
 }

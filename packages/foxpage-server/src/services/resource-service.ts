@@ -322,7 +322,7 @@ export class ResourceService {
         const contentId = generationId(PRE.CONTENT);
         contentIdMap[name] = contentId;
         Service.content.info.create(
-          { id: contentId, title: name, fileId: fileDetail.id },
+          { id: contentId, title: name, fileId: fileDetail.id, applicationId: options.applicationId },
           { ctx: options.ctx },
         );
 
@@ -447,9 +447,9 @@ export class ResourceService {
 
   /**
    * Get resource content id by path
-   * @param parentId 
-   * @param pathArr 
-   * @returns 
+   * @param parentId
+   * @param pathArr
+   * @returns
    */
   async getContentIdByPath (parentId: string, pathArr?: string[]): Promise<string> {
     let contentId = '';
@@ -469,8 +469,8 @@ export class ResourceService {
 
   /**
    * Get resource max version infos
-   * @param resourceIds 
-   * @returns 
+   * @param resourceIds
+   * @returns
    */
   async getResourceMaxVersion (resourceIds: string[]): Promise<Record<string, VersionNumber>> {
     const resourceVersions = await Service.folder.list.find({

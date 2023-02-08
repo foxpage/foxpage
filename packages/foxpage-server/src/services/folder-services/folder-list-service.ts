@@ -409,6 +409,7 @@ export class FolderListService extends BaseService<Folder> {
           deleted: false,
           'relation.projectId': { $exists: true },
           'project.deleted': false,
+          'project.tags.type': TYPE.PROJECT_FOLDER,
         },
       },
       { $project: { 'relation.projectId': 1 } },
@@ -416,8 +417,8 @@ export class FolderListService extends BaseService<Folder> {
 
     if (params.search) {
       aggregateObject[1]['$match']['$or'] = [
-        { name: { $regex: new RegExp(params.search || '', 'i') } },
-        { id: params.search },
+        { 'project.name': { $regex: new RegExp(params.search || '', 'i') } },
+        { 'project.id': params.search },
       ];
     }
 
@@ -427,13 +428,13 @@ export class FolderListService extends BaseService<Folder> {
 
     const involveProjects: Folder[] = await Model.auth.aggregate(aggregateObject);
 
-    const pageProject = _.chunk(involveProjects, pageSize.size)[pageSize.page - 1] || [];
-
+    const projectIds = _.uniq(_.map(involveProjects, 'relation.projectId'));
+    const pageProjectIds = _.chunk(projectIds, pageSize.size)[pageSize.page - 1] || [];
     const involveProjectList: FolderInfo[] = [];
 
-    if (pageProject.length > 0) {
+    if (pageProjectIds.length > 0) {
       // Get project detail
-      const projectList = await Service.folder.list.getDetailByIds(_.map(pageProject, 'relation.projectId'));
+      const projectList = await Service.folder.list.getDetailByIds(pageProjectIds);
       const [userObject, appList] = await Promise.all([
         Service.user.getUserBaseObjectByIds(_.map(projectList, 'creator')),
         Service.application.getDetailByIds(_.map(projectList, 'applicationId')),
@@ -451,7 +452,7 @@ export class FolderListService extends BaseService<Folder> {
       });
     }
 
-    return { list: involveProjectList, count: involveProjects.length || 0 };
+    return { list: involveProjectList, count: projectIds.length || 0 };
   }
 
   /**

@@ -30,6 +30,7 @@ const versionList = {
   versions: [] as ComponentVersionEntity[],
   pageInfo: { total: 0, page: 1, size: 1000 } as PaginationInfo,
 };
+const depList: any[] = [];
 
 const initialState = {
   fileDetail,
@@ -38,6 +39,7 @@ const initialState = {
   componentInfo,
   versionList,
   versionDrawer,
+  depList,
 };
 
 export type InitialDataType = typeof initialState;
@@ -129,6 +131,11 @@ const reducer = (state: InitialDataType = initialState, action: ApplicationPacka
       case getType(ACTIONS.pushFileDetail): {
         const { data } = action.payload;
         draft.fileDetail = data as unknown as File;
+        break;
+      }
+
+      case getType(ACTIONS.pushComponentUsed): {
+        draft.depList = action.payload.list;
         break;
       }
 

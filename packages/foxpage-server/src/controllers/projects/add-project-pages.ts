@@ -52,7 +52,7 @@ export class AddAppsPageDetail extends BaseController {
 
       // Check the validity of applications and documents
       const folderDetail = await this.service.folder.info.getDetailById(params.projectId);
-      if (!folderDetail || folderDetail.deleted) {
+      if (this.notValid(folderDetail)) {
         return Response.warning(i18n.project.invalidProjectId, 2040101);
       }
 
@@ -77,7 +77,7 @@ export class AddAppsPageDetail extends BaseController {
           fileId: fileDetail?.id || '',
           deleted: false,
         });
-        if (!contentDetail) {
+        if (this.notValid(contentDetail)) {
           contentDetail = this.service.content.info.create(
             {
               title: file.name,

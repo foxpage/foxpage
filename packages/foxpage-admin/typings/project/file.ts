@@ -1,12 +1,12 @@
+import { ComponentType } from '@/constants/index';
 import {
   AbstractEntity,
   Application,
   CommonFetchParams,
   FileTag,
   PaginationReqParams,
-  ResponseBody
+  ResponseBody,
 } from '@/types/index';
-import { ComponentType } from '@/constants/index';
 
 export interface ProjectFile extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
   name: string;
@@ -23,8 +23,9 @@ export interface File extends Pick<ProjectFile, 'id' | 'createTime' | 'creator' 
   tags: FileTag[];
   type: FileType;
   componentType: ComponentType;
-  online: boolean;
+  online?: boolean;
   hasContent: boolean;
+  hasLiveContent?: boolean;
   applicationId?: string;
 }
 
@@ -47,7 +48,9 @@ export interface ProjectFileListFetchParams extends Omit<CommonFetchParams, 'org
 export type ProjectFileAddParams = Pick<ProjectFile, 'applicationId' | 'folderId' | 'id'> &
   Pick<File, 'name' | 'suffix' | 'tags'>;
 
-export type ProjectFileSaveParams = Pick<ProjectFile, 'applicationId' | 'folderId'>;
+export interface ProjectFileSaveParams extends Pick<ProjectFile, 'applicationId' | 'folderId'> {
+  name?: string;
+}
 
 export type ProjectFileDeleteParams = Pick<ProjectFile, 'applicationId' | 'folderId' | 'id'>;
 

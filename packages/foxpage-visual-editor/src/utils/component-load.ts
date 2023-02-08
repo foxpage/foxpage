@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 import { loader } from '@foxpage/foxpage-js-sdk';
 import { BrowserModule } from '@foxpage/foxpage-types';
@@ -81,7 +81,7 @@ const updateModules = (
 
   if (!findModule(modules, initKey(component.name, component.version)) && browser) {
     const { path, host } = browser || {};
-    const meta = _.cloneDeep(component.meta || {}) as BrowserModule['meta'];
+    const meta = cloneDeep(component.meta || {}) as BrowserModule['meta'];
 
     if (css) {
       const { path: cssPath, host: cssHost } = css;
@@ -183,7 +183,7 @@ const loadFramework = async () => {
     win.define('react-dom', window.ReactDOM);
   }
 
-  await loader.initFramework(frameworkResources);
+  await loader.initFramework(frameworkResources, { clearCache: false });
 };
 
 /**
@@ -237,11 +237,10 @@ export const mapComponent = (components: Component[] = []): ComponentMap => {
   const map = {};
 
   const toSet = (_map: ComponentMap = {}, item: Component) => {
-    if (item.isLiveVersion || item.isLiveVersion === undefined) {
+    _map[initKey(item.name, item.version)] = item;
+    if (!(item.isLive === false || item.isLiveVersion === false)) {
       // undefined is support old logic
       _map[item.name] = item;
-    } else {
-      _map[initKey(item.name, item.version)] = item;
     }
   };
 

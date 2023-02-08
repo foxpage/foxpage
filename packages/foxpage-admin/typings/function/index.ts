@@ -48,6 +48,7 @@ export interface FuncSaveParams extends Pick<FuncFetchParams, 'applicationId' | 
   intro?: string;
   suffix?: string;
   content?: FuncContentEntity;
+  pageContentId?: string;
 }
 
 // FuncNewDataItem
@@ -57,10 +58,11 @@ export interface FuncNewData extends AbstractEntity {
   folderId: string;
   intro: string;
   suffix: string;
+  contentId?: string;
 }
 
 export interface FuncNewRes extends ResponseBody {
-  data: FuncNewData[];
+  data: FuncNewData;
 }
 
 export interface FuncUpdateParams
@@ -69,10 +71,12 @@ export interface FuncUpdateParams
 }
 
 export interface FuncUpdateRes extends ResponseBody {
-  data: FuncNewData[];
+  data: FuncNewData;
 }
 
-export type FuncDeleteParams = CommonDeleteParams;
+export type FuncDeleteParams = CommonDeleteParams & {
+  fun?: FuncEntity;
+};
 
 // FuncDeleteDataItem
 export interface FuncDeleteData extends Omit<FuncEntity, 'id' | 'tags' | 'type'> {

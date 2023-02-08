@@ -15,6 +15,7 @@ export interface Component {
   componentType: string;
   version: string;
   isLiveVersion?: boolean;
+  isLive?: boolean;
   enableChildren?: boolean;
   schema?: string | Record<string, any>;
   meta?: ComponentMeta;
@@ -65,3 +66,23 @@ export interface ComponentProps {
 export type ComponentSourceMap = Record<string, Component>;
 
 export interface ComponentFetchRes extends BaseResponse<Component[]> {}
+
+export interface ComponentVersionFetchParams {
+  applicationId: string;
+  id?: string;
+  name?: string;
+}
+
+export interface ComponentVersionDetailsFetchParams {
+  applicationId: string;
+  nameVersions: { name: string; version: string }[];
+}
+
+export interface ComponentVersionDetailsFetchedRes
+  extends BaseResponse<
+    {
+      name: string;
+      version: string;
+      package: Component;
+    }[]
+  > {}

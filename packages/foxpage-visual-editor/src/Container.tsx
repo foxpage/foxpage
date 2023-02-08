@@ -32,12 +32,15 @@ const ContainerStyle = styled.div`
 
 interface IProps {
   selectNode: RenderStructureNode | null;
-  structure: RenderStructure;
+  renderDSL: RenderStructure;
+  pageStructure: RenderStructure;
   components: Component[];
   config: VisualEditorConfig;
   selectComponent?: RenderStructureNode;
   rootNode?: RenderStructureNode;
   events: FoxBuilderEvents;
+  reRendering?: boolean;
+  nodeChangedStatus: {};
 }
 
 const Container = (props: IProps) => {
@@ -48,14 +51,33 @@ const Container = (props: IProps) => {
     loaded: boolean;
   }>({ loadedComponents: {}, structureList: [], componentMap: {}, loaded: false });
   const [frameLoaded, setFrameLoaded] = useState(false);
-  const { structure, components, events, config, rootNode, ...rest } = props;
+  const [components, setComponents] = useState<Component[]>([]);
+  const {
+    renderDSL,
+    pageStructure,
+    components: _components,
+    events,
+    config,
+    rootNode,
+    selectNode,
+    ...rest
+  } = props;
   const { locale = '' } = config.page || {};
+  const selectNodeVersions = selectNode?.__versions;
 
   useEffect(() => {
-    if (structure && components && frameLoaded) {
-      init(structure);
+    if (renderDSL && components && frameLoaded) {
+      init(renderDSL);
     }
-  }, [structure, components, frameLoaded, locale]);
+  }, [renderDSL, components, frameLoaded, locale]);
+
+  useEffect(() => {
+    if (selectNodeVersions) {
+      setComponents(_components.concat(selectNodeVersions));
+    } else {
+      setComponents(_components);
+    }
+  }, [selectNodeVersions, _components]);
 
   const init = async (structureList: RenderStructureNode[]) => {
     const _structureList = getStructureList(structureList);
@@ -96,13 +118,15 @@ const Container = (props: IProps) => {
   const foxContextValue: FoxPageContext = {
     ...rest,
     config,
-    structure,
+    renderDSL,
+    pageStructure,
     components,
     structureList: meta.structureList,
     componentMap: meta.componentMap,
     loadedComponents: meta.loadedComponents,
     foxI18n: _foxI18n,
     rootNode,
+    selectNode,
     events: {
       ...events,
       onUpdateComponent: handleUpdateComponent,

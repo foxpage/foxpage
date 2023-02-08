@@ -1,11 +1,13 @@
 import 'reflect-metadata';
 
+import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
+import { VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { ContentDetailRes, ContentLiveReq } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -45,12 +47,12 @@ export class SetContentLiveVersion extends BaseController {
         this.service.content.info.getDetailById(params.contentId),
       ]);
 
-      if (!versionDetail || versionDetail.status !== 'release') {
+      if (this.notValid(versionDetail) || versionDetail.status !== VERSION.STATUS_RELEASE) {
         return Response.warning(i18n.content.invalidVersionOrStatus, 2160801);
       }
 
       // The content page does not exist or has been deleted
-      if (!contentDetail || contentDetail.deleted) {
+      if (this.notValid(contentDetail)) {
         return Response.warning(i18n.content.invalidContentId, 2160802);
       }
 

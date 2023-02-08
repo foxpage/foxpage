@@ -14,6 +14,7 @@ const call = (fn: any, ...data: any[]) => {
  */
 export const listener = (event: MessageEvent, handlers: FoxBuilderEvents) => {
   const { type, data } = event.data || {};
+
   switch (type) {
     case ACTIONS.INIT: {
       call(handlers.onInit, data);
@@ -66,6 +67,27 @@ export const listener = (event: MessageEvent, handlers: FoxBuilderEvents) => {
     case ACTIONS.PAGE_CAPTURED: {
       const { opt } = data as { opt?: {} };
       call(handlers.onPageCaptured, opt);
+      break;
+    }
+    case ACTIONS.STRUCTURE_CHANGED: {
+      const { opt } = data as { opt?: {} };
+      call(handlers.onStructureChanged, opt);
+      break;
+    }
+    case ACTIONS.RENDER_DSL_CHANGED: {
+      call(handlers.onRenderDSLChanged, data);
+      break;
+    }
+    case ACTIONS.PAGE_STRUCTURE_CHANGED: {
+      call(handlers.onPageStructureChanged, data);
+      break;
+    }
+    case ACTIONS.SELECT_COMPONENT_CHANGED: {
+      call(handlers.onSelectedComponentChanged, data);
+      break;
+    }
+    case ACTIONS.FETCH_COMPONENT_VERSIONS: {
+      call(handlers.onFetchComponentVersions, data);
       break;
     }
     default:

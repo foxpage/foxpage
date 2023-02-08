@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import { ArrowUpOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Button, Input, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
@@ -13,7 +13,7 @@ import { DeleteButton } from '@/components/index';
 import { StoreGoodsPurchaseType, suffixTagColor } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ComponentEntity, ResourceGroup } from '@/types/index';
-import { periodFormat } from '@/utils/index';
+import { getLocationIfo, periodFormat } from '@/utils/index';
 
 const Table = styled(AntTable)`
   .ant-table-pagination.ant-pagination {
@@ -38,7 +38,6 @@ const mapStateToProps = (store: RootState) => ({
 
 const mapDispatchToProps = {
   deleteComponent: ACTIONS.deleteComponentAction,
-  fetchComponentList: ACTIONS.fetchComponentsAction,
   openDrawer: ACTIONS.updateComponentDrawerState,
   fetchGroups: RESOURCES_ACTIONS.fetchResourcesGroups,
 };
@@ -59,16 +58,18 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
     componentList,
     selectPackage,
     deleteComponent,
-    fetchComponentList,
     fetchGroups,
     openDrawer,
     openQuicklyModal,
   } = props;
-
   const [inputData, setInputData] = useState({
     inputVal: '',
     searchFlag: false,
   });
+
+  // url params
+  const history = useHistory();
+  const { page: filePage, searchText: fileSearch } = getLocationIfo(history.location);
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -84,7 +85,7 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
 
   useEffect(() => {
     setInputData({
-      inputVal: '',
+      inputVal: fileSearch || '',
       searchFlag: false,
     });
   }, [selectPackage]);
@@ -94,11 +95,17 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
       searchFlag: true,
       inputVal: value,
     });
-    fetchComponentList({
-      applicationId,
-      page: 1,
-      size: 10,
-      search: value.trim(),
+
+    history.push({
+      pathname: history.location.pathname,
+      search: `?page=1&searchText=${value}`,
+    });
+  };
+
+  const handlePaginationChange = (pagination) => {
+    history.push({
+      pathname: history.location.pathname,
+      search: `?page=${pagination.current}&searchText=${inputData?.inputVal || ''}`,
     });
   };
 
@@ -121,9 +128,9 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
               </Tag>
             )}
             <Link
-              to={`/applications/${applicationId}/package/${type}s/detail?fileId=${
-                record.id
-              }&name=${encodeURIComponent(record.name)}`}
+              to={`/applications/${applicationId}/package/${type}s/detail?fileId=${record.id}&filePage=${
+                filePage || ''
+              }&fileSearch=${inputData?.inputVal || ''}&name=${encodeURIComponent(record.name)}`}
               style={{ paddingRight: 8 }}>
               {text}
             </Link>
@@ -163,10 +170,8 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
       title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
-      width: 150,
-      render: (creator: ComponentEntity['creator']) => {
-        return creator?.account || '-';
-      },
+      width: 200,
+      render: (creator: ComponentEntity['creator']) => creator?.email || '--',
     },
     {
       title: global.updateTime,
@@ -256,15 +261,7 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
               }
             : false
         }
-        onChange={(pagination) => {
-          const { inputVal, searchFlag } = inputData;
-          fetchComponentList({
-            applicationId,
-            page: pagination.current || 1,
-            size: pagination.pageSize || 10,
-            search: searchFlag ? inputVal.trim() : '',
-          });
-        }}
+        onChange={handlePaginationChange}
       />
     </>
   );

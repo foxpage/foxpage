@@ -38,7 +38,7 @@ export class GetProjectCatalog extends BaseController {
       // Get project information
       const projectDetail = await this.service.folder.info.getDetail(_.pick(params, ['id', 'applicationId']));
 
-      if (!projectDetail) {
+      if (this.notValid(projectDetail)) {
         return Response.warning(i18n.project.invalidProjectId, 2040501);
       }
 

@@ -1,0 +1,28 @@
+{
+  "list": [
+    {
+      "typeId": "appl_bR2g2FcmJnsgBkM",
+      "allow": true,
+      "deleted": false,
+      "id": "auth_YBtcXUuLabbD4ol",
+      "type": "application",
+      "targetId": "user_K7rPyHvxxKeyNb4",
+      "mask": 1,
+      "creator": "user_eYqUw3xaorJNXzP",
+      "createTime": "2022-12-28T15:35:14",
+      "updateTime": "2022-12-28T15:35:14"
+    },
+    {
+      "typeId": "file_YR8BqYp8aajzw8A",
+      "allow": true,
+      "deleted": false,
+      "id": "auth_YBtcXUuLabbD4ol",
+      "type": "file",
+      "targetId": "user_K7rPyHvxxKeyNb4",
+      "mask": 1,
+      "creator": "user_eYqUw3xaorJNXzP",
+      "createTime": "2022-12-28T15:35:14",
+      "updateTime": "2022-12-28T15:35:14"
+    }
+  ]
+}

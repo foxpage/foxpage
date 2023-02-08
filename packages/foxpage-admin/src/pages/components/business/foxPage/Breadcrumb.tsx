@@ -17,13 +17,13 @@ const FoxPageBreadcrumb = (props: any) => {
   return (
     <Container>
       <Breadcrumb>
-        {breadCrumb.map((item: any) => {
+        {breadCrumb.map((item: any, index: number) => {
           return item.link ? (
-            <Breadcrumb.Item key={item.name} href={getLinkByEnv(item.link)}>
+            <Breadcrumb.Item key={`${item.name}-${index}`} href={getLinkByEnv(item.link)}>
               {item.name}
             </Breadcrumb.Item>
           ) : (
-            <Breadcrumb.Item key={item.name}>{item.name}</Breadcrumb.Item>
+            <Breadcrumb.Item key={`${item.name}-${index}`}>{item.name}</Breadcrumb.Item>
           );
         })}
       </Breadcrumb>

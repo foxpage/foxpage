@@ -36,7 +36,13 @@ const TextBind: React.ForwardRefRenderFunction<any> = (_props, forwardedRef) => 
       value={textValue}
       ref={textAreaRef}
       autoFocus
-      style={{ resize: 'none', height: '50%', width: '100%' }}
+      style={{
+        resize: 'none',
+        height: '100%',
+        width: '100%',
+        outline: 'none',
+        border: '1px solid #1f38584d',
+      }}
       onChange={(e) => {
         setValue(e.target.value);
       }}

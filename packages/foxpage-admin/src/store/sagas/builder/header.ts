@@ -1,4 +1,5 @@
 import { message } from 'antd';
+import Axios from 'axios';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
@@ -15,6 +16,7 @@ import {
   MockPublishParams,
   PageTemplateFetchParams,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 import { wrapperMock } from './utils';
 
@@ -34,7 +36,7 @@ function* handleFetchCatalog(action: BuilderHeaderActionType) {
       builder: { fetchCatalogFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchCatalogFailed);
+    errorToast(res, fetchCatalogFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -81,9 +83,33 @@ function* handleFetchDsl(action: BuilderHeaderActionType) {
       builder: { fetchDslFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchDslFailed);
+    errorToast(res, fetchDslFailed);
   }
   yield put(ACTIONS.updateDSLLoading(false));
+}
+
+function* handleFetchHtml(action: BuilderHeaderActionType) {
+  yield put(ACTIONS.updateHTMLLoading(true));
+
+  const { url } = action.payload;
+  const fetchHtml: any = () =>
+    new Promise((resolve) => {
+      Axios.get(url).then((rs) => {
+        resolve(rs);
+      });
+    });
+  const res = yield call(fetchHtml, {});
+
+  if (res.status === 200) {
+    yield put(ACTIONS.pushHtml(res.data));
+  } else {
+    const {
+      builder: { fetchHtmlFailed },
+    } = getBusinessI18n();
+
+    errorToast(res, fetchHtmlFailed);
+  }
+  yield put(ACTIONS.updateHTMLLoading(false));
 }
 
 function* handleSaveMock(action: BuilderHeaderActionType) {
@@ -132,7 +158,7 @@ function* handleSaveMock(action: BuilderHeaderActionType) {
       global: { addFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || addFailed);
+    errorToast(res, addFailed);
   }
 
   yield put(ACTIONS.updateMockLoading(false));
@@ -154,7 +180,7 @@ function* handlePublishMock(action: BuilderHeaderActionType) {
     }
     message.success(publishSuccess);
   } else {
-    message.error(res.msg || publishFailed);
+    errorToast(res, publishFailed);
   }
 
   yield put(ACTIONS.updateMockLoading(false));
@@ -173,7 +199,7 @@ function* handleFetchPageTemplate(action: BuilderHeaderActionType) {
       builder: { fetchTemplateFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchTemplateFailed);
+    errorToast(res, fetchTemplateFailed);
   }
   yield put(ACTIONS.updateStoreLoading(false));
 }
@@ -182,6 +208,7 @@ function* watch() {
   yield takeLatest(getType(ACTIONS.fetchCatalog), handleFetchCatalog);
   yield takeLatest(getType(ACTIONS.selectContent), handleSelectContent);
   yield takeLatest(getType(ACTIONS.fetchDsl), handleFetchDsl);
+  yield takeLatest(getType(ACTIONS.fetchHtml), handleFetchHtml);
   yield takeLatest(getType(ACTIONS.saveMock), handleSaveMock);
   yield takeLatest(getType(ACTIONS.publishMock), handlePublishMock);
   yield takeLatest(getType(ACTIONS.fetchPageTemplate), handleFetchPageTemplate);

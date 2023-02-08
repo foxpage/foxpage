@@ -1,4 +1,4 @@
-import { BLANK_NODE, PAGE_COMPONENT_NAME, BLOCK_COMPONENT_NAME, STYLE_CONTAINER } from '@/constants/index';
+import { BLANK_NODE, BLOCK_COMPONENT_NAME, PAGE_COMPONENT_NAME, STYLE_CONTAINER } from '@/constants/index';
 import {
   Component,
   Content,
@@ -9,7 +9,7 @@ import {
   StructureNode,
 } from '@/types/index';
 
-import { getStyleWrapper, initMockNode, structureToNodeMap, withVariable, withCondition } from '../utils';
+import { getStyleWrapper, initMockNode, structureToNodeMap, withCondition, withVariable } from '../utils';
 
 export type FormatOptions = {
   origin: PageContent;
@@ -52,7 +52,7 @@ export const format = (data: PageContent, opt: FormatOptions) => {
     componentMap,
     pageContent: origin,
     rootNode,
-    extendContent: extend
+    extendContent: extend,
   });
 
   return {
@@ -75,7 +75,7 @@ const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptio
     structures.forEach((item) => {
       const renderNode = { ...item } as RenderStructureNode;
       const templateNode = templateNodeMap[item.id];
-      const styleNode = getStyleWrapper(item, (opt as unknown) as FormattedData);
+      const styleNode = getStyleWrapper(item, opt as unknown as FormattedData);
 
       renderNode.props = item.__parsedProps || {};
       // children & not extend removed
@@ -90,12 +90,24 @@ const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptio
       renderNode.__styleNode = styleNode;
       const extendId = item.extension?.extendId || item.id;
       const isExtend = !!(extendPageNodeMap && extendPageNodeMap[extendId]);
-      const hasCondition = withCondition(renderNode, pageContent.content.relation, extendContent?.content?.relation);
-      const hasVariable = withVariable(renderNode, pageContent.content.relation, extendContent?.content?.relation);
+      const hasCondition = withCondition(
+        renderNode,
+        pageContent.content.relation,
+        extendContent?.content?.relation,
+      );
+      const hasVariable = withVariable(
+        renderNode,
+        pageContent.content.relation,
+        extendContent?.content?.relation,
+      );
       const isBlockRootNode = item.name === BLOCK_COMPONENT_NAME && item.id === rootNode?.id;
       renderNode.__editorConfig = {
         visible: item.name !== BLANK_NODE,
-        showInStructure: !templateNode && item.name !== STYLE_CONTAINER && item.name !== PAGE_COMPONENT_NAME && !isBlockRootNode,
+        showInStructure:
+          !templateNode &&
+          item.name !== STYLE_CONTAINER &&
+          item.name !== PAGE_COMPONENT_NAME &&
+          !isBlockRootNode,
         editable: !templateNode,
         moveable: !item.extension?.extendId && !extendPageNodeMap[item.id],
         directiveable: false,
@@ -105,14 +117,12 @@ const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptio
         isExtendAndDeleted: isExtend && item.name === BLANK_NODE,
         hasCondition,
         hasVariable,
-        hasMock: mockEnable && !!idMockMap[item.id]
+        hasMock: mockEnable && !!idMockMap[item.id],
       };
 
       if (mockEnable) {
         const mockNode = (getNodeMock(item, { idMockMap }) || initMockNode(item)) as RenderStructureNode;
-        mockNode.__editorConfig = {
-          editable: true,
-        };
+        Object.assign(mockNode.__editorConfig || {}, { editable: true });
         renderNode.__mock = mockNode;
       }
 

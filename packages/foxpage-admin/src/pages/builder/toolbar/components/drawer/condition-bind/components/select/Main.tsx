@@ -91,8 +91,8 @@ const Main: React.FC<ConditionSelectType> = (props) => {
   }, [visible, applicationId, folderId, group, pageNum]);
 
   useEffect(() => {
-    setSelectedRows(conditions);
-  }, [conditions]);
+    if (visible) setSelectedRows(conditions);
+  }, [visible, conditions]);
 
   const handleGroupChange = useCallback((group) => {
     setPageNum(PAGE_NUM);

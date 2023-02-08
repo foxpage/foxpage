@@ -86,7 +86,7 @@ const ComponentList = (props: IProps) => {
             title={`${global.deleteMsg} ${record?.name || ''}?`}
             disabled={record.status}
             onConfirm={() => {
-              handleDelete(record.id);
+              handleDelete(record.idx);
             }}
             okText={global.yes}
             cancelText={global.no}>
@@ -110,7 +110,7 @@ const ComponentList = (props: IProps) => {
       remove({
         applicationId,
         type: TYPE,
-        fileIds: id,
+        ids: id,
       });
     }
   };
@@ -123,6 +123,7 @@ const ComponentList = (props: IProps) => {
         {
           category: template.category,
           id: template.id,
+          idx: template.idx,
           name: template.name || '',
           status: !template.status,
         },
@@ -132,7 +133,7 @@ const ComponentList = (props: IProps) => {
 
   return (
     <Table
-      rowKey="id"
+      rowKey="idx"
       dataSource={templates}
       columns={columns}
       loading={loading}

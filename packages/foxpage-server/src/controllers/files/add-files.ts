@@ -46,7 +46,7 @@ export class AddFileDetail extends BaseController {
       ]);
 
       // Check the validity of the application ID
-      if (!appDetail) {
+      if (this.notValid(appDetail)) {
         return Response.warning(i18n.app.idInvalid, 2170102);
       }
 
@@ -64,6 +64,8 @@ export class AddFileDetail extends BaseController {
         id: generationId(PRE.CONTENT),
         title: params.name,
         fileId: <string>fileDetail.id,
+        type: fileDetail.type || '',
+        applicationId: fileDetail.applicationId,
         tags: [],
         creator: '',
         liveVersionNumber: 0,

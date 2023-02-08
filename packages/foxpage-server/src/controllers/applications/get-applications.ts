@@ -7,6 +7,7 @@ import { Application } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD } from '../../../config/constant';
+import metric from '../../third-parties/metric';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppListByIdsReq, AppListRes } from '../../types/validates/app-validate-types';
 import * as Response from '../../utils/response';
@@ -37,9 +38,13 @@ export class GetApplicationList extends BaseController {
 
       const appList = await this.service.application.getDetailByIds(params.applicationIds);
 
-      (appList || []).forEach((app) => {
+      appList.forEach((app) => {
         delete app.setting;
       });
+
+      // send metric
+      // appList.length === 0 && metric.empty(ctx.request.url);
+      metric.empty(ctx.request.url);
 
       return Response.success(appList, 1030501);
     } catch (err) {

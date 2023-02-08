@@ -99,7 +99,7 @@ export const handleWindowChange: FoxBuilderEvents['onWindowChange'] = (target, o
  * handle link jump
  * for iframe emit root to link jump
  * @param target jump target
- * @param opt 
+ * @param opt
  */
 export const handleLinkChange: FoxBuilderEvents['onLinkChange'] = (target, opt) => {
   poster(ACTIONS.LINK_JUMP, { target, opt });
@@ -125,6 +125,47 @@ export const handlePageCapture: FoxBuilderEvents['onPageCapture'] = () => {
  * captured page
  * @param data
  */
- export const handlePageCaptured: FoxBuilderEvents['onPageCaptured'] = (opt) => {
+export const handlePageCaptured: FoxBuilderEvents['onPageCaptured'] = (opt) => {
   poster(ACTIONS.PAGE_CAPTURED, { opt });
+};
+
+/**
+ * structure changed
+ * @param data
+ */
+export const handleStructureChanged: FoxBuilderEvents['onStructureChanged'] = (opt) => {
+  framePoster(ACTIONS.STRUCTURE_CHANGED, { opt });
+};
+
+
+/**
+ * handle render DSL changed
+ * @param data
+ */
+export const handleRenderDSLChanged: FoxBuilderEvents['onRenderDSLChanged'] = (data) => {
+  framePoster(ACTIONS.RENDER_DSL_CHANGED, data);
+};
+
+/**
+ * handle pageStructure changed
+ * @param data page structure
+ */
+export const handlePageStructureChanged: FoxBuilderEvents['onPageStructureChanged'] = (data) => {
+  framePoster(ACTIONS.PAGE_STRUCTURE_CHANGED, data);
+};
+
+/**
+ * handle elected component changed
+ * @param data selected component
+ */
+export const handleSelectComponentChanged: FoxBuilderEvents['onSelectedComponentChanged'] = (data) => {
+  framePoster(ACTIONS.SELECT_COMPONENT_CHANGED, data);
+};
+
+/**
+ * handle elected component changed
+ * @param data selected component
+ */
+ export const handleFetchComponentVersions: FoxBuilderEvents['onFetchComponentVersions'] = (data) => {
+  poster(ACTIONS.FETCH_COMPONENT_VERSIONS, data);
 };

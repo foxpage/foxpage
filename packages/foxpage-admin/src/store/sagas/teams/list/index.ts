@@ -15,6 +15,7 @@ import {
   TeamSaveParams,
   TeamsFetchParams,
 } from '@/types/team';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchTeamList(actions: TeamsActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -29,7 +30,7 @@ function* handleFetchTeamList(actions: TeamsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+   errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -62,7 +63,7 @@ function* handleSaveTeam(actions: TeamsActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || saveFailed);
+   errorToast(res, saveFailed);
   }
 }
 
@@ -84,7 +85,7 @@ function* handleDeleteTeam(actions: TeamsActionType) {
     const page = list.length === 1 && pageInfo.page > 1 ? pageInfo.page - 1 : pageInfo.page;
     yield put(ACTIONS.fetchTeamList({ organizationId, page, size: pageInfo.size }));
   } else {
-    message.error(res.msg || deleteFailed);
+   errorToast(res, deleteFailed);
   }
 }
 
@@ -104,7 +105,7 @@ function* handleAddTeamUsers(actions: TeamsActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || saveFailed);
+   errorToast(res, saveFailed);
   }
 }
 
@@ -122,7 +123,7 @@ function* handleDeleteTeamUsers(actions: TeamsActionType) {
 
     yield put(ACTIONS.updateTeamUsersAfterDelete(users));
   } else {
-    message.error(res.msg || deleteFailed);
+   errorToast(res, deleteFailed);
   }
 }
 
@@ -139,7 +140,7 @@ function* handleFetchTeamUsers(actions: TeamsActionType) {
       team: { fetchUsersFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchUsersFailed);
+   errorToast(res, fetchUsersFailed);
   }
 }
 
@@ -156,7 +157,7 @@ function* handleFetchOrganizationUsers(actions: TeamsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+   errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));

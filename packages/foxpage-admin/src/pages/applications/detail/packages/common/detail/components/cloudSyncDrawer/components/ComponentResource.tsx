@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 
 import { SwapRightOutlined } from '@ant-design/icons';
-import { TreeSelect, Select } from 'antd';
+import { Select, TreeSelect } from 'antd';
 import _ from 'lodash';
 
 import { Group, Title } from '@/components/widgets';
+import { ComponentType } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ComponentEditVersionEntity, ComponentRemote } from '@/types/application';
-import { ComponentType } from '@/constants/index';
 
 import '../style.css';
 
@@ -181,19 +181,22 @@ export const ComponentResource: React.FC<IProps> = (props) => {
             <tr>
               <td className="after">componentType</td>
               <td className="after" width="70%">
-                { componentType ?
-                  <Select defaultValue={componentType} disabled style={{width: '100%'}}>
+                {componentType ? (
+                  <Select defaultValue={componentType} disabled style={{ width: '100%' }}>
                     <Option value={componentType}>{componentType}</Option>
                   </Select>
-                  :
+                ) : (
                   <Select
                     defaultValue={ComponentType.reactComponent}
-                    onChange={value => updateComponentRemoteInfo && updateComponentRemoteInfo(componentName, { componentType: value })}
-                    style={{width: '100%'}} >
+                    onChange={(value) =>
+                      updateComponentRemoteInfo &&
+                      updateComponentRemoteInfo(componentName, { componentType: value })
+                    }
+                    style={{ width: '100%' }}>
                     <Option value={ComponentType.reactComponent}>{ComponentType.reactComponent}</Option>
                     <Option value={ComponentType.dslTemplate}>{ComponentType.dslTemplate}</Option>
                   </Select>
-                }
+                )}
               </td>
             </tr>
           </tbody>

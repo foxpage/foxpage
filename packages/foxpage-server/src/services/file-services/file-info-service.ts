@@ -41,7 +41,7 @@ export class FileInfoService extends BaseService<File> {
    * @param  {Partial<File>} params
    * @returns File
    */
-  create(params: Partial<File>, options: { ctx: FoxCtx; actionType?: string }): File {
+  create(params: Partial<File>, options: { ctx: FoxCtx }): File {
     const fileDetail: File = {
       id: params.id || generationId(PRE.FILE),
       applicationId: params.applicationId || '',
@@ -56,17 +56,6 @@ export class FileInfoService extends BaseService<File> {
     };
 
     options.ctx.transactions.push(Model.file.addDetailQuery(fileDetail));
-    options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.CREATE, fileDetail, {
-        actionType: options.actionType || [LOG.CREATE, TYPE.FILE].join('_'),
-        category: {
-          type: TYPE.FILE,
-          fileId: fileDetail.id,
-          folderId: params.folderId || '',
-          applicationId: params.applicationId || '',
-        },
-      }),
-    );
 
     return fileDetail;
   }
@@ -78,7 +67,7 @@ export class FileInfoService extends BaseService<File> {
    */
   async addFileDetail(
     params: NewFileInfo,
-    options: { ctx: FoxCtx; actionType?: string },
+    options: { ctx: FoxCtx },
   ): Promise<Record<string, number | (File & { contentId: string }) | string[]>> {
     const newFileCheck = _.pick(params, ['applicationId', 'folderId', 'name', 'type', 'suffix']) as FileCheck;
     newFileCheck.deleted = false;
@@ -88,7 +77,7 @@ export class FileInfoService extends BaseService<File> {
     ]);
 
     // Check the validity of the application ID, check the existence of the file
-    if (!appDetail || appDetail.deleted || fileExist) {
+    if (this.notValid(appDetail) || fileExist) {
       return fileExist ? { code: 2 } : { code: 1 };
     }
 
@@ -112,29 +101,20 @@ export class FileInfoService extends BaseService<File> {
       intro: params.intro || '',
       folderId: params.folderId || '',
       type: params.type as FileTypes,
+      subType: params.subType || '',
+      componentType: params.componentType || '',
       tags: params.tags || [],
       suffix: params.suffix || '',
       creator: params.creator || options.ctx.userInfo.id,
     };
 
     options.ctx.transactions.push(Model.file.addDetailQuery(fileDetail));
-    options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.CREATE, fileDetail, {
-        actionType: options.actionType || [LOG.CREATE, TYPE.FILE].join('_'),
-        category: {
-          type: TYPE.FILE,
-          fileId: fileDetail.id,
-          folderId: params.folderId || '',
-          applicationId: params.applicationId,
-        },
-      }),
-    );
 
     const fileContentDetail = Object.assign({}, fileDetail, { contentId: '' });
     // Create content details
     if ([TYPE.PAGE, TYPE.TEMPLATE, TYPE.BLOCK].indexOf(params.type) === -1) {
       const contentDetail = Service.content.info.addContentDetail(
-        { title: params.name, fileId: fileDetail.id },
+        { title: params.name, fileId: fileDetail.id, type: params.type, applicationId: params.applicationId },
         { ctx: options.ctx, type: params.type, content: params.content },
       );
 
@@ -213,14 +193,6 @@ export class FileInfoService extends BaseService<File> {
       contentList[0] && Service.content.info.updateDetailQuery(contentList[0].id, { title: params.name });
     }
 
-    // Save logs
-    options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.FILE_UPDATE, fileDetail, {
-        actionType: options.actionType || [LOG.UPDATE, TYPE.FILE].join('_'),
-        category: { type: TYPE.FILE, fileId: fileDetail.id, applicationId: fileDetail.applicationId },
-      }),
-    );
-
     return { code: 0 };
   }
 
@@ -232,9 +204,6 @@ export class FileInfoService extends BaseService<File> {
    */
   updateFileItem(id: string, params: Partial<File>, options: { ctx: FoxCtx }): void {
     options.ctx.transactions.push(Model.file.updateDetailQuery(id, params));
-    options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.FILE_UPDATE, Object.assign({ id }, params), { fileId: params.id }),
-    );
   }
 
   /**
@@ -249,7 +218,7 @@ export class FileInfoService extends BaseService<File> {
     options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number>> {
     const fileDetail = await this.getDetailById(params.id);
-    if (!fileDetail) {
+    if (this.notValid(fileDetail)) {
       return { code: 1 }; // Invalid file information
     }
 
@@ -349,7 +318,7 @@ export class FileInfoService extends BaseService<File> {
       });
     }
 
-    if ((_.isEmpty(fileDetail) || fileDetail.deleted) && createNew) {
+    if (this.notValid(fileDetail) && createNew) {
       fileDetail = this.create(
         {
           applicationId: params.applicationId,
@@ -379,6 +348,8 @@ export class FileInfoService extends BaseService<File> {
       liveVersionNumber: 0,
       tags: [],
       fileId: params.id,
+      applicationId: params.applicationId,
+      type: params.type || '',
       creator: params.creator || '',
     };
 
@@ -460,7 +431,7 @@ export class FileInfoService extends BaseService<File> {
     let fileDetail: File | undefined;
     const fileList = await Service.file.list.find({
       applicationId: applicationId,
-      tags: { $elemMatch: { pathname: pathName } },
+      'tags.pathname': pathName,
       deleted: false,
     });
 
@@ -634,7 +605,7 @@ export class FileInfoService extends BaseService<File> {
     });
 
     // create reference file
-    if (!fileDetail || _.isEmpty(fileDetail)) {
+    if (this.notValid(fileDetail)) {
       fileDetail = Service.file.info.create(
         {
           applicationId: options.targetApplicationId,

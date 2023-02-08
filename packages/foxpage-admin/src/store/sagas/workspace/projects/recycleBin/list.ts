@@ -1,4 +1,3 @@
-import { message } from 'antd';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
@@ -7,6 +6,7 @@ import * as API from '@/apis/workspace';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { RecycleActionType } from '@/reducers/workspace/projects/recycleBin/list';
 import { CommonFetchParams } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleSearchRecycles(action: RecycleActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -21,7 +21,7 @@ function* handleSearchRecycles(action: RecycleActionType) {
       global: { searchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || searchFailed);
+   errorToast(res, searchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));

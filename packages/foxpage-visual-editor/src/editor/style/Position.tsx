@@ -232,8 +232,8 @@ const Position: React.FC<PositionType> = (props) => {
             style={{ width: '100%' }}
             size="small"
             value={zIndex}
-            onChange={(value: string) => {
-              onChange('zIndex', value);
+            onChange={(value) => {
+              if (value) onChange('zIndex', value);
             }}
             onBlur={() => {
               onApplyState();

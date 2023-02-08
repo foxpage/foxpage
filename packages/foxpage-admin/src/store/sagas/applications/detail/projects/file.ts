@@ -4,14 +4,15 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/projects/file';
 import * as AUTH_API from '@/apis/authorize';
+import { addBlock, updateBlock } from '@/apis/builder/block';
 import * as API from '@/apis/project';
-import { updateBlock, addBlock } from '@/apis/builder/block';
 import { defaultSuffix, FileType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationProjectsFileActionType } from '@/reducers/applications/detail/projects/file';
 import { store } from '@/store/index';
 import {
   AuthorizeAddParams,
+  AuthorizeQueryParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
   AuthorizeUserFetchParams,
@@ -20,6 +21,7 @@ import {
   ProjectFileFetchParams,
   ProjectFileSaveParams,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchList(action: ApplicationProjectsFileActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -34,35 +36,36 @@ function* handleFetchList(action: ApplicationProjectsFileActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
 }
 
-function* handleSave(action: ApplicationProjectsFileActionType) {
+function* handleSaveFile(action: ApplicationProjectsFileActionType) {
   yield put(ACTIONS.updateSaveLoading(true));
 
-  const { folderId, applicationId } = action.payload as ProjectFileSaveParams;
+  const { params, cb } = action.payload as { params: ProjectFileSaveParams; cb?: () => void };
+  const { folderId, applicationId, name } = params;
   const { editFile, pageInfo } = store.getState().applications.detail.projects.file;
   const apis = {
     [FileType.page]: [API.updatePage, API.addPage],
     [FileType.template]: [API.updateTemplate, API.addTemplate],
     [FileType.block]: [updateBlock, addBlock],
-  }
+  };
 
   const api: any = editFile.id ? apis[editFile.type][0] : apis[editFile.type][1];
-  
-  const rs = yield call(api, {
+
+  const res = yield call(api, {
     id: editFile.id,
-    name: editFile.name,
+    name: name || editFile.name,
     folderId,
     applicationId,
     tags: editFile.tags,
     suffix: editFile.suffix || (defaultSuffix[editFile.type] as string),
   });
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     yield put(ACTIONS.openEditDrawer(false));
 
     yield put(
@@ -73,20 +76,23 @@ function* handleSave(action: ApplicationProjectsFileActionType) {
         applicationId,
       }),
     );
+
+    if (typeof cb === 'function') cb();
   } else {
     const {
-      global: { fetchListFailed },
+      global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(rs.msg || fetchListFailed);
+    errorToast(res, res?.msg || saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
 }
 
 function* handleDeleteFile(action: ApplicationProjectsFileActionType) {
-  const { id, applicationId, folderId } = action.payload as ProjectFileDeleteParams;
-  const rs = yield call(API.deleteFile, {
+  const { params, cb } = action.payload as { params: ProjectFileDeleteParams; cb?: () => void };
+  const { id, applicationId, folderId } = params;
+  const res = yield call(API.deleteFile, {
     id,
     applicationId,
     status: true,
@@ -96,7 +102,7 @@ function* handleDeleteFile(action: ApplicationProjectsFileActionType) {
     global: { deleteSuccess, deleteFailed },
   } = getBusinessI18n();
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     message.success(deleteSuccess);
 
     const { pageInfo } = store.getState().applications.detail.projects.file;
@@ -108,8 +114,10 @@ function* handleDeleteFile(action: ApplicationProjectsFileActionType) {
         applicationId,
       }),
     );
+
+    if (typeof cb === 'function') cb();
   } else {
-    message.error(rs.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -126,7 +134,7 @@ function* handleFetchParentFiles(action: ApplicationProjectsFileActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -134,26 +142,41 @@ function* handleFetchAuthList(action: ApplicationProjectsFileActionType) {
   yield put(ACTIONS.updateAuthListLoading(true));
 
   const { params } = action.payload as { params: AuthorizeListFetchParams };
-  const rs = yield call(AUTH_API.authorizeFetch, params);
+  const res = yield call(AUTH_API.authorizeFetch, params);
 
-  if (rs.code === 200) {
-    yield put(ACTIONS.pushAuthList(rs.data || []));
+  if (res.code === 200) {
+    yield put(ACTIONS.pushAuthList(res.data || []));
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(rs.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateAuthListLoading(false));
 }
 
+function* handleCheckAuthRole(action: ApplicationProjectsFileActionType) {
+  const { params, cb } = action.payload as { params: AuthorizeQueryParams; cb?: (role) => void };
+  const res = yield call(AUTH_API.authorizeCheck, params);
+
+  if (res.code === 200) {
+    if (typeof cb === 'function') cb(res.data.mask);
+  } else {
+    const {
+      global: { searchFailed },
+    } = getBusinessI18n();
+
+    errorToast(res, searchFailed);
+  }
+}
+
 function* handleSaveAuth(action: ApplicationProjectsFileActionType) {
   const { params, cb } = action.payload as { params: AuthorizeAddParams; cb: () => void };
-  const rs = yield call(AUTH_API.authorizeAdd, params);
+  const res = yield call(AUTH_API.authorizeAdd, params);
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     if (typeof cb === 'function') {
       cb();
     }
@@ -162,49 +185,52 @@ function* handleSaveAuth(action: ApplicationProjectsFileActionType) {
       global: { addFailed },
     } = getBusinessI18n();
 
-    message.error(rs.msg || addFailed);
+    errorToast(res, addFailed);
   }
 }
 
 function* handleDeleteAuth(action: ApplicationProjectsFileActionType) {
   const { params, cb } = action.payload as { params: AuthorizeDeleteParams; cb: () => void };
-  const rs = yield call(AUTH_API.authorizeDelete, params);
+  const res = yield call(AUTH_API.authorizeDelete, params);
 
   const {
     global: { deleteSuccess, deleteFailed },
   } = getBusinessI18n();
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     message.success(deleteSuccess);
 
     if (typeof cb === 'function') {
       cb();
     }
   } else {
-    message.error(rs.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
 function* handleFetchAuthUserList(action: ApplicationProjectsFileActionType) {
-  const { params } = action.payload as { params: AuthorizeUserFetchParams };
-  const rs = yield call(AUTH_API.authorizeUserFetch, params);
+  const { params, cb } = action.payload as { params: AuthorizeUserFetchParams; cb?: (userList) => void };
+  const res = yield call(AUTH_API.authorizeUserFetch, params);
 
-  if (rs.code === 200) {
-    yield put(ACTIONS.pushUserList(rs.data || []));
+  if (res.code === 200) {
+    yield put(ACTIONS.pushUserList(res.data || []));
+
+    if (typeof cb === 'function') cb(res.data);
   } else {
     const {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(rs.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchFileList), handleFetchList);
-  yield takeLatest(getType(ACTIONS.saveFile), handleSave);
+  yield takeLatest(getType(ACTIONS.saveFile), handleSaveFile);
   yield takeLatest(getType(ACTIONS.deleteFile), handleDeleteFile);
   yield takeLatest(getType(ACTIONS.fetchParentFiles), handleFetchParentFiles);
+  yield takeLatest(getType(ACTIONS.checkAuthRole), handleCheckAuthRole);
   yield takeLatest(getType(ACTIONS.fetchAuthList), handleFetchAuthList);
   yield takeLatest(getType(ACTIONS.fetchUserList), handleFetchAuthUserList);
   yield takeLatest(getType(ACTIONS.saveAuthUser), handleSaveAuth);

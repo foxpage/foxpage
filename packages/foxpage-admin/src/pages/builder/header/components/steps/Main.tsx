@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 
 import { RootState } from 'typesafe-actions';
@@ -9,9 +9,11 @@ import { GlobalContext } from '@/pages/system';
 import * as PAGE_ACTIONS from '@/store/actions/builder/main';
 
 const mapStateToProps = (store: RootState) => ({
+  blocked: store.builder.main.lockerState.blocked,
   curStep: store.builder.main.curStep,
   stepCount: store.builder.main.stepCount,
   content: store.builder.main.content,
+  completeFetched: store.builder.main.completeFetched,
 });
 
 const mapDispatchToProps = {
@@ -23,7 +25,7 @@ const mapDispatchToProps = {
 type StepsType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Steps: React.FC<StepsType> = (props) => {
-  const { curStep, stepCount = 0, content, getSteps, goLastStep, goNextStep } = props;
+  const { curStep, stepCount = 0, blocked, goLastStep, goNextStep } = props;
   const preStepStatus = curStep > 0;
   const nextStepStatus = curStep < stepCount - 1;
 
@@ -31,31 +33,31 @@ const Steps: React.FC<StepsType> = (props) => {
   const { locale } = useContext(GlobalContext);
   const { builder } = locale.business;
 
-  useEffect(() => {
-    if (content.id) {
-      getSteps();
-    }
-  }, [content.id]);
+  // useEffect(() => {
+  //   if (content.id && completeFetched) {
+  //     getSteps();
+  //   }
+  // }, [content.id, completeFetched]);
 
   const handleGoLastStep = () => {
-    if (preStepStatus) {
+    if (preStepStatus && !blocked) {
       goLastStep();
     }
   };
 
   const handleGoNextStep = () => {
-    if (nextStepStatus) {
+    if (nextStepStatus && !blocked) {
       goNextStep();
     }
   };
 
   return (
     <>
-      <StyledIcon className={preStepStatus ? '' : 'disabled'} onClick={handleGoLastStep}>
+      <StyledIcon className={preStepStatus && !blocked ? '' : 'disabled'} onClick={handleGoLastStep}>
         <BackIcon color={preStepStatus ? '' : 'rgb(195, 193, 193)'} />
         <IconMsg>{builder.lastStep}</IconMsg>
       </StyledIcon>
-      <StyledIcon className={nextStepStatus ? '' : 'disabled'} onClick={handleGoNextStep}>
+      <StyledIcon className={nextStepStatus && !blocked ? '' : 'disabled'} onClick={handleGoNextStep}>
         <NextIcon color={nextStepStatus ? '' : 'rgb(195, 193, 193)'} />
         <IconMsg>{builder.nextStep}</IconMsg>
       </StyledIcon>

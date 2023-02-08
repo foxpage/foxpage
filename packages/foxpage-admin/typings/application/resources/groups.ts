@@ -1,4 +1,4 @@
-import { AbstractEntity, BaseResponse, CommonDeleteParams, CommonFetchParams, FileTag, ComponentRemote } from '@/types/index';
+import { AbstractEntity, BaseResponse, CommonDeleteParams, CommonFetchParams, ComponentRemote, FileTag } from '@/types/index';
 
 // new
 export interface ApplicationResourceGroupTag {

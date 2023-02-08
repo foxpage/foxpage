@@ -10,6 +10,7 @@ import {
   ComponentsVersionFetchParams,
   ComponentsVersionPublishParams,
   ComponentsVersionUpdateParams,
+  ComponentUsedFetchParams,
   EditorBatchPublishParams,
   EditorComponentSaveParams,
   PackageType,
@@ -160,6 +161,13 @@ export const saveEditors = (params: EditorComponentSaveParams): Promise<BaseResp
 export const batchPublishEditors = (params: EditorBatchPublishParams): Promise<BaseResponse> =>
   new Promise((resolve) => {
     FoxPageApi.put('/components/batch-live-versions', params, (rs) => {
+      resolve(rs);
+    });
+  });
+
+export const fetchComponentUsed = (params: ComponentUsedFetchParams): Promise<BaseResponse> =>
+  new Promise((resolve) => {
+    FoxPageApi.get('/components/used', params, (rs) => {
       resolve(rs);
     });
   });

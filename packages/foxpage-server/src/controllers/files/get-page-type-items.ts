@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Ctx, Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { AppFolderTypes, Content } from '@foxpage/foxpage-server-types';
+import { AppFolderTypes, Application, Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { ACTION, TYPE } from '../../../config/constant';
@@ -68,14 +68,16 @@ export class GetAppPageFileList extends BaseController {
 
       let fileList = result.list as FileAssoc[];
       let contentObject: Record<string, Content> = {};
+      let appObject: Record<string, Application> = {};
       if (result?.list.length > 0) {
-        [fileList, contentObject] = await Promise.all([
+        const applicationIds = _.map(result.list, 'applicationId');
+        [fileList, appObject] = await Promise.all([
           this.service.file.list.getFileAssocInfo(result.list, { type: apiType }),
-          hasScopeTypes.indexOf(apiType) !== -1
-            ? this.service.content.list.getContentObjectByFileIds(_.map(fileList, 'id'))
-            : {},
+          this.service.application.getDetailObjectByIds(applicationIds),
         ]);
-
+        contentObject = await (hasScopeTypes.indexOf(apiType) !== -1
+          ? this.service.content.list.getContentObjectByFileIds(_.map(fileList, 'id'))
+          : {});
         fileList = fileList.map((file) => {
           if (!file.version) {
             file.version = {};
@@ -95,6 +97,8 @@ export class GetAppPageFileList extends BaseController {
             );
           }
 
+          file.application = _.pick(appObject[file.applicationId] || {}, ['id', 'name']);
+
           return hasScopeTypes.indexOf(apiType) === -1 ? _.omit(file, 'version') : file;
         });
       }
@@ -104,10 +108,10 @@ export class GetAppPageFileList extends BaseController {
           pageInfo: this.paging(result.count, pageSize),
           data: fileList,
         },
-        1170601,
+        1171401,
       );
     } catch (err) {
-      return Response.error(err, i18n.page.getAppPageFileFailed, 1170601);
+      return Response.error(err, i18n.page.getAppPageFileFailed, 1171401);
     }
   }
 }

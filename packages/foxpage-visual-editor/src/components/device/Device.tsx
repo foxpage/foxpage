@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useState } from 'react';
+import React, { ReactNode, useContext, useMemo, useState } from 'react';
 
 import {
   CaretDownOutlined,
@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import { Popover } from 'antd';
 
-import { FoxContext } from '../../context';
+import { EditorContext, FoxContext } from '../../context';
 import { Area, Row } from '..';
 
 import './index.css';
@@ -38,14 +38,17 @@ interface IProps {
 }
 
 const Device = (props: IProps) => {
-  const [mode, setMode] = useState(modes[0]);
   const { foxI18n } = useContext(FoxContext);
+  const { viewWidth } = useContext(EditorContext);
   const { onChange } = props;
 
   const handleChange = (value: DeviceMode) => {
-    setMode(value);
     onChange(value.width);
   };
+
+  const currentMode = useMemo(() => {
+    return modes.find((item) => item.width === viewWidth) || modes[0];
+  }, [viewWidth]);
 
   return (
     <Popover
@@ -61,7 +64,7 @@ const Device = (props: IProps) => {
                 onClick={() => {
                   handleChange(item);
                 }}>
-                {mode.key === item.key && (
+                {currentMode.key === item.key && (
                   <CheckOutlined style={{ position: 'absolute', top: 11, left: 8, fontSize: 10 }} />
                 )}
                 {item.icon}
@@ -72,7 +75,7 @@ const Device = (props: IProps) => {
         </div>
       }>
       <div style={{ marginRight: 8 }}>
-        {mode.icon}
+        {currentMode.icon}
         <CaretDownOutlined style={{ fontSize: 8, marginLeft: 4 }} />
       </div>
     </Popover>

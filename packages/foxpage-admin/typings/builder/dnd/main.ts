@@ -37,4 +37,5 @@ export interface DndData {
   dropIn?: RenderStructureNode | null;
   dropInId?: string;
   noUpdate?: boolean;
+  clientY?: number;
 }

@@ -18,7 +18,8 @@ import {
  */
 export interface FoxPageContext {
   foxI18n: FoxI18n;
-  structure: RenderStructure;
+  renderDSL: RenderStructure;
+  pageStructure: RenderStructure;
   structureList?: RenderStructureNode[];
   config: VisualEditorConfig;
   components: Component[];
@@ -27,11 +28,14 @@ export interface FoxPageContext {
   selectNode?: RenderStructureNode | null;
   rootNode?: RenderStructureNode | null;
   events: FoxBuilderEvents;
+  reRendering?: boolean;
+  nodeChangedStatus: {};
 }
 
 const context = React.createContext<FoxPageContext>({
   foxI18n: {} as FoxI18n,
-  structure: [],
+  renderDSL: [],
+  pageStructure: [],
   config: {
     sys: {},
     page: {},
@@ -42,6 +46,7 @@ const context = React.createContext<FoxPageContext>({
   events: {
     onSelectComponent: () => {},
   },
+  nodeChangedStatus: {},
 });
 
 export default context;

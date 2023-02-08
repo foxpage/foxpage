@@ -104,6 +104,26 @@ export const updateDSLModalVisible = createAction(
   }),
 )();
 
+// html related
+export const updateHTMLLoading = createAction('BUILDER_HEADER__UPDATE_HTML_LOADING', (loading: boolean) => ({
+  loading,
+}))();
+
+export const fetchHtml = createAction('BUILDER_HEADER__FETCH_HTML', (params) => ({
+  ...params,
+}))();
+
+export const pushHtml = createAction('BUILDER_HEADER__PUSH_HTML', (html: string) => ({
+  html,
+}))();
+
+export const updateHTMLModalVisible = createAction(
+  'BUILDER_HEADER__UPDATE_HTML_MODAL_VISIBLE',
+  (open: boolean) => ({
+    open,
+  }),
+)();
+
 // mock
 export const updateMockLoading = createAction('BUILDER_HEADER__UPDATE_MOCK_LOADING', (loading: boolean) => ({
   loading,

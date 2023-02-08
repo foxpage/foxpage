@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Content, DSL, FileTypes } from '@foxpage/foxpage-server-types';
+import { Content, ContentVersion, DSL, File, FileTypes, Folder } from '@foxpage/foxpage-server-types';
 
 import { LOG, PRE, TYPE } from '../../../config/constant';
 import * as Model from '../../models';
@@ -38,22 +38,15 @@ export class ContentInfoService extends BaseService<Content> {
       id: params.id || generationId(PRE.CONTENT),
       title: _.trim(params?.title) || '',
       fileId: params.fileId || '',
+      applicationId: params.applicationId || '',
+      type: params.type || '',
       tags: params?.tags || [],
       liveVersionNumber: params.liveVersionNumber || 0,
+      liveVersionId: params.liveVersionId || '',
       creator: params?.creator || options.ctx.userInfo.id,
     };
 
     options.ctx.transactions.push(Model.content.addDetailQuery(contentDetail));
-    options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.CREATE, contentDetail, {
-        actionType: options.actionType || [LOG.CREATE, TYPE.CONTENT].join('_'),
-        category: {
-          type: TYPE.CONTENT,
-          contentId: contentDetail.id,
-          fileId: params.fileId || '',
-        },
-      }),
-    );
 
     return contentDetail;
   }
@@ -95,12 +88,12 @@ export class ContentInfoService extends BaseService<Content> {
     options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number>> {
     const contentDetail = await this.getDetailById(params.id);
-    if (!contentDetail || contentDetail.deleted) {
+    if (this.notValid(contentDetail)) {
       return { code: 1 }; // Invalid content ID
     }
 
     const fileDetail = await Service.file.info.getDetailById(contentDetail.fileId);
-    if (!fileDetail || fileDetail.deleted || fileDetail.type !== params.type) {
+    if (this.notValid(fileDetail) || fileDetail.type !== params.type) {
       return { code: 2 }; // Check whether the file type is consistent with the specified type
     }
 
@@ -118,19 +111,6 @@ export class ContentInfoService extends BaseService<Content> {
     // Update content information
     options.ctx.transactions.push(
       Model.content.updateDetailQuery(params.id, _.pick(params, ['title', 'tags'])),
-    );
-
-    options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.CONTENT_UPDATE, [contentDetail], {
-        actionType: options.actionType || [LOG.UPDATE, TYPE.CONTENT].join('_'),
-        category: {
-          type: TYPE.CONTENT,
-          contentId: contentDetail.id,
-          fileId: contentDetail.fileId,
-          folderId: fileDetail.folderId,
-          applicationId: fileDetail.applicationId,
-        },
-      }),
     );
 
     // tag update log
@@ -157,18 +137,8 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateContentItem(
-    id: string,
-    params: Partial<Content>,
-    options: { ctx: FoxCtx; fileId?: string; actionType?: string },
-  ): void {
+  updateContentItem(id: string, params: Partial<Content>, options: { ctx: FoxCtx }): void {
     options.ctx.transactions.push(Model.content.updateDetailQuery(id, params));
-    options.ctx.operations.push(
-      ...Service.log.addLogItem(LOG.UPDATE, Object.assign({ id }, params), {
-        actionType: options.actionType || [LOG.UPDATE, TYPE.CONTENT].join('_'),
-        category: { type: TYPE.CONTENT, contentId: id, fileId: options?.fileId || '' },
-      }),
-    );
   }
 
   /**
@@ -182,7 +152,7 @@ export class ContentInfoService extends BaseService<Content> {
   ): Promise<Record<string, number>> {
     // Get content details
     const contentDetail = await this.getDetailById(params.id);
-    if (!contentDetail) {
+    if (this.notValid(contentDetail)) {
       return { code: 1 }; // Invalid content information
     }
 
@@ -341,5 +311,35 @@ export class ContentInfoService extends BaseService<Content> {
    */
   getContentExtension(contentDetail: Content, extensionName: string[] = ['extendId']) {
     return Service.content.tag.getTagsByKeys(contentDetail?.tags || [], extensionName);
+  }
+
+  /**
+   * Get the content all level info, include app, folder, file, content and version
+   * @param params
+   * @returns
+   */
+  async getContentLevelInfo(params: { id: string; versionNumber?: number }): Promise<{
+    contentInfo: Content;
+    versionInfo: Partial<ContentVersion>;
+    fileInfo: File;
+    folderInfo: Folder;
+    applicationInfo: Record<string, string>;
+  }> {
+    const contentInfo = await this.getDetailById(params.id);
+    const fileInfo = await Service.file.info.getDetailById(contentInfo.fileId);
+    const folderInfo = await Service.folder.info.getDetailById(fileInfo.folderId);
+    const applicationInfo = { id: folderInfo.applicationId };
+
+    let versionInfo: Partial<ContentVersion> = {};
+    if (!params.versionNumber || !contentInfo.liveVersionNumber) {
+      versionInfo = await Service.version.info.getMaxContentVersionDetail(contentInfo.id);
+    } else {
+      versionInfo = await Service.version.info.getContentVersionDetail({
+        contentId: contentInfo.id,
+        versionNumber: params.versionNumber || contentInfo.liveVersionNumber,
+      });
+    }
+
+    return { contentInfo, fileInfo, folderInfo, applicationInfo, versionInfo };
   }
 }

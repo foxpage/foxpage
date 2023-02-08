@@ -1,39 +1,16 @@
-import { RenderStructureNode } from "@/types/index";
+import { RenderStructureNode } from '@/types/index';
 
-export const getState = (newData: RenderStructureNode, cached: RenderStructureNode) => {
-  return  {
+export const getCoveredState = (selected: RenderStructureNode, cached: RenderStructureNode) => {
+  if ((selected?.__lastModified || 0) > (cached?.__lastModified || 0)) {
+    return getCoveredState(cached, selected);
+  }
+  return {
     ...cached,
-    ...newData,
-    props: {
-      ...cached.props,
-      ...newData.props,
-    },
-    directive: {
-      ...(cached.directive || {}),
-      ...(newData.directive || {}),
-    },
+    ...selected,
+    props: Object.assign({}, selected.props, cached.props),
+    directive:  Object.assign({}, selected.directive, cached.directive),
     __styleNode: {
-      ...(cached.__styleNode || {}),
-      ...(newData.__styleNode || {}),
-    } as RenderStructureNode['__styleNode'],
-  };
-}
-
-export const getCoveredState = (newData: RenderStructureNode, cached: RenderStructureNode) => {
-  return  {
-    ...cached,
-    ...newData,
-    props: {
-      ...newData.props,
-      ...cached.props,
-    },
-    directive: {
-      ...(newData.directive || {}),
-      ...(cached.directive || {}),
-    },
-    __styleNode: {
-      ...(newData.__styleNode || {}),
       ...(cached.__styleNode || {}),
     } as RenderStructureNode['__styleNode'],
   };
-}
+};

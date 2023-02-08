@@ -2,7 +2,7 @@ const mongoConfig = process.env.MONGO_CONFIG;
 
 export default {
   host: '',
-  port: 50000,
+  port: 50001,
   jwtKey: 'mock', // Generate jwt key text
   ignoreTokenPath: [
     '/swagger/swagger.json',
@@ -16,6 +16,7 @@ export default {
     '/pages/lives',
     '/templates/lives',
     '/content/tag-versions',
+    '/content/tag-contents',
     '/contents',
     '/contents/changes',
     '/functions/lives',
@@ -26,9 +27,13 @@ export default {
     '/pages/draft-infos',
     '/files',
   ], // Skip to verify the interface of the token
-  mongodb: mongoConfig || 'mongodb://127.0.0.1:45201/foxpage?retryWrites=false', // Database connection string
+  mongodb: mongoConfig || '', // Database connection string
   locale: 'en', // Current language
   plugins: ['@foxpage/foxpage-plugin-unpkg'],
+  metric: {
+    name: '',
+    debug: true,
+  },
   allLocales: [
     'en-US',
     'zh-HK',

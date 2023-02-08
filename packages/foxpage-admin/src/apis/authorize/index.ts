@@ -5,6 +5,7 @@ import {
   AuthorizeDeleteResponse,
   AuthorizeListFetchParams,
   AuthorizeListFetchResponse,
+  AuthorizeQueryParams,
   AuthorizeUpdateParams,
   AuthorizeUpdateResponse,
   AuthorizeUserFetchParams,
@@ -36,6 +37,13 @@ export const authorizeUpdate = (params: AuthorizeUpdateParams): Promise<Authoriz
 export const authorizeDelete = (params: AuthorizeDeleteParams): Promise<AuthorizeDeleteResponse> =>
   new Promise((resolve) => {
     FoxPageApi.put('/authorizes/status', params, (rs: AuthorizeDeleteResponse) => {
+      resolve(rs);
+    });
+  });
+
+export const authorizeCheck = (params: AuthorizeQueryParams): Promise<any> =>
+  new Promise((resolve) => {
+    FoxPageApi.get('/authorizes/item', params, (rs: any) => {
       resolve(rs);
     });
   });

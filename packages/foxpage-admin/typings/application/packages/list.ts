@@ -1,5 +1,5 @@
-import { AbstractEntity, CommonFetchParams, FileTag, PaginationReqParams } from '@/types/index';
 import { ComponentType } from '@/constants/index';
+import { AbstractEntity, CommonFetchParams, FileTag, PaginationReqParams } from '@/types/index';
 
 export type PackageType = 'component' | 'editor' | 'library';
 

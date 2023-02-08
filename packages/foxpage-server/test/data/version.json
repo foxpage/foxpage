@@ -171,5 +171,13 @@
       "createTime": "2022-01-07T15:11:53.033+08:00",
       "updateTime": "2022-01-07T15:11:53.033+08:00"
     }
-  ]
+  ],
+  "pageVersionInfo": {
+    "versionDetail": {},
+    "componentList": [],
+    "relations": {
+      "templates": []
+    },
+    "mockObject": {}
+  }
 }

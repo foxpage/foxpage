@@ -1,17 +1,26 @@
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 
+import md5 from 'md5';
+
 import { Context, FoxpageStaticComponent, StructureNode } from '@foxpage/foxpage-types';
 
 import { FoxContext } from '@/context/index';
-import { RenderStructureNode } from '@/types/index';
+import { FoxBuilderEvents, RenderStructureNode } from '@/types/index';
 
 import WithErrorCatch from './WithErrorCatch';
 
-export interface ExtendInfo {
+export interface ComposeData {
+  node: RenderStructureNode;
   childList?: Array<ReactNode>;
+  decorated?: boolean;
+  isWrapper: boolean;
+  onClick?: FoxBuilderEvents['onSelectComponent'];
+}
+
+export interface ExtendInfo {
   fresh?: boolean;
-  isWrapper?: boolean;
   decoratorInfo?: Record<string, any>;
+  $composeData: ComposeData;
 }
 
 interface IProps {
@@ -21,10 +30,12 @@ interface IProps {
 
 const WithHook = (props: IProps) => {
   const [node, setNode] = useState<ReactNode>();
+  const [keyStr, setKeyStr] = useState('');
   const [initialProps, setInitialProps] = useState<RenderStructureNode['props']>();
   const { config, loadedComponents } = useContext(FoxContext);
   const { component, extendData } = props;
-  const { childList = [], isWrapper, decoratorInfo, fresh } = extendData || {};
+  const { $composeData, decoratorInfo, fresh } = extendData || {};
+  const { childList = [], isWrapper } = $composeData || {};
   const { id, name, label, type, __renderProps: componentProps } = component;
   const core = loadedComponents[component.name];
 
@@ -32,9 +43,9 @@ const WithHook = (props: IProps) => {
     const hook = (core as FoxpageStaticComponent)?.beforeNodeBuild;
     if (typeof hook === 'function') {
       try {
-        const ctx = ({
+        const ctx = {
           locale: config.page?.locale,
-        } as unknown) as Context;
+        } as unknown as Context;
         const nodeInfo: StructureNode = {
           id,
           name,
@@ -68,21 +79,28 @@ const WithHook = (props: IProps) => {
 
   useEffect(() => {
     if (core && initialProps) {
-      setNode(
-        React.createElement(
-          core,
-          {
-            ...component.__renderProps,
-            ...(isWrapper ? decoratorInfo : {}),
-            ...(initialProps || {}),
-          },
-          childList,
-        ),
-      );
+      const elemProps = {
+        ...component.__renderProps,
+        ...(isWrapper ? decoratorInfo : {}),
+        // TODO: will deprecated
+        $decorator: decoratorInfo,
+        ...(initialProps || {}),
+      };
+      const key = md5(JSON.stringify(Object.assign({}, elemProps)));
+      setNode(React.createElement(core, elemProps, childList));
+      setKeyStr(key);
     }
   }, [component.__renderProps, initialProps, isWrapper, childList, fresh]);
 
-  return <WithErrorCatch componentId={id} componentName={name} componentType={type} componentNode={node} />;
+  return (
+    <WithErrorCatch
+      key={keyStr}
+      componentId={id}
+      componentName={name}
+      componentType={type}
+      componentNode={node}
+    />
+  );
 };
 
 export default WithHook;

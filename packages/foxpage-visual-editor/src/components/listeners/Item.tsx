@@ -153,7 +153,7 @@ export class Item extends Component<any, any> {
         <RemoveBtn onClick={this.remove}>
           <MinusOutlined />
         </RemoveBtn>
-        <Drawer title="Two-level Drawer" width={640} closable onClose={this.handleClose} visible={open}>
+        <Drawer title="Two-level Drawer" width={640} closable onClose={this.handleClose} open={open}>
           <div>
             <Select onSelect={this.onTargetChange} style={{ width: '100%' }} value={props.id}>
               {components &&

@@ -7,7 +7,6 @@ import * as ACTIONS from '@/actions/projects/folder';
 import { ProjectFolder } from '@/components/index';
 
 const mapStateToProps = (store: RootState) => ({
-  organizationId: store.system.user.organizationId,
   loading: store.projects.folder.loading,
   saveLoading: store.projects.folder.saveLoading,
   pageInfo: store.projects.folder.pageInfo,
@@ -30,7 +29,6 @@ type ProjectProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPro
 
 const Project: React.FC<ProjectProps> = (props) => {
   const {
-    organizationId,
     loading,
     saveLoading,
     pageInfo,
@@ -55,7 +53,6 @@ const Project: React.FC<ProjectProps> = (props) => {
   return (
     <ProjectFolder
       type="projects"
-      organizationId={organizationId}
       loading={loading}
       saveLoading={saveLoading}
       pageInfo={pageInfo}

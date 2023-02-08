@@ -11,7 +11,6 @@ const GlobalStyle = createGlobalStyle`
   *[data-node="component"] {
     outline: ${(props: { gridMode: string }) => (props.gridMode === 'all' ? '1px dashed #cccccc' : 'none')};
     outline-offset: -2px;
-    position: relative;
     &.hovered {
       outline-offset: -2px;
       outline: 2px solid #1890ff;
@@ -39,16 +38,15 @@ const GlobalStyle = createGlobalStyle`
     ${(props: { gridMode: string }) =>
       props.gridMode === 'none' ? 'none' : 'outline: 1px dashed rgba(0, 0, 0, 0.3);'}
   }
-  *[data-node-drag-in="true"]:empty:before {
+  *[data-node-drag-in="true"].empty:before {
+    display: flex;
     content: '+';
     font-size: 14px;
-    line-height: 1;
+    line-height: 1.5;
     color: rgba(0, 0, 0, 0.5);
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    margin-left: -5px;
-    margin-top: -7px;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px
   }
   *[data-node-type="system.root-container"]>div:empty {
     outline: none;
@@ -56,6 +54,7 @@ const GlobalStyle = createGlobalStyle`
   *[data-node-type="system.root-container"]>div:empty:before {
     content: '';
   }
+  
 `;
 
 export interface IProps {
@@ -82,12 +81,15 @@ const ViewEntry = (props: IProps) => {
           nodes.push(
             <Wrapper
               key={id}
-              childList={childrenNodes}
-              isWrapper={isWrapper}
-              decorated={decorated}
-              node={tree[i]}
-              onClick={onSelectNode}
-            />,
+              $composeData={{
+                childList: childrenNodes,
+                isWrapper,
+                decorated,
+                node: tree[i],
+                onClick: onSelectNode,
+              }}
+              {...tree[i].props}
+             />,
           );
         }
       }

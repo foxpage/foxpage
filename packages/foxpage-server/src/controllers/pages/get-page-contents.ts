@@ -42,7 +42,7 @@ export class GetPageContentList extends BaseController {
 
       // Check file deleted status
       const fileDetail = await this.service.file.info.getDetailById(params.fileId);
-      if (!fileDetail || (!params.deleted && fileDetail.deleted)) {
+      if (this.notValid(fileDetail) || (!params.deleted && fileDetail.deleted)) {
         return Response.warning(i18n.page.fileIsInvalidOrDeleted, 2050701);
       }
 
@@ -57,6 +57,8 @@ export class GetPageContentList extends BaseController {
         this.service.content.file.getFileContentList(contentParams),
         this.service.application.getDetailById(params.applicationId),
       ]);
+
+      const changedContentIds = await this.service.contentLog.getChangedContent(_.map(contentList, 'id'));
 
       let hostLocaleObject: Record<string, string[]> = {};
       if (apiType === TYPE.PAGE) {
@@ -99,6 +101,7 @@ export class GetPageContentList extends BaseController {
           _.pullAll(urls, [null, undefined, '']);
         }
 
+        content.changed = changedContentIds.indexOf(content.id) !== -1;
         content.isBase = _.remove(content.tags, (tag) => !_.isNil(tag.isBase))[0]?.isBase || false;
         content.extendId = _.remove(content.tags, (tag) => !_.isNil(tag.extendId))[0]?.extendId || '';
         if (apiType === TYPE.PAGE) {

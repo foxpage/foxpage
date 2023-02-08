@@ -5,19 +5,19 @@ import { BugFilled } from '@ant-design/icons';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
+import { posters } from '@/pages/builder/events';
 import { IconMsg, StyledIcon } from '@/pages/builder/header/Main';
 import { GlobalContext } from '@/pages/system';
 import * as PAGE_ACTIONS from '@/store/actions/builder/main';
 
-import { DSL, Mock, More, Preview, Publish, Save } from './components';
-import { posters } from '@/pages/builder/events';
+import { DSL, HTML, Mock, More, Preview, Publish, Save } from './components';
 
 const mapStateToProps = (store: RootState) => ({
   applicationId: store.builder.header.applicationId,
   folderId: store.builder.header.folderId,
   contentId: store.builder.header.contentId,
   mock: store.builder.main.mock,
-  editStatus: store.builder.main.editStatus,
+  editStatus: store.builder.main.editStatus && !!store.record.main.localRecords.length,
   saveLoading: store.builder.main.saveLoading,
   publishLoading: store.builder.main.publishLoading,
 });
@@ -99,6 +99,7 @@ const Catalog: React.FC<Type> = (props) => {
         </StyledIcon>
       )}
       <DSL />
+      <HTML />
       <Mock />
       <More />
       <Preview />

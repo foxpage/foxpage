@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Input } from 'antd';
@@ -11,6 +12,7 @@ import { FileScopeSelector, FoxPageBreadcrumb, FoxPageContent } from '@/componen
 import { GlobalContext } from '@/pages/system';
 
 import { EditDrawer, List } from './components';
+import { getLocationIfo } from '@/utils/location-info';
 
 const { Search } = Input;
 
@@ -42,6 +44,10 @@ const Main: React.FC<ConditionType> = (props) => {
   const [pageNum, setPageNum] = useState<number>(pageInfo.page);
   const [search, setSearch] = useState<string | undefined>();
 
+  // url params
+  const history = useHistory();
+  const { page: searchPage, searchText } = getLocationIfo(history.location);
+
   // i18n
   const { locale } = useContext(GlobalContext);
   const { condition, global } = locale.business;
@@ -51,20 +57,38 @@ const Main: React.FC<ConditionType> = (props) => {
   }, []);
 
   useEffect(() => {
+    setPageNum(searchPage || PAGE_NUM);
+  }, [searchPage]);
+
+  useEffect(() => {
+    setSearch(searchText || '');
+  }, [searchText]);
+
+  useEffect(() => {
     if (applicationId) {
       fetchList({
         applicationId,
         page: pageNum,
         size: pageInfo.size,
-        search: search || '',
+        search: searchText || '',
       });
     }
-  }, [applicationId, pageNum, search, scope]);
+  }, [applicationId, pageNum, searchText, scope]);
+
+  const handleScopeChange = (scope) => {
+    updateScope(scope);
+
+    history.push({
+      pathname: history.location.pathname,
+      search: `?page=${PAGE_NUM}&searchText=`,
+    });
+  };
 
   const handleSearch = (search) => {
-    setPageNum(PAGE_NUM);
-
-    setSearch(search);
+    history.push({
+      pathname: history.location.pathname,
+      search: `?page=${PAGE_NUM}&searchText=${search}`,
+    });
   };
 
   return (
@@ -72,12 +96,13 @@ const Main: React.FC<ConditionType> = (props) => {
       <FoxPageContent breadcrumb={<FoxPageBreadcrumb breadCrumb={[{ name: condition.name }]} />}>
         <OptionsBox>
           <div style={{ flex: '0 0 200px' }}>
-            <FileScopeSelector onChange={updateScope} />
+            <FileScopeSelector onChange={handleScopeChange} />
           </div>
           <div style={{ flexGrow: 1, textAlign: 'right' }}>
             <Search
               placeholder={global.inputSearchText}
-              defaultValue={search}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               onSearch={handleSearch}
               style={{ width: 250 }}
             />

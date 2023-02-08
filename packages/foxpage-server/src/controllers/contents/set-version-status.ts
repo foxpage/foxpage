@@ -43,7 +43,7 @@ export class SetContentVersionStatus extends BaseController {
 
       // Check the validity of the current page ID
       let contentDetail = await this.service.version.info.getDetailById(params.id);
-      if (!contentDetail || contentDetail.deleted) {
+      if (this.notValid(contentDetail)) {
         return Response.warning(i18n.content.invalidContentId, 2160901);
       }
 

@@ -14,7 +14,18 @@ import { JSONSchema } from 'class-validator-jsonschema';
 
 import { ContentStatus } from '@foxpage/foxpage-server-types';
 
-import { App, CreatorInfo, ResponseBase } from './index-validate-types';
+import { App, CreatorInfo, PagingReq, ResponseBase } from './index-validate-types';
+import { UserBase } from './user-validate-types';
+
+export class AppContentId {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  id: string;
+}
 
 export class AddContentReq {
   @JSONSchema({ description: 'Application ID' })
@@ -85,6 +96,11 @@ export class UpdateContentReq {
   @IsString()
   @IsOptional()
   extendId: string;
+
+  @JSONSchema({ description: 'Depended page content ID' })
+  @IsString()
+  @IsOptional()
+  pageContentId: string;
 
   @JSONSchema({ description: 'Page label' })
   @ValidateNested({ each: true })
@@ -364,6 +380,16 @@ export class ContentVersionUpdateReq {
   @IsString()
   @IsOptional()
   version: string;
+
+  @JSONSchema({ description: 'Page content id' })
+  @IsString()
+  @IsOptional()
+  pageContentId: string;
+
+  @JSONSchema({ description: 'Page last update time' })
+  @IsString()
+  @IsOptional()
+  contentUpdateTime: string;
 }
 
 export class ContentVersionBaseUpdateReq {
@@ -616,18 +642,18 @@ export class AppContentStatusReq {
 export class AppContentLiveReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
-  @Length(20, 20)
   applicationId: string;
 
   @JSONSchema({ description: 'Content ID' })
   @IsString()
-  @Length(20, 20)
   id: string;
 
   @JSONSchema({ description: 'live version number' })
   @IsNumber()
   versionNumber: number;
 }
+
+export class AppContentOfflineReq extends AppContentId {}
 
 export class ContentChangeReq {
   @JSONSchema({ description: 'Application ID' })
@@ -676,18 +702,29 @@ export class CloneContentReq {
   @Length(20, 20)
   applicationId: string;
 
-  @JSONSchema({ description: 'Target Content ID' })
-  @IsString()
-  targetContentId: string;
-
   @JSONSchema({ description: 'Content ID' })
   @IsString()
   sourceContentId: string;
 
-  // @JSONSchema({ description: 'Version Number' })
-  // @IsNumber()
-  // @IsOptional()
-  // sourceVersionNumber: number;
+  @JSONSchema({ description: 'Target Content ID' })
+  @IsString()
+  @IsOptional()
+  targetContentId: string;
+
+  @JSONSchema({ description: 'Target content locales' })
+  @IsArray()
+  @IsOptional()
+  targetContentLocales: any[];
+
+  @JSONSchema({ description: 'Version Number' })
+  @IsNumber()
+  @IsOptional()
+  sourceVersionNumber: number;
+
+  @JSONSchema({ description: 'Copy content include base content, default is false' })
+  @IsBoolean()
+  @IsOptional()
+  includeBase: boolean;
 }
 
 export class SaveToBaseReq {
@@ -698,4 +735,156 @@ export class SaveToBaseReq {
   @JSONSchema({ description: 'Content ID' })
   @IsString()
   contentId: string;
+}
+
+export class SetVersionTemplateReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content Version ID' })
+  @IsString()
+  versionId: string;
+
+  @JSONSchema({ description: 'Template ID' })
+  @IsString()
+  templateId: string;
+}
+
+export class ContentLogItem {
+  @JSONSchema({ description: 'Content item id' })
+  @IsString()
+  id: string;
+
+  @JSONSchema({ description: 'Content item data type, variable, condition, structure..' })
+  @IsString()
+  type: string;
+
+  @JSONSchema({ description: 'Content log data' })
+  content: any;
+}
+
+export class ContentLogStructureItem {
+  @JSONSchema({ description: 'Content log data' })
+  @IsArray()
+  @ValidateNested({ each: true })
+  content: ContentLogItem[];
+
+  @JSONSchema({ description: 'Content data action type, create|update|remove' })
+  @IsString()
+  action: string;
+
+  @JSONSchema({ description: 'Version structure ID' })
+  @IsString()
+  @IsOptional()
+  structureId: string;
+
+  @JSONSchema({ description: 'Content data change time' })
+  @IsNumber()
+  @IsOptional()
+  createTime: number;
+}
+
+export class AddContentLogsReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Content Version ID' })
+  @IsString()
+  @IsOptional()
+  versionId: string;
+
+  @JSONSchema({ description: 'Content Logs' })
+  @IsArray()
+  @ValidateNested({ each: true })
+  logs: ContentLogStructureItem[];
+}
+
+export class GetContentLogsReq extends PagingReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Content Version ID' })
+  @IsString()
+  @IsOptional()
+  versionId: string;
+
+  @JSONSchema({ description: 'Content Structure ID' })
+  @IsString()
+  @IsOptional()
+  structureId: string;
+}
+
+export class GetContentStructureLogsReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Content Version ID' })
+  @IsString()
+  @IsOptional()
+  versionId: string;
+}
+
+export class CheckVersionPublishReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Content Version ID' })
+  @IsString()
+  @IsOptional()
+  versionId: string;
+}
+
+export class LockBuildContentReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Content Version ID' })
+  @IsString()
+  versionId: string;
+}
+
+export class LockBuildContentResDetail {
+  @JSONSchema({ description: 'Lock status' })
+  @IsBoolean()
+  status: boolean;
+
+  @JSONSchema({ description: 'Last operation time' })
+  @IsNumber()
+  operationTime: number;
+
+  @JSONSchema({ description: 'Current Lock user info' })
+  @ValidateNested({ each: true })
+  @IsObject()
+  operator: UserBase;
+}
+
+export class LockBuildContentRes extends ResponseBase {
+  @ValidateNested({ each: true })
+  data: LockBuildContentResDetail;
 }

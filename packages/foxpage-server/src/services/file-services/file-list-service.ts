@@ -104,6 +104,8 @@ export class FileListService extends BaseService<File> {
     let contentFileObject: Record<string, File> = {};
     contentList.forEach((content) => {
       contentFileObject[content.id] = fileObject[content.fileId] || {};
+      contentFileObject[content.id].componentType =
+        (content as any).componentType || fileObject[content.fileId].componentType || '';
     });
 
     return contentFileObject;
@@ -120,13 +122,14 @@ export class FileListService extends BaseService<File> {
       applicationId: params.applicationId,
       type: params.type,
       deleted: false,
-      $and: [{ name: { $regex: '^(?!__).*' } }], // Exclude system files with names beginning with __
     };
 
+    if (params.type === TYPE.CONDITION) {
+      filter.subType = { $nin: ['timeDisplay', 'showHide'] };
+    }
+
     if (params.search) {
-      filter['$and'].push({
-        $or: [{ name: { $regex: new RegExp(params.search, 'i') } }, { id: params.search }],
-      });
+      filter['$or'] = [{ name: { $regex: new RegExp(params.search, 'i') } }, { id: params.search }];
     }
 
     // filter application or the special folder items
@@ -256,6 +259,10 @@ export class FileListService extends BaseService<File> {
     counts: number;
   }> {
     let filter: Record<string, any> = { type };
+
+    if (type === TYPE.CONDITION) {
+      filter.subType = { $nin: ['timeDisplay', 'showHide'] };
+    }
 
     if (params.search) {
       filter.name = { $regex: new RegExp(params.search, 'i') };

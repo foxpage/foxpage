@@ -323,6 +323,11 @@ export class AppSettingListReq extends PagingReq {
 }
 
 export class AppSettingInfo {
+  @JSONSchema({ description: 'App setting item idx' })
+  @IsNumber()
+  @IsOptional()
+  idx: number;
+
   @JSONSchema({ description: 'App setting item id, file Id' })
   @IsString()
   id: string;
@@ -394,7 +399,7 @@ export class RemoveAppSettingDetailReq {
   @IsString()
   type: string;
 
-  @JSONSchema({ description: 'Application setting item file ids, string of split by comma' })
+  @JSONSchema({ description: 'Application setting item type idx list, split by ","' })
   @IsString()
-  fileIds: string;
+  ids: string;
 }

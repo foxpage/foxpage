@@ -24,6 +24,7 @@ const initialState = {
   componentList,
   blockList,
   applicationId: '',
+  search: '',
   selectPackage: '' as AppComponentFetchParams['type'],
   // drawer
   componentDrawer,

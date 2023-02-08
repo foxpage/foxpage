@@ -79,14 +79,14 @@ export class PublishProjectPage extends BaseController {
       // Check the validity of the relationship
       let invalidRelations: ContentVersionString[] = [];
       let releaseStatusIds: string[] = [];
-      let liveStatusIds: Record<string, number> = {};
+      let liveStatusIds: Record<string, any> = {};
       allRelationList.forEach((relation) => {
         if (!relation.status || relation.status === VERSION.STATUS_DISCARD) {
           invalidRelations.push(relation);
         } else if (relation.status === VERSION.STATUS_BASE) {
           releaseStatusIds.push(relation.id);
         }
-        liveStatusIds[relation.contentId] = relation.versionNumber || 0;
+        liveStatusIds[relation.contentId] = { id: relation.id, version: relation.versionNumber || 0 };
       });
 
       // Return wrong relation information
@@ -100,7 +100,7 @@ export class PublishProjectPage extends BaseController {
       }
 
       // Set publishing status
-      let releaseCodes: Record<string, string[]> = {};
+      let releaseCodes: Record<string, any> = {};
       const maxObject = _.keyBy(maxVersions, '_id');
       this.service.version.live.bulkSetVersionStatus(
         releaseStatusIds,
@@ -113,8 +113,8 @@ export class PublishProjectPage extends BaseController {
       const liveStatusList = await this.service.content.list.getDetailByIds(liveStatusKeys);
       const liveStatusContentObject = _.keyBy(liveStatusList, 'id');
       for (const id of liveStatusKeys) {
-        if (liveStatusContentObject[id]?.liveVersionNumber !== liveStatusIds[id]) {
-          this.service.content.live.setLiveContent(id, liveStatusIds[id] || 0, {
+        if (liveStatusContentObject[id]?.liveVersionNumber !== liveStatusIds[id].version) {
+          this.service.content.live.setLiveContent(id, liveStatusIds[id].version || 0, liveStatusIds[id].id, {
             ctx,
             content: { id } as Content,
           });
@@ -135,12 +135,20 @@ export class PublishProjectPage extends BaseController {
           id: versionObject[id].id,
           status: VERSION.STATUS_RELEASE as ContentStatus,
         };
-        const releaseResult = await this.service.version.live.setVersionPublishStatus(liveParams, { ctx });
-        this.service.content.live.setLiveContent(id, maxObject[id].versionNumber || 0, {
+        const [validateResult] = await Promise.all([
+          this.service.version.check.versionCanPublish(versionObject[id].id),
+          this.service.version.live.setVersionPublishStatus(liveParams, { ctx }),
+        ]);
+
+        if (!validateResult.publishStatus) {
+          releaseCodes[id] = validateResult;
+          continue;
+        }
+
+        this.service.content.live.setLiveContent(id, maxObject[id].versionNumber || 0, versionObject[id].id, {
           ctx,
           content: contentObject[id],
         });
-        releaseResult.code === 2 && (releaseCodes[id] = Object.keys(releaseResult.data));
       }
 
       // Page publishing results
@@ -149,10 +157,7 @@ export class PublishProjectPage extends BaseController {
         const newVersionList = await this.service.version.list.getContentInfoByIdAndVersion(idVersionList);
         return Response.success(newVersionList, 1040701);
       } else {
-        return Response.warning(
-          i18n.project.invalidRelationDataStatus + ':' + _.toArray(releaseCodes).join(','),
-          2040702,
-        );
+        return Response.warning(i18n.project.invalidRelationDataStatus, 2040702, releaseCodes);
       }
     } catch (err) {
       return Response.error(err, i18n.project.publishProjectPageFailed, 3040701);

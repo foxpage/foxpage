@@ -7,11 +7,11 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Log } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
+import { UserBase } from '../../../src/types/user-types';
 import { FoxCtx, PageData, ResData } from '../../types/index-types';
 import { DynamicListRes, WorkspaceDynamicListReq } from '../../types/validates/log-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
-import { UserBase } from '../../../src/types/user-types';
 
 type DynamicItem = Log & {
   dataType: {
@@ -53,10 +53,11 @@ export class GetWorkspaceDynamicList extends BaseController {
 
       const orgDetail = await this.service.org.getDetail({
         id: params.organizationId,
+        deleted: false,
         members: { $elemMatch: { userId: ctx.userInfo.id, status: true } },
       });
 
-      if (!orgDetail || _.isEmpty(orgDetail)) {
+      if (this.notValid(orgDetail)) {
         return Response.success(
           {
             pageInfo: {
@@ -98,21 +99,15 @@ export class GetWorkspaceDynamicList extends BaseController {
         userIds.push(data.operator);
       });
 
-      const [
-        versionObject,
-        contentObject,
-        fileObject,
-        folderObject,
-        appObject,
-        userObject,
-      ] = await Promise.all([
-        this.service.version.info.getDetailObjectByIds(_.uniq(versionIds)),
-        this.service.content.info.getDetailObjectByIds(_.uniq(contentIds)),
-        this.service.file.info.getDetailObjectByIds(_.uniq(fileIds)),
-        this.service.folder.info.getDetailObjectByIds(_.uniq(folderIds)),
-        this.service.application.getDetailObjectByIds(_.uniq(applicationIds)),
-        this.service.user.getUserBaseObjectByIds(userIds),
-      ]);
+      const [versionObject, contentObject, fileObject, folderObject, appObject, userObject] =
+        await Promise.all([
+          this.service.version.info.getDetailObjectByIds(_.uniq(versionIds)),
+          this.service.content.info.getDetailObjectByIds(_.uniq(contentIds)),
+          this.service.file.info.getDetailObjectByIds(_.uniq(fileIds)),
+          this.service.folder.info.getDetailObjectByIds(_.uniq(folderIds)),
+          this.service.application.getDetailObjectByIds(_.uniq(applicationIds)),
+          this.service.user.getUserBaseObjectByIds(userIds),
+        ]);
 
       let dynamicList: DynamicItem[] = [];
       operationResult.list.forEach((log) => {

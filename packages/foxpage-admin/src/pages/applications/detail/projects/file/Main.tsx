@@ -18,6 +18,7 @@ const mapStateToProps = (store: RootState) => ({
   authLoading: store.applications.detail.projects.file.authListLoading,
   authList: store.applications.detail.projects.file.authList,
   userList: store.applications.detail.projects.file.userList,
+  application: store.applications.detail.settings.app.application,
 });
 
 const mapDispatchToProps = {
@@ -27,8 +28,8 @@ const mapDispatchToProps = {
   openDrawer: ACTIONS.openEditDrawer,
   updateEditFile: ACTIONS.updateEditFileValue,
   saveFile: ACTIONS.saveFile,
-  deleteFile: ACTIONS.deleteFile,
   openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
+  checkAuthRole: ACTIONS.checkAuthRole,
   fetchAuthList: ACTIONS.fetchAuthList,
   fetchUserList: ACTIONS.fetchUserList,
   saveUser: ACTIONS.saveAuthUser,
@@ -41,6 +42,7 @@ type FileListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPro
 
 const Main: React.FC<FileListType> = (props) => {
   const {
+    application,
     loading,
     saveLoading,
     pageInfo,
@@ -57,8 +59,8 @@ const Main: React.FC<FileListType> = (props) => {
     openDrawer,
     updateEditFile,
     saveFile,
-    deleteFile,
     openAuthDrawer,
+    checkAuthRole,
     fetchAuthList,
     fetchUserList,
     saveUser,
@@ -86,13 +88,14 @@ const Main: React.FC<FileListType> = (props) => {
       authLoading={authLoading}
       authList={authList}
       userList={userList}
+      application={application}
       fetchFileList={fetchFileList}
       fetchParentFiles={fetchParentFiles}
       openDrawer={openDrawer}
       updateEditFile={updateEditFile}
       saveFile={saveFile}
-      deleteFile={deleteFile}
       openAuthDrawer={openAuthDrawer}
+      checkAuthRole={checkAuthRole}
       fetchAuthList={fetchAuthList}
       fetchUserList={fetchUserList}
       saveUser={saveUser}

@@ -14,6 +14,7 @@ import {
   PaginationReqParams,
   StoreResourceSearchParams,
 } from '@/types/index';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchResources(action: StoreResourceListActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -48,7 +49,7 @@ function* handleFetchResources(action: StoreResourceListActionType) {
       store: { fetchResourceFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchResourceFailed);
+   errorToast(res, fetchResourceFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -65,7 +66,7 @@ function* handleFetchApplicationList(actions: StoreResourceListActionType) {
       application: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+   errorToast(res, fetchListFailed);
   }
 }
 
@@ -80,7 +81,7 @@ function* handleFetchAllApplicationList(action: StoreResourceListActionType) {
       application: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+   errorToast(res, fetchListFailed);
   }
 }
 
@@ -109,7 +110,7 @@ function* handleAddGoods(action: StoreResourceListActionType) {
 
     yield put(ACTIONS.updateBuyModalVisible(false));
   } else {
-    message.error(res.msg || buyFailed);
+   errorToast(res, buyFailed);
   }
 }
 

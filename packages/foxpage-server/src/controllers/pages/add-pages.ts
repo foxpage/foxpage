@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { TYPE } from '../../../config/constant';
 import { NewFileInfo } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { FileDetailReq, FileDetailRes } from '../../types/validates/file-validate-types';
@@ -52,7 +52,7 @@ export class AddPageDetail extends BaseController {
       // Check permission
       const [hasAuth, fileCount] = await Promise.all([
         this.service.auth.folder(params.folderId, { ctx }),
-        this.service.file.info.getCount({ folderId: params.folderId, deleted: false }),
+        this.service.file.info.getCount({ folderId: params.folderId, deleted: false, type: TYPE.PAGE }),
       ]);
 
       if (!hasAuth) {
@@ -65,10 +65,7 @@ export class AddPageDetail extends BaseController {
 
       params.tags = this.service.content.tag.formatTags(apiType, params.tags);
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: apiType });
-      const result = await this.service.file.info.addFileDetail(newFileDetail, {
-        ctx,
-        actionType: [LOG.CREATE, apiType].join('_'),
-      });
+      const result = await this.service.file.info.addFileDetail(newFileDetail, { ctx });
 
       // Check the validity of the application ID
       if (result.code === 1) {

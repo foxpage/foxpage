@@ -14,6 +14,7 @@ let params = {
   id: Data.file.id,
   name: '',
   tags: [],
+  pageFileId: '',
 };
 
 beforeEach(() => {
@@ -26,6 +27,7 @@ beforeEach(() => {
     id: Data.file.id,
     name: 'demo name',
     tags: [],
+    pageFileId: '',
   };
 });
 

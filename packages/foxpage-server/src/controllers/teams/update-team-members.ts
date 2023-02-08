@@ -48,7 +48,7 @@ export class SetTeamMemberList extends BaseController {
         this.service.team.getMembersById(params.teamId) as Promise<Member[]>,
       ]);
 
-      if (!sourceTeamDetail || sourceTeamDetail.deleted) {
+      if (this.notValid(sourceTeamDetail)) {
         return Response.warning(i18n.team.invalidTeamId, 2020702);
       }
 

@@ -14,7 +14,8 @@ import * as Response from '../../utils/response';
 import { checkName } from '../../utils/tools';
 import { BaseController } from '../base-controller';
 
-@JsonController('mocks')
+// migration to files/update-type-item.ts
+@JsonController('mocks-migrations')
 export class UpdateMockDetail extends BaseController {
   constructor() {
     super();
@@ -43,7 +44,7 @@ export class UpdateMockDetail extends BaseController {
 
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.MOCK });
-      const hasAuth = await this.service.auth.file(params.id, { ctx });
+      const hasAuth = await this.service.auth.file(params.pageFileId || params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4191501);
       }

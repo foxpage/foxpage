@@ -49,7 +49,7 @@ export class GetComponentVersionDetail extends BaseController {
 
       const contentDetail = await this.service.content.info.getDetail({ fileId: fileId, deleted: false });
 
-      if (!contentDetail) {
+      if (this.notValid(contentDetail)) {
         return Response.warning(i18n.component.invalidFileId, 2110501);
       }
 

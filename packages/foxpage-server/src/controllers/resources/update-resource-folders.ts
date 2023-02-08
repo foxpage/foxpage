@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 
-import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -56,7 +55,7 @@ export class UpdateResourceFolderDetail extends BaseController {
 
       // Check the effectiveness of resources
       let folderDetail = await this.service.folder.info.getDetailById(params.id);
-      if (!folderDetail || folderDetail.deleted || folderDetail.applicationId !== params.applicationId) {
+      if (this.notValid(folderDetail) || folderDetail.applicationId !== params.applicationId) {
         return Response.warning(i18n.resource.invalidResourceFolderId, 2122103);
       }
 

@@ -3,6 +3,7 @@ import { createAction } from 'typesafe-actions';
 import {
   Application,
   AuthorizeAddParams,
+  AuthorizeQueryParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
   AuthorizeListItem,
@@ -139,4 +140,17 @@ export const fetchUserList = createAction(
 
 export const pushUserList = createAction('APPLICATION_PROJECTS_FOLDER___PUSH_USER_LIST', (list: User[]) => ({
   list,
+}))();
+
+// auth check
+export const queryMask = createAction(
+  'APPLICATION_PROJECTS_FOLDER___QUERY_MASK',
+  (params: AuthorizeQueryParams, cb?: () => void) => ({
+    params,
+    cb,
+  }),
+)();
+
+export const pushMask = createAction('APPLICATION_PROJECTS_FOLDER___PUSH_MASK', (mask: number) => ({
+  mask,
 }))();

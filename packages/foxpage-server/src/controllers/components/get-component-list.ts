@@ -8,6 +8,7 @@ import { FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD, TYPE } from '../../../config/constant';
+import metric from '../../third-parties/metric';
 import { ComponentContentInfo } from '../../types/component-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppComponentsReq, AppComponentsRes } from '../../types/validates/component-validate-types';
@@ -45,11 +46,13 @@ export class GetAppComponentList extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
 
+      metric.time('component-live-version');
       const contentList = await this.service.content.component.getComponentVersionLiveDetails({
         applicationId: params.applicationId,
         type: (params.type as FileTypes[]) || TYPE.COMPONENT,
         contentIds: params.componentIds || [],
       });
+      metric.block('getComponentVersionLiveDetails', 'component-live-version');
 
       const contentIds = _.pull(
         _.map(contentList, (content) => content?.package?.id),
@@ -73,7 +76,7 @@ export class GetAppComponentList extends BaseController {
         'node',
         'css',
       ]);
-      const dependenciesIdVersions = this.service.component.getComponentEditorAndDependends(componentCells, [
+      const dependenciesIdVersions = this.service.component.getComponentEditorAndDependence(componentCells, [
         'dependencies',
       ]);
       let dependencies = await this.service.component.getComponentDetailByIdVersion(dependenciesIdVersions);
@@ -85,11 +88,13 @@ export class GetAppComponentList extends BaseController {
 
       componentIds = componentIds.concat(dependComponentIds);
 
+      metric.time('component-resource');
       const [resourceObject, contentAllParents, dependFileContentObject] = await Promise.all([
         this.service.content.resource.getResourceContentByIds(componentIds),
         this.service.content.list.getContentAllParents(componentIds),
         this.service.file.list.getContentFileByIds(_.map(dependenceList, 'contentId')),
       ]);
+      metric.block('getComponentResources', 'component-resource');
 
       const appResource = await this.service.application.getAppResourceFromContent(contentAllParents);
       const contentResource = this.service.content.info.getContentResourceTypeInfo(
@@ -150,6 +155,9 @@ export class GetAppComponentList extends BaseController {
         // Guarantee to return id and name fields
         componentCell && components.push(componentCell);
       }
+
+      // send metric
+      components.length === 0 && metric.empty(ctx.request.url, params.applicationId);
 
       return Response.success(components, 1110801);
     } catch (err) {

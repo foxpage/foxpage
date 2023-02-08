@@ -1,0 +1,36 @@
+.rdw-editor-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+ }
+.draft-wysiwyg-wrapper .rdw-editor-toolbar,
+.draft-wysiwyg-wrapper .rdw-option-wrapper{box-sizing: content-box;}
+.draft-wysiwyg-wrapper .rdw-history-dropdown{margin-bottom: 6px;}
+.draft-wysiwyg-editor{
+    background: #fff;
+    border: 1px solid #f1f1f1;
+    padding: 0 0.8em;
+    min-height: 300px;
+}
+
+.draft-wysiwyg-editor h1 { font-size: 2em; margin: .67em 0 }
+.draft-wysiwyg-editor h2 { font-size: 1.5em; margin: .75em 0 }
+.draft-wysiwyg-editor h3 { font-size: 1.17em; margin: .83em 0 }
+.draft-wysiwyg-editor h4,
+.draft-wysiwyg-editor p,
+.draft-wysiwyg-editor blockquote,
+.draft-wysiwyg-editor ul,
+.draft-wysiwyg-editor fieldset,
+.draft-wysiwyg-editor form,
+.draft-wysiwyg-editor ol,
+.draft-wysiwyg-editor dl,
+.draft-wysiwyg-editor dir,
+.draft-wysiwyg-editor menu { margin: 1.12em 0 }
+.draft-wysiwyg-editor h5 { font-size: .83em; margin: 1.5em 0 }
+.draft-wysiwyg-editor h6 { font-size: .75em; margin: 1.67em 0 }
+.draft-wysiwyg-editor h1,
+.draft-wysiwyg-editor h2,
+.draft-wysiwyg-editor h3,
+.draft-wysiwyg-editor h4,
+.draft-wysiwyg-editor h5,
+.draft-wysiwyg-editor h6 { font-weight: bolder }

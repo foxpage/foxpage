@@ -45,7 +45,8 @@ export class VersionComponentService extends BaseService<ContentVersion> {
   getComponentResourceIds(resource: Partial<Resources>): string[] {
     let resourceIds: string[] = [];
     Object.keys(resource?.entry || {}).forEach((value) => {
-      _.isString(value) && resourceIds.push(value);
+      _.isString((resource.entry as any)[value]) &&
+        resourceIds.push((resource.entry as any)[value] as string);
     });
 
     return resourceIds;
@@ -67,11 +68,11 @@ export class VersionComponentService extends BaseService<ContentVersion> {
     });
 
     // Get resource details
-    let newResourceObject: Record<string, string> = {};
+    let newResourceObject: Record<string, any> = {};
     const resourceObject = await Service.content.resource.getResourceContentByIds(resourceContentIds);
 
     _.forIn(resourceObject, (value, key) => {
-      _.forIn(value, (path) => (newResourceObject[key] = path));
+      _.forIn(value, (path) => (newResourceObject[key] = { realPath: path }));
     });
 
     // Matching component resources
@@ -89,7 +90,7 @@ export class VersionComponentService extends BaseService<ContentVersion> {
 
   /**
    * Match the resource details to the component information through contentId,
-  * The returned entry needs to distinguish between the returned object, contentId, or only realPath, 
+  * The returned entry needs to distinguish between the returned object, contentId, or only realPath,
   * such as:
   * {
       "host": "https://www.unpkg.com/",
@@ -107,7 +108,7 @@ export class VersionComponentService extends BaseService<ContentVersion> {
     options: { contentResource?: Record<string, AppResource> } = {},
   ): Resources {
     (Object.keys(resource.entry || {}) as ResourceType[]).forEach((key) => {
-      const contentId = <string>resource.entry[key] || '';
+      const contentId = (resource.entry[key] as any)?.contentId || <string>resource.entry[key] || '';
       if (resourceObject[contentId]) {
         resource.entry[key] = {
           host: options?.contentResource?.[contentId]?.detail?.host || '',

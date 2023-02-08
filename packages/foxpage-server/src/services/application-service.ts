@@ -1,9 +1,9 @@
+import dayjs from 'dayjs';
 import _ from 'lodash';
-import moment from 'moment';
 
 import { Application, AppResource, Folder, Organization } from '@foxpage/foxpage-server-types';
 
-import { LOG, PRE, TYPE } from '../../config/constant';
+import { PRE } from '../../config/constant';
 import * as Model from '../models';
 import {
   AddAppSetting,
@@ -57,16 +57,6 @@ export class ApplicationService extends BaseService<Application> {
     };
 
     options.ctx.transactions.push(Model.application.addDetailQuery(appDetail));
-    options.ctx.operations.push({
-      action: LOG.CREATE,
-      actionType: [LOG.CREATE, TYPE.APPLICATION].join('_'),
-      category: {
-        type: LOG.CATEGORY_APPLICATION,
-        applicationId: appDetail.id,
-        organizationId: params.organizationId,
-      },
-      content: { after: appDetail },
-    });
 
     return appDetail;
   }
@@ -295,9 +285,10 @@ export class ApplicationService extends BaseService<Application> {
    */
   addAppSetting(params: AddAppSetting, options: { ctx: FoxCtx }): void {
     // Add copy file to app setting
-    const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+    const currentTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
     const pushData = {
       ['setting.' + params.type]: {
+        idx: params.idx || 0,
         id: params.typeId || '',
         name: params.typeName || '',
         status: params.typeStatus || false,
@@ -309,13 +300,6 @@ export class ApplicationService extends BaseService<Application> {
     options.ctx.transactions.push(
       Model.application.updateDetailQuery(params.applicationId, { $push: pushData } as any),
     );
-
-    options.ctx.operations.push({
-      action: LOG.UPDATE,
-      actionType: [LOG.SET, params.type].join('_'),
-      category: { type: TYPE.APPLICATION, applicationId: params.applicationId },
-      content: { after: pushData },
-    });
   }
 
   /**
@@ -323,15 +307,12 @@ export class ApplicationService extends BaseService<Application> {
    * @param params
    * @param options
    */
-  updateAppSetting(
-    params: UpdateAppSetting,
-    itemDetail: Record<string, any>,
-    options: { ctx: FoxCtx },
-  ): void {
+  updateAppSetting(params: UpdateAppSetting, options: { ctx: FoxCtx }): void {
     options.ctx.transactions.push(
       Model.application.batchUpdateDetailQuery(
         {
           id: params.applicationId,
+          ['setting.' + params.type + '.idx']: params.setting.idx,
           ['setting.' + params.type + '.id']: params.typeId,
         } as any,
         {
@@ -340,17 +321,10 @@ export class ApplicationService extends BaseService<Application> {
             ['setting.' + params.type + '.$.status']: params.setting.status || false,
             ['setting.' + params.type + '.$.category']: params.setting.category || {},
             ['setting.' + params.type + '.$.defaultValue']: params.setting.defaultValue || {},
-            ['setting.' + params.type + '.$.updateTime']: moment().format('YYYY-MM-DD HH:mm:ss'),
+            ['setting.' + params.type + '.$.updateTime']: dayjs().format('YYYY-MM-DD HH:mm:ss'),
           },
         } as any,
       ),
     );
-
-    options.ctx.operations.push({
-      action: LOG.UPDATE,
-      actionType: [LOG.SET, params.type].join('_'),
-      category: { type: TYPE.APPLICATION, applicationId: params.applicationId },
-      content: { before: itemDetail, after: params.setting },
-    });
   }
 }

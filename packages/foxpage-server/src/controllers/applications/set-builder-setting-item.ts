@@ -58,17 +58,18 @@ export class UpdateApplicationSettingDetail extends BaseController {
 
       // check item has live version
       if (_.difference(itemFileIds, hasLiveFileIds).length > 0) {
-        const invalidItems = _.filter(params.setting, item => 
-          _.difference(itemFileIds, hasLiveFileIds).indexOf(item.id) !== -1
+        const invalidItems = _.filter(
+          params.setting,
+          (item) => _.difference(itemFileIds, hasLiveFileIds).indexOf(item.id) !== -1,
         );
         return Response.warning(i18n.app.itemHasNoLiveVersion + ': ' + _.map(invalidItems, 'name'), 2031202);
       }
-
+      let maxIdx = _.max(_.map(typeSettingList, 'idx')) || 0;
       for (const item of params.setting) {
-        const itemDetail: Record<string, any> = _.find(typeSettingList, { id: item.id });
-        if (!itemDetail || _.isEmpty(itemDetail)) {
+        if (!item.idx) {
           this.service.application.addAppSetting(
             {
+              idx: ++maxIdx,
               applicationId: params.applicationId,
               type: params.type,
               typeId: item.id,
@@ -80,19 +81,20 @@ export class UpdateApplicationSettingDetail extends BaseController {
             { ctx },
           );
         } else {
+          const itemDetail: Record<string, any> = _.find(typeSettingList, { id: item.id }) || {};
           this.service.application.updateAppSetting(
             {
               applicationId: params.applicationId,
               type: params.type,
               typeId: item.id,
               setting: Object.assign({}, item, {
+                idx: item.idx,
                 name: item.name || itemDetail.name,
                 category: item.category || itemDetail.category,
                 defaultValue: item.defaultValue || itemDetail.defaultValue || {},
                 status: !_.isNil(item.status) ? item.status : itemDetail.status,
               }),
             },
-            itemDetail,
             { ctx },
           );
         }

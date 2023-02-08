@@ -29,5 +29,10 @@ export interface FoxBuilderEvents {
   onLinkChange?: (target: string, opt?: {}) => void;
   onFrameLoaded?: (opt?: {}) => void;
   onPageCapture?: () => void;
-  onPageCaptured?: (opt: {}) => void;
+  onPageCaptured?: (value: string) => void;
+  onStructureChanged?: (opt: {}) => void;
+  onRenderDSLChanged?: (structure?: RenderStructure) => void;
+  onPageStructureChanged?: (structure?: RenderStructure) => void;
+  onSelectedComponentChanged?: (selectNode?: RenderStructureNode | null) => void;
+  onFetchComponentVersions?: (selectNode?: RenderStructureNode | null) => void;
 }

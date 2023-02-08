@@ -12,8 +12,11 @@ import {
   GoodsCommitParams,
   GoodsOfflineParams,
   ParentFileFetchParams,
+  ProjectContentCopyParams,
   ProjectContentDeleteParams,
   ProjectContentFetchParams,
+  ProjectContentOfflineParams,
+  ProjectContentSaveAsBaseParams,
   ProjectEntity,
   User,
 } from '@/types/index';
@@ -63,10 +66,28 @@ export const saveContent = createAction(
   (params: ProjectContentFetchParams) => ({ ...params }),
 )();
 
-// delete related
+// delete
 export const deleteContent = createAction(
   'APPLICATION_PROJECTS_CONTENT__DELETE_CONTENT',
   (params: ProjectContentDeleteParams) => ({ ...params }),
+)();
+
+// offline
+export const offlineContent = createAction(
+  'APPLICATION_PROJECTS_CONTENT__OFF_CONTENT',
+  (params: ProjectContentOfflineParams) => ({ ...params }),
+)();
+
+// copy
+export const copyContent = createAction(
+  'APPLICATION_PROJECTS_CONTENT__COPY_CONTENT',
+  (params: ProjectContentCopyParams, cb?: () => void) => ({ params, cb }),
+)();
+
+// save as base
+export const saveAsBaseContent = createAction(
+  'APPLICATION_PROJECTS_CONTENT__SAVE_AS_BASE_CONTENT',
+  (params: ProjectContentSaveAsBaseParams) => ({ ...params }),
 )();
 
 // locale related
@@ -172,7 +193,7 @@ export const deleteAuthUser = createAction(
 
 export const fetchUserList = createAction(
   'APPLICATION_PROJECTS_CONTENT__FETCH_USER_LIST',
-  (params: AuthorizeUserFetchParams, cb?: () => void) => ({
+  (params: AuthorizeUserFetchParams, cb?: (userList) => void) => ({
     params,
     cb,
   }),

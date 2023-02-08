@@ -8,6 +8,7 @@ export interface BaseResponse<P = unknown> {
   code: number;
   data?: P;
   msg?: string;
+  status?: number;
 }
 
 export interface ResponseBody<P = unknown> extends BaseResponse<P> {}
@@ -40,4 +41,24 @@ export interface CommonPublishParams extends Pick<CommonFetchParams, 'applicatio
 export interface OptionsAction<P = unknown> {
   onSuccess?(res?: P): void;
   onFail?(): void;
+}
+
+export interface CommonSearchParams extends PaginationReqParams {
+  organizationId: string;
+  applicationId?: string;
+  type:
+    | 'project'
+    | 'page_template'
+    | 'page'
+    | 'template'
+    | 'variable'
+    | 'condition'
+    | 'function'
+    | 'project_variable'
+    | 'project_condition'
+    | 'project_function'
+    | 'component'
+    | 'content';
+  typeId?: string;
+  userType?: string;
 }

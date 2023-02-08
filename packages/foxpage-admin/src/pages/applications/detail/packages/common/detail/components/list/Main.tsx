@@ -1,12 +1,12 @@
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Button, Popconfirm, Space, Table, Tabs, Tag } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/packages/detail';
-import { StoreGoodsPurchaseType } from '@/constants/store';
+import { StoreGoodsPurchaseType } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ComponentVersionEntity, Creator } from '@/types/index';
 import { getLocationIfo, periodFormat } from '@/utils/index';
@@ -20,6 +20,7 @@ const mapStateToProps = (store: RootState) => ({
   versions: store.applications.detail.packages.detail.versionList.versions,
   pageInfo: store.applications.detail.packages.detail.versionList.pageInfo,
   fileDetail: store.applications.detail.packages.detail.fileDetail,
+  dependencies: store.applications.detail.packages.detail.depList,
 });
 
 const mapDispatchToProps = {
@@ -29,6 +30,7 @@ const mapDispatchToProps = {
   liveVersion: ACTIONS.liveComponentVersionAction,
   editVersion: ACTIONS.updateVersionDrawerState,
   viewVersion: ACTIONS.updateVersionDrawerState,
+  fetchComponentDeps: ACTIONS.fetchComponentUsed,
 };
 
 type ComponentDetailListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -41,20 +43,31 @@ const VersionList: React.FC<ComponentDetailListType> = (props) => {
     versions,
     pageInfo,
     fileDetail,
+    dependencies,
     updateVersionListState,
     fetchVersionList,
     updateVersionStatus,
     liveVersion,
     editVersion,
     viewVersion,
+    fetchComponentDeps,
   } = props;
+  const [type, setType] = useState('versions');
 
   // url params
+  const history = useHistory();
   const { fileId } = getLocationIfo(useLocation());
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, package: packageI18n, version } = locale.business;
+  const {
+    global,
+    content: contentI18n,
+    file: fileI18n,
+    history: historyI18n,
+    package: packageI18n,
+    version,
+  } = locale.business;
 
   useEffect(() => {
     if (applicationId && fileId) {
@@ -62,10 +75,18 @@ const VersionList: React.FC<ComponentDetailListType> = (props) => {
         applicationId,
         fileId,
       });
-
-      fetchVersionList({});
     }
   }, [applicationId, fileId]);
+
+  useEffect(() => {
+    if (applicationId) {
+      if (type === 'dependency') {
+        fetchComponentDeps();
+      } else {
+        fetchVersionList({});
+      }
+    }
+  }, [type, applicationId]);
 
   const onClickPublish = useCallback(
     (id) => {
@@ -113,6 +134,16 @@ const VersionList: React.FC<ComponentDetailListType> = (props) => {
     },
     [viewVersion, editVersion],
   );
+
+  const handleDepsView = useCallback((item) => {
+    const { applicationId, content, file, folder } = item;
+
+    history.push({
+      pathname: '/builder',
+      search: `?applicationId=${applicationId}&folderId=${folder.id}&fileId=${file.id}&contentId=${content.id}`,
+      state: { backPathname: history.location.pathname, backSearch: history.location.search },
+    });
+  }, []);
 
   const columns = [
     {
@@ -228,8 +259,62 @@ const VersionList: React.FC<ComponentDetailListType> = (props) => {
     },
   ];
 
+  const depColumns = [
+    {
+      title: fileI18n.id,
+      dataIndex: 'fileId',
+      key: 'fileId',
+      width: 200,
+      render: (_, record) => record?.file?.id || '',
+    },
+    {
+      title: fileI18n.nameLabel,
+      dataIndex: 'fileName',
+      key: 'fileName',
+      render: (_, record) => record?.file?.name || '',
+    },
+    {
+      title: contentI18n.id,
+      dataIndex: 'contentId',
+      key: 'contentId',
+      width: 200,
+      render: (_, record) => record?.content?.id || '',
+    },
+    {
+      title: contentI18n.nameLabel,
+      dataIndex: 'contentName',
+      key: 'contentName',
+      render: (_, record) => record?.content?.name || '',
+    },
+    {
+      title: global.creator,
+      dataIndex: 'creator',
+      key: 'creator',
+      render: (_, record) => record?.content?.creator?.account || '',
+    },
+    {
+      title: global.updateTime,
+      dataIndex: 'updateTime',
+      key: 'updateTime',
+      width: 200,
+      render: (_, record) => periodFormat(record?.content?.updateTime || '', 'unknown'),
+    },
+    {
+      title: global.actions,
+      dataIndex: 'actions',
+      key: 'actions',
+      width: 80,
+      align: 'center' as never,
+      render: (_, record) => (
+        <Button type="link" onClick={() => handleDepsView(record)}>
+          {historyI18n.view}
+        </Button>
+      ),
+    },
+  ];
+
   return (
-    <Tabs defaultActiveKey="versions" style={{ marginTop: 24 }}>
+    <Tabs defaultActiveKey="versions" onChange={setType} style={{ marginTop: 24 }}>
       <TabPane tab={global.versions} key="versions">
         <Table
           dataSource={versions}
@@ -243,6 +328,21 @@ const VersionList: React.FC<ComponentDetailListType> = (props) => {
           }
         />
       </TabPane>
+      {componentInfo?.type === 'component' && (
+        <TabPane tab={version.dependency} key="dependency">
+          <Table
+            dataSource={dependencies}
+            columns={depColumns}
+            loading={loading}
+            rowKey={(record) => record.content.id}
+            pagination={
+              pageInfo.total > pageInfo.size
+                ? { current: pageInfo.page, pageSize: pageInfo.size, total: pageInfo.total }
+                : false
+            }
+          />
+        </TabPane>
+      )}
     </Tabs>
   );
 };

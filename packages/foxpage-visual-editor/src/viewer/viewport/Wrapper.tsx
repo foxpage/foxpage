@@ -1,22 +1,19 @@
-import React, { ReactNode, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 
 import { FoxContext } from '@/context/index';
-import { FoxBuilderEvents, RenderStructureNode } from '@/types/index';
 
 import BlankNode from './BlankNode';
-import WithHook, { ExtendInfo } from './WithHook';
+import WithHook, { ComposeData, ExtendInfo } from './WithHook';
 
-interface IProps extends Required<Pick<ExtendInfo, 'isWrapper'>> {
-  node: RenderStructureNode;
-  childList?: Array<ReactNode>;
-  decorated?: boolean;
-  onClick?: FoxBuilderEvents['onSelectComponent'];
+interface IProps {
+  $composeData: ComposeData;
 }
 
 const Wrapper = (props: IProps) => {
   const [hovered, setHovered] = useState<boolean>(false);
   const { componentMap } = useContext(FoxContext);
-  const { node, childList = [], decorated = true, onClick, ...rest } = props;
+  const { $composeData, ...rest } = props;
+  const { node, childList = [], decorated = true, isWrapper = false, onClick } = $composeData;
   const { id, name, __editorConfig } = node;
   const { editable = false, styleable = false } = __editorConfig || {};
   const component = componentMap[node.name];
@@ -41,7 +38,7 @@ const Wrapper = (props: IProps) => {
       return;
     }
     if (typeof onClick === 'function') {
-      if (rest.isWrapper && node.children && node.children.length > 0) {
+      if (isWrapper && node.children && node.children.length > 0) {
         onClick(node.children[0], { from: 'viewer' });
       } else {
         onClick(node, { from: 'viewer' });
@@ -57,7 +54,7 @@ const Wrapper = (props: IProps) => {
     'data-node': 'component',
     'data-node-wrapper': styleable || undefined,
     'data-node-drag-in': enableChildren,
-    className: hovered && editable ? 'hovered' : '',
+    className: `${hovered && editable && !styleable ? 'hovered' : ''}${childList.length > 0 ? '' : ' empty'}`,
     onClick: handleClick,
     onMouseOver: !styleable ? handleMouseOver : undefined,
     onMouseOut: !styleable ? handleMouseOut : undefined,
@@ -69,11 +66,11 @@ const Wrapper = (props: IProps) => {
 
   const extendData: ExtendInfo = {
     decoratorInfo,
-    childList,
+    $composeData,
     ...rest,
   };
 
-  if (!decorated || (typeof meta === 'object' && (meta?.decorated || rest.isWrapper || meta?.notRender))) {
+  if (!decorated || (typeof meta === 'object' && (meta?.decorated || isWrapper || meta?.notRender))) {
     return <WithHook component={node} extendData={extendData} />;
   }
 

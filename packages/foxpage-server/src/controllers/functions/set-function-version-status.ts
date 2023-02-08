@@ -13,6 +13,7 @@ import { AppContentStatusReq, ContentVersionDetailRes } from '../../types/valida
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to contents/set-type-item-version-status.ts
 @JsonController('functions')
 export class SetFunctionVersionStatus extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class SetFunctionVersionStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/version-status')
+  @Put('/version-status-migrations')
   @OpenAPI({
     summary: i18n.sw.setFunctionVersionStatus,
     description: '',

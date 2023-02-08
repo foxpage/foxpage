@@ -9,26 +9,19 @@ import { rootFolderType } from '@/constants/file';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectFolderActionType } from '@/reducers/projects/folder';
 import { store } from '@/store/index';
-import { PaginationReqParams, ProjectListFetchParams, ProjectSaveParams } from '@/types/index';
+import { ApplicationListFetchParams, ProjectListFetchParams, ProjectSaveParams } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/empty-check';
+import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchList(action: ProjectFolderActionType) {
   yield put(ACTIONS.updateLoading(true));
 
-  const {
-    organizationId,
-    page = 1,
-    search,
-    searchText,
-    searchType,
-    size = 10,
-  } = action.payload as ProjectListFetchParams;
+  const { organizationId, search, page = 1, size = 10 } = action.payload as ProjectListFetchParams;
   let params: ProjectListFetchParams = {
     organizationId,
+    searchType: 'project',
     page,
     size,
-    search: searchText || '',
-    searchType,
   };
   if (search)
     params = {
@@ -44,7 +37,7 @@ function* handleFetchList(action: ProjectFolderActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -81,10 +74,10 @@ function* handleSave(action: ProjectFolderActionType) {
     }
   } else {
     const {
-      global: { fetchListFailed },
+      global: { saveFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, res?.msg || saveFailed);
   }
 
   yield put(ACTIONS.updateSaveLoading(false));
@@ -111,17 +104,13 @@ function* handleDelete(action: ProjectFolderActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
 function* handleFetchApp(action: ProjectFolderActionType) {
-  const { params } = action.payload as { params: PaginationReqParams };
-  const { organizationId } = store.getState().system.user;
-  const res = yield call(APPLICATION_API.fetchList, {
-    ...params,
-    organizationId,
-  });
+  const { params } = action.payload as { params: ApplicationListFetchParams };
+  const res = yield call(APPLICATION_API.fetchList, params);
 
   if (res.code === 200) {
     yield put(ACTIONS.pushApps(res.data || []));
@@ -130,7 +119,7 @@ function* handleFetchApp(action: ProjectFolderActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 

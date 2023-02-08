@@ -18,7 +18,6 @@ import {
   AppNameVersion,
   AppTypeContent,
   ComponentRecursive,
-  ContentLiveVersion,
   ContentVersionString,
   NameVersion,
   NameVersionContent,
@@ -105,7 +104,7 @@ export class ComponentContentService extends BaseService<Content> {
 
     // Get the corresponding contentIds under the file
     let contentVersionString: ContentVersionString[] = [];
-    let contentVersionNumber: ContentLiveVersion[] = [];
+    let contentLiveIdObject: Record<string, string> = {};
     const contentList = await Service.content.file.getContentByFileIds(_.map(fileList, 'id'));
     const contentNameObject: Record<string, Content> = _.keyBy(contentList, 'title');
     componentInfos.forEach((component) => {
@@ -114,28 +113,25 @@ export class ComponentContentService extends BaseService<Content> {
           contentId: contentNameObject[component.name].id,
           version: component.version,
         });
-      } else {
-        contentVersionNumber.push(_.pick(contentNameObject[component.name], ['id', 'liveVersionNumber']));
+      } else if (contentNameObject[component.name]) {
+        contentLiveIdObject[contentNameObject[component.name].id] =
+          contentNameObject[component.name]?.liveVersionId || '';
       }
     });
 
     // Get content containing different versions of the same component
     const versionList = await Promise.all([
-      Service.version.list.getContentInfoByIdAndNumber(contentVersionNumber),
+      Service.version.list.getVersionListChunk(_.values(contentLiveIdObject)),
       Service.version.list.getContentInfoByIdAndVersion(contentVersionString),
     ]);
 
     const contentIdObject: Record<string, Content> = _.keyBy(contentList, 'id');
-    const liveVersionObject: Record<string, ContentLiveVersion> = _.keyBy(contentVersionNumber, 'id');
     const componentList: Component[] = _.flatten(versionList).map((version) => {
       return Object.assign(
         {
           name: contentIdObject[version.contentId].title,
           version:
-            showLiveVersion ||
-            version.versionNumber !== liveVersionObject[version.contentId]?.liveVersionNumber
-              ? version.version
-              : '',
+            showLiveVersion || version.id !== contentLiveIdObject[version.contentId] ? version.version : '',
           type: TYPE.COMPONENT,
         },
         version.content,
@@ -157,7 +153,14 @@ export class ComponentContentService extends BaseService<Content> {
       if (types && types.length > 0) {
         item = _.pick(item, types || []);
       }
-      componentIds = componentIds.concat(_.pull(_.values(item), ''));
+
+      _.forIn(item, (value) => {
+        if (_.isString(value)) {
+          componentIds.push(value);
+        } else if ((value as any)?.contentId) {
+          componentIds.push((value as any).contentId);
+        }
+      });
     });
 
     return _.filter(componentIds, (id) => _.isString(id));
@@ -420,7 +423,12 @@ export class ComponentContentService extends BaseService<Content> {
           }) as NameVersionPackage,
         );
       } else {
-        componentContentList.push(content);
+        componentContentList.push(
+          Object.assign(
+            { package: { contentId: contentNameObject[content.name]?.id || '' } as any },
+            content,
+          ) as NameVersionPackage,
+        );
       }
     });
 
@@ -447,11 +455,9 @@ export class ComponentContentService extends BaseService<Content> {
     }
 
     // Get live details
-    let contentVersionList: ContentVersion[] = [];
-    if (contentInfo.length > 0) {
-      const contentLiveIds = contentInfo.map((content) => _.pick(content, ['id', 'liveVersionNumber']));
-      contentVersionList = await Service.version.list.getContentInfoByIdAndNumber(contentLiveIds);
-    }
+    const contentVersionList: ContentVersion[] = await Service.version.list.getVersionListChunk(
+      _.map(contentInfo, 'liveVersionId') as string[],
+    );
 
     const contentObject = _.keyBy(contentInfo, 'id');
 

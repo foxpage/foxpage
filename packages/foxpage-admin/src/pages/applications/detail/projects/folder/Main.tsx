@@ -7,7 +7,6 @@ import * as ACTIONS from '@/actions/applications/detail/projects/folder';
 import { ProjectFolder } from '@/components/index';
 
 const mapStateToProps = (store: RootState) => ({
-  organizationId: store.system.user.organizationId,
   saveLoading: store.applications.detail.projects.folder.saveLoading,
   loading: store.applications.detail.projects.folder.loading,
   pageInfo: store.applications.detail.projects.folder.pageInfo,
@@ -15,6 +14,7 @@ const mapStateToProps = (store: RootState) => ({
   drawerOpen: store.applications.detail.projects.folder.drawerOpen,
   editProject: store.applications.detail.projects.folder.editProject,
   applicationList: store.applications.detail.projects.folder.apps,
+  mask: store.applications.detail.projects.folder.mask,
 });
 
 const mapDispatchToProps = {
@@ -22,6 +22,7 @@ const mapDispatchToProps = {
   fetchProjectList: ACTIONS.fetchProjectList,
   openDrawer: ACTIONS.openEditDrawer,
   fetchApps: ACTIONS.fetchApps,
+  queryMask: ACTIONS.queryMask,
   updateEditProject: ACTIONS.updateEditProjectValue,
   saveProject: ACTIONS.saveProject,
 };
@@ -30,7 +31,6 @@ type ProjectProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPro
 
 const Project: React.FC<ProjectProps> = (props) => {
   const {
-    organizationId,
     saveLoading,
     loading,
     pageInfo,
@@ -38,12 +38,14 @@ const Project: React.FC<ProjectProps> = (props) => {
     editProject,
     applicationList,
     drawerOpen,
+    mask,
     clearAll,
     fetchProjectList,
     fetchApps,
-    updateEditProject,
-    saveProject,
     openDrawer,
+    queryMask,
+    saveProject,
+    updateEditProject,
   } = props;
 
   useEffect(() => {
@@ -55,7 +57,6 @@ const Project: React.FC<ProjectProps> = (props) => {
   return (
     <ProjectFolder
       type="application"
-      organizationId={organizationId}
       loading={loading}
       saveLoading={saveLoading}
       pageInfo={pageInfo}
@@ -63,11 +64,13 @@ const Project: React.FC<ProjectProps> = (props) => {
       editProject={editProject}
       applicationList={applicationList}
       drawerOpen={drawerOpen}
+      mask={mask}
       fetchList={fetchProjectList}
       fetchApps={fetchApps}
       updateEditProject={updateEditProject}
       saveProject={saveProject}
       openDrawer={openDrawer}
+      queryMask={queryMask}
     />
   );
 };

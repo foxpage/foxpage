@@ -1,19 +1,17 @@
-import supertest from 'supertest';
+import { GetApplicationPackageGoodsList } from '../../../../src/controllers/applications/get-page-package-goods';
+import Data from '../../../data';
 
-import { App } from '../../../jest/app-instance';
-
-let app: any = null;
+const appInstance = new GetApplicationPackageGoodsList();
 
 beforeEach(() => {
-  app = App.getInstance();
   jest.resetModules();
 });
 
+const params = { applicationId: Data.app.id, search: '' };
+
 describe('Get: /applications/package-goods-searchs', () => {
   it('response app package goods list', async () => {
-    const result = await supertest(app).get(
-      '/applications/package-goods-searchs?applicationId=appl_yqfu8BI1BRe15fs',
-    );
-    expect(result.body.code).toEqual(200);
+    const result = await appInstance.index(params);
+    expect(result.code).toEqual(200);
   });
 });

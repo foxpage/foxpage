@@ -1,26 +1,12 @@
-import React, { useEffect, useState } from 'react';
-
-import styled from 'styled-components';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { STRUCTURE_DROP_IN } from '@/constant/index';
-import { DndData } from '@/types/index';
+import { StructureTreeContext } from '@/context/index';
 
-const Root = styled.div`
-  position: absolute;
-  right: 0;
-  z-index: 1;
-  outline: 2px dashed #ffa100;
-  pointer-events: none;
-  outline-offset: 1px;
-`;
-
-interface IProps {
-  dndInfo?: DndData | null;
-}
-
-const HoverBoundary = (props: IProps) => {
+const HoverBoundary = () => {
   const [rect, setRect] = useState<{ top: number; height: number; width: number } | null>(null);
-  const { dropInId, placement } = props.dndInfo || {};
+  const { dndInfo } = useContext(StructureTreeContext);
+  const { dropInId, placement } = dndInfo || {};
   const rootTop = document.getElementById(STRUCTURE_DROP_IN)?.getBoundingClientRect().top;
 
   useEffect(() => {
@@ -39,7 +25,12 @@ const HoverBoundary = (props: IProps) => {
 
   if (rect) {
     const { top = 0, height = 0, width = 0 } = rect;
-    return <Root style={{ width, height, top: top - (rootTop || 0), left: 8 }} />;
+    return (
+      <div
+        className="absolute z-[1] pointer-events-none outline-offset-0 outline-2 outline-dashed outline-fox-secondary"
+        style={{ width: width - 2, height: height, top: top - (rootTop || 0), left: 2 }}
+      />
+    );
   }
   return null;
 };

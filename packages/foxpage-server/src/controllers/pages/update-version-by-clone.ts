@@ -4,10 +4,11 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { Content, ContentVersion, File } from '@foxpage/foxpage-server-types';
+import { merger } from '@foxpage/foxpage-core';
+import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE } from '../../../config/constant';
+import { TYPE, VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { CloneContentReq, ContentVersionDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -21,6 +22,12 @@ export class UpdatePageVersionDetail extends BaseController {
 
   /**
    * Update content version by clone special content version
+   * 1, Get the source content version, project and app info
+   * 2，Get the target content project and app info
+   * 3，Check the source and target info to create new relations
+   * 4，merge content,
+   * 5, Replace schemas id and relation name
+   * 6，Save target info
    * @param  {CloneContentReq} params
    * @returns {ContentVersion}
    */
@@ -36,114 +43,129 @@ export class UpdatePageVersionDetail extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
 
+      !params.targetContentLocales && (params.targetContentLocales = []);
+
       // Check permission
-      const hasAuth = await this.service.auth.content(params.targetContentId, { ctx });
+      const hasAuth = await this.service.auth.content(params.targetContentId || params.sourceContentId, {
+        ctx,
+      });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4052001);
       }
 
-      // Get source template details
-      const contentList = await this.service.content.info.getDetailByIds([
-        params.sourceContentId,
-        params.targetContentId,
-      ]);
-
-      let sourceContentDetail: Partial<Content> = {};
-      let targetContentDetail: Partial<Content> = {};
-      contentList.forEach((content) => {
-        content.id === params.sourceContentId && (sourceContentDetail = content);
-        content.id === params.targetContentId && (targetContentDetail = content);
+      let contentLevelInfoPromise: Promise<any>[] = [];
+      contentLevelInfoPromise[0] = this.service.content.info.getContentLevelInfo({
+        id: params.sourceContentId,
       });
-
-      const sourceFileId = sourceContentDetail?.fileId || '';
-      const targetFileId = targetContentDetail?.fileId || '';
-      const fileList = await this.service.file.info.getDetailByIds([sourceFileId, targetFileId]);
-
-      let sourceFileDetail: Partial<File> = {};
-      let targetFileDetail: Partial<File> = {};
-      fileList.forEach((file) => {
-        file.id === sourceFileId && (sourceFileDetail = file);
-        file.id === targetFileId && (targetFileDetail = file);
-      });
-
-      // TODO Content's file not in the application
-      if (!sourceFileDetail || sourceFileDetail.applicationId !== params.applicationId) {
+      if (params.targetContentId) {
+        contentLevelInfoPromise[1] = this.service.content.info.getContentLevelInfo({
+          id: params.targetContentId,
+        });
       }
 
-      // Get the source content version detail
-      const [versionList, targetBaseVersion] = await Promise.all([
-        this.service.version.info.find({
-          contentId: sourceContentDetail.id,
-          versionNumber: sourceContentDetail.liveVersionNumber || 1,
-        }),
-        this.service.version.info.getMaxContentVersionDetail(params.targetContentId, { ctx }),
-      ]);
+      // get source content info
+      const [sourceContentLevelInfo, targetContentLevelInfo] = await Promise.all(contentLevelInfoPromise);
+      if (!params.targetContentId) {
+        const sourceContentExtend = this.service.content.tag.getTagsByKeys(
+          sourceContentLevelInfo.contentInfo.tags,
+          ['extendId'],
+        );
 
-      // Get version recursive relation detail
-      const [allRelations, appDefaultFolderIds] = await Promise.all([
-        this.service.version.relation.getVersionRelations(_.keyBy(versionList, 'id')),
-        this.service.folder.info.getAppDefaultItemFolderIds(params.applicationId),
-      ]);
-
-      // Get all relations content detail
-      const relationContentList = await this.service.content.list.getDetailByIds(_.keys(allRelations));
-      const relationFileList = await this.service.file.list.getDetailByIds(
-        _.map(relationContentList, 'fileId'),
-      );
-      const relationFileObject = _.keyBy(relationFileList, 'id');
-
-      const projectId = targetFileDetail.folderId || '';
-      let relations: Record<string, Record<string, string>> = {};
-
-      for (const content of relationContentList) {
-        // check template in the same application or not
-        if (
-          relationFileObject[content.fileId]?.type === TYPE.TEMPLATE &&
-          relationFileObject[content.fileId]?.applicationId === params.applicationId
-        ) {
-          continue;
+        if (params.includeBase) {
+          params.targetContentLocales = [{ isBase: true }];
+        } else if (!_.isEmpty(sourceContentExtend)) {
+          params.targetContentLocales.push(sourceContentExtend);
         }
-
-        // check variable, condition is application scope or not
-        if (appDefaultFolderIds.indexOf(relationFileObject[content.fileId]?.folderId) !== -1) {
-          continue;
-        }
-
-        const relation = await this.service.file.info.copyFile(content.fileId, params.applicationId, {
-          ctx,
-          folderId: projectId,
-          hasLive: true,
-          relations,
-        });
-        relations = _.merge(relations, relation);
-      }
-
-      let sourceVersionDetail: Partial<ContentVersion> = {};
-      if ((sourceContentDetail?.liveVersionNumber || 0) > 0) {
-        sourceVersionDetail = await this.service.version.info.getContentVersionDetail({
-          contentId: params.sourceContentId,
-          versionNumber: sourceContentDetail.liveVersionNumber || 1,
-        });
-      } else {
-        sourceVersionDetail = await this.service.version.info.getMaxContentVersionDetail(
-          params.sourceContentId,
+        const newContentInfo = this.service.content.info.create(
+          {
+            title: sourceContentLevelInfo.contentInfo.title + '_copy',
+            fileId: sourceContentLevelInfo.fileInfo.id,
+            applicationId: params.applicationId,
+            type: sourceContentLevelInfo.contentInfo.type || TYPE.PAGE,
+            tags: params.targetContentLocales,
+          },
           { ctx },
+        );
+        params.targetContentId = newContentInfo.id;
+      }
+
+      // check the source and the target content scope
+      const scopeType =
+        !targetContentLevelInfo ||
+        sourceContentLevelInfo.folderInfo.id === targetContentLevelInfo.folderInfo.id
+          ? TYPE.PROJECT
+          : sourceContentLevelInfo.applicationInfo.id === targetContentLevelInfo.applicationInfo.id
+          ? TYPE.APPLICATION
+          : TYPE.SYSTEM;
+
+      // get source extension content
+      let sourceContentInfo = sourceContentLevelInfo.versionInfo.content || {};
+      if (params.includeBase) {
+        const extension = this.service.content.tag.getTagsByKeys(sourceContentLevelInfo.contentInfo.tags, [
+          'extendId',
+        ]);
+        if (extension.extendId) {
+          const extendContentVersion = await this.service.version.live.getContentLiveDetails({
+            contentIds: [extension.extendId],
+          });
+          sourceContentInfo = merger.merge(extendContentVersion[0]?.content || {}, sourceContentInfo, {
+            strategy: merger.MergeStrategy.COMBINE_BY_EXTEND,
+          });
+        }
+      }
+
+      // get the relation need create in target content
+      const newRelationObject = await this.service.content.relation.createNewRelations(
+        sourceContentInfo.relation || {},
+        {
+          ctx,
+          applicationId: params.applicationId,
+          projectId: targetContentLevelInfo?.folderInfo?.id || sourceContentLevelInfo.folderInfo.id,
+          scope: scopeType,
+        },
+      );
+
+      // replace schema ids
+      const schemaObject = this.service.version.info.updateSchemaIdRecursive(
+        sourceContentInfo.schemas || [],
+        {},
+        { clearExtend: params.includeBase || false },
+      );
+      sourceContentInfo.schemas = schemaObject.schemas || [];
+
+      const newVersionObject = await this.service.version.info.createCopyVersion(
+        sourceContentInfo,
+        newRelationObject.idMaps,
+      );
+      newVersionObject.newVersion.id = params.targetContentId;
+
+      // save new content
+      if (targetContentLevelInfo?.versionInfo?.status !== VERSION.STATUS_BASE) {
+        const maxVersion = await this.service.version.info.getMaxContentVersionDetail(params.targetContentId);
+        ctx.transactions.push(
+          this.service.version.info.create(
+            {
+              contentId: params.targetContentId,
+              version: this.service.version.number.getVersionFromNumber((maxVersion?.versionNumber || 0) + 1),
+              versionNumber: (maxVersion?.versionNumber || 0) + 1,
+              content: newVersionObject.newVersion,
+            },
+            { ctx },
+          ),
+        );
+      } else {
+        ctx.transactions.push(
+          this.service.version.info.updateDetailQuery(targetContentLevelInfo.versionInfo.id, {
+            content: newVersionObject.newVersion,
+          }),
         );
       }
 
-      // Copy page content version to target content
-      this.service.version.info.copyContentVersion(sourceVersionDetail.content, params.targetContentId, {
-        ctx,
-        relations,
-        tempRelations: {},
-        versionId: targetBaseVersion.id,
-      });
+      await this.service.content.info.runTransaction(ctx.transactions);
 
-      await this.service.version.info.runTransaction(ctx.transactions);
-
-      return Response.success(i18n.page.cloneToPageSuccess, 1052001);
+      return Response.success(i18n.content.saveToBaseContentSuccess, 1052001);
     } catch (err) {
-      return Response.error(err, i18n.content.updatePageVersionFailed, 3052001);
+      return Response.error(err, i18n.content.saveToBaseContentFailed, 3052001);
     }
   }
 }

@@ -8,6 +8,7 @@ import { Content } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { METHOD } from '../../../config/constant';
+import metric from '../../third-parties/metric';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { TagContentVersionReq, TagVersionRelationRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -42,12 +43,12 @@ export class GetContentTagContent extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
 
-      if (!params.tags) {
-        params.tags = [];
-      }
+      !params.tags && (params.tags = []);
 
       // Get qualified content details
+      metric.time('app-content-tags');
       const contentVersionList = await this.service.content.tag.getAppContentByTags(params);
+      metric.block('getAppContentByTags', 'app-content-tags');
 
       // Return empty results
       if (contentVersionList.length === 0) {
@@ -60,6 +61,10 @@ export class GetContentTagContent extends BaseController {
       const tagContentList: TagContent[] = _.map(contentList, (content) => {
         return { content: content };
       });
+
+      // send metric
+      tagContentList.length === 0 && metric.empty(ctx.request.url, params.applicationId);
+
       return Response.success(tagContentList, 1160601);
     } catch (err) {
       return Response.error(err, i18n.content.getContentListFailed, 3160601);

@@ -1,66 +1,127 @@
-import React, { useContext, useState } from 'react';
+import React, { CSSProperties, FC, useContext, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import List from 'react-virtualized/dist/commonjs/List';
 
-import styled from 'styled-components';
+//@ts-ignore
+import { useSize } from 'ahooks';
 
-import { STRUCTURE_DROP_IN, STRUCTURE_DROP_IN_ID } from '@/constant/index';
-import { FoxContext } from '@/context/index';
-import { FoxBuilderEvents, RenderStructureNode } from '@/types/index';
+import { STRUCTURE_DROP_IN } from '@/constant/index';
+import { EditorContext, FoxContext, StructureTreeContext } from '@/context/index';
+import { RenderStructure, RenderStructureNode } from '@/types/index';
 import { findStructureById, treeToList } from '@/utils/finders';
 
 import Node from './Node';
 
-const Container = styled.div`
-  font-size: 12px;
-  position: relative;
-  padding: 16px 8px 16px 8px;
-  height: 100%;
-`;
+const VList = List as unknown as FC<any>;
 
-const Layer = styled.div`
-  user-select: none;
-  position: relative;
-`;
+type TreeStructureNode = RenderStructureNode & { depth: number; dataIndex: number };
 
-const Child = styled(Layer)`
-  position: relative;
-`;
+const Row = (props: { data; index; style }) => {
+  const { data, index, style } = props;
+  const {
+    treeList,
+    dragId,
+    expandIds,
+    rootNode,
+    nodeChangedStatus,
+    handleToggleExpand,
+    handleSelectComponent,
+    selectNode,
+  } = data;
+  const node = treeList[index];
+  const selected = node.id === selectNode?.id;
+  const changed = !!nodeChangedStatus[node.id];
+  const borderStyle = useMemo(() => {
+    let style: CSSProperties = { borderLeft: '2px solid transparent', borderBottom: '1px dashed #E5E7EB' };
+    if (changed) {
+      style = {
+        ...style,
+        borderLeft: '2px solid #48ad48',
+      };
+    }
+    return style;
+  }, [selected, changed]);
 
-const Mask = styled.div`
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  background-color: #e8e8e8;
-  opacity: 0.3;
-  top: 0;
-`;
+  const renderNode = ({
+    node,
+    visible,
+    paddingLeft,
+    style,
+  }: {
+    node: TreeStructureNode;
+    visible: boolean;
+    paddingLeft: number;
+    style: CSSProperties;
+  }) => {
+    const { id, children = [], depth, dataIndex } = node;
+    const childNum = children.length;
+    const _paddingLeft = depth * paddingLeft;
+    const disabled = dragId === id;
+    const isRootNode = rootNode?.id === id;
+    const expanded = !(expandIds.indexOf(node.id) > -1);
+    const { isDragging } = useContext(StructureTreeContext);
 
-interface IProps {
-  dragId?: string;
-  onDragStart: (ev, component: RenderStructureNode) => void;
-  onDragLevel: () => void;
-  onDragOver: (e) => void;
-  onDragEnd: () => void;
-  onDrop: (e) => void;
-  onExpend: (ids: string[]) => void;
-  onSelect?: FoxBuilderEvents['onSelectComponent'];
-}
+    return visible ? (
+      <div className="relative">
+        <div
+          className={`box-border select-none px-2 flex items-center${
+            !isDragging ? ' hover:bg-[#e6f7ff]' : ''
+          }${changed ? ' bg-[#f7fffb]' : ''}`}
+          key={id}
+          id={`layer_${id}`}
+          data-type="layer"
+          data-component-id={id}
+          style={style}>
+          <Node
+            idx={dataIndex}
+            component={node}
+            childNum={childNum}
+            expended={expanded}
+            style={{ paddingLeft: _paddingLeft }}
+            toolBar={!isRootNode}
+            toggleExpend={(e) => handleToggleExpand(e, id)}
+            onSelect={handleSelectComponent}
+            selected={selected}
+          />
+          {selected && (
+            <div className="absolute right-0 left-0 bottom-0 top-0 border-2 border-solid border-fox pointer-events-none"></div>
+          )}
 
-const Tree = (props: IProps) => {
-  const [expendIds, setExpendIds] = useState<string[]>([]);
-  const { structure, rootNode } = useContext(FoxContext);
-  const { dragId, onDragStart, onDragOver, onDragEnd, onDragLevel, onDrop, onExpend, onSelect } = props;
+          {disabled && (
+            <div className="w-full h-full absolute top-0 opacity-30 bg-gray-200" data-type="mask" />
+          )}
+        </div>
+      </div>
+    ) : null;
+  };
 
-  const showStructures = rootNode ? [{ ...rootNode, children: structure }] : structure;
+  return <>{renderNode({ node, visible: true, paddingLeft: 16, style: { ...borderStyle, ...style } })}</>;
+};
 
-  const handleToggleExpend = (e: any, componentId: string) => {
-    const list: string[] = expendIds.slice();
+const Tree = React.forwardRef((_props, ref) => {
+  const [expandIds, setExpandIds] = useState<string[]>([]);
+  const { pageStructure: structure, rootNode, nodeChangedStatus } = useContext(FoxContext);
+  const { selectNode, selectNodeFrom } = useContext(EditorContext);
+  const { dragId, isDragging, onScroll, onDragOver, onDragLeave, onDrop, onExpand, onSelect } =
+    useContext(StructureTreeContext);
+  const listRef = useRef<any>(null);
+  const containerRef = useRef(null);
+  const size = useSize(containerRef);
+  const listSize = useMemo(() => {
+    return {
+      width: (size?.width || 300) - 10,
+      height: (size?.height || 100) - 32,
+    };
+  }, [size]);
+
+  const handleToggleExpand = (e: any, componentId: string) => {
+    const list: string[] = expandIds.slice();
     const index = list.indexOf(componentId);
     if (index > -1) {
       list.splice(index, 1);
     } else {
       list.push(componentId);
     }
-    setExpendIds(list);
+    setExpandIds(list);
     const children: RenderStructureNode[] = [];
     list.forEach((item) => {
       const node = findStructureById(structure, item);
@@ -68,7 +129,7 @@ const Tree = (props: IProps) => {
         treeToList(node.children, children);
       }
     });
-    onExpend(children.map((item) => item.id));
+    onExpand(children.map((item) => item.id));
     e.stopPropagation();
   };
 
@@ -82,67 +143,94 @@ const Tree = (props: IProps) => {
     e.stopPropagation();
   };
 
-  const renderNode = (
-    node: RenderStructureNode,
-    idx: number,
-    paddingLeft: number,
-    visible = true,
-    isRoot = false,
-  ) => {
-    const { id, children = [], __editorConfig } = node;
-    const childNum = children.length;
-    const disabled = dragId === id;
-    const expended = !(expendIds.indexOf(id) > -1); // default expend all
-    const isRootNode = rootNode?.id === id;
-    const { showInStructure = true } = __editorConfig || {};
-    return (
-      <Layer key={id} id={`layer_${id}`} data-type="layer" data-component-id={id}>
-        {visible && showInStructure && (
-          <Node
-            idx={idx}
-            component={node}
-            childNum={childNum}
-            expended={expended}
-            style={{ paddingLeft }}
-            toolBar={!isRootNode}
-            toggleExpend={(e) => handleToggleExpend(e, id)}
-            dragStart={onDragStart}
-            dragEnd={onDragEnd}
-            onSelect={handleSelectComponent}
-          />
-        )}
+  const treeList = useMemo(() => {
+    const showStructures = rootNode ? [{ ...rootNode, children: structure }] : structure;
+    const list: TreeStructureNode[] = [];
+    const treeMap = ({ nodes, depth = 0, idx }: { nodes: RenderStructure; depth?: number; idx: number }) => {
+      nodes.forEach((node, index) => {
+        const expanded = !(expandIds.indexOf(node.id) > -1);
+        let newDepth = depth;
+        const dataIndex = node.__styleNode ? idx : index;
+        // const isWrapper =
+        //           node.children && node.children.length > 0 && node.children[0].__styleNode
+        //             ? node.children[0].__styleNode?.id === node.id
+        //             : false;
+        if (node.__editorConfig?.showInStructure !== false) {
+          list.push({ ...node, depth, dataIndex });
+          newDepth++;
+        }
 
-        {childNum > 0 && (
-          <Child data-type="childrenList">
-            {children.map((item, index) => {
-              if (expended) {
-                const isWrapper =
-                  item.children && item.children.length > 0 && item.children[0].__styleNode
-                    ? item.children[0].__styleNode?.id === item.id
-                    : false;
-                const _paddingLeft = isRoot || !showInStructure ? paddingLeft : paddingLeft + 15;
-                return renderNode(item, item.__styleNode ? idx : index, _paddingLeft, !isWrapper);
-              }
-              return '';
-            })}
-          </Child>
-        )}
-        {disabled && <Mask data-type="mask" />}
-      </Layer>
-    );
+        if (node.children && expanded) {
+          treeMap({ nodes: node.children, depth: newDepth, idx: dataIndex });
+        }
+      });
+    };
+    treeMap({ nodes: showStructures, idx: 0 });
+    return list;
+  }, [rootNode, structure, expandIds]);
+
+  const scrollIndex = useMemo(() => {
+    if (selectNodeFrom === 'viewer') {
+      const index = treeList.findIndex((node) => node.id === selectNode?.id);
+      return index >= 1 && index !== treeList.length - 1 ? index - 1 : index;
+    }
+    return undefined;
+  }, [selectNode, selectNodeFrom]);
+
+  const handleScroll = ({ scrollTop }) => {
+    if (!isDragging) {
+      onScroll(scrollTop);
+    }
   };
+  useImperativeHandle(
+    ref,
+    () => {
+      maxScrollTop: treeList.length * 40 - listSize.height;
+    },
+    [listSize, treeList.length],
+  );
 
   return (
-    <Container id={STRUCTURE_DROP_IN} onDragOver={onDragOver} onDrop={onDrop} onDragLeave={onDragLevel}>
-      {renderNode(
-        ({ children: showStructures, id: STRUCTURE_DROP_IN_ID } as unknown) as RenderStructureNode,
-        0,
-        0,
-        false,
-        true,
-      )}
-    </Container>
+    <div
+      className="text-xs relative h-full py-4 pl-[5px]"
+      ref={containerRef}
+      id={STRUCTURE_DROP_IN}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragLeave={onDragLeave}>
+      {/* auto sizer need a computed height with it, use `flex-1 minHeight` or fixed height*/}
+
+      <VList
+        height={listSize.height}
+        rowCount={treeList.length}
+        rowHeight={40}
+        width={listSize.width}
+        ref={listRef}
+        overscanRowCount={10}
+        scrollToIndex={scrollIndex}
+        // scrollTop={isDragging ? computedScrollTop : undefined}
+        style={{ overscrollBehavior: 'none', overflowX: 'hidden', scrollMargin: '30px' }}
+        onScroll={handleScroll}
+        rowRenderer={({ index, style }) => (
+          <Row
+            data={{
+              treeList,
+              dragId,
+              expandIds,
+              rootNode,
+              nodeChangedStatus,
+              selectNode,
+              handleToggleExpand,
+              handleSelectComponent,
+            }}
+            index={index}
+            key={treeList[index].id}
+            style={style}
+          />
+        )}
+      />
+    </div>
   );
-};
+});
 
 export default Tree;

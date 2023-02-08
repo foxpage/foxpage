@@ -186,11 +186,10 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = (props) => {
         <Route path="/applications/:applicationId/file" component={File} />
         <Route path="/applications/:applicationId/package" component={Packages} />
         <Route path="/applications/:applicationId/projects" component={Projects} />
-        {/*<Route path="/applications/:applicationId/resources" component={Resources} />*/}
         <Route path="/applications/:applicationId/dynamics" component={Dynamics} />
         <Route path="/applications/:applicationId/settings" component={Settings} />
 
-        <Redirect from="/*" to={`/applications/${applicationId}/file/pages/list`} />
+        <Redirect from="/*" to={`/applications/${applicationId}/projects`} />
       </Switch>
     </Layout>
   );

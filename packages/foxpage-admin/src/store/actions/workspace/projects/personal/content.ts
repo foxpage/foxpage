@@ -12,8 +12,11 @@ import {
   GoodsCommitParams,
   GoodsOfflineParams,
   ParentFileFetchParams,
+  ProjectContentCopyParams,
   ProjectContentDeleteParams,
   ProjectContentFetchParams,
+  ProjectContentOfflineParams,
+  ProjectContentSaveAsBaseParams,
   ProjectEntity,
   User,
 } from '@/types/index';
@@ -66,13 +69,31 @@ export const saveContent = createAction(
   (params: ProjectContentFetchParams) => ({ ...params }),
 )();
 
-// delete related
+// delete
 export const deleteContent = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_CONTENT__DELETE_CONTENT',
   (params: ProjectContentDeleteParams) => ({ ...params }),
 )();
 
-// locale related
+// offline
+export const offlineContent = createAction(
+  'WORKSPACE_PROJECTS_PERSONAL_CONTENT__OFF_CONTENT',
+  (params: ProjectContentOfflineParams) => ({ ...params }),
+)();
+
+// copy
+export const copyContent = createAction(
+  'WORKSPACE_PROJECTS_PERSONAL_CONTENT__COPY_CONTENT',
+  (params: ProjectContentCopyParams, cb?: () => void) => ({ params, cb }),
+)();
+
+// save as base
+export const saveAsBaseContent = createAction(
+  'WORKSPACE_PROJECTS_PERSONAL_CONTENT__SAVE_AS_BASE_CONTENT',
+  (params: ProjectContentSaveAsBaseParams) => ({ ...params }),
+)();
+
+// locale
 export const fetchLocales = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_CONTENT__FETCH_LOCALES',
   (applicationId: string) => ({
@@ -175,7 +196,7 @@ export const deleteAuthUser = createAction(
 
 export const fetchUserList = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_CONTENT__FETCH_USER_LIST',
-  (params: AuthorizeUserFetchParams, cb?: () => void) => ({
+  (params: AuthorizeUserFetchParams, cb?: (userList) => void) => ({
     params,
     cb,
   }),

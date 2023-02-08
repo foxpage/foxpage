@@ -27,12 +27,14 @@ export const TYPE = {
   FILE: 'file',
   CONTENT: 'content',
   VERSION: 'version',
+  STRUCTURE: 'structure',
   TEAM: 'team',
   USER: 'user',
 
   COMPONENT: 'component',
   CONDITION: 'condition',
   EDITOR: 'editor',
+  SYSCOMPONENT: 'sysComponent',
   FUNCTION: 'function',
   LIBRARY: 'library',
   PACKAGE: 'package',
@@ -48,6 +50,8 @@ export const TYPE = {
 
   GOODS: 'goods',
   INVOLVE: 'involve',
+
+  TAG: 'tag',
 };
 
 export const LOG = {
@@ -65,9 +69,11 @@ export const LOG = {
   CONTENT_UPDATE: 'content_update',
   CONTENT_REMOVE: 'content_remove',
   CONTENT_TAG: 'content_tag',
+  CONTENT_OFFLINE: 'content_offline',
   FILE_UPDATE: 'file_update',
   FILE_REMOVE: 'file_remove',
   FILE_TAG: 'file_tag',
+  FILE_EXTENSION: 'file_extension',
   META_UPDATE: 'meta_update',
   VERSION_STATUS: 'version_status',
   REQUEST: 'request',
@@ -131,4 +137,8 @@ export const METHOD = {
   POST: 'post',
   PUT: 'put',
   DELETE: 'delete',
+};
+
+export const COMPONENT_TYPE = {
+  REACT_COMPONENT: 'react.component',
 };

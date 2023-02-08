@@ -12,7 +12,9 @@ let ctx: Partial<FoxCtx> = {};
 let params = {
   applicationId: Data.app.id,
   id: Data.file.id,
-  content: { id: Data.file.id, schemas: [], relation: {} },
+  pageContentId: '',
+  contentUpdateTime: '',
+  content: { id: Data.file.id, schemas: [], relation: {}, extension: {} },
   version: '0.0.2',
 };
 
@@ -24,7 +26,9 @@ beforeEach(() => {
   params = {
     applicationId: Data.app.id,
     id: Data.file.id,
-    content: { id: Data.file.id, schemas: [], relation: {} },
+    pageContentId: '',
+    contentUpdateTime: '',
+    content: { id: Data.file.id, schemas: [], relation: {}, extension: {} },
     version: '0.0.2',
   };
 });

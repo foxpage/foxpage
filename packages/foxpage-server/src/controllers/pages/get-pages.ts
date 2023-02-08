@@ -8,6 +8,7 @@ import { FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { DSL_VERSION, METHOD } from '../../../config/constant';
+import metric from '../../third-parties/metric';
 import { PageContentData, VersionWithExternal } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentListRes, AppContentVersionReq } from '../../types/validates/page-validate-types';
@@ -44,7 +45,7 @@ export class GetPageLivesList extends BaseController {
         this.service.content.live.getContentLiveDetails({
           applicationId: params.applicationId,
           type: apiType as FileTypes,
-          contentIds: params.ids || [],
+          contentIds: params.ids,
         }),
         this.service.content.list.getDetailByIds(params.ids),
       ]);
@@ -73,6 +74,9 @@ export class GetPageLivesList extends BaseController {
           }),
         );
       });
+
+      // send metric
+      pageVersions.length === 0 && metric.empty(ctx.request.url, params.applicationId);
 
       return Response.success(pageVersions, 1051001);
     } catch (err) {

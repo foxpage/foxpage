@@ -66,7 +66,7 @@ export const Iframe = (props: IProps) => {
     const frameContentStyle = {
       transformOrigin,
       height: '100%',
-      transform: 'scale(1)',
+      transform: '',
     };
     if (zoom !== 1) {
       frameContentStyle.transform = `scale(${zoom})`;

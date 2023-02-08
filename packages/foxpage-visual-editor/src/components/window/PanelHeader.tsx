@@ -1,33 +1,18 @@
 import React, { ReactNode } from 'react';
 
-import styled from 'styled-components';
-
-const Container = styled.div`
-  display: flex;
-  height: 32px;
-  line-height: 32px;
-  padding: 0 8px;
-  border-bottom: 1px solid #f2f2f2;
-`;
-
-const Title = styled.div`
-  /* font-weight: bold; */
-  flex-grow: 1;
-`;
-
 interface IProps {
   title?: string;
-  extr?: ReactNode;
+  extra?: ReactNode;
 }
 
 const PanelHeader = (props: IProps) => {
-  const { title, extr } = props;
+  const { title, extra } = props;
 
   return (
-    <Container>
-      <Title>{title}</Title>
-      {extr}
-    </Container>
+    <div className="flex box-content items-center px-3 py-2 border-b border-b-solid border-b-gray-100">
+      <div className="grow text-sm font-medium flex">{title}</div>
+      {extra}
+    </div>
   );
 };
 

@@ -14,6 +14,9 @@ const mapStateToProps = (store: RootState) => ({
   fileList: store.projects.file.fileList,
   drawerOpen: store.projects.file.drawerOpen,
   editFile: store.projects.file.editFile,
+  authDrawerOpen: store.projects.file.authListDrawerVisible,
+  authLoading: store.projects.file.authListLoading,
+  authList: store.projects.file.authList,
 });
 
 const mapDispatchToProps = {
@@ -23,7 +26,12 @@ const mapDispatchToProps = {
   openDrawer: ACTIONS.openEditDrawer,
   updateEditFile: ACTIONS.updateEditFileValue,
   saveFile: ACTIONS.saveFile,
-  deleteFile: ACTIONS.deleteFile,
+  openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
+  checkAuthRole: ACTIONS.checkAuthRole,
+  fetchAuthList: ACTIONS.fetchAuthList,
+  fetchUserList: ACTIONS.fetchUserList,
+  saveUser: ACTIONS.saveAuthUser,
+  deleteUser: ACTIONS.deleteAuthUser,
   deleteProject,
   saveProject,
 };
@@ -38,13 +46,21 @@ const Main: React.FC<FileListType> = (props) => {
     fileList,
     drawerOpen,
     editFile,
+    authDrawerOpen,
+    authLoading,
+    authList,
     clearAll,
     fetchFileList,
     fetchParentFiles,
     openDrawer,
     updateEditFile,
     saveFile,
-    deleteFile,
+    openAuthDrawer,
+    checkAuthRole,
+    fetchAuthList,
+    fetchUserList,
+    saveUser,
+    deleteUser,
     deleteProject,
     saveProject,
   } = props;
@@ -64,12 +80,20 @@ const Main: React.FC<FileListType> = (props) => {
       fileList={fileList}
       drawerOpen={drawerOpen}
       editFile={editFile}
+      authDrawerOpen={authDrawerOpen}
+      authLoading={authLoading}
+      authList={authList}
       fetchFileList={fetchFileList}
       fetchParentFiles={fetchParentFiles}
       openDrawer={openDrawer}
       updateEditFile={updateEditFile}
       saveFile={saveFile}
-      deleteFile={deleteFile}
+      openAuthDrawer={openAuthDrawer}
+      checkAuthRole={checkAuthRole}
+      fetchAuthList={fetchAuthList}
+      fetchUserList={fetchUserList}
+      saveUser={saveUser}
+      deleteUser={deleteUser}
       deleteProject={deleteProject}
       saveProject={saveProject}
     />

@@ -2,13 +2,23 @@ import produce from 'immer';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/workspace/projects/personal/folder';
-import { Application, AuthorizeListItem, PaginationInfo, ProjectEntity, User } from '@/types/index';
+import {
+  Application,
+  AuthorizeListItem,
+  ContentEntity,
+  File,
+  PaginationInfo,
+  ProjectEntity,
+  User,
+} from '@/types/index';
 
 export type ProjectListActionType = ActionType<typeof ACTIONS>;
 
 const apps: Application[] = [];
 const allApps: Application[] = [];
 const projectList: ProjectEntity[] = [];
+const fileList: File[] = [];
+const contentList: ContentEntity[] = [];
 const pageInfo: PaginationInfo = { page: 1, size: 10, total: 0 };
 const editProject: ProjectEntity = {} as ProjectEntity;
 const authList: AuthorizeListItem[] = [];
@@ -18,6 +28,8 @@ const initialState = {
   allApps,
   apps,
   projectList,
+  fileList,
+  contentList,
   pageInfo,
   loading: false,
   drawerOpen: false,
@@ -50,9 +62,17 @@ const reducer = (state: InitialDataType = initialState, action: ProjectListActio
       }
 
       case getType(ACTIONS.pushProjectList): {
-        const { projectList = [], pageInfo } = action.payload;
-        draft.projectList = projectList;
+        const { result, pageInfo } = action.payload;
         draft.pageInfo = pageInfo;
+
+        if (Array.isArray(result)) {
+          draft.projectList = result || [];
+        } else {
+          draft.projectList = result?.folders || [];
+          draft.fileList = result?.files || [];
+          draft.contentList = result?.contents || [];
+        }
+
         break;
       }
 

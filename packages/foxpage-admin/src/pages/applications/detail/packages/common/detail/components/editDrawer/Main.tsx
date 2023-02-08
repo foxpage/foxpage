@@ -1,7 +1,7 @@
-import React, { useCallback, useContext, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 
-import { Button, Form, Input, message, Switch, Select  } from 'antd';
+import { Button, Form, Input, message, Select, Switch } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/packages/detail';
@@ -12,7 +12,6 @@ import { GlobalContext } from '@/pages/system';
 import { ComponentEditVersionEntity } from '@/types/application';
 
 import { JSONEditorFormItem, PackageSelect, ResPathTreeSelect } from './components/index';
-import { ComponentType } from '@/constants/index';
 
 const { Option } = Select;
 
@@ -46,7 +45,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
     closeDrawer,
     addVersion,
     editVersion,
-    fileDetail
+    fileDetail,
   } = props;
 
   const initialValuesRef = useRef<Promise<ComponentEditVersionEntity | undefined> | undefined>();
@@ -55,7 +54,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
   const isSystemComponent = fileDetail?.type === 'systemComponent';
   const isComponent = fileDetail?.type === 'component' || isSystemComponent;
   const isRefer = !!fileDetail?.tags?.find((item) => item.type === StoreGoodsPurchaseType.reference);
-
+  const [init, setInit] = useState<boolean>(false);
   // i18n
   const { locale } = useContext(GlobalContext);
   const { global, version } = locale.business;
@@ -106,8 +105,14 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
         if (data) {
           versionDetailRef.current = data;
           const { content, version } = data;
-          const { meta = {}, schema, resource, useStyleEditor, enableChildren, changelog = '' } =
-            content || {};
+          const {
+            meta = {},
+            schema,
+            resource,
+            useStyleEditor,
+            enableChildren,
+            changelog = '',
+          } = content || {};
           const { entry, 'editor-entry': editorEntry, dependencies = [] } = resource || {};
           const { browser, node, debug, css } = entry || {};
           const initForm = {
@@ -125,6 +130,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
             changelog,
           };
           form.setFieldsValue(initForm);
+          setInit(true);
         }
       });
     } else {
@@ -172,6 +178,11 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
       });
   };
 
+  const onClose = useCallback(() => {
+    closeDrawer();
+    setInit(false);
+  }, []);
+
   const parseValueForTreeSelect = (data?: { contentId: string; path: string }) => {
     const { contentId, path } = data || {};
 
@@ -200,7 +211,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
       meta = {},
       schema = {},
       changelog = '',
-      componentType
+      componentType,
     } = formValues || {};
 
     const editorEntry = [editor]
@@ -243,7 +254,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
         useStyleEditor,
         enableChildren,
         changelog,
-        componentType
+        componentType,
       },
     };
   };
@@ -273,8 +284,8 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
         </Button>
       }
       open={open}
-      onClose={closeDrawer}
-      afterVisibleChange={afterVisibleChange}>
+      onClose={onClose}
+      afterOpenChange={afterVisibleChange}>
       <Form layout="vertical" form={form}>
         <Group>
           <Form.Item
@@ -375,12 +386,16 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
             </Form.Item>
           )}
 
-          <Form.Item name="meta" label="Meta">
-            <JSONEditorFormItem disabled={isRefer || disableState} />
-          </Form.Item>
-          <Form.Item name="schema" label="Schema">
-            <JSONEditorFormItem disabled={isRefer} />
-          </Form.Item>
+          {init && (
+            <>
+              <Form.Item name="meta" label="Meta">
+                <JSONEditorFormItem disabled={isRefer || disableState} value={form.getFieldValue(['meta'])} />
+              </Form.Item>
+              <Form.Item name="schema" label="Schema">
+                <JSONEditorFormItem disabled={isRefer || disableState} value={form.getFieldValue(['schema'])} />
+              </Form.Item>
+            </>
+          )}
           <Form.Item name="changelog" label={version.changelog}>
             <Input.TextArea disabled={isRefer} />
           </Form.Item>

@@ -43,11 +43,13 @@ export class AddApplicationDetail extends BaseController {
 
       // Check if the same slug exists under the organization
       if (params.slug) {
-        const appDetail = await this.service.application.getDetail(
-          _.pick(params, ['organizationId', 'slug']),
-        );
+        const appDetail = await this.service.application.getDetail({
+          organizationId: params.organizationId,
+          slug: params.slug,
+          deleted: false,
+        });
 
-        if (appDetail && !appDetail.deleted) {
+        if (!this.notValid(appDetail)) {
           return Response.warning(i18n.app.appSlugExist, 2030102);
         }
       }

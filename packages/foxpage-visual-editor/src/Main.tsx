@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 
+import isNil from 'lodash/isNil';
 import styled from 'styled-components';
 
 import { Component, RenderStructureNode } from '@/types/index';
@@ -12,12 +13,7 @@ import { DeviceToolbar } from './components';
 import { EditorContext, FoxContext } from './context';
 import { cacheData, getCache } from './utils';
 
-import './common.css';
-
-const FlexLayout = styled.div`
-  display: flex;
-  height: 100%;
-`;
+import './common.less';
 
 const Panel = styled.div`
   display: flex;
@@ -28,12 +24,12 @@ const Panel = styled.div`
 
 interface IProps {}
 
-const WIDTH = window.innerWidth > 1920 ? 500 : 300;
+const WIDTH = window.innerWidth > 1920 ? 400 : 300;
 const MAX_WIDTH = 550;
 
 const Main = (_props: IProps) => {
   const [editorExpend, setEditorExpend] = useState(false);
-  const [sideExpend, setSideExpend] = useState(false);
+  const [structurePinned, setStructurePinned] = useState(false);
   const [editorShrink, setEditorShrink] = useState(false);
   const [mockerVisible, setMockerVisible] = useState(false);
   const [viewWidth, setViewWidth] = useState('100%');
@@ -41,18 +37,39 @@ const Main = (_props: IProps) => {
   const [selectNode, setSelectNode] = useState<RenderStructureNode | null>(null);
   const [selectNodeFrom, setSelectNodeFrom] = useState<'viewer' | 'sider' | undefined>();
   const [selectComponent, setSelectComponent] = useState<Component | null>(null);
-  const { events, componentMap, selectNode: defaultSelectNode } = useContext(FoxContext);
+  const {
+    events,
+    componentMap,
+    selectNode: defaultSelectNode,
+    pageStructure: structure,
+    config,
+  } = useContext(FoxContext);
 
   useEffect(() => {
     const cached = getCache();
-    setSideExpend(!!cached.sideExpend);
+    !isNil(cached.sideExpand) && setStructurePinned(cached.sideExpand);
+    cached.zoom && setZoom(cached.zoom);
+    cached.viewWidth && setViewWidth(cached.viewWidth);
   }, []);
 
   useEffect(() => {
     setSelectNode(defaultSelectNode || null);
-  }, [defaultSelectNode]);
+    if (!defaultSelectNode) {
+      setEditorExpend(false);
+    }
+  }, [defaultSelectNode, structure]);
 
-  const handleExpend = (value: boolean) => {
+  // close mock editor when mock mode disable outside
+  useEffect(() => {
+    if (!config?.sys?.mockable) setMockerVisible(false);
+  }, [config?.sys?.mockable]);
+
+  const handleCacheOperation = (target, operation) => {
+    operation(target.value);
+    cache(target.key, target.value);
+  };
+
+  const handleExpand = (value: boolean) => {
     if (value !== editorExpend) {
       setEditorExpend(value);
     }
@@ -77,11 +94,6 @@ const Main = (_props: IProps) => {
     setMockerVisible(value);
   };
 
-  const handleSideExpend = (value: boolean) => {
-    setSideExpend(value);
-    cache('sideExpend', value);
-  };
-
   const cache = (key: string, value: any) => {
     const cached = getCache();
     cached[key] = value;
@@ -97,29 +109,44 @@ const Main = (_props: IProps) => {
     events: {
       openMock: handleMockerVisible,
       selectComponent: handleSelect,
+      setSelectNodeFrom: setSelectNodeFrom,
     },
   };
 
   return (
     <EditorContext.Provider value={editorContextValue}>
-      <FlexLayout>
-        <Panel style={{ flex: sideExpend ? '0 0 338px' : '0 0 38px', borderRight: '1px solid #f2f2f2' }}>
-          <Sidebar expend={sideExpend} onExpend={handleSideExpend} />
+      <div className="flex h-full">
+        <Panel style={{ borderRight: '1px solid #f2f2f2' }}>
+          <Sidebar
+            structurePinned={structurePinned}
+            onStructurePinned={(value: boolean) =>
+              handleCacheOperation({ key: 'sideExpand', value }, setStructurePinned)
+            }
+          />
         </Panel>
         <Panel style={{ flexGrow: 1 }}>
-          <DeviceToolbar onZoomChange={setZoom} onDeviceChange={setViewWidth} />
+          <DeviceToolbar
+            onZoomChange={(value: number) => handleCacheOperation({ key: 'zoom', value }, setZoom)}
+            onDeviceChange={(value: string) =>
+              handleCacheOperation({ key: 'viewWidth', value }, setViewWidth)
+            }
+          />
           <Viewer />
         </Panel>
-        <Panel style={{ flex: editorExpend ? `0 0 ${editorShrink ? MAX_WIDTH : WIDTH}px` : '0 0 0px' }}>
+        <Panel
+          style={{
+            flex: editorExpend ? `0 0 ${editorShrink ? MAX_WIDTH : WIDTH}px` : '0 0 0px',
+            overflow: 'hidden',
+          }}>
           <Editor
             selectNode={selectNode}
             visible={!mockerVisible}
             onShrink={setEditorShrink}
-            onExpend={handleExpend}
+            onExpand={handleExpand}
           />
           <MockEditor selectNode={selectNode} visible={mockerVisible} visibleChange={setMockerVisible} />
         </Panel>
-      </FlexLayout>
+      </div>
     </EditorContext.Provider>
   );
 };

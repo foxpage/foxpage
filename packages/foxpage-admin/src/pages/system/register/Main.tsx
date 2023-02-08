@@ -11,6 +11,7 @@ import * as ACTIONS from '@/actions/system/register';
 import Logo from '@/components/common/Logo';
 
 const Container = styled.div`
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;

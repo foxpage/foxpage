@@ -14,12 +14,13 @@ const Toolbar = styled.div`
 `;
 
 interface ConditionEditorProps {
+  disable?: boolean;
   conditions: ConditionEntity[];
   updateComponentCondition: (conditions: ConditionEntity[]) => void;
 }
 
 const Main: React.FC<ConditionEditorProps> = (props) => {
-  const { conditions, updateComponentCondition } = props;
+  const { disable = false, conditions, updateComponentCondition } = props;
   const [selectDrawerShow, setSelectDrawerShow] = useState<boolean>(false);
 
   // i18n
@@ -57,16 +58,18 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
   return (
     <React.Fragment>
       <Toolbar>
-        <Button
-          type="default"
-          size="small"
-          icon={<PlusOutlined />}
-          style={{ position: 'absolute', right: 0, top: -30 }}
-          onClick={() => {
-            setSelectDrawerShow(true);
-          }}>
-          {global.select}
-        </Button>
+        {!disable && (
+          <Button
+            type="default"
+            size="small"
+            icon={<PlusOutlined />}
+            style={{ position: 'absolute', right: 0, top: -30 }}
+            onClick={() => {
+              setSelectDrawerShow(true);
+            }}>
+            {global.select}
+          </Button>
+        )}
       </Toolbar>
       <Table
         columns={columns}
@@ -80,7 +83,7 @@ const Main: React.FC<ConditionEditorProps> = (props) => {
         visible={selectDrawerShow}
         conditions={conditions}
         onChange={(selectedConditions: ConditionEntity[]) => {
-          updateComponentCondition(selectedConditions);
+          updateComponentCondition(conditions.concat(selectedConditions));
         }}
         onClose={() => setSelectDrawerShow(false)}
       />

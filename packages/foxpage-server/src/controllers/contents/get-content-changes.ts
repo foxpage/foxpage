@@ -19,6 +19,8 @@ export class GetContentChanges extends BaseController {
 
   /**
    * Get changed content information under the application
+   * response the last data create time value to client
+   * if the request timestamp is less ten minute day, then reset to 600000
    * @param  {ContentChangeReq} params
    * @param  {Header} headers
    * @returns Content
@@ -33,16 +35,27 @@ export class GetContentChanges extends BaseController {
   @ResponseSchema(ContentDetailRes)
   async index(@QueryParams() params: ContentChangeReq): Promise<ResData<Content>> {
     try {
-      const currentTimeStamp: number = Date.now();
+      let lastTimeStamp = params.timestamp || 0;
+      const TEN_MINUTE = 600000;
+      const ONE_DAY = 86400000;
 
-      if (!params.timestamp || params.timestamp < Date.now() - 86400000) {
-        params.timestamp = Date.now() - 86400000; // one day before
+      // default query max ten minute data
+      if (params.timestamp <= 0) {
+        lastTimeStamp = Date.now() - TEN_MINUTE; // ten minute before
+      } else if (params.timestamp < Date.now() - ONE_DAY) {
+        lastTimeStamp = Date.now() - ONE_DAY; // one day before
       }
 
       // Get all content data that has changed
-      const logChanges = await this.service.log.getChangesContentList(params);
+      let { logChangeObject, lastDataTime } = await this.service.log.getChangesContentList({
+        applicationId: params.applicationId,
+        timestamp: lastTimeStamp,
+      });
 
-      return Response.success({ contents: logChanges, timestamp: currentTimeStamp }, 1160101);
+      return Response.success(
+        { contents: logChangeObject, timestamp: lastDataTime || lastTimeStamp },
+        1160101,
+      );
     } catch (err) {
       return Response.error(err, i18n.content.getContentChangesFailed, 3160101);
     }

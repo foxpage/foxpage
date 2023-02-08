@@ -15,7 +15,6 @@ import { Layout, Menu, Tooltip } from 'antd';
 import styled from 'styled-components';
 
 import { GlobalContext } from '@/pages/system';
-import { getLoginUser } from '@/utils/login-user';
 
 import { Applications } from './applications';
 import { Dynamics } from './dynamics';
@@ -51,13 +50,9 @@ const WorkSpace = () => {
   const location = useLocation();
   const routeMatch = useRouteMatch();
 
-  // get multi-language
-  const { locale } = useContext(GlobalContext);
+  // i18n
+  const { locale, organizationId } = useContext(GlobalContext);
   const { workspace, project, application, dynamic } = locale.business;
-
-  // get user info
-  const { userInfo } = getLoginUser();
-  const organizationId = userInfo?.organizationId;
 
   // if organization id empty, back to login page
   if (!organizationId) {
@@ -68,10 +63,7 @@ const WorkSpace = () => {
   }
 
   useEffect(() => {
-    const newKey = location.pathname
-      .replace(routeMatch.url, '')
-      .replace('/', '')
-      .split('/');
+    const newKey = location.pathname.replace(routeMatch.url, '').replace('/', '').split('/');
 
     setSelectedKeys(newKey);
   }, [location]);
@@ -116,8 +108,8 @@ const WorkSpace = () => {
               <Menu.Item key="personal" icon={<UserOutlined />}>
                 {project.personal}
               </Menu.Item>
-              <Menu.Item key="involved" icon={<TeamOutlined />}>
-                {project.involved}
+              <Menu.Item key="shared" icon={<TeamOutlined />}>
+                {project.shared}
               </Menu.Item>
               <Menu.Item key="starred" icon={<StarFilled />}>
                 {project.starred}

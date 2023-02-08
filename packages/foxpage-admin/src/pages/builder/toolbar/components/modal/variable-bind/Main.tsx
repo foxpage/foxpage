@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { BugFilled } from '@ant-design/icons';
-import { Modal as AntdModal, Radio as AntRadio, Spin } from 'antd';
+import { message, Modal as AntdModal, Radio as AntRadio, Spin } from 'antd';
+import stringify from 'json-stable-stringify';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -14,7 +15,7 @@ import { EditorInputEnum } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ComponentProps } from '@/types/index';
 
-import { BindContext, HtmlBind, JSONBind, TextBind } from './components';
+import { BindContext, CodeBind, HtmlBind, QuillHtmlBind, TextBind } from './components';
 
 enum TabEnum {
   project,
@@ -25,12 +26,11 @@ const PAGE_NUM = 1;
 const PAGE_SIZE = 999;
 
 const Modal = styled(AntdModal)`
-  height: 60%;
+  height: 80%;
   .ant-modal-content {
     height: 100%;
     .ant-modal-body {
       height: calc(100% - 110px);
-      overflow-y: auto;
     }
   }
 `;
@@ -38,17 +38,17 @@ const Modal = styled(AntdModal)`
 const Content = styled.div`
   display: flex;
   height: 100%;
-  > div > div + div {
-    height: calc(100% - 22px);
-  }
 `;
 
 const VariableContent = styled.div`
-  flex: 1;
+  flex: 0 0 200px;
   margin-right: 12px;
+  display: flex;
+  flex-direction: column;
   .variable-list {
     border: 1px solid #1f38584d;
     overflow-y: auto;
+    flex: 1;
     > ul {
       list-style: none;
       line-height: 36px;
@@ -65,8 +65,18 @@ const VariableContent = styled.div`
 `;
 
 const BindContent = styled.div`
-  flex: 2;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   .variable-bind-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    .variable-bind-editor {
+      flex: 1;
+      min-height: 0;
+    }
     > textarea {
       transition: all 0.3s;
       border-radius: 2px;
@@ -129,12 +139,13 @@ const VariableBind: React.FC<VariableBindProps> = (props) => {
   } = props;
   const [tab, setTab] = useState(TabEnum.project);
   const [value, setValue] = useState<string | ComponentProps>('');
+  const [previewMode, setPreviewMode] = useState<boolean>(false);
 
   const variableBindRef = useRef<any>(null);
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, variable } = locale.business;
+  const { global, variable, builder } = locale.business;
 
   const open = useMemo(() => visible && type === 'variableBind', [visible, type]);
 
@@ -191,31 +202,61 @@ const VariableBind: React.FC<VariableBindProps> = (props) => {
 
   const handleCancel = () => {
     closeModal(false);
+    setPreviewMode(false);
   };
 
   const handleOk = () => {
-    variableBind(keys, value as string, { isMock });
-    handleCancel();
+    const [err] = variableBindRef.current?.checker?.() || [];
+    if (err) {
+      message.error(builder.illegalEditorContentTips);
+    } else {
+      variableBind(keys, value as string, { isMock });
+      handleCancel();
+    }
   };
 
-  const editorContentByType = useMemo(() => {
+  const ContentEditor = useMemo(() => {
+    const type = data?.opt?.type;
     switch (type) {
       case EditorInputEnum.HtmlString:
         return <HtmlBind ref={variableBindRef} />;
+      case EditorInputEnum.RichText:
+        return <QuillHtmlBind ref={variableBindRef} />;
       case EditorInputEnum.Object:
-        return <JSONBind ref={variableBindRef} />;
+        return <CodeBind language="json" ref={variableBindRef} />;
+      case EditorInputEnum.HtmlCode:
+        return <CodeBind language="html" ref={variableBindRef} />;
+      case EditorInputEnum.JavascriptCode:
+        return <CodeBind language="javascript" ref={variableBindRef} />;
+      case EditorInputEnum.CssCode:
+        return <CodeBind language="css" ref={variableBindRef} />;
       default:
         return <TextBind ref={variableBindRef} />;
     }
-  }, [type, value]);
+  }, [data, value]);
+
+  const stringifiedValue = useMemo(() => {
+    try {
+      const type = data?.opt?.type;
+      if (typeof value === 'string') {
+        return JSON.stringify(value).slice(1, -1);
+      }
+      if (type === EditorInputEnum.Object) {
+        return stringify(value);
+      }
+      return 'Unknown value';
+    } catch (err) {
+      return (err as Error).message;
+    }
+  }, [value]);
 
   return (
     <Modal
       destroyOnClose
       maskClosable={false}
-      width="60%"
-      title={variable.bind}
-      visible={open}
+      width="70%"
+      title={variable.valueBind}
+      open={open}
       onCancel={handleCancel}
       onOk={handleOk}>
       <Content>
@@ -262,13 +303,47 @@ const VariableBind: React.FC<VariableBindProps> = (props) => {
           </div>
         </VariableContent>
         <BindContent>
-          <Name>{variable.content}</Name>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Name>{variable.content}</Name>
+            <Radio
+              size="small"
+              optionType="button"
+              options={[
+                {
+                  label: global.edit,
+                  value: false,
+                },
+                {
+                  label: global.view,
+                  value: true,
+                },
+              ]}
+              value={previewMode}
+              onChange={(e) => setPreviewMode(e.target.value)}
+              style={{ fontSize: 12 }}
+            />
+          </div>
           <div className="variable-bind-content">
-            <BindContext.Provider value={{ value: value || '', setValue }}>
-              {editorContentByType}
-            </BindContext.Provider>
-
-            <div style={{ height: '50%' }}>
+            <div className="variable-bind-editor">
+              {previewMode ? (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    padding: '0 8px',
+                    overflow: 'auto',
+                    border: '1px solid #1f38584d',
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                  {stringifiedValue}
+                </div>
+              ) : (
+                <BindContext.Provider value={{ value: value || '', setValue }}>
+                  {ContentEditor}
+                </BindContext.Provider>
+              )}
+            </div>
+            <div style={{ height: 100, paddingTop: 12 }}>
               <Title>{variable.useVariableTitle}</Title>
               <ul style={{ paddingLeft: 16 }}>
                 <li>

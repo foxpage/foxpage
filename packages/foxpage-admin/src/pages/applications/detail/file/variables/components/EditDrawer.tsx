@@ -6,16 +6,19 @@ import { Button, Input, Select, Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/variables';
+import { openEditDrawer } from '@/actions/applications/detail/file/functions';
 import { saveMock } from '@/actions/builder/header';
 import { updateMock } from '@/actions/builder/main';
-import { Field, Group, JSONEditor, Label, OperationDrawer } from '@/components/index';
+import { Field, Group, Label, OperationDrawer } from '@/components/index';
 import { FileType, VariableTypes } from '@/constants/index';
+import { JSONCodeEditor } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
 import { getFunctionRelationKey } from '@/sagas/builder/utils';
 import { FuncContentEntity, FuncEntity, FunctionVariableProps, StaticVariableProps } from '@/types/index';
 import { nameErrorCheck, objectEmptyCheck } from '@/utils/index';
 
 import FunctionSelect from './FunctionSelect';
+import VariableType from './VariableType';
 
 const { Option } = Select;
 
@@ -38,6 +41,7 @@ const mapDispatchToProps = {
   updateRelation: ACTIONS.updateVariableContentRelation,
   updateVariableContentProps: ACTIONS.updateVariableContentProps,
   updateVariableRelations: ACTIONS.updateVariableRelations,
+  openFuncDrawer: openEditDrawer,
   saveMock: saveMock,
   updateMock: updateMock,
 };
@@ -45,15 +49,18 @@ const mapDispatchToProps = {
 interface IProps {
   applicationId: string;
   folderId?: string;
+  pageContentId?: string;
   search?: string;
 }
 
 type Type = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
 
+// todo: disable submit button if error occur
 const EditDrawer: React.FC<Type> = (props) => {
   const {
     applicationId,
     folderId,
+    pageContentId,
     mock,
     mode,
     open,
@@ -62,6 +69,7 @@ const EditDrawer: React.FC<Type> = (props) => {
     search,
     closeDrawer,
     fetchList,
+    openFuncDrawer,
     saveVariable,
     update,
     updateContent,
@@ -242,6 +250,7 @@ const EditDrawer: React.FC<Type> = (props) => {
         {
           applicationId,
           folderId,
+          pageContentId,
         },
         () => {
           handleClose();
@@ -305,7 +314,7 @@ const EditDrawer: React.FC<Type> = (props) => {
           <Field>
             <Label>{global.type}</Label>
             {isEditType ? (
-              <>
+              <VariableType>
                 <Input
                   disabled={!!editVariable.id}
                   placeholder={global.type}
@@ -313,7 +322,6 @@ const EditDrawer: React.FC<Type> = (props) => {
                   onChange={(e) => {
                     updateContent('type', e.target.value);
                   }}
-                  style={{ width: 200 }}
                 />
                 <Button
                   disabled={!!editVariable.id}
@@ -324,12 +332,11 @@ const EditDrawer: React.FC<Type> = (props) => {
                   }}
                   style={{ marginLeft: 4 }}
                 />
-              </>
+              </VariableType>
             ) : (
-              <>
+              <VariableType>
                 <Select
                   disabled={!!editVariable.id}
-                  style={{ width: 200 }}
                   value={type}
                   onChange={(value) => {
                     updateContent('type', value);
@@ -349,7 +356,7 @@ const EditDrawer: React.FC<Type> = (props) => {
                     setIsEditType(true);
                   }}
                 />
-              </>
+              </VariableType>
             )}
           </Field>
           {type === VariableTypes[1] ? (
@@ -376,41 +383,26 @@ const EditDrawer: React.FC<Type> = (props) => {
               </Field>
               <Field>
                 <Label>{variable.args}</Label>
-                <JSONEditor
-                  jsonData={
+                <JSONCodeEditor
+                  onChange={(json) => handleUpdateContent('args', json)}
+                  value={
                     mockModeEnable
                       ? []
                       : (editVariable.content.schemas[0].props as FunctionVariableProps).args || []
                   }
-                  onChangeJSON={(json) => {
-                    // updateVariableContentProps('args', json);
-                    handleUpdateContent('args', json);
-                  }}
-                  onError={() => {
-                    // updateVariableContentProps('args', []);
-                    handleUpdateContent('args', []);
-                  }}
                 />
               </Field>
             </React.Fragment>
           ) : (
             <Field>
               <Label>{variable.value}</Label>
-              <JSONEditor
-                refreshFlag={editVariable.id}
-                jsonData={
+              <JSONCodeEditor
+                onChange={(json) => handleUpdateContent('props', json)}
+                value={
                   mockModeEnable
                     ? mockProps
                     : (editVariable.content.schemas?.[0]?.props as StaticVariableProps) || {}
                 }
-                onChangeJSON={(json) => {
-                  // updateContent('props', json);
-                  handleUpdateContent('props', json);
-                }}
-                onError={() => {
-                  // updateContent('props', {});
-                  handleUpdateContent('props', {});
-                }}
               />
             </Field>
           )}
@@ -418,11 +410,13 @@ const EditDrawer: React.FC<Type> = (props) => {
             applicationId={applicationId}
             funcId={func?.id}
             folderId={folderId}
+            pageContentId={pageContentId}
             visible={funcDrawerVisible}
             onChange={(selectedFunc?: FuncEntity) => {
               handleVariableFunctionChange(selectedFunc);
             }}
             onClose={() => setFuncDrawerVisible(false)}
+            onFuncOpen={() => openFuncDrawer(true)}
           />
         </Group>
       ) : (

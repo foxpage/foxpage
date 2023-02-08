@@ -171,8 +171,8 @@ const Box: React.FC<BoxType> = (props) => {
           size="small"
           bordered={false}
           value={marginTop}
-          onChange={(val: number | string) => {
-            onChange('marginTop', val);
+          onChange={(val: number | string | null) => {
+            if (val) onChange('marginTop', val);
           }}
           onBlur={() => {
             onApplyState();
@@ -186,8 +186,8 @@ const Box: React.FC<BoxType> = (props) => {
           size="small"
           bordered={false}
           value={marginRight}
-          onChange={(val: number | string) => {
-            onChange('marginRight', val);
+          onChange={(val: number | string | null) => {
+            if (val) onChange('marginRight', val);
           }}
           onBlur={() => {
             onApplyState();
@@ -202,8 +202,8 @@ const Box: React.FC<BoxType> = (props) => {
           size="small"
           bordered={false}
           value={marginBottom}
-          onChange={(val: number | string) => {
-            onChange('marginBottom', val);
+          onChange={(val: number | string | null) => {
+            if (val) onChange('marginBottom', val);
           }}
           onBlur={() => {
             onApplyState();
@@ -217,8 +217,8 @@ const Box: React.FC<BoxType> = (props) => {
           size="small"
           bordered={false}
           value={marginLeft}
-          onChange={(val: number | string) => {
-            onChange('marginLeft', val);
+          onChange={(val: number | string | null) => {
+            if (val) onChange('marginLeft', val);
           }}
           onBlur={() => {
             onApplyState();
@@ -232,8 +232,8 @@ const Box: React.FC<BoxType> = (props) => {
           size="small"
           bordered={false}
           value={paddingTop}
-          onChange={(val: number | string) => {
-            onChange('paddingTop', val);
+          onChange={(val: number | string | null) => {
+            if (val) onChange('paddingTop', val);
           }}
           onBlur={() => {
             onApplyState();
@@ -247,8 +247,8 @@ const Box: React.FC<BoxType> = (props) => {
           size="small"
           bordered={false}
           value={paddingRight}
-          onChange={(val: number | string) => {
-            onChange('paddingRight', val);
+          onChange={(val: number | string | null) => {
+            if (val) onChange('paddingRight', val);
           }}
           onBlur={() => {
             onApplyState();
@@ -263,8 +263,8 @@ const Box: React.FC<BoxType> = (props) => {
           size="small"
           bordered={false}
           value={paddingBottom}
-          onChange={(val: number | string) => {
-            onChange('paddingBottom', val);
+          onChange={(val: number | string | null) => {
+            if (val) onChange('paddingBottom', val);
           }}
           onBlur={() => {
             onApplyState();
@@ -278,8 +278,8 @@ const Box: React.FC<BoxType> = (props) => {
           size="small"
           bordered={false}
           value={paddingLeft}
-          onChange={(val: number | string) => {
-            onChange('paddingLeft', val);
+          onChange={(val) => {
+            if (val) onChange('paddingLeft', val);
           }}
           onBlur={() => {
             onApplyState();

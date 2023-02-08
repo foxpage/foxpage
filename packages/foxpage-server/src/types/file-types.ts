@@ -11,7 +11,7 @@ import {
 
 import { AppBaseInfo } from './app-types';
 import { ContentInfo } from './content-types';
-import { Creator, FoxCtx, Search } from './index-types';
+import { Creator, FoxCtx, IdName, Search } from './index-types';
 import { UserBase } from './user-types';
 
 export type FolderInfo = Exclude<Folder, 'creator' | 'applicationId'> & { creator: Creator } & {
@@ -39,6 +39,7 @@ export type FileContents = File & { contents: Content[] };
 export type FileAssoc = FileUserInfo & {
   folderName: string;
   content: DSL;
+  application?: IdName;
   contentId?: string;
   online?: boolean;
   version?: {
@@ -178,6 +179,7 @@ export interface NewFileInfo {
   name: string;
   applicationId: string;
   type: FileTypes;
+  subType?: string;
   componentType?: string;
   creator?: string;
   folderId?: string;

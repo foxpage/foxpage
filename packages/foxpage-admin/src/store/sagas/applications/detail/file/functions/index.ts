@@ -4,9 +4,11 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/functions';
 import * as API from '@/apis/application';
+import { RecordActionType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { FunctionActionType } from '@/reducers/applications/detail/file/functions';
 import { getRelation } from '@/sagas/builder/services';
+import * as RECORD_ACTIONS from '@/store/actions/record';
 import { store } from '@/store/index';
 import {
   FuncDeleteParams,
@@ -18,7 +20,7 @@ import {
   FuncSaveParams,
   RelationDetails,
 } from '@/types/index';
-import { nameErrorCheck, objectEmptyCheck } from '@/utils/index';
+import { errorToast, nameErrorCheck, objectEmptyCheck } from '@/utils/index';
 
 function* handleFetchList(actions: FunctionActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -38,7 +40,7 @@ function* handleFetchList(actions: FunctionActionType) {
       function: { fetchFailed },
     } = getBusinessI18n();
 
-    message.error(res.msg || fetchFailed);
+    errorToast(res, fetchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -79,8 +81,15 @@ function* handleSaveFunction(actions: FunctionActionType) {
       id: params.id,
     };
   }
+  if (!!params?.pageContentId) {
+    _params = {
+      ..._params,
+      pageContentId: params.pageContentId,
+    };
+  }
 
-  const res: FuncNewRes = yield call(params?.id ? API.updateFunction : API.addFunction, _params);
+  const editStatus = !!params?.id;
+  const res: FuncNewRes = yield call(editStatus ? API.updateFunction : API.addFunction, _params);
 
   const {
     global: { saveSuccess, saveFailed },
@@ -88,10 +97,26 @@ function* handleSaveFunction(actions: FunctionActionType) {
 
   if (res.code === 200) {
     message.success(saveSuccess);
-
+    if (editStatus) {
+      yield put(
+        RECORD_ACTIONS.addUserRecords(RecordActionType.FUN_UPDATE, [_params], {
+          save: true,
+          applicationId: params.applicationId,
+          contentId: params.content?.id,
+        }),
+      );
+    } else {
+      yield put(
+        RECORD_ACTIONS.addUserRecords(RecordActionType.FUN_CREATE, [_params], {
+          save: true,
+          applicationId: params.applicationId,
+          contentId: res.data.contentId,
+        }),
+      );
+    }
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -104,7 +129,8 @@ function* handleDeleteFunction(actions: FunctionActionType) {
     params: FuncDeleteParams;
     cb?: () => void;
   };
-  const res: FuncDeleteRes = yield call(API.deleteFunction, params);
+  const { fun, ...rest } = params;
+  const res: FuncDeleteRes = yield call(API.deleteFunction, rest);
 
   const {
     global: { deleteSuccess, deleteFailed },
@@ -112,10 +138,16 @@ function* handleDeleteFunction(actions: FunctionActionType) {
 
   if (res.code === 200) {
     message.success(deleteSuccess);
-
+    yield put(
+      RECORD_ACTIONS.addUserRecords(RecordActionType.FUN_REMOVE, [params], {
+        save: true,
+        applicationId: params.applicationId,
+        contentId: fun?.contentId,
+      }),
+    );
     if (typeof cb === 'function') cb();
   } else {
-    message.error(res.msg || deleteFailed);
+    errorToast(res, deleteFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -123,18 +155,24 @@ function* handleDeleteFunction(actions: FunctionActionType) {
 
 function* handlePublishFunction(action: FunctionActionType) {
   const { params, cb } = action.payload as { params: FuncPublishParams; cb?: () => void };
-  const rs = yield call(API.publishFunction, params);
+  const res = yield call(API.publishFunction, params);
 
   const {
     global: { publishSuccess, publishFailed },
   } = getBusinessI18n();
 
-  if (rs.code === 200) {
+  if (res.code === 200) {
     message.success(publishSuccess);
-
+    yield put(
+      RECORD_ACTIONS.addUserRecords(RecordActionType.FUN_PUBLISH, [params], {
+        save: true,
+        applicationId: params.applicationId,
+        contentId: params.contentId,
+      }),
+    );
     if (typeof cb === 'function') cb();
   } else {
-    message.error(rs.msg || publishFailed);
+    errorToast(res, publishFailed);
   }
 }
 

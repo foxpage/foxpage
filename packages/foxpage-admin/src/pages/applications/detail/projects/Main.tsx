@@ -4,6 +4,7 @@ import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 import Content from './content';
 import File from './file';
 import Folder from './folder';
+import Search from './search';
 
 function Projects() {
   const { applicationId } = useParams<{ applicationId: string }>();
@@ -18,11 +19,6 @@ function Projects() {
     search: `?applicationId=${applicationId}`,
   };
 
-  const folderLocation: any = {
-    pathname: '/applications/:applicationId/projects/list',
-    search: `?applicationId=${applicationId}`,
-  };
-
   return (
     <Switch>
       <Route
@@ -31,12 +27,10 @@ function Projects() {
         component={Content}
       />
       <Route path="/applications/:applicationId/projects/detail" location={fileLocation} component={File} />
-      <Route path="/applications/:applicationId/projects/list" location={folderLocation} component={Folder} />
+      <Route path="/applications/:applicationId/projects/list" component={Folder} />
+      <Route path="/applications/:applicationId/projects/search" component={Search} />
 
-      <Redirect
-        from="/*"
-        to={`/applications/${applicationId}/projects/list?applicationId=${applicationId}`}
-      />
+      <Redirect from="/*" to={`/applications/${applicationId}/projects/list`} />
     </Switch>
   );
 }

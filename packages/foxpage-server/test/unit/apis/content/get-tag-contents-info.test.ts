@@ -12,6 +12,7 @@ const conInstance = new GetTagContentInfo();
 
 let params = {
   applicationId: Data.app.id,
+  fileId: '',
   pathname: '',
   tags: [],
 };
@@ -26,6 +27,7 @@ beforeEach(() => {
 
   params = {
     applicationId: Data.app.id,
+    fileId: '',
     pathname: '',
     tags: <any>[{ query: 'test' }],
   };
@@ -41,7 +43,7 @@ describe('Post: /contents/tag-versions', () => {
     jest.spyOn(FileListService.prototype, 'getDetailByIds').mockResolvedValueOnce(<File[]>Data.file.list);
 
     const result = await conInstance.index(<FoxCtx>ctx, params);
-    expect(result.code).toEqual(200);
+    expect(result.status).toEqual(1160502);
   });
 
   it('response success with empty', async () => {
@@ -52,16 +54,16 @@ describe('Post: /contents/tag-versions', () => {
   });
 
   it('response tag is empty', async () => {
-    params.tags = [];
+    params.tags = null as any;
 
     const result = await conInstance.index(<FoxCtx>ctx, params);
-    expect(result.code).toEqual(400);
+    expect(result.status).toEqual(1160501);
   });
 
   it('response error', async () => {
     jest.spyOn(ContentTagService.prototype, 'getAppContentByTags').mockRejectedValue(new Error('mock error'));
 
     const result = await conInstance.index(<FoxCtx>ctx, params);
-    expect(result.code).toEqual(500);
+    expect(result.status).toEqual(3160501);
   });
 });

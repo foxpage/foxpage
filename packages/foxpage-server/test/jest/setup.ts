@@ -3,7 +3,9 @@
 jest.mock('@/utils/mongoose');
 jest.mock('@/models/base-model');
 jest.mock('@/models/application-model');
+jest.mock('@/models/authorize-model');
 jest.mock('@/models/content-model');
+jest.mock('@/models/content-log-model');
 jest.mock('@/models/content-relation-model');
 jest.mock('@/models/file-model');
 jest.mock('@/models/folder-model');

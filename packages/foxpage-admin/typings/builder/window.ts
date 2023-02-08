@@ -8,6 +8,7 @@ export type BuilderWindow =
   | 'function'
   | 'page'
   | 'templateBind'
+  | 'pageBind'
   | 'mockDelete';
 
 export interface WindowVisible {

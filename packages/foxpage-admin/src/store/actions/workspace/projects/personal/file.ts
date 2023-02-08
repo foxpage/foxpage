@@ -2,6 +2,7 @@ import { createAction } from 'typesafe-actions';
 
 import {
   AuthorizeAddParams,
+  AuthorizeQueryParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
   AuthorizeListItem,
@@ -56,15 +57,16 @@ export const updateEditFileValue = createAction(
 
 export const saveFile = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_FILE__SAVE_FILE',
-  (params: ProjectFileSaveParams) => ({
-    ...params,
+  (params: ProjectFileSaveParams, cb?: () => void) => ({
+    params,
+    cb,
   }),
 )();
 
 // delete related
 export const deleteFile = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_FILE__DELETE_FILE',
-  (params: ProjectFileDeleteParams) => ({ ...params }),
+  (params: ProjectFileDeleteParams, cb?: () => void) => ({ params, cb }),
 )();
 
 // parent file relation
@@ -101,6 +103,14 @@ export const updateAuthListLoading = createAction(
   }),
 )();
 
+export const checkAuthRole = createAction(
+  'WORKSPACE_PROJECTS_PERSONAL_FILE__CHECK_AUTH_ROLE',
+  (params: AuthorizeQueryParams, cb?: (role: number) => void) => ({
+    params,
+    cb,
+  }),
+)();
+
 export const updateAuthDrawerVisible = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_FILE__UPDATE_AUTH_DRAWER_VISIBLE',
   (visible = false, editFile?: File) => ({
@@ -127,7 +137,7 @@ export const deleteAuthUser = createAction(
 
 export const fetchUserList = createAction(
   'WORKSPACE_PROJECTS_PERSONAL_FILE__FETCH_USER_LIST',
-  (params: AuthorizeUserFetchParams, cb?: () => void) => ({
+  (params: AuthorizeUserFetchParams, cb?: (userList) => void) => ({
     params,
     cb,
   }),

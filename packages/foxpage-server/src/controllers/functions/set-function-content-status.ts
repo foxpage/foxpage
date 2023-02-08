@@ -13,6 +13,7 @@ import { AppContentStatusReq, ContentDetailRes } from '../../types/validates/con
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to contents/set-type-item-content-status.ts
 @JsonController('functions')
 export class SetFunctionContentStatus extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class SetFunctionContentStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/content-status')
+  @Put('/content-status-migrations')
   @OpenAPI({
     summary: i18n.sw.setFunctionContentStatus,
     description: '',

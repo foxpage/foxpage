@@ -7,6 +7,7 @@ import { createLogger } from '@foxpage/foxpage-shared';
 import { config, i18n } from '../../app.config';
 import { LOGGER_LEVEL, PRE, RESPONSE_LEVEL } from '../../config/constant';
 import * as Service from '../services';
+import metric from '../third-parties/metric';
 import { FoxCtx } from '../types/index-types';
 import { generationId } from '../utils/tools';
 
@@ -15,7 +16,10 @@ const logger = createLogger('server');
 @Middleware({ type: 'before' })
 export class LoggerMiddleware implements KoaMiddlewareInterface {
   async use(ctx: FoxCtx, next: (err?: any) => Promise<any>): Promise<any> {
-    const params = !_.isEmpty(ctx.request.body) ? ctx.request.body : ctx.request.query;
+    const params = (!_.isEmpty(ctx.request.body) ? ctx.request.body : ctx.request.query) as unknown as Record<
+      string,
+      any
+    >;
     ctx.operations = [];
     ctx.transactions = [];
     ctx.logAttr = {
@@ -66,6 +70,14 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
       ctx.log.response = ctx.body;
       ctx.log.tooks = ctx.log.responseTime - ctx.log.requestTime;
 
+      metric.request(
+        ctx.log.request.method,
+        ctx.log.request.path,
+        ctx.log.tooks,
+        params.applicationId || '',
+        (<any>ctx.body).code || 0,
+      );
+
       (<any>ctx.body).code === RESPONSE_LEVEL.SUCCESS && Service.log.saveChangeLogs(ctx);
 
       // Save log to db
@@ -106,7 +118,7 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
             rss +
             ', tooks: ' +
             ctx.log.tooks +
-            ', status: ' +
+            'ms, status: ' +
             (<any>ctx.body).code,
         );
       }

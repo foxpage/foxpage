@@ -46,7 +46,7 @@ export class StoreGoodsService extends BaseService<StoreGoods> {
 
     // Get page and template goods by project
     if (params.type && [TYPE.PAGE, TYPE.TEMPLATE].indexOf(params.type) !== -1) {
-      const match: any = { 'details.projectId': { $exists: true }, type: params.type };
+      const match: any = { 'details.projectId': { $exists: true }, type: params.type, status: 1 };
       if (params.appIds && params.appIds.length > 0) {
         match['details.applicationId'] = { $in: params.appIds };
       }
@@ -81,7 +81,7 @@ export class StoreGoodsService extends BaseService<StoreGoods> {
    * @returns Promise
    */
   async getDetailByAppFileId(applicationId: string, fileId: string): Promise<StoreGoods> {
-    return this.getDetail({ 'details.id': fileId, 'details.applicationId': applicationId });
+    return this.getDetail({ 'details.id': fileId, 'details.applicationId': applicationId, deleted: false });
   }
 
   /**
@@ -95,6 +95,7 @@ export class StoreGoodsService extends BaseService<StoreGoods> {
     const goodsList = await this.find({
       'details.applicationId': applicationId,
       'details.id': { $in: fileIds },
+      deleted: false,
     });
 
     return _.map(goodsList, (goods) => {

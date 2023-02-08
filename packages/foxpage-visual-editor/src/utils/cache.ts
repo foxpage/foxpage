@@ -5,9 +5,9 @@ export const cacheData = (data: Record<string, any>) => {
 };
 
 export const getCache = () => {
-  const str = localStorage.getItem(FOXPAGE_VISUAL_EDITOR) || '{}';
+  const data = JSON.parse(localStorage.getItem(FOXPAGE_VISUAL_EDITOR) || '{}');
   try {
-    return JSON.parse(str);
+    return data;
   } catch {
     console.error('Parse FOXPAGE_VISUAL_EDITOR cache failed.');
     return {};

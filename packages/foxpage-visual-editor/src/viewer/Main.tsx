@@ -13,7 +13,7 @@ interface IProps {
 }
 
 export const MainView = (props: IProps) => {
-  const { config, structure, components, events } = useContext(FoxContext);
+  const { config, renderDSL: structure, components, events } = useContext(FoxContext);
   const { zoom, events: EditorEvents } = useContext(EditorContext);
   const { onPlaceholder } = props;
   const { onDropComponent, onFrameLoaded } = events;

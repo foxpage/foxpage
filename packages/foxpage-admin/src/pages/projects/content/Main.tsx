@@ -3,19 +3,35 @@ import { connect } from 'react-redux';
 
 import { RootState } from 'typesafe-actions';
 
+import { fetchApplicationInfo } from '@/actions/applications/detail/settings/application';
 import * as ACTIONS from '@/actions/projects/content';
+import {
+  checkAuthRole,
+  deleteFile,
+  openEditDrawer,
+  saveFile,
+  updateEditFileValue,
+} from '@/actions/projects/file';
 import { ProjectContent } from '@/components/index';
 
 const mapStateToProps = (store: RootState) => ({
-  fileDetail: store.projects.content.fileDetail,
+  applicationInfo: store.applications.detail.settings.app.application,
   loading: store.projects.content.loading,
-  saveLoading: store.projects.content.saveLoading,
   contentList: store.projects.content.contents,
   extendRecord: store.projects.content.extendRecord,
+  fileDetail: store.projects.content.fileDetail,
+  folder: store.projects.content.folder,
+  saveLoading: store.projects.content.saveLoading,
   drawerOpen: store.projects.content.editorDrawerOpen,
   editContent: store.projects.content.editContent,
-  baseContents: store.projects.content.baseContents,
   locales: store.projects.content.locales,
+  baseContents: store.projects.content.baseContents,
+  authDrawerOpen: store.projects.content.authListDrawerVisible,
+  authLoading: store.projects.content.authListLoading,
+  authList: store.projects.content.authList,
+  fileDrawerOpen: store.projects.file.drawerOpen,
+  editFile: store.projects.file.editFile,
+  fileSaveLoading: store.projects.file.saveLoading,
 });
 
 const mapDispatchToProps = {
@@ -31,22 +47,44 @@ const mapDispatchToProps = {
   updateContentValue: ACTIONS.updateEditContentValue,
   updateContentTags: ACTIONS.updateEditContentTags,
   saveContent: ACTIONS.saveContent,
+  offlineContent: ACTIONS.offlineContent,
+  copyContent: ACTIONS.copyContent,
+  saveAsBaseContent: ACTIONS.saveAsBaseContent,
   fetchLocales: ACTIONS.fetchLocales,
+  openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
+  fetchAuthList: ACTIONS.fetchAuthList,
+  fetchUserList: ACTIONS.fetchUserList,
+  saveUser: ACTIONS.saveAuthUser,
+  deleteUser: ACTIONS.deleteAuthUser,
+  checkAuthRole,
+  deleteFile,
+  saveFile,
+  openEditDrawer,
+  updateEditFileValue,
+  fetchApplicationInfo,
 };
 
 type ProjectContentType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Content: React.FC<ProjectContentType> = (props) => {
   const {
-    fileDetail,
-    loading,
-    saveLoading,
+    applicationInfo,
     contentList,
+    loading,
+    fileDetail,
+    folder,
+    saveLoading,
     extendRecord,
     drawerOpen,
     editContent,
     baseContents,
     locales,
+    editFile,
+    authDrawerOpen,
+    authLoading,
+    authList,
+    fileDrawerOpen,
+    fileSaveLoading,
     clearAll,
     fetchList,
     fetchFileDetail,
@@ -59,7 +97,21 @@ const Content: React.FC<ProjectContentType> = (props) => {
     updateContentValue,
     updateContentTags,
     saveContent,
+    offlineContent,
+    copyContent,
+    saveAsBaseContent,
     deleteContent,
+    openAuthDrawer,
+    checkAuthRole,
+    fetchAuthList,
+    fetchUserList,
+    saveUser,
+    deleteUser,
+    deleteFile,
+    saveFile,
+    openEditDrawer,
+    updateEditFileValue,
+    fetchApplicationInfo,
   } = props;
 
   useEffect(() => {
@@ -71,15 +123,23 @@ const Content: React.FC<ProjectContentType> = (props) => {
   return (
     <ProjectContent
       type="projects"
-      fileDetail={fileDetail}
+      applicationInfo={applicationInfo}
       loading={loading}
       saveLoading={saveLoading}
       contentList={contentList}
       extendRecord={extendRecord}
       drawerOpen={drawerOpen}
+      fileDetail={fileDetail}
+      folderDetail={folder?.[0] || {}}
       editContent={editContent}
       baseContents={baseContents}
       locales={locales}
+      authDrawerOpen={authDrawerOpen}
+      authLoading={authLoading}
+      authList={authList}
+      editFile={editFile}
+      fileDrawerOpen={fileDrawerOpen}
+      fileSaveLoading={fileSaveLoading}
       fetchList={fetchList}
       fetchFileDetail={fetchFileDetail}
       fetchParentFiles={fetchParentFiles}
@@ -91,7 +151,21 @@ const Content: React.FC<ProjectContentType> = (props) => {
       updateContentValue={updateContentValue}
       updateContentTags={updateContentTags}
       saveContent={saveContent}
+      offlineContent={offlineContent}
+      copyContent={copyContent}
+      saveAsBaseContent={saveAsBaseContent}
       deleteContent={deleteContent}
+      openAuthDrawer={openAuthDrawer}
+      checkAuthRole={checkAuthRole}
+      fetchAuthList={fetchAuthList}
+      fetchUserList={fetchUserList}
+      saveUser={saveUser}
+      deleteUser={deleteUser}
+      deleteFile={deleteFile}
+      saveFile={saveFile}
+      updateFile={openEditDrawer}
+      updateEditFile={updateEditFileValue}
+      fetchApplicationInfo={fetchApplicationInfo}
     />
   );
 };

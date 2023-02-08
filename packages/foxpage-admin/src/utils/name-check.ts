@@ -1,6 +1,6 @@
 import { message } from 'antd';
 
-import { keywordReg,nameRuleReg } from '@/constants/build';
+import { keywordReg, nameRuleReg } from '@/constants/build';
 import { getBusinessI18n } from '@/foxI18n/index';
 
 export const nameErrorCheck = (name?: string) => {

@@ -51,12 +51,12 @@ export class AddAuthorizeDetail extends BaseController {
 
       // check exist data
       const [existTargets, typeRelation] = await Promise.all([
-          this.service.auth.find({
+        this.service.auth.find({
           type: params.type,
           typeId: params.typeId,
           targetId: { $in: params.targetIds },
         }),
-        this.service.auth.getTargetRelation(params.type, [params.typeId])
+        this.service.auth.getTargetRelation(params.type, [params.typeId]),
       ]);
 
       const authTargetIds = _.map(existTargets, 'targetId');

@@ -2,24 +2,27 @@ import { message } from 'antd';
 import Axios from 'axios';
 
 import { PageParseOption, PARSE_PAGE_PATH, parsePage } from '@foxpage/foxpage-js-sdk';
-import { Page, RelationInfo, RenderAppInfo } from '@foxpage/foxpage-types';
+import { FPFile, Page, RelationInfo, RenderAppInfo } from '@foxpage/foxpage-types';
 
 import { getBusinessI18n } from '@/foxI18n/index';
-import { Application, PageContent } from '@/types/index';
+import { Application, File, PageContent } from '@/types/index';
 
 export type ParseOptions = {
   application: Application;
   locale?: string;
+  file: File;
+  parseInLocal?: boolean; // local(client) parse
 };
 
 const parsePageInServer = async (page: Page, opt: PageParseOption, host: string) => {
-  const url = `${PARSE_PAGE_PATH}?&host=${host}&locale=${opt.locale}`;
+  const url = `${PARSE_PAGE_PATH}?host=${host}&locale=${opt.locale}`;
   const result = await Axios.post(url, {
     page,
     opt: {
       appId: opt.appInfo.appId,
       relationInfo: opt.relationInfo,
       locale: opt.locale,
+      file: opt.file,
     },
   });
   return result;
@@ -33,7 +36,7 @@ const parsePageInServer = async (page: Page, opt: PageParseOption, host: string)
  */
 export const parse = async (data: PageContent, opt: ParseOptions): Promise<PageContent | null> => {
   const { content, relations = {} } = data;
-  const { application, locale = 'en-US' } = opt;
+  const { application, locale = 'en-US', file, parseInLocal = true } = opt;
 
   const appInfo = {
     appId: application.id,
@@ -48,6 +51,20 @@ export const parse = async (data: PageContent, opt: ParseOptions): Promise<PageC
     functions: relations.functions || [], //FPFunction[]
   };
 
+  const parseOpt = {
+    appInfo,
+    relationInfo: relationInfo as unknown as RelationInfo,
+    locale,
+    file: file as unknown as FPFile,
+  };
+
+  // local parse
+  if (parseInLocal) {
+    const result = await parsePage(content as unknown as Page, parseOpt);
+    return { ...data, content: { ...content, ...result.page } } as PageContent;
+  }
+
+  // remote parse
   try {
     // @ts-ignore
     if (APP_CONFIG.env === 'dev') {
@@ -59,12 +76,8 @@ export const parse = async (data: PageContent, opt: ParseOptions): Promise<PageC
       throw new Error('no host');
     }
     const result = (await parsePageInServer(
-      (content as unknown) as Page,
-      {
-        appInfo,
-        relationInfo: (relationInfo as unknown) as RelationInfo,
-        locale,
-      },
+      content as unknown as Page,
+      parseOpt,
       `${host}/${application.slug}`,
     )) as Record<string, any>;
 
@@ -84,11 +97,9 @@ export const parse = async (data: PageContent, opt: ParseOptions): Promise<PageC
 
     return null;
   } catch (e) {
-    // client(js) parse
-    const result = await parsePage((content as unknown) as Page, {
-      appInfo,
-      relationInfo: (relationInfo as unknown) as RelationInfo,
-    });
+    console.error('parse page in server failed:', e);
+    // local parse
+    const result = await parsePage(content as unknown as Page, parseOpt);
     return { ...data, content: { ...content, ...result.page } } as PageContent;
   }
 };

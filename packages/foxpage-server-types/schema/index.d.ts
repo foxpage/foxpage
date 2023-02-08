@@ -155,13 +155,21 @@ export interface TypeFileDSL {
   relation: Record<string, Record<string, string>>;
 }
 
-// TODO content type needs to be defined Content version
+export interface PicType {
+  url: string;
+  type: string;
+  sort?: number;
+}
+
 export interface CommonContentVersion extends CommonFields {
   contentId: string;
   version: string;
   versionNumber: number;
   dslVersion?: string;
   status?: ContentStatus;
+  pictures?: PicType[];
+  operator?: Record<string, any>;
+  contentUpdateTime?: Date | string;
 }
 
 export interface ContentVersion extends CommonContentVersion {
@@ -195,7 +203,10 @@ export interface Content extends CommonFields {
   title: string;
   tags: Tag[];
   fileId: string;
+  applicationId: string;
   liveVersionNumber: number;
+  liveVersionId?: string;
+  type?: string;
 }
 
 export type FilePageType = 'page';
@@ -232,6 +243,7 @@ export interface File extends CommonFields {
   folderId: string;
   type: FileTypes;
   suffix: string;
+  subType?: string;
   componentType?: string;
   extension?: Record<string, any>;
   intro?: string;
@@ -362,6 +374,16 @@ export interface Log {
   createTime?: Date;
   updateTime?: Date;
   deleted: boolean;
+}
+
+export interface ContentLog {
+  id: string;
+  action: string;
+  category: Record<string, string>;
+  content: { id: string; type: string; content: any }[];
+  creator: string;
+  createTime?: Date;
+  updateTime?: Date;
 }
 
 // Log operation type

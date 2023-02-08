@@ -147,3 +147,14 @@ export const updateCloudSyncDrawerLoadingStatus = createAction(
     open,
   }),
 )();
+
+// deps
+export const fetchComponentUsed = createAction(
+  'APPLICATION_PACKAGES_DETAIL__FETCH_COMPONENT_USED',
+  () => ({}),
+)();
+
+export const pushComponentUsed = createAction(
+  'APPLICATION_PACKAGES_DETAIL__PUSH_COMPONENT_USED',
+  (list: any[]) => ({ list }),
+)();

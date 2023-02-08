@@ -99,7 +99,7 @@ function CoverUpload(props) {
           <div className="ant-upload-text">Upload</div>
         </div>
       </Upload>
-      <Modal visible={previewVisible} width="1080px" footer={null} onCancel={handleCancel}>
+      <Modal open={previewVisible} width="1080px" footer={null} onCancel={handleCancel}>
         <img alt="example" style={{ width: '100%' }} src={previewImage} />
       </Modal>
     </Container>

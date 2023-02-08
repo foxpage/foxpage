@@ -18,10 +18,10 @@ const Tools = (props: IProps) => {
   let timer;
   
   const handleUpdateTime = () => {
-    if (timer) clearTimeout(timer)
+    if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       setTime(new Date().getTime());
-      timer = null
+      timer = null;
     }, 100);
   };
 

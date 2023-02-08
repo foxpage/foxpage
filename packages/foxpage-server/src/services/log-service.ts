@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import _ from 'lodash';
 
 import { Content, Log } from '@foxpage/foxpage-server-types';
@@ -143,19 +144,20 @@ export class LogService extends BaseService<Log> {
   async getChangesContentList(params: ContentChange): Promise<Record<string, any>> {
     // Get the log data of the specified action
     const changeList: any[] = await Model.log.find({
-      createTime: { $gte: new Date(new Date(params.timestamp)) },
+      createTime: { $gt: new Date(new Date(params.timestamp)) },
       action: {
         $in: [
           LOG.LIVE,
           LOG.FILE_REMOVE,
           LOG.FILE_TAG,
+          LOG.FILE_EXTENSION,
           LOG.CONTENT_TAG,
           LOG.CONTENT_REMOVE,
+          LOG.CONTENT_OFFLINE,
           LOG.META_UPDATE,
         ] as any[],
       }, // Get the data set to live, tags updated data
       $or: [{ 'category.id': params.applicationId }, { 'category.applicationId': params.applicationId }],
-      // 'category.type': LOG.CATEGORY_APPLICATION,
       'content.id': { $exists: true },
     });
 
@@ -164,46 +166,51 @@ export class LogService extends BaseService<Log> {
     let contentIds: string[] = [];
     let contentIdTypes: Record<string, { id: string; type: string }> = {};
     let logContentId = '';
-    changeList.forEach((log) => {
+    let createTimestamps: number[] = [];
+    for (const log of changeList) {
       logContentId = log.content.id;
+      createTimestamps.push(dayjs(log.createTime).valueOf());
+      if (contentIds.indexOf(logContentId) !== -1 || fileIds.indexOf(logContentId) !== -1) {
+        continue;
+      }
+
       if (this.checkDataIdType(logContentId).type === TYPE.VERSION) {
         logContentId = log.content.contentId;
       }
 
       contentIdTypes[[log.action, log.content.id].join('_')] = { id: logContentId, type: log.action };
-      if ([LOG.LIVE, LOG.CONTENT_TAG, LOG.CONTENT_REMOVE, LOG.META_UPDATE].indexOf(log.action) !== -1) {
+      if (
+        [LOG.LIVE, LOG.CONTENT_TAG, LOG.CONTENT_REMOVE, LOG.META_UPDATE, LOG.CONTENT_OFFLINE].indexOf(
+          log.action,
+        ) !== -1
+      ) {
         contentIds.push(logContentId);
-      } else if ([LOG.FILE_TAG, LOG.FILE_REMOVE].indexOf(log.action) !== -1) {
+      } else if ([LOG.FILE_TAG, LOG.FILE_REMOVE, LOG.FILE_EXTENSION].indexOf(log.action) !== -1) {
         fileIds.push(logContentId);
       }
-    });
+    }
 
     // Get content containing fileId
     const contentList = await Service.content.info.getDetailByIds(contentIds);
     const contentObject = _.keyBy(contentList, 'id');
 
-    // Get file information
-    fileIds = fileIds.concat(_.map(contentList, 'fileId'));
-    const fileTypeInfo = await Service.file.info.getDetailByIds(fileIds);
-    const fileTypeObject = _.keyBy(fileTypeInfo, 'id');
-
     // Set the return structure
-    let [logFileId, logItemType, logTypeName] = ['', '', ''];
+    let [logItemType, logTypeName] = ['', ''];
     let logChangeObject: Record<string, any> = {};
     for (const logType in contentIdTypes) {
       const logItem = contentIdTypes[logType];
-      if ([LOG.FILE_TAG, LOG.FILE_REMOVE].indexOf(logItem.type) !== -1) {
-        logFileId = logItem.id;
-      } else {
-        logFileId = contentObject[logItem.id]?.fileId || '';
-      }
+      const contentType = contentObject[logItem.id]?.type || '';
 
-      [LOG.FILE_TAG, LOG.FILE_REMOVE].indexOf(logItem.type) !== -1 && (logTypeName = 'file');
-      logItem.type === LOG.CONTENT_TAG && (logTypeName = 'tag');
-      logItem.type === LOG.CONTENT_REMOVE && (logTypeName = fileTypeObject[logFileId]?.type);
-      logItem.type === LOG.LIVE && (logTypeName = fileTypeObject[logFileId]?.type);
-      if (logItem.type === LOG.FILE_REMOVE && fileTypeObject[logFileId]?.type === TYPE.COMPONENT) {
-        logTypeName = fileTypeObject[logFileId]?.type;
+      if ([LOG.FILE_TAG, LOG.FILE_REMOVE, LOG.FILE_EXTENSION].indexOf(logItem.type) !== -1) {
+        logTypeName = TYPE.FILE;
+      } else if (logItem.type === LOG.CONTENT_TAG) {
+        logTypeName = TYPE.TAG;
+      } else if (
+        [LOG.CONTENT_REMOVE, LOG.CONTENT_OFFLINE, LOG.LIVE, LOG.FILE_REMOVE, TYPE.COMPONENT].indexOf(
+          logItem.type,
+        ) !== -1
+      ) {
+        logTypeName = contentType;
       }
 
       // Does not return invalid file types or editor components
@@ -212,13 +219,20 @@ export class LogService extends BaseService<Log> {
       }
 
       !logChangeObject[logTypeName] && (logChangeObject[logTypeName] = { updates: [], removes: [] });
-
       logItemType =
-        [LOG.FILE_REMOVE, LOG.CONTENT_REMOVE].indexOf(logItem.type) !== -1 ? 'removes' : 'updates';
+        [LOG.FILE_REMOVE, LOG.CONTENT_REMOVE, LOG.CONTENT_OFFLINE].indexOf(logItem.type) !== -1
+          ? 'removes'
+          : 'updates';
       logChangeObject[logTypeName][logItemType].push(logItem.id);
+
+      // add tag update when type is content remove
+      if ([LOG.CONTENT_OFFLINE, LOG.CONTENT_REMOVE].indexOf(logItem.type) !== -1) {
+        !logChangeObject[TYPE.TAG] && (logChangeObject[TYPE.TAG] = { updates: [], removes: [] });
+        logChangeObject[TYPE.TAG]['removes'].push(logItem.id);
+      }
     }
 
-    return logChangeObject;
+    return { logChangeObject, lastDataTime: _.max(createTimestamps) };
   }
 
   /**

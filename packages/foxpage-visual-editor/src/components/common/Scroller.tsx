@@ -1,17 +1,8 @@
-import styled from 'styled-components';
+import React from 'react';
 
-export const Scrollbar = styled.div`
-  overflow: auto;
-  ::-webkit-scrollbar-track {
-    background-color: #f5f5f5;
-  }
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.15);
-    background-color: #dbdbdb;
-    border-radius: 8px;
-  }
-`;
+export const Scrollbar = ({ children, ...rest }) => (
+  <div className="scroll-bar relative overflow-y-auto min-h-0 flex-1" {...rest}>
+    {/* Do not delete flex-1 class here! Never! */}
+    {children}
+  </div>
+);

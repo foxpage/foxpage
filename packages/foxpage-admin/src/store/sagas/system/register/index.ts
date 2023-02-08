@@ -1,4 +1,3 @@
-import { message } from 'antd';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
@@ -7,6 +6,7 @@ import * as API from '@/apis/system/register/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { RegisterActionType } from '@/reducers/system/register';
 import { RegisterParams } from '@/types/user';
+import { errorToast } from '@/utils/error-toast';
 
 export function* handleRegister(action: RegisterActionType) {
   yield put(ACTIONS.updateLoading(true));
@@ -23,7 +23,7 @@ export function* handleRegister(action: RegisterActionType) {
       login: { registerFailed },
     } = getBusinessI18n();
 
-    message.error(registerFailed);
+    errorToast(res, registerFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));

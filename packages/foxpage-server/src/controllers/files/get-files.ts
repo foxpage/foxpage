@@ -6,6 +6,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
 import { METHOD } from '../../../config/constant';
+import metric from '../../third-parties/metric';
 import { FileWithOnline } from '../../types/file-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { StoreFileStatus } from '../../types/store-types';
@@ -42,9 +43,24 @@ export class GetFileList extends BaseController {
         this.service.store.goods.getAppFileStatus(params.applicationId, params.ids),
       ]);
 
+      // Get reference file info
+      let referenceFileIds: string[] = [];
+      let referenceFileMap: Record<string, string> = {};
+      fileList.forEach((file) => {
+        const referenceTag = this.service.content.tag.getTagsByKeys(file.tags as any[], ['reference']);
+        if (referenceTag['reference']?.id) {
+          referenceFileIds.push(referenceTag['reference'].id);
+          referenceFileMap[file.id] = referenceTag['reference'].id;
+        }
+      });
+
       const userIds = _.map(fileList, 'creator');
       const goodsStatusObject: Record<string, StoreFileStatus> = _.keyBy(goodsStatusList, 'id');
-      const userBaseObject = await this.service.user.getUserBaseObjectByIds(userIds);
+      const [userBaseObject, referenceFileList] = await Promise.all([
+        this.service.user.getUserBaseObjectByIds(userIds),
+        this.service.file.list.getDetailByIds(referenceFileIds),
+      ]);
+      const referenceFileObject = _.keyBy(referenceFileList, 'id');
 
       let fileWithOnlineList: FileWithOnline[] = [];
       fileList.forEach((file) => {
@@ -53,11 +69,16 @@ export class GetFileList extends BaseController {
             {
               online: goodsStatusObject?.[file.id]?.status ? true : false,
               creator: userBaseObject[file.creator] || {},
+              componentType:
+                referenceFileObject[referenceFileMap[file.id]]?.componentType || file.componentType || '',
             },
             _.omit(file, 'creator'),
           ) as FileWithOnline,
         );
       });
+
+      // send metric
+      fileWithOnlineList.length === 0 && metric.empty(ctx.request.url);
 
       return Response.success(fileWithOnlineList || [], 1170301);
     } catch (err) {

@@ -11,6 +11,7 @@ let params = {
   applicationId: Data.app.id,
   id: Data.file.id,
   intro: '',
+  componentType: 'react.component',
 };
 
 beforeEach(() => {
@@ -22,6 +23,7 @@ beforeEach(() => {
     applicationId: Data.app.id,
     id: Data.file.id,
     intro: '',
+    componentType: 'react.component',
   };
 });
 

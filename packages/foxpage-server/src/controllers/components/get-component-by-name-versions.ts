@@ -7,7 +7,8 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Component } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD } from '../../../config/constant';
+import { METHOD, TYPE } from '../../../config/constant';
+import metric from '../../third-parties/metric';
 import { NameVersionPackage } from '../../types/content-types';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppComponentsRes, AppNameVersionPackagesReq } from '../../types/validates/component-validate-types';
@@ -52,34 +53,69 @@ export class GetAppComponentListByNameVersion extends BaseController {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.GET });
 
       // Get the information of the specified component and the specified version
+      let contentPackageList: NameVersionPackage[] =
+        await this.service.content.component.getAppComponentByNameVersion({
+          applicationId: params.applicationId,
+          contentNameVersion: params.nameVersions,
+          type: params.type || [],
+        });
+      let contentIds: string[] = [];
+      let liveContentIds: string[] = [];
+      let contentObject: Record<string, any> = {};
       let contentList: NameVersionPackage[] = [];
-      contentList = await this.service.content.component.getAppComponentByNameVersion({
-        applicationId: params.applicationId,
-        contentNameVersion: params.nameVersions,
-        type: params.type || [],
+
+      contentPackageList.map((content) => {
+        if (content.package?.id) {
+          contentIds.push(content.package.id);
+          contentObject[content.package.id] = content.package;
+          contentList.push(content);
+        } else if ((content.package as any)?.contentId) {
+          contentIds.push((content.package as any)?.contentI);
+          liveContentIds.push((content.package as any)?.contentId);
+        }
       });
 
-      let contentPackags: Component[] = [];
+      if (liveContentIds.length > 0) {
+        const liveContentList = await this.service.content.component.getComponentVersionLiveDetails({
+          applicationId: params.applicationId,
+          type: TYPE.COMPONENT,
+          contentIds: liveContentIds as string[],
+        });
+        contentList = contentList.concat(liveContentList);
+      }
+
+      let contentPackages: Component[] = [];
       for (const content of <any[]>contentList) {
-        if (params.type && params.type.length > 0 && params.type.indexOf(content.package?.type) === -1) {
+        if (
+          params.type &&
+          params.type.length > 0 &&
+          params.type.indexOf(contentObject[content.package?.id]?.type) === -1
+        ) {
           continue;
         }
 
-        contentPackags.push(content?.package as Component);
+        contentPackages.push(content?.package as Component);
       }
 
-      let componentIds = this.service.content.component.getComponentResourceIds(contentPackags);
-      const dependenciesIdVersions = this.service.component.getComponentEditorAndDependends(contentPackags);
-      const dependencies = await this.service.component.getComponentDetailByIdVersion(dependenciesIdVersions);
+      let componentIds = this.service.content.component.getComponentResourceIds(contentPackages);
+      const dependenciesIdVersions = this.service.component.getComponentEditorAndDependence(contentPackages, [
+        'dependencies',
+      ]);
+      const [dependencies, contentData] = await Promise.all([
+        this.service.component.getComponentDetailByIdVersion(dependenciesIdVersions),
+        this.service.content.list.getDetailByIds(contentIds),
+      ]);
+      const contentLiveIds = _.pull(_.map(contentData, 'liveVersionId'), '') as string[];
       const dependenciesList = _.toArray(dependencies);
       const dependComponentIds = this.service.content.component.getComponentResourceIds(
         _.map(dependenciesList, 'content'),
       );
       componentIds = componentIds.concat(dependComponentIds);
 
-      const [resourceObject, contentAllParents] = await Promise.all([
+      const [resourceObject, contentAllParents, contentLiveVersionList] = await Promise.all([
         this.service.content.resource.getResourceContentByIds(componentIds),
         this.service.content.list.getContentAllParents(componentIds),
+        this.service.version.list.getDetailByIds(contentLiveIds),
       ]);
 
       const [appResource, fileContentObject] = await Promise.all([
@@ -100,6 +136,7 @@ export class GetAppComponentListByNameVersion extends BaseController {
         );
       });
       const dependenceObject = _.keyBy(dependenciesList, 'contentId');
+      const contentLiveVersionObject = _.keyBy(contentLiveVersionList, 'contentId');
 
       let components: Component[] = [];
       for (const content of <any[]>contentList) {
@@ -108,12 +145,20 @@ export class GetAppComponentListByNameVersion extends BaseController {
         }
 
         // Exclude non-specified types of component data
-        if (params.type && params.type.length > 0 && params.type.indexOf(content.package?.type) === -1) {
+        if (
+          params.type &&
+          params.type.length > 0 &&
+          params.type.indexOf(contentObject[content.package?.id]?.type) === -1
+        ) {
           continue;
         }
 
         // The default setting, you need to replace it from other returned data later
-        content.package.isLive = true;
+        content.package.isLive =
+          contentObject[content.package?.id]?.version ===
+          contentLiveVersionObject[content.package?.id]?.version;
+        content.package.name = content.name || '';
+        content.package.type = contentObject[content.package?.id]?.type;
         content.package.components = [];
         content.package.resource = this.service.version.component.assignResourceToComponent(
           content?.package?.resource || {},
@@ -121,25 +166,23 @@ export class GetAppComponentListByNameVersion extends BaseController {
           { contentResource },
         );
 
-        const editorDependences = _.concat(
-          content.package.resource?.['editor-entry'] || [],
-          content.package.resource?.dependencies || [],
-        );
+        const dependencies = content.package.resource?.dependencies || [];
+        content.package.resource['editor-entry'] = [];
 
         // Attach the resource details of the dependent component to the component
-        if (editorDependences.length > 0) {
+        if (dependencies.length > 0) {
           // Append the name of the dependency to dependencies
           this.service.component.addNameToEditorAndDepends([content.package], fileContentObject);
-          for (const editorDepend of editorDependences) {
+          for (const depend of dependencies) {
             content.package.components.push(
               Object.assign(
                 {
-                  name: fileContentObject?.[editorDepend.id]?.name || '',
-                  id: editorDepend.id,
-                  versionId: dependenceObject[editorDepend.id]?.id || '',
-                  version: dependenceObject[editorDepend.id]?.version || '',
+                  name: fileContentObject?.[depend.id]?.name || '',
+                  id: depend.id,
+                  versionId: dependenceObject[depend.id]?.id || '',
+                  version: dependenceObject[depend.id]?.version || '',
                 },
-                dependenceObject[editorDepend.id]?.content || {},
+                dependenceObject[depend.id]?.content || {},
               ) as Component,
             );
           }
@@ -149,6 +192,9 @@ export class GetAppComponentListByNameVersion extends BaseController {
 
         components.push(content);
       }
+
+      // send metric
+      components.length === 0 && metric.empty(ctx.request.url, params.applicationId);
 
       return Response.success(components, 1110401);
     } catch (err) {

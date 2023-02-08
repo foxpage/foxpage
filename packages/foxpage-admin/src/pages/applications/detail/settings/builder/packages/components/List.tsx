@@ -122,7 +122,7 @@ const ComponentList = (props: IProps) => {
             title={`${global.deleteMsg} ${record?.name || ''}?`}
             disabled={record.status}
             onConfirm={() => {
-              handleDelete(record.id, record.type);
+              handleDelete(record.idx, record.type);
             }}
             okText={global.yes}
             cancelText={global.no}>
@@ -146,13 +146,13 @@ const ComponentList = (props: IProps) => {
       remove({
         applicationId,
         type,
-        fileIds: id,
+        ids: id,
       });
     }
   };
 
   const handleCommitRevoke = (record: ApplicationSettingBuilderComponent) => {
-    const { category, id, name, type, status } = record;
+    const { category, id, idx, name, type, status } = record;
     save({
       applicationId,
       type,
@@ -160,6 +160,7 @@ const ComponentList = (props: IProps) => {
         {
           category,
           id,
+          idx,
           name,
           status: !status,
         },
@@ -169,7 +170,7 @@ const ComponentList = (props: IProps) => {
 
   return (
     <Table
-      rowKey="id"
+      rowKey="idx"
       dataSource={components}
       columns={columns}
       loading={loading}

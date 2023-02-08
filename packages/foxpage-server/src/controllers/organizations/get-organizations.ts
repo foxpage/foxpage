@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 
-import _ from 'lodash';
 import { Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
@@ -33,7 +32,7 @@ export class GetOrganizationList extends BaseController {
   async index(@QueryParams() params: OrgDetailReq): Promise<ResData<OrgInfo>> {
     try {
       const orgDetail = await this.service.org.getDetailById(params.id);
-      if (!orgDetail || orgDetail.deleted) {
+      if (this.notValid(orgDetail)) {
         return Response.warning(i18n.org.invalidOrgId, 2010501);
       }
 

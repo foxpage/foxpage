@@ -14,14 +14,14 @@ export const TEMPLATE_RELATION_KEY = '__templates';
 export const FUNCTION_RELATION_KEY = '__functions';
 export const TIME_CONDITION_KEY = '__condition';
 export const CONTEXT_KEY = '__context';
-export const THIS_KEY = '$this.';
+export const THIS_KEY = '$this';
 
 const getPrefixes = (str: string, prefixStrMap: Record<string, string>) => {
   const startIdx = str.indexOf('[');
   const endIdx = str.lastIndexOf(']');
   const [prefix, ..._rest] = startIdx > -1 ? str.substring(0, startIdx).split(':') : str.split(':');
 
-  if (!(prefix.includes("'") || prefix.includes('"'))) {
+  if (!(prefix.includes('\'') || prefix.includes('"'))) {
     prefixStrMap[str] = prefix;
   }
 

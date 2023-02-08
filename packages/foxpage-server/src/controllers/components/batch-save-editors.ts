@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Content, ContentStatus, File, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { PRE, TAG, TYPE, VERSION } from '../../../config/constant';
+import { COMPONENT_TYPE, PRE, TAG, TYPE, VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { SaveEditorPackageReq } from '../../types/validates/component-validate-types';
 import { ResponseBase } from '../../types/validates/index-validate-types';
@@ -93,7 +93,7 @@ export class SaveEditorComponents extends BaseController {
             name,
             folderId: componentFolderId,
             type: TYPE.EDITOR as FileTypes,
-            componentType: editorObject[name]?.componentType || '',
+            componentType: editorObject[name]?.componentType || COMPONENT_TYPE.REACT_COMPONENT,
             tags: [{ type: TAG.RESOURCE_GROUP, resourceGroupId: editorObject[name]?.groupId || '' }],
           },
           { ctx },
@@ -103,6 +103,8 @@ export class SaveEditorComponents extends BaseController {
           {
             title: _.trim(name),
             fileId: nameFileDetail[name].id,
+            applicationId: params.applicationId,
+            type: TYPE.EDITOR,
           },
           { ctx },
         );

@@ -38,7 +38,7 @@ export class GetProjectFileList extends BaseController {
     try {
       // Check if the folder is deleted
       const folderDetail = await this.service.folder.info.getDetailById(params.id);
-      if (!folderDetail || (!params.deleted && folderDetail.deleted)) {
+      if (this.notValid(folderDetail) || (!params.deleted && folderDetail.deleted)) {
         return Response.warning(i18n.project.projectIsInvalidOrDeleted, 2040301);
       }
 

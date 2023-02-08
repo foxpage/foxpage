@@ -2,6 +2,7 @@ import React from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import Applications from '@/pages/applications';
+import Data from '@/pages/data';
 import Projects from '@/pages/projects';
 import Store from '@/pages/store';
 import Teams from '@/pages/teams';
@@ -14,6 +15,7 @@ const Internal = () => {
     <FoxPageLayout>
       <Switch>
         <Route path="/applications" component={Applications} />
+        <Route path="/data" component={Data} />
         <Route path="/projects" component={Projects} />
         <Route path="/store" component={Store} />
         <Route path="/teams" component={Teams} />

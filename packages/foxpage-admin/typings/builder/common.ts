@@ -6,6 +6,7 @@ export interface VisualEditorConfig {
     locale?: string;
     visualFrameSrc?: string;
     mockable?: boolean;
+    readOnly?: boolean;
   };
   app?: {
     appId?: string;

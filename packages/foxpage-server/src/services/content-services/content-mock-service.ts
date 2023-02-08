@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { ContentVersion, DSL } from '@foxpage/foxpage-server-types';
 
 import { ACTION, VERSION } from '../../../config/constant';
-import { ContentLiveVersion, ContentVersionNumber } from '../../types/content-types';
+import { ContentVersionNumber } from '../../types/content-types';
 // import * as Model from '../models';
 import * as Service from '../index';
 
@@ -110,15 +110,13 @@ export class ContentMockService {
       contentMockMap[contentExtension[contentId].mockId] = contentId;
     }
 
-    const mockLiveInfo: ContentLiveVersion[] = [];
-    const mockContentList = await Service.content.info.getDetailByIds(mockIds);
-    mockContentList.forEach((content) => {
-      if (content.liveVersionNumber > 0) {
-        mockLiveInfo.push({ id: content.id, liveVersionNumber: content.liveVersionNumber });
-      }
-    });
+    const mockContentList = await Service.content.list.getDetailByIds(mockIds);
+    const contentLiveIds = _.map(
+      _.filter(mockContentList, content => content.liveVersionId),
+      'liveVersionId'
+    );
 
-    const liveList = await Service.version.list.getContentInfoByIdAndNumber(mockLiveInfo);
+    const liveList = await Service.version.list.getContentInfoByIdAndNumber(contentLiveIds);
     const liveObject = _.keyBy(liveList, 'contentId');
     const mockObject: Record<string, any> = {};
     for (const contentId of contentIds) {

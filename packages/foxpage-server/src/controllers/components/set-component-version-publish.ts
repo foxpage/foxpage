@@ -44,8 +44,6 @@ export class SetComponentVersionPublishStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4111601);
       }
 
-      // TODO Need to check whether the value of status is within the specified range
-
       // Set publishing status
       const result = await this.service.version.live.setVersionPublishStatus(params, { ctx });
 

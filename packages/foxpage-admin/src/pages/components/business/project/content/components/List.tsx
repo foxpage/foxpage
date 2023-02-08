@@ -1,24 +1,35 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-import { EditOutlined, LinkOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Popover, Table, Tag, Tooltip } from 'antd';
+import {
+  BranchesOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  LinkOutlined,
+  SaveOutlined,
+  UserOutlined,
+  VerticalAlignBottomOutlined,
+} from '@ant-design/icons';
+import { Button, Dropdown, Menu, Modal, Popconfirm, Popover, Select, Table, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 
-import {
-  BasicTemRing,
-  DeleteButton,
-  LocaleTag,
-  LocaleView,
-  Name,
-  NameContainer,
-  Ring,
-  VLine,
-} from '@/components/index';
+import { BasicTemRing, LocaleTag, LocaleView, Name, NameContainer, Ring, VLine } from '@/components/index';
 import { FileType } from '@/constants/index';
+import VersionList from '@/pages/applications/detail/file/pages/content/versions';
+import UrlWithQRcode from '@/pages/components/common/QRcodeUrl';
 import { GlobalContext } from '@/pages/system';
-import { ContentEntity, File, ProjectContentDeleteParams } from '@/types/index';
-import { getLocationIfo, periodFormat } from '@/utils/index';
+import {
+  ContentEntity,
+  File,
+  FileTag,
+  ProjectContentCopyParams,
+  ProjectContentDeleteParams,
+  ProjectContentOfflineParams,
+  ProjectContentSaveAsBaseParams,
+} from '@/types/index';
+import { getLocationIfo, objectEmptyCheck, periodFormat } from '@/utils/index';
 
 const IdLabel = styled.div`
   max-width: 300px;
@@ -26,8 +37,18 @@ const IdLabel = styled.div`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.75);
+  color: rgba(0, 0, 0, 0.25);
   margin-top: 8px;
+`;
+
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Label = styled.div`
+  width: 70px;
 `;
 
 interface ProjectContentList {
@@ -36,9 +57,13 @@ interface ProjectContentList {
   contentList: ContentEntity[];
   extendRecord: Record<string, string[]>;
   fileDetail: File;
+  locales: string[];
   openDrawer: (open: boolean, editContent?: Partial<ContentEntity>) => void;
   deleteContent: (params: ProjectContentDeleteParams) => void;
-  openAuthDrawer?: (visible: boolean, editContent?: ContentEntity) => void;
+  copyContent?: (params: ProjectContentCopyParams, cb?: () => void) => void;
+  saveAsBaseContent?: (params: ProjectContentSaveAsBaseParams) => void;
+  offlineContent?: (params: ProjectContentOfflineParams) => void;
+  openAuthDrawer?: (type: string, id?: string) => void;
 }
 
 const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentList) => {
@@ -48,25 +73,128 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
     fileDetail,
     contentList,
     extendRecord,
+    locales,
     deleteContent,
+    copyContent,
+    saveAsBaseContent,
+    offlineContent,
     openDrawer,
     openAuthDrawer,
   } = props;
+  const [selectContentId, setSelectContentId] = useState('');
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
+  const [targetContentLocales, setTargetContentLocales] = useState([]);
+  const [versionsModalData, setVersionsModalData] = useState<{
+    visible: boolean;
+    contentId: string;
+    contentName: string;
+    fileType: string;
+  }>({
+    contentId: '',
+    visible: false,
+    contentName: '',
+    fileType: '',
+  });
 
   // url search params
   const { pathname, search, applicationId, fileId } = getLocationIfo(useLocation());
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, content, version } = locale.business;
+  const { global, content, version, history } = locale.business;
 
-  const handleAuthorize = (open: boolean, content: ContentEntity) => {
+  const localeOptions = useMemo(() => {
+    return locales
+      ? locales.map((locale) => ({
+          label: locale,
+          value: locale,
+        }))
+      : [];
+  }, [locales]);
+
+  const generateBaseOfflineDisabled = useCallback(
+    (content) => {
+      let disabled = false;
+      if (fileDetail?.type === FileType.page) {
+        if (content && content?.isBase) {
+          const childrenIdList = extendRecord?.[content.id] || [];
+          if (!objectEmptyCheck(childrenIdList)) {
+            const childrenList =
+              contentList && contentList.filter((content) => childrenIdList.includes(content.id));
+            const childPublished = childrenList && childrenList.find((child) => !!child.version);
+
+            if (childPublished) disabled = true;
+          }
+        }
+      }
+
+      return disabled;
+    },
+    [fileDetail, extendRecord, contentList],
+  );
+
+  const handleAuthorize = (id: string) => {
     if (typeof openAuthDrawer === 'function') {
-      openAuthDrawer(open, content);
+      openAuthDrawer('content', id);
     }
   };
 
-  const authorizeAdmin = useMemo(() => type === 'personal' || type === 'application', [type]);
+  const handleCopy = () => {
+    if (typeof copyContent === 'function' && applicationId && !objectEmptyCheck(targetContentLocales)) {
+      copyContent(
+        {
+          applicationId,
+          fileId,
+          fileType: fileDetail.type,
+          sourceContentId: selectContentId,
+          targetContentLocales: targetContentLocales.map((locale) => ({ locale })),
+        },
+        () => {
+          setCopyModalOpen(false);
+        },
+      );
+    }
+  };
+
+  const handleSaveAsBase = (contentId) => {
+    if (typeof saveAsBaseContent === 'function') {
+      saveAsBaseContent({
+        applicationId,
+        contentId,
+        fileId,
+      });
+    }
+  };
+
+  const handleOffline = (id) => {
+    if (typeof offlineContent === 'function') {
+      offlineContent({
+        applicationId,
+        id,
+        fileId,
+        fileType: fileDetail.type,
+      });
+    }
+  };
+
+  const handleLocaleDuplicate = (locales: FileTag[]) => {
+    return locales.map((locale) => {
+      const duplicateTags =
+        (contentList &&
+          contentList.filter((content) => content.tags.find((tag) => tag.locale === locale.locale))) ||
+        [];
+
+      return {
+        ...locale,
+        duplicate: duplicateTags.length > 1,
+      } as FileTag;
+    });
+  };
+
+  const authorizeAdmin = useMemo(
+    () => type === 'personal' || type === 'application' || type === 'projects',
+    [type],
+  );
 
   const columns: any = [
     {
@@ -82,7 +210,7 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
                 state: { backPathname: pathname, backSearch: search },
               }}>
               <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
-                <Name>{text}</Name>
+                <Name style={{ maxWidth: 230 }}>{text}</Name>
               </Tooltip>
             </Link>
             {fileDetail?.type === FileType.page &&
@@ -97,9 +225,11 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
                       {record.urls.map((url) => {
                         return (
                           <p key={url}>
-                            <a href={url} target="_blank">
-                              {url}
-                            </a>
+                            <UrlWithQRcode url={url}>
+                              <a href={url} target="_blank">
+                                {url}
+                              </a>
+                            </UrlWithQRcode>
                           </p>
                         );
                       })}
@@ -136,15 +266,17 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
         }
 
         const localesTag = record.tags ? record.tags.filter((item) => item.locale) : [];
-        return <LocaleView locales={localesTag.map((item) => item.locale) as string[]} />;
+        const localesTagFormatted = handleLocaleDuplicate(localesTag);
+        return <LocaleView locales={localesTagFormatted} />;
       },
     },
     {
       title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
+      width: 200,
       render: (_text: string, record: ContentEntity) => {
-        return record.creator ? record.creator.account : '--';
+        return record.creator ? record.creator.email : '--';
       },
     },
     {
@@ -182,7 +314,7 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
     columns.push({
       title: global.actions,
       key: '',
-      width: 130,
+      width: 180,
       render: (_text: string, record: ContentEntity) => (
         <>
           <Button
@@ -194,44 +326,152 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
             <EditOutlined />
           </Button>
           <Popconfirm
-            title={`${content.deleteMessage} ${record.title}?`}
-            onConfirm={() => {
-              if (applicationId && fileId && fileDetail) {
-                deleteContent({
-                  applicationId,
-                  id: record.id,
-                  status: true,
-                  fileId,
-                  fileType: fileDetail.type,
-                });
-              }
-            }}
+            title={`${content.offlineMessage} ${record.title}?`}
+            disabled={fileDetail?.online || !record?.version || generateBaseOfflineDisabled(record)}
             okText={global.yes}
-            cancelText={global.no}>
-            <DeleteButton
+            cancelText={global.no}
+            onConfirm={() => handleOffline(record.id)}>
+            <Button
+              danger
               type="default"
               size="small"
               shape="circle"
-              title={global.remove}
-              disabled={!!(record.isBase && extendRecord[record.id]?.length) || !!record?.version}
-              style={{ marginLeft: 8 }}
-            />
+              title={content.offline}
+              disabled={fileDetail?.online || !record?.version || generateBaseOfflineDisabled(record)}
+              style={{ marginLeft: 8 }}>
+              <VerticalAlignBottomOutlined />
+            </Button>
           </Popconfirm>
           <Button
             type="default"
             size="small"
             shape="circle"
-            title={global.userPermission}
-            onClick={() => handleAuthorize(true, record)}>
-            <UserOutlined />
+            title={history.versions}
+            style={{ marginLeft: 8 }}
+            onClick={() => {
+              setVersionsModalData({
+                visible: true,
+                contentId: record.id,
+                contentName: record.title,
+                fileType: record.type,
+              });
+            }}>
+            <BranchesOutlined />
           </Button>
+          <Dropdown
+            overlay={
+              <Menu>
+                <Menu.Item key="copy">
+                  <Button
+                    type="text"
+                    onClick={() => {
+                      setSelectContentId(record.id);
+                      setCopyModalOpen(true);
+                    }}
+                    style={{ width: '100%', padding: 0, textAlign: 'left' }}>
+                    <CopyOutlined /> {content.copy}
+                  </Button>
+                </Menu.Item>
+                <>
+                  {fileDetail?.type === FileType.page && (
+                    <Menu.Item key="save">
+                      <Button
+                        type="text"
+                        disabled={!!record?.isBase}
+                        onClick={() => handleSaveAsBase(record.id)}
+                        style={{ width: '100%', padding: 0, textAlign: 'left' }}>
+                        <SaveOutlined /> {content.saveAsBaseTemplate}
+                      </Button>
+                    </Menu.Item>
+                  )}
+                </>
+                <Menu.Item key="auth">
+                  <Button
+                    type="text"
+                    onClick={() => handleAuthorize(record.id)}
+                    style={{ width: '100%', padding: 0, textAlign: 'left' }}>
+                    <UserOutlined /> {global.userPermission}
+                  </Button>
+                </Menu.Item>
+                <Menu.Item key="delete">
+                  <Popconfirm
+                    title={`${content.deleteMessage} ${record.title}?`}
+                    disabled={
+                      fileDetail?.online ||
+                      !!(record.isBase && extendRecord[record.id]?.length) ||
+                      !!record?.version
+                    }
+                    onConfirm={() => {
+                      if (applicationId && fileId && fileDetail) {
+                        deleteContent({
+                          applicationId,
+                          id: record.id,
+                          status: true,
+                          fileId,
+                          fileType: fileDetail.type,
+                        });
+                      }
+                    }}
+                    okText={global.yes}
+                    cancelText={global.no}>
+                    <Button
+                      danger
+                      type="text"
+                      disabled={
+                        fileDetail?.online ||
+                        !!(record.isBase && extendRecord[record.id]?.length) ||
+                        !!record?.version
+                      }
+                      style={{ width: '100%', padding: 0, textAlign: 'left' }}>
+                      <DeleteOutlined />
+                      {global.delete}
+                    </Button>
+                  </Popconfirm>
+                </Menu.Item>
+              </Menu>
+            }>
+            <Button type="default" size="small" shape="circle" style={{ marginLeft: 8 }}>
+              <EllipsisOutlined />
+            </Button>
+          </Dropdown>
         </>
       ),
     });
   }
 
   return (
-    <Table rowKey="id" loading={loading} pagination={false} columns={columns} dataSource={contentList} />
+    <>
+      <Table rowKey="id" loading={loading} pagination={false} columns={columns} dataSource={contentList} />
+      <Modal
+        title={`${content.copy} ${fileDetail?.type}`}
+        open={copyModalOpen}
+        onOk={handleCopy}
+        onCancel={() => setCopyModalOpen(false)}>
+        <Container>
+          <Label>{global.locale}</Label>
+          <Select
+            mode="multiple"
+            options={localeOptions}
+            onChange={setTargetContentLocales}
+            style={{ width: '100%' }}
+          />
+        </Container>
+      </Modal>
+      <VersionList
+        applicationId={applicationId || ''}
+        fileId={fileDetail.id}
+        folderId={fileDetail.folderId}
+        {...versionsModalData}
+        closeFunc={() => {
+          setVersionsModalData({
+            visible: false,
+            contentId: '',
+            contentName: '',
+            fileType: '',
+          });
+        }}
+      />
+    </>
   );
 };
 

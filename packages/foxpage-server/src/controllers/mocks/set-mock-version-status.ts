@@ -13,6 +13,7 @@ import { AppContentStatusReq, ContentVersionDetailRes } from '../../types/valida
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to contents/set-type-item-version-status.ts
 @JsonController('mocks')
 export class SetMockVersionStatus extends BaseController {
   constructor() {
@@ -24,7 +25,7 @@ export class SetMockVersionStatus extends BaseController {
    * @param  {AppContentStatusReq} params
    * @returns {Content}
    */
-  @Put('/version-status')
+  @Put('/version-status-migrations')
   @OpenAPI({
     summary: i18n.sw.setMockVersionStatus,
     description: '',

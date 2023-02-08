@@ -36,8 +36,7 @@ export class GetPageList extends BaseController {
     try {
       const fileDetail = await this.service.file.info.getDetailById(params.fileId);
       if (
-        !fileDetail ||
-        fileDetail.deleted ||
+        this.notValid(fileDetail) ||
         fileDetail.applicationId !== params.applicationId ||
         fileDetail.type !== TYPE.PAGE
       ) {

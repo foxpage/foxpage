@@ -28,7 +28,6 @@ const Table = styled(AntTable)`
 `;
 
 const mapStateToProps = (store: RootState) => ({
-  organizationId: store.system.user.organizationId,
   fetching: store.teams.list.fetching,
   list: store.teams.list.list,
   pageInfo: store.teams.list.pageInfo,
@@ -46,7 +45,6 @@ type TeamListType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToPro
 
 const Main: React.FC<TeamListType> = (props) => {
   const {
-    organizationId,
     fetching,
     list,
     pageInfo,
@@ -60,7 +58,7 @@ const Main: React.FC<TeamListType> = (props) => {
   const [search, setSearch] = useState<string | undefined>();
 
   // i18n
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { global, team } = locale.business;
 
   // go back to login page if organization id undefined
@@ -205,7 +203,7 @@ const Main: React.FC<TeamListType> = (props) => {
         </FoxPageContent>
       </Content>
       <EditDrawer />
-      <MemberManagement organizationId={organizationId} />
+      <MemberManagement />
     </>
   );
 };

@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import {
   ContentVersionDetailRes,
@@ -16,6 +16,7 @@ import {
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// migration to contents/update-type-item-versions.ts
 @JsonController('functions')
 export class UpdateFunctionVersionDetail extends BaseController {
   constructor() {
@@ -27,7 +28,7 @@ export class UpdateFunctionVersionDetail extends BaseController {
    * @param  {ContentVersionUpdateReq} params
    * @returns {ContentVersion}
    */
-  @Put('/versions')
+  @Put('/versions-migrations')
   @OpenAPI({
     summary: i18n.sw.updateFunctionVersionDetail,
     description: '',
@@ -37,15 +38,12 @@ export class UpdateFunctionVersionDetail extends BaseController {
   @ResponseSchema(ContentVersionDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
     try {
-      const hasAuth = await this.service.auth.content(params.id, { ctx });
+      const hasAuth = await this.service.auth.content(params.pageContentId || params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4091401);
       }
 
-      const result = await this.service.version.info.updateVersionDetail(params, {
-        ctx,
-        actionType: [LOG.UPDATE, TYPE.FUNCTION].join('_'),
-      });
+      const result = await this.service.version.info.updateVersionDetail(params, { ctx });
 
       if (result.code === 1) {
         return Response.warning(i18n.function.invalidVersionId, 2091401);

@@ -38,14 +38,16 @@ export class GetPageCatalogList extends BaseController {
     operationId: 'get-page-catalog-list',
   })
   @ResponseSchema(AppContentListRes)
-  async index(@Ctx() ctx: FoxCtx, @QueryParams() params: AppPageCatalogCommonReq): Promise<ResData<fileContents>> {
+  async index(
+    @Ctx() ctx: FoxCtx,
+    @QueryParams() params: AppPageCatalogCommonReq,
+  ): Promise<ResData<fileContents>> {
     try {
       const apiType = this.getRoutePath(ctx.request.url);
 
       const fileDetail = await this.service.file.info.getDetailById(params.id);
       if (
-        !fileDetail ||
-        fileDetail.deleted ||
+        this.notValid(fileDetail) ||
         fileDetail.applicationId !== params.applicationId ||
         fileDetail.type !== apiType
       ) {

@@ -22,11 +22,12 @@
   "scripts": {
     "build": "lerna run build",
     "boot": "yarn && lerna bootstrap && yarn build",
-    "start-server:dev": "cd packages/foxpage-server && cross-env NODE_ENV=debug \"ts-node\" index.ts",
+    "start-server:dev": "cd packages/foxpage-server && cross-env NODE_ENV=debug ts-node index.ts",
     "start-server:prod": "npm run build-server:prod && cd packages/foxpage-server && cross-env NODE_ENV=development START_FROM=yarn node dist/index.js",
     "build-server:prod": "cd packages/foxpage-server && cross-env NODE_ENV=production npm run build:prod",
     "init-server:prod": "cd packages/foxpage-server && node dist/install.js",
     "test-server": "cd packages/foxpage-server && cross-env NODE_ENV=test npm run test",
+    "test": "npm run test-server",
     "build-admin:prod": "cd packages/foxpage-admin && npm install && npm run build",
     "start-admin:prod": "cd packages/foxpage-admin && node server/index.js",
     "release": "standard-version --commitAll",

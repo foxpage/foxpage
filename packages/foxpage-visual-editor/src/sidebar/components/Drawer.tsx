@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 import { Drawer } from 'antd';
 
 import { CusButton, RightCloseIcon } from '@/components/index';
+import { drawerStyle } from '@/constant/styleConfig';
 import { FoxContext } from '@/context/index';
 
 import Main from './Main';
@@ -20,38 +21,34 @@ const ComponentDrawer = (props: IProps) => {
     onVisible(false);
   };
 
+  const title = <span className="text-sm">{foxI18n.componentListTitle}</span>;
+  const extra = (
+    <CusButton
+      icon={<RightCloseIcon />}
+      onClick={() => {
+        onVisible(false);
+      }}
+    />
+  );
+
   return (
     <Drawer
-      title={<span style={{ fontSize: '14px' }}>{foxI18n.componentListTitle}</span>}
+      title={title}
       placement="left"
-      visible={visible}
+      open={visible}
       destroyOnClose
       mask={false}
       closable={false}
-      extra={
-        <CusButton
-          icon={<RightCloseIcon />}
-          onClick={() => {
-            onVisible(false);
-          }}
-        />
-      }
+      extra={extra}
       width={300}
       onClose={() => {
         onVisible(false);
       }}
-      headerStyle={{ padding: '4px 8px' }}
-      bodyStyle={{ padding: 0 }}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 38,
-        zIndex: 50,
-        boxShadow: 'rgba(0, 0, 0, 0.1) 4px 4px 4px 2px',
-        overflowY: 'auto',
-      }}>
+      headerStyle={drawerStyle.title}
+      bodyStyle={drawerStyle.body as any}
+      style={drawerStyle.drawer as any}>
       {visible && (
-        <div onDragLeave={dragLeave}>
+        <div onDragLeave={dragLeave} className="flex flex-col flex-1 min-h-0">
           <Main />
         </div>
       )}

@@ -1,14 +1,13 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
-import { EditOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Table as AntTable, Tooltip } from 'antd';
+import { Table as AntTable, Tooltip } from 'antd';
 import styled from 'styled-components';
 
-import { DeleteButton, Name } from '@/pages/components';
+import { Name } from '@/pages/components';
 import { GlobalContext } from '@/pages/system';
-import { File, PaginationInfo, ProjectFileDeleteParams } from '@/types/index';
-import { periodFormat } from '@/utils/period-format';
+import { File, PaginationInfo } from '@/types/index';
+import { getLocationIfo, periodFormat } from '@/utils/index';
 
 const Table = styled(AntTable)`
   .ant-table-pagination.ant-pagination {
@@ -22,33 +21,33 @@ interface FileListProps {
   pageInfo: PaginationInfo;
   list: File[];
   onPaginationChange: (page?: number, size?: number) => void;
-  deleteFile: (params: ProjectFileDeleteParams) => void;
-  openDrawer: (open: boolean, editFile?: File) => void;
-  openAuthDrawer: (visible: boolean, editFile?: File) => void;
 }
 
 const FileList: React.FC<FileListProps> = (props) => {
-  const {
-    applicationId,
-    loading,
-    pageInfo,
-    list,
-    deleteFile,
-    onPaginationChange,
-    openDrawer,
-    openAuthDrawer,
-  } = props;
+  const { applicationId, loading, pageInfo, list, onPaginationChange } = props;
+
+  // url search params
+  const { page: filePage, searchText: fileSearch } = getLocationIfo(useLocation());
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, file } = locale.business;
+  const { global } = locale.business;
 
   const columns: any = [
+    {
+      title: global.idLabel,
+      dataIndex: 'id',
+      key: 'id',
+      width: 160,
+    },
     {
       title: global.nameLabel,
       dataIndex: 'name',
       render: (text: string, record: File) => (
-        <Link to={`/applications/${applicationId}/file/templates/content?fileId=${record.id}`}>
+        <Link
+          to={`/applications/${applicationId}/file/templates/content?fileId=${record.id}&filePage=${
+            filePage || ''
+          }&fileSearch=${fileSearch || ''}`}>
           <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
             <Name style={{ maxWidth: 400 }}>{text}</Name>
           </Tooltip>
@@ -70,8 +69,9 @@ const FileList: React.FC<FileListProps> = (props) => {
       title: global.creator,
       dataIndex: 'creator',
       key: 'creator',
+      width: 200,
       render: (_text: string, record: File) => {
-        return record.creator ? record.creator.account : '--';
+        return record.creator ? record.creator.email : '--';
       },
     },
     {
@@ -80,50 +80,6 @@ const FileList: React.FC<FileListProps> = (props) => {
       key: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
-    },
-    {
-      title: global.actions,
-      key: '',
-      width: 130,
-      render: (_text: string, record: File) => (
-        <>
-          <Button
-            type="default"
-            size="small"
-            shape="circle"
-            title={global.edit}
-            onClick={() => openDrawer(true, record)}>
-            <EditOutlined />
-          </Button>
-          <Popconfirm
-            cancelText={global.no}
-            okText={global.yes}
-            title={`${file.deleteMessage}${file[record.type]}?`}
-            onConfirm={() => {
-              deleteFile({
-                id: record.id,
-                applicationId: record.applicationId || applicationId,
-                folderId: record.folderId,
-              });
-            }}>
-            <DeleteButton
-              type="default"
-              size="small"
-              shape="circle"
-              title={global.remove}
-              style={{ marginLeft: 8 }}
-            />
-          </Popconfirm>
-          <Button
-            type="default"
-            size="small"
-            shape="circle"
-            title={global.userPermission}
-            onClick={() => openAuthDrawer(true, record)}>
-            <UserOutlined />
-          </Button>
-        </>
-      ),
     },
   ];
 

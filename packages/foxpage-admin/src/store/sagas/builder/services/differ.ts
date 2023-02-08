@@ -23,14 +23,17 @@ export const objectDiff = <T extends Record<string, any>>(base: T, current: T) =
         if (!_.isArray(baseValue) && !_.isArray(curValue)) {
           const diffed = objectDiff(baseValue, curValue);
           if (diffed !== undefined) {
-            result[key] = result[key];
+            result[key] = diffed;
           }
         } else {
           result[key] = curValue;
         }
       } else {
         // only the "null" or "" is valid empty value
-        if ((curValue || curValue === null || curValue === '') && baseValue !== curValue) {
+        if (
+          (curValue || curValue === null || curValue === '' || curValue === false) &&
+          baseValue !== curValue
+        ) {
           result[key] = curValue;
         }
       }
@@ -66,7 +69,7 @@ export const nodeDiff = <T extends StructureNode>(base: T, current: T) => {
   } = current;
 
   // if diff is empty, will set default {}
-  const props = objectDiff(baseProps, currentProps);
+  const props = objectDiff(baseProps, currentProps) || {};
   const directive = objectDiff(baseDirective, currentDirective);
   let extension = objectDiff(baseExtension, currentExtension);
 
@@ -98,11 +101,11 @@ const treeToRecord = <T extends DiffComponentStructure, P extends Content['schem
   const record: Record<string, T> = {};
   function dfs(tree: P) {
     tree.forEach((item) => {
-      record[item.id] = ({
+      record[item.id] = {
         ...item,
         children: [],
         childIds: item.children?.map((item) => item.id),
-      } as unknown) as T;
+      } as unknown as T;
       if (item.children?.length) {
         dfs(item.children as P);
       }

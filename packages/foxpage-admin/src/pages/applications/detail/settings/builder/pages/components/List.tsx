@@ -7,10 +7,10 @@ import { Button, Popconfirm, Table, Tag, Tooltip } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/settings/builder/page';
+import { suffixTagColor } from '@/constants/file';
 import { StoreGoodsPurchaseType } from '@/constants/store';
 import { GlobalContext } from '@/pages/system';
 import { ApplicationSettingBuilderComponent } from '@/types/index';
-import { suffixTagColor } from '@/constants/file';
 
 const TYPE = 'page';
 
@@ -87,7 +87,7 @@ const ComponentList = (props: IProps) => {
             title={`${global.deleteMsg} ${record?.name || ''}?`}
             disabled={record.status}
             onConfirm={() => {
-              handleDelete(record.id);
+              handleDelete(record.idx);
             }}
             okText={global.yes}
             cancelText={global.no}>
@@ -111,21 +111,22 @@ const ComponentList = (props: IProps) => {
       remove({
         applicationId,
         type: TYPE,
-        fileIds: id,
+        ids: id,
       });
     }
   };
 
-  const handleCommitRevoke = (template) => {
+  const handleCommitRevoke = (page) => {
     save({
       applicationId,
       type: TYPE,
       setting: [
         {
-          category: template.category,
-          id: template.id,
-          name: template.name || '',
-          status: !template.status,
+          category: page.category,
+          id: page.id,
+          idx: page.idx,
+          name: page.name || '',
+          status: !page.status,
         },
       ],
     });
@@ -133,7 +134,7 @@ const ComponentList = (props: IProps) => {
 
   return (
     <Table
-      rowKey="id"
+      rowKey="idx"
       dataSource={pages}
       columns={columns}
       loading={loading}

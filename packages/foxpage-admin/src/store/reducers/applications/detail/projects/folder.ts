@@ -12,6 +12,7 @@ const pageInfo: PaginationInfo = { page: 1, size: 10, total: 0 };
 const editProject: ProjectEntity = {} as ProjectEntity;
 const authList: AuthorizeListItem[] = [];
 const userList: User[] = [];
+const mask = 0;
 
 const initialState = {
   apps,
@@ -25,6 +26,7 @@ const initialState = {
   authListLoading: false,
   authList,
   userList,
+  mask,
 };
 
 type InitialDataType = typeof initialState;
@@ -92,6 +94,11 @@ const reducer = (state: InitialDataType = initialState, action: ApplicationProje
 
       case getType(ACTIONS.pushUserList): {
         draft.userList = action.payload.list;
+        break;
+      }
+
+      case getType(ACTIONS.pushMask): {
+        draft.mask = action.payload.mask;
         break;
       }
 

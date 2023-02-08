@@ -14,7 +14,10 @@ const contentVersionSchema = new Schema<ContentVersion>(
     dslVersion: { type: String, default: DSL_VERSION },
     status: { type: String, maxLength: 20, default: VERSION.STATUS_BASE },
     content: { type: Object, default: {} },
+    pictures: { type: Array, default: [] },
+    operator: { type: Object, default: {} },
     creator: { type: String, required: true, length: 20 },
+    contentUpdateTime: { type: Date, default: '' },
     createTime: { type: Date, default: Date.now, required: true },
     updateTime: { type: Date, default: Date.now, required: true },
     deleted: { type: Boolean, required: true, default: false },
@@ -32,13 +35,13 @@ contentVersionSchema.pre('save', function (next) {
     this.createTime = currentTime;
   }
 
-  if (this.content?.meta && !_.isPlainObject(this.content.meta)) {
+  if (this.content?.meta && _.isPlainObject(this.content.meta)) {
     this.content.meta = JSON.stringify(this.content.meta);
   }
-  if (this.content?.schema && !_.isPlainObject(this.content.schema)) {
+  if (this.content?.schema && _.isPlainObject(this.content.schema)) {
     this.content.schema = JSON.stringify(this.content.schema);
   }
-  if (this.content?.relation && !_.isPlainObject(this.content.relation)) {
+  if (this.content?.relation && _.isPlainObject(this.content.relation)) {
     this.content.relation = JSON.stringify(this.content.relation);
   }
   next();

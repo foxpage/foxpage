@@ -7,9 +7,10 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
+import { History } from '@/pages/components/history';
 import { getLocationIfo } from '@/utils/location-info';
 
-import { Actions, Catalog, GoBack, Steps, Store } from './components';
+import { Actions, Catalog, GoBack, Record, Steps, Store } from './components';
 
 import './index.css';
 
@@ -81,7 +82,7 @@ const Part = styled.div`
 `;
 
 const mapStateToProps = (store: RootState) => ({
-  editStatus: store.builder.main.editStatus,
+  editStatus: store.builder.main.editStatus && !!store.record.main.localRecords.length,
 });
 
 const mapDispatchToProps = {
@@ -121,39 +122,40 @@ const Main: React.FC<HeaderType> = (props) => {
     }
   }, [applicationId, folderId]);
 
+  const beforeLeave = (e) => {
+    if (_editStatus) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  };
+
   // save hint before leave
   useEffect(() => {
-    window.addEventListener('beforeunload', (e) => {
-      if (_editStatus) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    });
+    window.addEventListener('beforeunload', beforeLeave);
 
     return () => {
-      window.removeEventListener('beforeunload', (e) => {
-        if (_editStatus) {
-          e.preventDefault();
-          e.returnValue = '';
-        }
-      });
+      window.removeEventListener('beforeunload', beforeLeave);
     };
   }, []);
 
   return (
     <React.Fragment>
       <StyledHeader>
-        <Part>
+        <Part style={{ flex: 1, justifyContent: 'flex-start' }}>
           <GoBack />
           <Catalog />
         </Part>
-        <Part style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <Part style={{ flex: 1, justifyContent: 'flex-start' }}>
           <Store />
+          <History />
         </Part>
-        <Part style={{ flex: 3, justifyContent: 'flex-end' }}>
+        <Part style={{ flex: 1, justifyContent: 'flex-center' }}>
           <Steps />
         </Part>
-        <Part style={{ flex: '2.5', justifyContent: 'flex-end', paddingRight: 12 }}>
+        <Part style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <Record />
+        </Part>
+        <Part style={{ flex: 1, justifyContent: 'flex-end', paddingRight: 12 }}>
           <Actions />
         </Part>
       </StyledHeader>

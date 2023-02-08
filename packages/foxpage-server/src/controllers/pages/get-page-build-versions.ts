@@ -47,7 +47,7 @@ export class GetPageBuildVersionDetail extends BaseController {
     operationId: 'get-page-build-version',
   })
   @ResponseSchema(PageBuildVersionRes)
-  async index (
+  async index(
     @Ctx() ctx: FoxCtx,
     @QueryParams() params: PageBuildVersionReq,
   ): Promise<ResData<PageBuildVersion>> {
@@ -55,25 +55,24 @@ export class GetPageBuildVersionDetail extends BaseController {
       const apiType = this.getRoutePath(ctx.request.url);
 
       // Get the latest version of the page
-      const versionDetail = await this.service.version.info.getMaxContentVersionDetail(
-        params.id,
-        { ctx, createNew: true }
-      );
+      const versionDetail = await this.service.version.info.getMaxContentVersionDetail(params.id, {
+        ctx,
+        createNew: true,
+      });
 
       // Get the live information of the template that the page depends on
       let templateVersion: Partial<ContentVersion> = {};
       if (apiType === TYPE.PAGE) {
-        templateVersion = await this.service.version.info.getTemplateDetailFromPage(
-          params.applicationId,
-          versionDetail,
-        );
+        templateVersion = await this.service.version.info.getTemplateDetailFromPage(versionDetail);
       }
 
       let versionPromise: any[] = [];
-      versionPromise[0] = this.service.version.info.getPageVersionInfo(versionDetail, { applicationId: params.applicationId });
+      versionPromise[0] = this.service.version.info.getPageVersionInfo(versionDetail, {
+        applicationId: params.applicationId,
+      });
       if (apiType === TYPE.PAGE) {
-        versionPromise[1] = this.service.version.info.getPageVersionInfo(templateVersion as ContentVersion, { 
-          applicationId: params.applicationId, 
+        versionPromise[1] = this.service.version.info.getPageVersionInfo(templateVersion as ContentVersion, {
+          applicationId: params.applicationId,
           isLive: true,
         });
       }
@@ -86,7 +85,7 @@ export class GetPageBuildVersionDetail extends BaseController {
         versionInfo.relations.templates[0] = _.merge(
           {},
           versionInfo.relations.templates[0],
-          templateVersionInfo?.mockObject[versionInfo.relations.templates[0].id] || {}
+          templateVersionInfo?.mockObject[versionInfo.relations.templates[0].id] || {},
         );
       }
 
@@ -94,9 +93,16 @@ export class GetPageBuildVersionDetail extends BaseController {
       versionDetail.content.extension = versionInfo.mockObject[params.id]?.extension || {};
       versionDetail.content.dslVersion = versionDetail.dslVersion || DSL_VERSION;
       const mockRelations = versionInfo.mockObject[params.id]?.relations || {};
-      const mockTemplateRelations = templateVersionInfo?.mockObject[templateVersion.contentId as string]?.relations || {};
-      versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockRelations);
-      versionInfo.relations = this.service.version.relation.moveMockRelations(versionInfo.relations, mockTemplateRelations);
+      const mockTemplateRelations =
+        templateVersionInfo?.mockObject[templateVersion.contentId as string]?.relations || {};
+      versionInfo.relations = this.service.version.relation.moveMockRelations(
+        versionInfo.relations,
+        mockRelations,
+      );
+      versionInfo.relations = this.service.version.relation.moveMockRelations(
+        versionInfo.relations,
+        mockTemplateRelations,
+      );
 
       const pageBuildVersion: PageBuildVersion = Object.assign({}, versionDetail, {
         relations: versionInfo.relations || {},

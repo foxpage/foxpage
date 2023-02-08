@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { PushpinFilled, PushpinOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 
@@ -19,18 +21,8 @@ export const Row = styled.div`
   }
 `;
 
-export const PushIcon = styled(PushpinOutlined)`
-  color: #939393;
-  :hover {
-    cursor: pointer;
-    color: #000000bf;
-  }
-`;
+export const PushIcon = () => (
+  <PushpinOutlined className="text-inherit hover:cursor-pointer hover:text-fox" />
+);
 
-export const PushFillIcon = styled(PushpinFilled)`
-  color: #ffaf36;
-  :hover {
-    cursor: pointer;
-    color: #f90;
-  }
-`;
+export const PushFillIcon = () => <PushpinFilled className="hover:cursor-pointer text-fox" />;

@@ -84,7 +84,7 @@ const MockEditor = (props: IProps) => {
     <Drawer
       title={<span style={{ fontSize: '14px' }}>{foxI18n.mockTip}</span>}
       placement="right"
-      visible={visible}
+      open={visible}
       destroyOnClose
       mask={false}
       closable={false}

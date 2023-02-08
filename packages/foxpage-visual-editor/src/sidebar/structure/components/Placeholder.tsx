@@ -1,18 +1,12 @@
-import React from 'react';
-
-import _ from 'lodash';
+import React, { useContext } from 'react';
 
 import { STRUCTURE_DROP_IN, STRUCTURE_DROP_IN_ID } from '@/constant/index';
-import { DndData } from '@/types/index';
+import { StructureTreeContext } from '@/context/index';
 
-const LEFT = 8;
+const LEFT = 5;
 
-interface PlaceHolderType {
-  dndInfo?: DndData | null;
-}
-
-const Placeholder: React.FC<PlaceHolderType> = (props) => {
-  const { dndInfo } = props;
+const Placeholder: React.FC = () => {
+  const { dndInfo } = useContext(StructureTreeContext);
   const container = document.getElementById(STRUCTURE_DROP_IN);
   const { top: rootTop, width: containerWidth = 0 } = container?.getBoundingClientRect() || {};
   const { placement, dropInId, noUpdate } = dndInfo || {};

@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 
 import JSONEditor, { EditableNode, JSONEditorOptions } from 'jsoneditor';
-import _ from 'lodash';
+import assign from 'lodash/assign';
 import styled from 'styled-components';
 
 import 'jsoneditor/dist/jsoneditor.min.css';
@@ -87,7 +87,7 @@ const JsonEditor: React.ForwardRefRenderFunction<JsonEditorRefType, JSONEditorPr
 
   useEffect(() => {
     if (container.current) {
-      const newOptions: JSONEditorOptions = _.assign({}, defaultOptions, options);
+      const newOptions: JSONEditorOptions = assign({}, defaultOptions, options);
       if (readOnly) {
         newOptions.onEditable = (node) => !!(node as EditableNode).path;
       }

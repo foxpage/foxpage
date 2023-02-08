@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import _ from 'lodash';
-import { QueryParams, Ctx, JsonController, Delete } from 'routing-controllers';
+import { Ctx, Delete, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
@@ -12,7 +12,7 @@ import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('applications')
-export class UpdateApplicationSettingDetail extends BaseController {
+export class RemoveApplicationSettingDetail extends BaseController {
   constructor() {
     super();
   }
@@ -45,8 +45,10 @@ export class UpdateApplicationSettingDetail extends BaseController {
       const appSetting = appDetail.setting || {};
 
       if (appSetting[params.type]) {
-        const fileIds = _.map(params.fileIds.split(','), (fileId) => _.trim(fileId));
-        const newTypeSetting = _.filter(appSetting[params.type], (item) => fileIds.indexOf(item.id) === -1);
+        const idxList = _.map(params.ids.split(','), (idx) => Number(_.trim(idx)));
+        const newTypeSetting = _.filter(appSetting[params.type], (item) => {
+          return idxList.indexOf(item.idx) === -1;
+        });
 
         await this.service.application.updateDetail(params.applicationId, {
           ['setting.' + params.type]: newTypeSetting,

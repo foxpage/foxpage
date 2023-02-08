@@ -118,7 +118,7 @@
   "yes": "是",
   "no": "否",
   "componentListTitle": "组件列表",
-  "componentAddLink": ">> 立即添加",
+  "componentAddLink": "立即添加",
   "variableListTitle": "变量列表",
   "conditionListTitle": "条件列表",
   "functionListTitle": "方法列表",
@@ -127,6 +127,7 @@
   "componentDescTip": "暂无描述 ~",
   "structureTitle": "内容结构",
   "editorTitle": "编辑器",
+  "editorRenderError": "加载失败，请联系管理员。",
   "page": "页面",
   "zoom": "缩放",
   "pad": "平板",
@@ -144,5 +145,10 @@
   "deleteMockTips": "确认删除当前组件的模拟数据吗？",
   "inheritNode": "继承节点",
   "usingCondition": "包含条件",
-  "usingVariable": "包含变量"
+  "usingVariable": "包含变量",
+  "selectTemplateTips": "点击选择页面克隆",
+  "reRendering": "更新生效中，请稍等...",
+  "labelSupportFollowingChars": "支持以下字符",
+  "isLive": "线上版本",
+  "versionTips": "仅在预览模式下可用，页面发布时将会清空版本设置，默认使用线上版本"
 }

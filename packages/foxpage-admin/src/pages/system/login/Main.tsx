@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
@@ -8,12 +8,13 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/system/login';
-import * as USER_ACTIONS from '@/actions/system/user';
 import Logo from '@/components/common/Logo';
+import { GlobalContext } from '@/pages/system';
 import { LoginReturn } from '@/types/user';
 import { setLoginUser } from '@/utils/login-user';
 
 const Container = styled.div`
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -35,14 +36,15 @@ const mapStateToProps = (store: RootState) => ({
 
 const mapDispatchToProps = {
   login: ACTIONS.login,
-  updateOrganizationId: USER_ACTIONS.updateOrganizationId,
 };
 
 type LoadingType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Login: React.FC<LoadingType> = (props) => {
-  const { loading, login, updateOrganizationId } = props;
+  const { loading, login } = props;
   const [, forceUpdate] = useState({});
+
+  const { setOrganizationId } = useContext(GlobalContext);
 
   const history = useHistory();
 
@@ -67,14 +69,14 @@ const Login: React.FC<LoadingType> = (props) => {
         // login success
         message.success('Login succeed!');
 
-        // sync to local storage
+        // cache to localStorage
         setLoginUser({
           token: user.token,
           userInfo: user?.userInfo,
         });
 
-        // push organization id to user
-        updateOrganizationId(organizationId);
+        // push organization id to context after login
+        setOrganizationId(organizationId);
 
         history.push('/workspace');
       },
