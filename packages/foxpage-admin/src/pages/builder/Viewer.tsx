@@ -96,12 +96,9 @@ const Viewer = (props: IProps) => {
   const { applicationId } = getLocationIfo(useLocation());
   const isPage = file?.type === FileType.page;
   const localeHost = getLocaleHost(host, pageLocale);
+  const realSlug = localeHost[0] && slug ? `${localeHost[0]?.url}/${slug}` : '';
   // @ts-ignore
-  const previewHtmlURL = __DEV__
-    ? 'http://localhost:3003'
-    : localeHost[0] && slug
-    ? `${localeHost[0]?.url}/${slug}${EDITOR_PATH}`
-    : '';
+  const previewHtmlURL = realSlug ? `${realSlug}${EDITOR_PATH}` : '';
   // root node
   const rootNode = pageNode
     ? ({
@@ -227,7 +224,7 @@ const Viewer = (props: IProps) => {
         locale,
         mockable: !!mock?.enable,
         // @ts-ignore
-        visualFrameSrc: __DEV__ ? '/environment.html' : realSlug ? `/${realSlug}${EDITOR_ENV_PATH}` : '',
+        visualFrameSrc: realSlug ? `/${realSlug}${EDITOR_ENV_PATH}` : '',
         readOnly,
       };
       const pageConfig = {
