@@ -21,7 +21,7 @@ export const MainView = (props: IProps) => {
   const bodyStructure = config.page?.fileType === 'block' ? structure : body?.children;
 
   // @ts-ignore
-  const { visualFrameSrc = __DEV__ ? '/environment.html' : '' } = config.sys || {};
+  const { visualFrameSrc } = config.sys || {};
 
   if (!visualFrameSrc) {
     return null;

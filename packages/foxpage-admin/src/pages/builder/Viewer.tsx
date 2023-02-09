@@ -97,8 +97,10 @@ const Viewer = (props: IProps) => {
   const isPage = file?.type === FileType.page;
   const localeHost = getLocaleHost(host, pageLocale);
   // @ts-ignore
+  const { editorUrl = '', environmentPath = '' } = APP_CONFIG;
+  // @ts-ignore
   const previewHtmlURL = __DEV__
-    ? `http://localhost:3000/${slug}${EDITOR_PATH}`
+    ? editorUrl || `http://localhost:3000/${slug}${EDITOR_PATH}`
     : localeHost[0] && slug
     ? `${localeHost[0]?.url}/${slug}${EDITOR_PATH}`
     : '';
@@ -227,7 +229,9 @@ const Viewer = (props: IProps) => {
         locale,
         mockable: !!mock?.enable,
         // @ts-ignore
-        visualFrameSrc: slug ? `/${slug}${EDITOR_ENV_PATH}` : '',
+        // visualFrameSrc: __DEV__
+        //   ? environmentPath || `/${slug}${EDITOR_ENV_PATH}`
+        //   : `/${slug}${EDITOR_ENV_PATH}`,
         readOnly,
       };
       const pageConfig = {
