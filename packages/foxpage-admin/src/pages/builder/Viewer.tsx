@@ -229,9 +229,9 @@ const Viewer = (props: IProps) => {
         locale,
         mockable: !!mock?.enable,
         // @ts-ignore
-        // visualFrameSrc: __DEV__
-        //   ? environmentPath || `/${slug}${EDITOR_ENV_PATH}`
-        //   : `/${slug}${EDITOR_ENV_PATH}`,
+        visualFrameSrc: __DEV__
+          ? environmentPath || `/${slug}${EDITOR_ENV_PATH}`
+          : `/${slug}${EDITOR_ENV_PATH}`,
         readOnly,
       };
       const pageConfig = {
