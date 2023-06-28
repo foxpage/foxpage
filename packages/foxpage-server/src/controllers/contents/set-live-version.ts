@@ -34,6 +34,10 @@ export class SetContentLiveVersion extends BaseController {
   @ResponseSchema(ContentDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: ContentLiveReq): Promise<ResData<Content>> {
     try {
+      if (!params.versionId && !params.versionNumber) {
+        return Response.warning(i18n.content.invalidVersionIdOrVersion, 2160803);
+      }
+
       // Permission check
       const hasAuth = await this.service.auth.content(params.contentId, { ctx });
       if (!hasAuth) {
@@ -43,7 +47,12 @@ export class SetContentLiveVersion extends BaseController {
       // Get the specified version details,
       // if the version does not exist, or the version status is not release, return a prompt message
       const [versionDetail, contentDetail] = await Promise.all([
-        this.service.version.info.getDetail(params),
+        this.service.version.info.getDetail(
+          Object.assign(
+            { contentId: params.contentId },
+            params.versionId ? { id: params.versionId } : { versionNumber: params.versionNumber },
+          ),
+        ),
         this.service.content.info.getDetailById(params.contentId),
       ]);
 
@@ -52,18 +61,20 @@ export class SetContentLiveVersion extends BaseController {
       }
 
       // The content page does not exist or has been deleted
-      if (this.notValid(contentDetail)) {
+      if (this.notValid(contentDetail) || contentDetail.applicationId !== params.applicationId) {
         return Response.warning(i18n.content.invalidContentId, 2160802);
       }
 
       // Set live version
-      this.service.content.info.updateContentItem(
+      this.service.content.live.setLiveContent(
         params.contentId,
-        { liveVersionNumber: params.versionNumber },
-        { ctx },
+        versionDetail.versionNumber,
+        versionDetail.id,
+        { ctx, content: contentDetail },
       );
 
       await this.service.content.info.runTransaction(ctx.transactions);
+
       const newContentDetail = await this.service.content.info.getDetailById(params.contentId);
 
       return Response.success(newContentDetail, 1160801);

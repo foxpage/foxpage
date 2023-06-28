@@ -4,8 +4,10 @@ import _ from 'lodash';
 import { Ctx, Get, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
+import { Log } from '@foxpage/foxpage-server-types';
+
 import { i18n } from '../../../app.config';
-import { VERSION } from '../../../config/constant';
+import { LOG, VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { UserBase } from '../../types/user-types';
 import { GetTypeItemVersionReq, TypeItemVersionsRes } from '../../types/validates/page-validate-types';
@@ -20,8 +22,10 @@ interface VersionItem {
   status: string;
   isLive: boolean;
   creator: UserBase;
+  publisher: UserBase;
   createTime: Date;
   updateTime: Date;
+  publishTime: Date;
 }
 
 @JsonController()
@@ -65,7 +69,7 @@ export class GetPageTypeItemVersionList extends BaseController {
             pageInfo: this.paging(0, pageSize),
             data: [],
           },
-          1052401,
+          1052402,
         );
       }
 
@@ -83,8 +87,14 @@ export class GetPageTypeItemVersionList extends BaseController {
         }),
       ]);
 
-      const userIds = _.uniq(_.map(versionList, 'creator'));
+      const publishList = await this.service.log.find(
+        { action: LOG.LIVE, 'category.versionId': { $in: _.map(versionList, 'id') } },
+        'category operator createTime',
+      );
+
+      const userIds = _.concat(_.uniq(_.map(versionList, 'creator')), _.map(publishList, 'operator'));
       const userObject = await this.service.user.getUserBaseObjectByIds(userIds);
+      const publishObject = _.keyBy(publishList, 'category.versionId');
 
       let versionItemList: VersionItem[] = [];
       versionList.forEach((version) => {
@@ -103,6 +113,8 @@ export class GetPageTypeItemVersionList extends BaseController {
             {
               isLive: contentDetail.liveVersionId === version.id,
               creator: userObject[version.creator] || {},
+              publisher: userObject[(publishObject[version.id] as Log)?.operator] || {},
+              publishTime: (publishObject[version.id] as Log)?.createTime || '',
             },
           ) as VersionItem,
         );
@@ -113,7 +125,7 @@ export class GetPageTypeItemVersionList extends BaseController {
           pageInfo: this.paging(count, pageSize),
           data: versionItemList,
         },
-        1052402,
+        1052403,
       );
     } catch (err) {
       return Response.error(err, i18n.page.getPageVersionsFailed, 3052401);

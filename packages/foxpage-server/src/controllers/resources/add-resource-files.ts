@@ -36,7 +36,7 @@ export class AddResourceFileDetail extends BaseController {
   @ResponseSchema(FileDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: FileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
-    if (!checkName(params.name)) {
+    if (!params.name || !checkName(params.name)) {
       return Response.warning(i18n.resource.invalidName, 2120201);
     }
 
@@ -46,12 +46,15 @@ export class AddResourceFileDetail extends BaseController {
 
     try {
       // Check the existence of the file
-      const fileExist = await this.service.file.info.checkExist(params);
+      const [hasAuth, fileExist] = await Promise.all([
+        this.service.auth.folder(params.folderId, { ctx }),
+        this.service.file.info.checkExist(params),
+      ]);
+
       if (fileExist) {
         return Response.warning(i18n.resource.resourceNameExist, 2120203);
       }
 
-      const hasAuth = await this.service.auth.folder(params.folderId, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4120201);
       }

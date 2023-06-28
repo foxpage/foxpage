@@ -8,14 +8,14 @@ import styled from 'styled-components';
 import { Name } from '@/components/index';
 import { FileType, GlobalType, GlobalTypeColor, ROUTE_CONTENT_MAP, ROUTE_FILE_MAP } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
-import { CommonSearchParams, PaginationInfo, ProjectSearchEntity } from '@/types/index';
+import { CommonSearchParams, CommonSearchType, PaginationInfo, ProjectSearchEntity } from '@/types/index';
 import { getLocationIfo, periodFormat } from '@/utils/index';
 
 interface ProjectListProp {
   applicationId?: string;
   searchText?: string;
   env: string;
-  type: string;
+  type: CommonSearchType;
   loading: boolean;
   pageInfo: PaginationInfo;
   list: ProjectSearchEntity[];
@@ -42,7 +42,7 @@ const ProjectSearchList: React.FC<ProjectListProp> = (props: ProjectListProp) =>
 
   // i18n
   const { locale, organizationId } = useContext(GlobalContext);
-  const { global, file: fileI18n, content: contentI18n } = locale.business;
+  const { global, file: fileI18n, content: contentI18n, organization: organizationI18n } = locale.business;
 
   const handleLinkClick = useCallback((entity) => {
     if (entity.level === GlobalType.folder) {
@@ -125,6 +125,12 @@ const ProjectSearchList: React.FC<ProjectListProp> = (props: ProjectListProp) =>
       },
     },
     {
+      title: organizationI18n.name,
+      dataIndex: 'organization',
+      key: 'organization',
+      render: (_, record: ProjectSearchEntity) => record?.organization?.name || '',
+    },
+    {
       title: global.type,
       dataIndex: 'type',
       key: 'type',
@@ -195,7 +201,7 @@ const ProjectSearchList: React.FC<ProjectListProp> = (props: ProjectListProp) =>
           fetchList({
             applicationId,
             organizationId,
-            type: type as any,
+            type: type,
             page: pagination.current || 1,
             size: pagination.pageSize || 10,
             search: searchText || '',

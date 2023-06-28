@@ -41,13 +41,15 @@ export class SetOrganizationStatus extends BaseController {
       });
 
       // Check the validity of the organization ID
-      const sourceOrgDetail = await this.service.org.getDetailById(params.organizationId);
+      const [sourceOrgDetail, hasAuth] = await Promise.all([
+        this.service.org.getDetailById(params.organizationId),
+        this.service.auth.organization(params.organizationId, { ctx, mask: 4 }),
+      ]);
       if (this.notValid(sourceOrgDetail)) {
         return Response.warning(i18n.org.invalidOrgId, 2010701);
       }
 
       // Permission check
-      const hasAuth = await this.service.auth.organization(params.organizationId, { ctx, mask: 4 });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4010701);
       }

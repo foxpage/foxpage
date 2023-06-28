@@ -5,6 +5,7 @@ import { Ctx, Delete, JsonController, QueryParams } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { RemoveAppSettingDetailReq } from '../../types/validates/app-validate-types';
 import { ResponseBase } from '../../types/validates/index-validate-types';
@@ -53,6 +54,17 @@ export class RemoveApplicationSettingDetail extends BaseController {
         await this.service.application.updateDetail(params.applicationId, {
           ['setting.' + params.type]: newTypeSetting,
         });
+
+        this.service.userLog.addLogItem(
+          { id: params.applicationId, ids: idxList },
+          {
+            ctx,
+            actions: [LOG.DELETE, params.type, TYPE.BUILDER],
+            category: {
+              applicationId: params.applicationId,
+            },
+          },
+        );
       }
       return Response.success(i18n.app.removeSettingSuccess, 1031301);
     } catch (err) {

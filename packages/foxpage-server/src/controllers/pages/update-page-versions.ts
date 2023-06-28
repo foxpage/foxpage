@@ -37,6 +37,7 @@ export class UpdatePageVersionDetail extends BaseController {
   })
   @ResponseSchema(ContentVersionDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: ContentVersionUpdateReq): Promise<ResData<ContentVersion>> {
+    let versionId = '';
     try {
       const apiType = this.getRoutePath(ctx.request.url);
 
@@ -46,14 +47,12 @@ export class UpdatePageVersionDetail extends BaseController {
       }
 
       const checkResult = this.service.version.check.structure(params.content || {});
-      if (checkResult.code !== 0) {
-        if (checkResult.code === 1) {
-          return Response.warning(i18n.page.invalidPageContentId, 2051901, checkResult.data);
-        } else if (checkResult.code === 2) {
-          return Response.warning(i18n.page.invalidRelationFormat, 2051902, checkResult.data);
-        } else if (checkResult.code === 3) {
-          return Response.warning(i18n.page.invalidStructureNames, 2051903, checkResult.data);
-        }
+      if (checkResult.code === 1) {
+        return Response.warning(i18n.page.invalidPageContentId, 2051901, checkResult.data);
+      } else if (checkResult.code === 2) {
+        return Response.warning(i18n.page.invalidRelationFormat, 2051902, checkResult.data);
+      } else if (checkResult.code === 3) {
+        return Response.warning(i18n.page.invalidStructureNames, 2051903, checkResult.data);
       }
 
       const mockId = params.content?.extension?.mockId || '';
@@ -64,18 +63,18 @@ export class UpdatePageVersionDetail extends BaseController {
         this.service.content.tag.updateExtensionTag(params.id, { mockId }, { ctx }),
       ]);
 
-      if (result.code !== 0) {
-        if (result.code === 1) {
-          return Response.warning(i18n.page.invalidVersionId, 2051904);
-        } else if (result.code === 2) {
-          return Response.warning(i18n.page.unEditedStatus, 2051905);
-        } else if (result.code === 3) {
-          return Response.warning(i18n.page.versionExist, 2051906);
-        } else if (result.code === 4) {
-          return Response.warning(i18n.page.missingFields + ': ' + result.data.join(','), 2051907);
-        } else if (result.code === 5) {
-          return Response.warning(i18n.page.contentHadUpdatedBefore, 2051908);
-        }
+      if (result.code === 1) {
+        return Response.warning(i18n.page.invalidVersionId, 2051904);
+      } else if (result.code === 2) {
+        return Response.warning(i18n.page.unEditedStatus, 2051905);
+      } else if (result.code === 3) {
+        return Response.warning(i18n.page.versionExist, 2051906);
+      } else if (result.code === 4) {
+        return Response.warning(i18n.page.missingFields + ': ' + result.data.join(','), 2051907);
+      } else if (result.code === 5) {
+        return Response.warning(i18n.page.contentHadUpdatedBefore, 2051908);
+      } else if (result.code === 0 && result.data) {
+        versionId = result.data;
       }
 
       await this.service.version.info.runTransaction(ctx.transactions);
@@ -85,6 +84,12 @@ export class UpdatePageVersionDetail extends BaseController {
       return Response.success(versionDetail, 1051901);
     } catch (err) {
       return Response.error(err, i18n.content.updatePageVersionFailed, 3051901);
+    } finally {
+      // save version relation
+      if (versionId) {
+        const versionRelationQuery = await this.service.relation.saveVersionRelations(versionId);
+        await this.service.version.info.runTransaction([versionRelationQuery]);
+      }
     }
   }
 }

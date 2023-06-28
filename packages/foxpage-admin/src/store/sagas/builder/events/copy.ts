@@ -1,7 +1,7 @@
 import { BLANK_NODE } from '@/constants/build';
 import { FormattedData, StructureNode } from '@/types/index';
 
-import { findStructureById, generateStructureId, getStyleWrapper } from '../utils';
+import { findStructureById, generateStructureId, getStyleWrapper, isTPLNode } from '../utils';
 
 import { afterPlacement } from './drop';
 
@@ -44,12 +44,12 @@ const copy = <T extends StructureNode>(data: T[] = [], opt: { parentId: string }
     if (node.name !== BLANK_NODE) {
       const id = generateStructureId();
       const extension = { ...(node.extension || {}), ...{ parentId: opt.parentId } };
-      const item = { ...node, id, extension };
+      const item = { ...node, id, extension, children: [] } as T;
       // delete extendId
       delete item.extension?.extendId;
 
-      if (item.children) {
-        item.children = copy(item.children, { parentId: id });
+      if (!isTPLNode(node) && node.children) {
+        item.children = copy(node.children, { parentId: id });
         // TODO:
         item.childIds = item.children.map((item) => item.id);
       }

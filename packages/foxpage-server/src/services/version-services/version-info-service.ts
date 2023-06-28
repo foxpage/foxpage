@@ -52,11 +52,17 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * New version details are added, only query statements required by the transaction are generated,
    * and the details of the created version are returned
    * @param  {Partial<ContentVersion>} params
+   * @param {ignoreUserLog} do not save to content log
    * @returns ContentVersion
    */
   create(
     params: Partial<ContentVersion>,
-    options: { ctx: FoxCtx; fileId?: string; actionType?: string },
+    options: {
+      ctx: FoxCtx;
+      fileId?: string;
+      actionDataType?: string;
+      ignoreUserLog?: boolean;
+    },
   ): ContentVersion {
     const invalidRelations = Service.version.check.relation(params.content?.relation || {});
     if (invalidRelations.length > 0) {
@@ -74,6 +80,19 @@ export class VersionInfoService extends BaseService<ContentVersion> {
     };
 
     options.ctx.transactions.push(Model.version.addDetailQuery(versionDetail));
+    if (!options.ignoreUserLog) {
+      Service.userLog.addLogItem(
+        { id: versionDetail.id },
+        {
+          ctx: options.ctx,
+          actions: [LOG.CREATE, options.actionDataType || '', TYPE.VERSION],
+          category: {
+            versionId: versionDetail.id,
+            contentId: params.contentId,
+          },
+        },
+      );
+    }
 
     return versionDetail;
   }
@@ -88,7 +107,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    */
   async updateVersionDetail(
     params: UpdateContentVersion,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionDataType?: string },
   ): Promise<Record<string, number | string | string[]>> {
     if (params.content && (<DSL>params.content).relation) {
       const invalidRelations = Service.version.check.relation((<DSL>params.content).relation || {});
@@ -152,6 +171,12 @@ export class VersionInfoService extends BaseService<ContentVersion> {
       }),
     );
 
+    Service.userLog.addLogItem(versionDetail, {
+      ctx: options.ctx,
+      actions: [LOG.UPDATE, options.actionDataType || '', TYPE.VERSION],
+      category: { contentId: params.id, versionId },
+    });
+
     return { code: 0, data: versionId };
   }
 
@@ -161,7 +186,11 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateVersionItem(id: string, params: Partial<ContentVersion>, options: { ctx: FoxCtx }): void {
+  updateVersionItem(
+    id: string,
+    params: Partial<ContentVersion>,
+    options: { ctx: FoxCtx; actionDataType?: string },
+  ): void {
     if ((<DSL>params.content).relation) {
       const invalidRelations = Service.version.check.relation((<DSL>params.content).relation || {});
       if (invalidRelations.length > 0) {
@@ -170,6 +199,16 @@ export class VersionInfoService extends BaseService<ContentVersion> {
     }
 
     options.ctx.transactions.push(Model.version.updateDetailQuery(id, params));
+    Service.userLog.addLogItem(
+      { id: id },
+      {
+        ctx: options.ctx,
+        actions: [LOG.UPDATE, options.actionDataType || '', TYPE.VERSION],
+        category: {
+          versionId: id,
+        },
+      },
+    );
   }
 
   /**
@@ -212,7 +251,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * @memberof VersionService
    */
   async createNewContentVersion(contentId: string, options: { ctx: FoxCtx }): Promise<ContentVersion> {
-    const newVersionDetail = (await this.getContentLatestVersion({ contentId })) || {};
+    const newVersionDetail = await this.getContentLatestVersion({ contentId });
 
     // Set new version information
     newVersionDetail.id = generationId(PRE.CONTENT_VERSION);
@@ -251,7 +290,6 @@ export class VersionInfoService extends BaseService<ContentVersion> {
 
     const contentDetail = await Service.content.info.getDetailById(versionDetail.contentId);
 
-    // TODO In the current version of the live state, you need to check whether the content is referenced
     if (params.status && contentDetail?.liveVersionNumber === versionDetail.versionNumber) {
       return { code: 2 }; // Can not be deleted
     }
@@ -348,7 +386,7 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    */
   async getContentLatestVersion(params: SearchLatestVersion): Promise<ContentVersion> {
     const version = await Model.version.getLatestVersionInfo(params);
-    return version as ContentVersion;
+    return (version as ContentVersion) || {};
   }
 
   /**
@@ -524,17 +562,26 @@ export class VersionInfoService extends BaseService<ContentVersion> {
    * replace relation key and schema dynamic fields
    * @param sourceVersion
    * @param idNameMaps
+   * @param changeName whether or not change the schema item name
    * @returns
    */
   createCopyVersion(
     sourceVersion: DSL,
     idNameMaps: Record<string, any>,
+    changeName: boolean = false,
   ): { newVersion: DSL; idNameMaps: Record<string, any> } {
     // content id
     let newContentId = generationId(PRE.CONTENT);
     let relationMaps: Record<string, string> = {};
     const sourceName = sourceVersion.schemas[0]?.name || '';
-    idNameMaps[sourceVersion.id] = newContentId;
+    const newSourceName = sourceName + '_' + randStr();
+    idNameMaps[sourceVersion.id] = {
+      id: newContentId,
+      name: sourceName,
+      newName: newSourceName,
+    };
+
+    changeName && (sourceVersion.schemas[0].name = newSourceName);
 
     // replace content relation and schemas
     let relation: Record<string, any> = {};
@@ -572,16 +619,28 @@ export class VersionInfoService extends BaseService<ContentVersion> {
       }
     }
 
-    idNameMaps[sourceVersion.id] = {
-      id: newContentId,
-      name: sourceName,
-      newName: sourceName + '_' + randStr(),
-    };
+    const schemas = this.removeInvalidStructure(JSON.parse(schemasString));
 
     return {
-      newVersion: { id: newContentId, relation, schemas: JSON.parse(schemasString) },
+      newVersion: { id: newContentId, relation, schemas },
       idNameMaps,
     };
+  }
+
+  /**
+   * remove invalid structure node in schemas
+   * eg. name: system.inherit-blank-node
+   * @param schemas
+   */
+  removeInvalidStructure(schemas: DslSchemas[]): DslSchemas[] {
+    _.remove(schemas, { name: 'system.inherit-blank-node' });
+    schemas.forEach((schema) => {
+      if (schema.children && schema.children.length > 0) {
+        schema.children = this.removeInvalidStructure(schema.children);
+      }
+    });
+
+    return schemas;
   }
 
   /**

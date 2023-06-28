@@ -2,6 +2,7 @@ import _ from 'lodash';
 
 import { Folder } from '@foxpage/foxpage-server-types';
 
+import { TYPE } from '../../config/constant';
 import { FolderChildrenSearch, FolderPageSearch, WorkspaceFolderSearch } from '../types/file-types';
 
 import folderModel from './schema/folder';
@@ -31,26 +32,31 @@ export class FolderModel extends BaseModel<Folder> {
   }
 
   /**
-   * Get all folders under the specified folder
-   * @param  {any} params
-   * @returns Promise
+   * create get folder data by parent ids's filter sql
+   * @param params
+   * @returns
    */
-  async getFolderListByParentIds(params: FolderChildrenSearch): Promise<Folder[]> {
-    const { page = 1, size = 10, types = [] } = params;
-    const filter: {
-      'tags.type': Record<string, string[]>;
-      creator?: any;
-      applicationId?: any;
-      deleted: boolean;
-      name?: any;
-      $or?: any[];
-    } = {
-      'tags.type': { $in: types },
+  getFoldersByParentIdsFilter(params: FolderChildrenSearch): Record<string, any> {
+    const filter: Record<string, any> = {
+      'tags.type': { $in: params.types || [] },
       deleted: false,
     };
 
     if (params.applicationIds && params.applicationIds.length > 0) {
-      filter.applicationId = { $in: params.applicationIds };
+      if (params.applicationIds.length === 1) {
+        filter.applicationId = params.applicationIds[0];
+      } else if (params.organizationId) {
+        filter['$and'] = [
+          {
+            $or: [
+              { applicationId: { $in: params.applicationIds } },
+              { tags: { $elemMatch: { type: TYPE.ORGANIZATION, typeId: params.organizationId } } },
+            ],
+          },
+        ];
+      } else {
+        filter.applicationId = { $in: params.applicationIds };
+      }
     }
 
     if (params.userIds && params.userIds.length > 0) {
@@ -58,8 +64,26 @@ export class FolderModel extends BaseModel<Folder> {
     }
 
     if (params.search) {
-      filter['$or'] = [{ id: params.search }, { name: { $regex: new RegExp(params.search, 'i') } }];
+      if (filter['$and']) {
+        filter['$and'].push({
+          $or: [{ id: params.search }, { name: { $regex: new RegExp(params.search, 'i') } }],
+        });
+      } else {
+        filter['$or'] = [{ id: params.search }, { name: { $regex: new RegExp(params.search, 'i') } }];
+      }
     }
+
+    return filter;
+  }
+
+  /**
+   * Get all folders under the specified folder
+   * @param  {any} params
+   * @returns Promise
+   */
+  async getFolderListByParentIds(params: FolderChildrenSearch): Promise<Folder[]> {
+    const { page = 1, size = 10 } = params;
+    const filter = this.getFoldersByParentIdsFilter(params);
 
     return this.model
       .find(filter, '-_id -tags._id')
@@ -75,29 +99,7 @@ export class FolderModel extends BaseModel<Folder> {
    * @returns Promise
    */
   async getFolderCountByParentIds(params: FolderChildrenSearch): Promise<number> {
-    const filter: {
-      'tags.type': Record<string, string[]>;
-      creator?: any;
-      applicationId?: any;
-      deleted: boolean;
-      name?: any;
-      $or?: any[];
-    } = {
-      'tags.type': { $in: params.types || [] },
-      deleted: false,
-    };
-
-    if (params.applicationIds && params.applicationIds.length > 0) {
-      filter.applicationId = { $in: params.applicationIds };
-    }
-
-    if (params.userIds && params.userIds.length > 0) {
-      filter.creator = { $in: params.userIds };
-    }
-
-    if (params.search) {
-      filter['$or'] = [{ id: params.search }, { name: { $regex: new RegExp(params.search, 'i') } }];
-    }
+    const filter = this.getFoldersByParentIdsFilter(params);
 
     return this.model.countDocuments(filter);
   }

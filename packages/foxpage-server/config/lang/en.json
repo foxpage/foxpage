@@ -24,7 +24,9 @@
     "removeSettingSuccess": "Remove app type setting success",
     "removeSettingDetailFailed": "Failed to remove app type setting",
     "invalidSettingTypeId": "Invalid application setting item type id",
-    "itemHasNoLiveVersion": "Invalid items with no live version"
+    "itemHasNoLiveVersion": "Invalid items with no live version",
+    "setAppStatusFailed": "Failed to set application status",
+    "setAppStatusSuccess": "Set application status success"
   },
   "auth": {
     "addAuthorizeDetailSuccess": "Create user authorized success",
@@ -161,7 +163,20 @@
     "contentCannotBeDeleted": "Content cannot be deleted",
     "versionCannotBeDeleted": "Version cannot be deleted",
     "typeItemNameExist": "Type item name has exist",
-    "missingFields": "The version details are missing necessary fields"
+    "missingFields": "The version details are missing necessary fields",
+    "contentIdNotInApp": "The content id not in application",
+    "contentConflict": "The content conflicts",
+    "syncContentIdNotMapping": "The sync content id not mapping, please check it again",
+    "syncSuccess": "The content had sync success",
+    "syncFailed": "Failed to sync content",
+    "invalidTags": "Invalid tags",
+    "tagWithoutType": "Tags without type field",
+    "saveTagsSuccess": "Save content tags success",
+    "saveTagsFailed": "Failed to save content tags",
+    "invalidVersionContent": "Invalid dsl, extend, relation or components",
+    "encryptFailed": "Failed to encrypt data",
+    "invalidEncryptToken": "Invalid encrypt token",
+    "validateEncryptFailed": "Failed to validate encrypt data"
   },
   "registry": {
     "addRegistryDetailFailed": "Adding registration details failed",
@@ -190,7 +205,9 @@
     "getWorkspaceProjectListFailed": "Failed to get workspace project list",
     "getWorkspaceRecycleListFailed": "Failed to get workspace recycle list",
     "projectIsInvalidOrDeleted": "Project id is invalid or has been deleted",
-    "hasLiveContentFile": "Project has live content files"
+    "hasLiveContentFile": "Project has live content files",
+    "cloneRelationsFailed": "Failed to clone relations",
+    "relationNotInApp": "The relations not in application"
   },
   "resource": {
     "addResourceFileFailed": "Failed to add resource file",
@@ -257,6 +274,7 @@
     "setComponentFileDeletedFailed": "Failed to delete component file",
     "setComponentContentDeletedFailed": "Failed to delete component content",
     "setComponentVersionDeletedFailed": "Failed to delete component version",
+    "setComponentContentLiveSuccess": "Set component live version success",
     "setComponentContentLiveFailed": "Failed to set component live version",
     "fileCannotBeDeleted": "Component file cannot be deleted",
     "contentCannotBeDeleted": "Component content cannot be deleted",
@@ -273,7 +291,15 @@
     "getComponentsCategoryTypeFailed": "Failed to get component category types",
     "removeComponentsCategoryFailed": "Failed to remove component category",
     "componentInStore": "The component is available in the store",
-    "invalidVersionData": "The version data of component is invalid"
+    "invalidVersionData": "The version data of component is invalid",
+    "mustHaveLiveVersion": "The component must have live version",
+    "invalidDeprecatedStatus": "Invalid deprecated status",
+    "invalidComponentIdOrAppId": "Component file id or application id is invalid",
+    "offlineBeforeDeprecated": "The component must offline from store before deprecated",
+    "setDeprecatedStatusSuccess": "Set component deprecated status success",
+    "setDeprecatedStatusFailed": "Set component deprecated status failed",
+    "existReferences": "The component has referenced by other component",
+    "mustDeprecatedFirst": "The component must deprecated first"
   },
   "variable": {
     "addNewVariableFailed": "Adding variable details failed",
@@ -461,7 +487,8 @@
     "setPageContentOfflineSuccess": "Set page content offline success",
     "invalidVersionData": "The version data of page is invalid",
     "contentHadUpdatedBefore": "The content had updated before",
-    "getPageVersionsFailed": "Failed to get page versions"
+    "getPageVersionsFailed": "Failed to get page versions",
+    "invalidTypeIdOrAppId": "Invalid item type id or not in application"
   },
   "store": {
     "getStorePageListFailed": "Failed to get product page data",
@@ -485,6 +512,17 @@
     "uploadObjectsFailed": "Failed to upload object to storage",
     "organizeUploadSuccess": "Success to upload",
     "organizeUploadFailed": "Failed to upload"
+  },
+  "picture": {
+    "invalidPictureData": "Invalid upload picture data",
+    "invalidNameOrUrl": "Invalid picture name or url",
+    "uploadPictureFailed": "Failed to upload picture",
+    "getItemPicturesFailed": "Failed to get item pictures",
+    "addItemPictureSuccess": "Add item pictures success",
+    "addItemPictureFailed": "Failed to add item pictures",
+    "getPageItemPictureFailed": "Failed to get page item pictures",
+    "setItemPictureStatusSuccess": "Set item picture status success",
+    "setItemPictureStatusFailed": "Failed to set item picture status"
   },
   "item": {
     "addNewItemFailed": "Failed to add new item detail"
@@ -748,9 +786,16 @@
     "addTypeItemDetail": "Add Type item (variable, function, condition, mock) detail",
     "addContentLogs": "Add content logs",
     "getContentLogs": "Get content log list",
+    "getContentDeleteLogs": "Get content delete log list",
     "setItemVersionPublishStatus": "Set item (variable, function, condition) version to publish status",
     "lockBuildContent": "Lock build content operate action",
     "unlockBuildContent": "Unlock build content operate action",
-    "getPageTypeItemVersions": "Get Page type item versions"
+    "getPageTypeItemVersions": "Get Page type item versions",
+    "addProjectRelationsByClone": "Add project relations by clone",
+    "getContentSyncInfo": "Get the content info to sync",
+    "updateVersionBySync": "Sync page content",
+    "setComponentDeprecated": "Set component to deprecated",
+    "EncryptContent": "Encrypt data",
+    "ValidateEncryptContent": "Validate encrypt data"
   }
 }

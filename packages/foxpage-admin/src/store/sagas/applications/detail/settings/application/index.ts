@@ -6,7 +6,7 @@ import * as API from '@/apis/application';
 import { getBusinessI18n } from '@/foxI18n/index';
 import * as ACTIONS from '@/store/actions/applications/detail/settings/application';
 import { ApplicationSettingsActionType } from '@/store/reducers/applications/detail/settings/application';
-import { ApplicationEntityMultiHost, ApplicationSaveParams } from '@/types/application';
+import { ApplicationEntityMultiHost, ApplicationSaveParams } from '@/types/index';
 import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchApplicationInfo(action: ApplicationSettingsActionType) {
@@ -22,7 +22,7 @@ function* handleFetchApplicationInfo(action: ApplicationSettingsActionType) {
       application: { fetchDetailFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchDetailFailed);
+    errorToast(res, fetchDetailFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -39,7 +39,7 @@ function* handleFetchAllLocales(action: ApplicationSettingsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -65,7 +65,7 @@ function* handleSaveApplicationInfo(action: ApplicationSettingsActionType) {
   if (res.code === 200) {
     message.success(saveSuccess);
   } else {
-   errorToast(res, saveFailed);
+    errorToast(res, saveFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));

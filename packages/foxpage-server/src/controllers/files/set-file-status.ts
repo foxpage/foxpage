@@ -12,6 +12,8 @@ import { DeleteFileReq, FileDetailRes } from '../../types/validates/file-validat
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
+// TODO: need to check offline
+
 @JsonController('file')
 export class SetFileStatus extends BaseController {
   constructor() {

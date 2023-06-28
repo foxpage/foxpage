@@ -32,6 +32,7 @@ const mapStateToProps = (store: RootState) => ({
   fileDrawerOpen: store.projects.file.drawerOpen,
   editFile: store.projects.file.editFile,
   fileSaveLoading: store.projects.file.saveLoading,
+  screenshots: store.screenshot.main.screenshots,
 });
 
 const mapDispatchToProps = {
@@ -112,6 +113,7 @@ const Content: React.FC<ProjectContentType> = (props) => {
     openEditDrawer,
     updateEditFileValue,
     fetchApplicationInfo,
+    screenshots,
   } = props;
 
   useEffect(() => {
@@ -166,6 +168,7 @@ const Content: React.FC<ProjectContentType> = (props) => {
       updateFile={openEditDrawer}
       updateEditFile={updateEditFileValue}
       fetchApplicationInfo={fetchApplicationInfo}
+      screenshots={screenshots}
     />
   );
 };

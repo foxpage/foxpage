@@ -84,7 +84,7 @@ export class AddApplicationDetail extends BaseController {
             name: '_' + name,
             tags: [{ type: name }],
           },
-          { ctx },
+          { ctx, ignoreUserLog: true },
         );
       }
 

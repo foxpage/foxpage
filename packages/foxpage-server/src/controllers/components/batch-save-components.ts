@@ -89,7 +89,7 @@ export class SaveRemoteComponents extends BaseController {
                 type: TYPE.COMPONENT as FileTypes,
                 componentType: item.componentType || COMPONENT_TYPE.REACT_COMPONENT,
               },
-              { ctx },
+              { ctx, actionDataType: TYPE.COMPONENT },
             );
 
             item.component.id = fileDetail.id;

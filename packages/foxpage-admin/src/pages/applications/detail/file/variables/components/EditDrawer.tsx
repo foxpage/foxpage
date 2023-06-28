@@ -5,8 +5,8 @@ import { BarsOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Input, Select, Table } from 'antd';
 import { RootState } from 'typesafe-actions';
 
-import * as ACTIONS from '@/actions/applications/detail/file/variables';
 import { openEditDrawer } from '@/actions/applications/detail/file/functions';
+import * as ACTIONS from '@/actions/applications/detail/file/variables';
 import { saveMock } from '@/actions/builder/header';
 import { updateMock } from '@/actions/builder/main';
 import { Field, Group, Label, OperationDrawer } from '@/components/index';
@@ -416,7 +416,7 @@ const EditDrawer: React.FC<Type> = (props) => {
               handleVariableFunctionChange(selectedFunc);
             }}
             onClose={() => setFuncDrawerVisible(false)}
-            onFuncOpen={() => openFuncDrawer(true)}
+            onFuncOpen={openFuncDrawer}
           />
         </Group>
       ) : (

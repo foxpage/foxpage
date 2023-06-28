@@ -186,6 +186,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * 1, the structure in schemas must has `props` field, if it does not exist, the default is empty object
    * 2, the structure in schemas must has `id`, `name` fields
    * 3, parentId in structure can be removed
+   * 4, the component is invalid when deprecated or deleted
    *
    * invalidRelationNames is the relation data in schema that not found in content.relation object
    * @param  {DslSchemas[]} schemas
@@ -193,7 +194,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    * @returns string
    */
   schemaCheckRecursive(
-    schemas: DslSchemas[],
+    schemas: DslSchemas[] = [],
     options?: { invalidRelationNames: string[] },
   ): {
     invalidNames: Record<string, string>[];
@@ -239,7 +240,7 @@ export class VersionCheckService extends BaseService<ContentVersion> {
    */
   schemaRelationMapping(content: DSL): string[] {
     let invalidSchemaRelation: string[] = [];
-    const schemasString = JSON.stringify(content.schemas);
+    const schemasString = JSON.stringify(content.schemas || []);
     const relationMatches: string[] = schemasString.match(/(?<=\{\{)(.+?)(?=\}\})/g) || [];
 
     for (const schemaRelation of _.uniq(relationMatches)) {
@@ -287,7 +288,9 @@ export class VersionCheckService extends BaseService<ContentVersion> {
     }
 
     const extension = Service.content.tag.getTagsByKeys(contentDetail?.tags || [], ['extendId']);
-
+    const componentItems = Service.content.component.getComponentInfoRecursive(
+      versionDetail.content.schemas || [],
+    );
     const schemaMapResult = this.schemaRelationMapping(versionDetail.content);
     const { invalidNames, invalidRelationNameData } = this.schemaCheckRecursive(
       versionDetail.content.schemas,
@@ -296,7 +299,8 @@ export class VersionCheckService extends BaseService<ContentVersion> {
       },
     );
 
-    const [relationResult, extendDetail] = await Promise.all([
+    const [invalidComponents, relationResult, extendDetail] = await Promise.all([
+      Service.component.checkComponentStatus(contentDetail.applicationId, componentItems),
       Service.relation.checkRelationStatus(versionDetail.content.relation),
       Service.content.info.getDetailById(extension.extendId),
     ]);
@@ -306,8 +310,17 @@ export class VersionCheckService extends BaseService<ContentVersion> {
     if (invalidNames.length > 0) {
       responseObject.structure.push({ status: 3, data: invalidNames });
     }
+
     if (invalidRelationNameData.length > 0) {
       responseObject.structure.push({ status: 4, data: invalidRelationNameData });
+    }
+
+    if (invalidComponents.deletedList.length > 0) {
+      responseObject.structure.push({ status: 5, data: invalidComponents.deletedList });
+    }
+
+    if (invalidComponents.deprecatedList.length > 0) {
+      responseObject.structure.push({ status: 6, data: invalidComponents.deprecatedList });
     }
 
     if (

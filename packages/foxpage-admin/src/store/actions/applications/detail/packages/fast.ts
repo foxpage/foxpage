@@ -7,7 +7,7 @@ import {
   RemoteComponentFetchParams,
   RemoteComponentItem,
   RemoteResourceSavedData,
-  RemoteResourceSaveParams
+  RemoteResourceSaveParams,
 } from '@/types/index';
 
 export const clearAll = createAction('APPLICATION_PACKAGES_FAST__CLEAR_ALL', () => ({}))();

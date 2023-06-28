@@ -15,7 +15,7 @@ import { PublishIcon } from '@/components/index';
 import { IconMsg, StyledIcon } from '@/pages/builder/header/Main';
 import { GlobalContext } from '@/pages/system';
 import { resetPublishStatus, updateShowPublishModal } from '@/store/actions/builder/main';
-import { PublishStatus, PublishSteps } from '@/types/builder';
+import { PublishStatus, PublishSteps } from '@/types/index';
 
 const { Paragraph, Text } = Typography;
 
@@ -93,16 +93,18 @@ const Main: React.FC<Type> = (props) => {
       const ErrorMsg = {
         '3': builder.invalidName,
         '4': builder.conditionBindFail,
+        '5': builder.deletedComponents,
+        '6': builder.deprecatedComponents
       };
       structure.forEach((item) => {
         (item.data || []).forEach((el) => {
-          const msg = (el?.label || el?.name || '') + ErrorMsg[item.status];
+          const msg = (el?.label || el?.name || '') + ' ' + ErrorMsg[item.status];
           errors.push([el.id, msg]);
         });
       });
       Object.keys(rest || {}).forEach((key) => rest[key] && errors.push([key, rest[key]]));
       Object.keys(relation || {}).forEach(
-        (key) => relation[key] && errors.push([relation[key], key + builder.invalidField]),
+        (key) => relation[key] && errors.push([relation[key], key + ' ' + builder.invalidField]),
       );
       return errors;
     } catch (e) {
@@ -120,7 +122,6 @@ const Main: React.FC<Type> = (props) => {
   };
 
   const closeModal = () => updateShowPublishModal(false);
-
   const steps = [
     { title: builder.confirmStep },
     { title: builder.saveStep },

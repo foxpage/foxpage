@@ -3,7 +3,7 @@ import {
   ComponentVersionDetailsFetchedRes,
   ComponentVersionDetailsFetchParams,
   ComponentVersionFetchParams,
-} from '@/types/component';
+} from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
 export const fetchLiveComponentList = (params: {

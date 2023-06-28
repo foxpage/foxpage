@@ -1,4 +1,4 @@
-import { LoginParams, LoginResponse } from '@/types/user';
+import { LoginParams, LoginResponse } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
 export const login = (params: LoginParams): Promise<LoginResponse> =>

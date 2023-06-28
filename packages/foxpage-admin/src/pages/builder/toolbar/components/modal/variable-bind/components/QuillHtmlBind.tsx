@@ -36,7 +36,7 @@ const Editor: React.ForwardRefRenderFunction<{}> = (_props, forwardedRef) => {
   const replaceProps = (str: string) => {
     if (editorRef.current) {
       const editor = editorRef.current.getEditor();
-      const savedRange = editor.selection.savedRange;
+      const savedRange = (editor as any).selection.savedRange;
       editor.insertText(savedRange.index, str, 'api');
       setTimeout(() => {
         editor.setSelection(savedRange.index + str.length, 0, 'api');
@@ -55,7 +55,13 @@ const Editor: React.ForwardRefRenderFunction<{}> = (_props, forwardedRef) => {
 
   return (
     <EditorWrapper>
-      <ReactQuill ref={editorRef} theme="snow" value={value} onChange={handleChange} modules={modules} />
+      <ReactQuill
+        ref={editorRef}
+        theme="snow"
+        value={value as any}
+        onChange={handleChange}
+        modules={modules}
+      />
     </EditorWrapper>
   );
 };

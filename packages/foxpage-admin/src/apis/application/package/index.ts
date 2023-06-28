@@ -2,17 +2,21 @@ import {
   AppComponentDetailAddComponentVersionParams,
   AppComponentDetailFetchComponentInfoParams,
   BaseResponse,
+  ComponentDisabledSaveParams,
   ComponentEditVersionEntity,
   ComponentEntity,
   ComponentRemote,
   ComponentRemoteSaveParams,
   ComponentsLiveVersionUpdateParams,
+  ComponentsReferLiveVersionUpdateParams,
   ComponentsVersionFetchParams,
   ComponentsVersionPublishParams,
   ComponentsVersionUpdateParams,
   ComponentUsedFetchParams,
   EditorBatchPublishParams,
   EditorComponentSaveParams,
+  FilesFetchedResponse,
+  FilesFetchParams,
   PackageType,
   PaginationReqParams,
   RemoteComponentFetchParams,
@@ -35,6 +39,14 @@ export const postComponents = (params: any) =>
 export const putComponentsStatus = (params: any) =>
   new Promise((resolve) => {
     FoxPageApi.put('/components/status', params, (rs: unknown) => {
+      resolve(rs);
+    });
+  });
+
+// 更新组件loadOnIgnite状态
+export const putComponents = (params: any) =>
+  new Promise((resolve) => {
+    FoxPageApi.put('/components', params, (rs: unknown) => {
       resolve(rs);
     });
   });
@@ -100,14 +112,21 @@ export const putComponentsVersionPublish = (params: ComponentsVersionPublishPara
     });
   });
 
-// /components/live-versions
-// live 组件版本
+// set component live version
 export const putComponentsLiveVersion = (params: ComponentsLiveVersionUpdateParams): Promise<BaseResponse> =>
   new Promise((resolve) => {
     FoxPageApi.put('/components/live-versions', params, (rs) => {
       resolve(rs);
     });
   });
+
+// set refer live version
+export const putComponentsReferLiveVersion = (params: ComponentsReferLiveVersionUpdateParams): Promise<BaseResponse> =>
+new Promise((resolve) => {
+  FoxPageApi.put('/components/reference-live-versions', params, (rs) => {
+    resolve(rs);
+  });
+});
 
 // /components/edit-versions
 // 获取组件编辑的详情数据
@@ -168,6 +187,22 @@ export const batchPublishEditors = (params: EditorBatchPublishParams): Promise<B
 export const fetchComponentUsed = (params: ComponentUsedFetchParams): Promise<BaseResponse> =>
   new Promise((resolve) => {
     FoxPageApi.get('/components/used', params, (rs) => {
+      resolve(rs);
+    });
+  });
+
+// fetch info
+export const fetchComponentDetail = (params: FilesFetchParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.post('/components/files', params, (rs: FilesFetchedResponse) => {
+      resolve(rs);
+    });
+  });
+
+// disabled
+export const saveComponentDisabled = (params: ComponentDisabledSaveParams): Promise<BaseResponse> =>
+  new Promise((resolve) => {
+    FoxPageApi.put('/components/deprecated', params, (rs) => {
       resolve(rs);
     });
   });

@@ -2,8 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card as AntCard, Col, Empty, Pagination, Row, Spin } from 'antd';
+import { Card as AntCard, Col, Empty, Pagination, Row, Spin } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -44,16 +43,14 @@ const mapStateToProps = (state: RootState) => ({
 const mapDispatchToProps = {
   clearAll: ACTIONS.clearAll,
   fetchList: ACTIONS.fetchList,
-  saveApp: ACTIONS.saveApp,
-  openDrawer: ACTIONS.openEditDrawer,
 };
 
 type ApplicationListProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const Applications = (props: ApplicationListProps) => {
-  const { loading, list, pageInfo, clearAll, fetchList, openDrawer } = props;
+  const { loading, list, pageInfo, clearAll, fetchList } = props;
 
-  // get multi-language
+  // i18n
   const { locale, organizationId } = useContext(GlobalContext);
   const { application, global } = locale.business;
 
@@ -95,15 +92,8 @@ const Applications = (props: ApplicationListProps) => {
             />
           }
           style={{ maxWidth: WIDTH_DEFAULT, overflow: 'unset' }}>
-          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button type="primary" onClick={() => openDrawer(true)}>
-              <PlusOutlined /> {application.add}
-            </Button>
-          </div>
           <Spin spinning={loading}>
-            <Row
-              gutter={16}
-              style={{ maxWidth: WIDTH_DEFAULT, minHeight: 24, paddingBottom: 24, margin: '0 auto' }}>
+            <Row gutter={16} style={{ maxWidth: WIDTH_DEFAULT, minHeight: 24, margin: '12px auto 24px' }}>
               {list.map((application) => {
                 return (
                   <Col span={6} key={application.id}>
@@ -116,8 +106,11 @@ const Applications = (props: ApplicationListProps) => {
                         history.push(`/applications/${application.id}/`);
                       }}
                       style={{ marginBottom: 12 }}>
-                      <p>
+                      <p style={{ fontSize: 12 }}>
                         {global.idLabel}: {application.id}
+                      </p>
+                      <p style={{ fontSize: 12 }}>
+                        {global.creator}: {application?.creator?.email || ''}
                       </p>
                     </Card>
                   </Col>

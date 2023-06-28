@@ -35,10 +35,9 @@ export const openEditDrawer = createAction(
   }),
 )();
 
-export const updateScope = createAction(
-  'APPLICATION_FILE_FUNCTIONS__UPDATE_SCOPE',
-  (scope: FileScope) => ({ scope }),
-)();
+export const updateScope = createAction('APPLICATION_FILE_FUNCTIONS__UPDATE_SCOPE', (scope: FileScope) => ({
+  scope,
+}))();
 
 export const fetchList = createAction(
   'APPLICATION_FILE_FUNCTIONS__FETCH_LIST',

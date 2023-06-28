@@ -18,7 +18,7 @@ const teamSchema = new Schema<Team>(
   },
 );
 
-teamSchema.pre('save', function(next) {
+teamSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {
@@ -29,6 +29,7 @@ teamSchema.pre('save', function(next) {
 
 teamSchema.index({ id: 1 });
 teamSchema.index({ organizationId: 1 });
+teamSchema.index({ name: 1 });
 teamSchema.index({ creator: 1 });
 teamSchema.index({ deleted: 1 });
 

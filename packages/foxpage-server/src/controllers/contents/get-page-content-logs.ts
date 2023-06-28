@@ -44,13 +44,13 @@ export class GetPageContentLogs extends BaseController {
       const pageSize = this.service.contentLog.setPageSize(params);
 
       if (!applicationId || !contentId) {
-        return Response.warning(i18n.content.invalidAppOrContentId, 2161001);
+        return Response.warning(i18n.content.invalidAppOrContentId, 2162801);
       } else if (!versionId) {
         const versionDetail = await this.service.version.info.getMaxBaseContentVersionDetail(contentId);
         versionId = versionDetail?.id || '';
       }
 
-      let queryParams: Record<string, string> = {
+      let queryParams: Record<string, any> = {
         'category.contentId': contentId,
         'category.versionId': versionId,
       };
@@ -65,6 +65,23 @@ export class GetPageContentLogs extends BaseController {
         }),
       ]);
 
+      const structureIds = _(logList).map('content').flatten().map('id').uniq().value();
+      let deleteQueryParams: Record<string, any>[] = [
+        {
+          $match: {
+            'category.contentId': contentId,
+            'category.versionId': versionId,
+            'content.id': { $in: structureIds },
+          },
+        },
+        { $sort: { createTime: 1 } },
+        { $group: { _id: '$content.id', lastData: { $last: '$$ROOT' } } },
+        { $match: { 'lastData.action': '13' } }, // delete log status
+        { $project: { 'lastData.id': 1 } },
+      ];
+      const lastDeleteData = await this.service.contentLog.aggregate(deleteQueryParams);
+      const reversibleLogIds: string[] = _.map(lastDeleteData, 'lastData.id');
+
       // get user info
       const userIds = _.uniq(_.map(logList, 'creator'));
       const userObject = await this.service.user.getUserBaseObjectByIds(userIds);
@@ -72,7 +89,10 @@ export class GetPageContentLogs extends BaseController {
       let logInfoList: LogInfoItem[] = [];
       for (const log of logList) {
         logInfoList.push(
-          Object.assign({}, _.omit(log, ['creator']), { creator: userObject[log.creator] || {} }),
+          Object.assign({}, _.omit(log, ['creator']), {
+            creator: userObject[log.creator] || {},
+            reversible: log.action === '13' && reversibleLogIds.indexOf(log.id) !== -1,
+          }),
         );
       }
 
@@ -81,10 +101,10 @@ export class GetPageContentLogs extends BaseController {
           pageInfo: this.paging(logCount, pageSize),
           data: logInfoList,
         },
-        1161101,
+        1162801,
       );
     } catch (err) {
-      return Response.error(err, i18n.content.getPageContentLogFailed, 3161101);
+      return Response.error(err, i18n.content.getPageContentLogFailed, 3162801);
     }
   }
 }

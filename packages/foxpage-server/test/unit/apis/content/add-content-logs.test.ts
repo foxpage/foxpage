@@ -1,4 +1,5 @@
 import { AddContentLogs } from '../../../../src/controllers/contents/add-content-logs';
+import { AppContentLogService } from '../../../../src/services/application-content-log-service';
 import { ContentLogService } from '../../../../src/services/content-log-service';
 import { VersionInfoService } from '../../../../src/services/version-services/version-info-service';
 import { FoxCtx } from '../../../../src/types/index-types';
@@ -26,6 +27,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
   ctx.userInfo = {
     id: 'user_xxxx',
     account: 'mock_user',
@@ -54,6 +56,7 @@ describe('Post: /contents/logs', () => {
       .spyOn(VersionInfoService.prototype, 'getMaxBaseContentVersionDetail')
       .mockResolvedValueOnce(Data.version.list[0] as any);
     jest.spyOn(ContentLogService.prototype, 'createLogQuery').mockResolvedValue({} as never);
+    jest.spyOn(AppContentLogService.prototype, 'createLogQuery').mockResolvedValue({} as never);
     jest.spyOn(ContentLogService.prototype, 'runTransaction').mockResolvedValueOnce();
 
     const result = await appInstance.index(<FoxCtx>ctx, params);

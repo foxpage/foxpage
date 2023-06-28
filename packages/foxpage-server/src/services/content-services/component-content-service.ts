@@ -11,7 +11,7 @@ import {
   ResourceType,
 } from '@foxpage/foxpage-server-types';
 
-import { PRE, TYPE } from '../../../config/constant';
+import { COMPONENT_TYPE, PRE, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { ComponentContentInfo, ComponentInfo, ComponentNameVersion } from '../../types/component-types';
 import {
@@ -64,14 +64,16 @@ export class ComponentContentService extends BaseService<Content> {
    */
   getComponentInfoRecursive(schemas: DslSchemas[]): NameVersion[] {
     let componentInfo: NameVersion[] = [];
-    schemas?.forEach((schema) => {
-      schema.name && componentInfo.push({ name: schema.name, version: schema.version || '' });
+    for (const schema of schemas || []) {
+      if (schema.type === COMPONENT_TYPE.REACT_COMPONENT) {
+        schema.name && componentInfo.push({ name: schema.name, version: schema.version || '' });
+      }
 
       if (schema.children && schema.children.length > 0) {
         const children = this.getComponentInfoRecursive(schema.children);
         componentInfo = componentInfo.concat(children);
       }
-    });
+    }
 
     return componentInfo;
   }
@@ -369,28 +371,42 @@ export class ComponentContentService extends BaseService<Content> {
    * @returns {NameVersionPackage[]} Promise
    */
   async getAppComponentByNameVersion(params: AppNameVersion): Promise<NameVersionPackage[]> {
+    let nameVersions = _.cloneDeep(params.contentNameVersion || []);
+    const nameVersionObject = _.keyBy(_.cloneDeep(params.contentNameVersion || []), 'name');
+
     // Get the fileIds of the specified name of the specified application
     const fileList = await Service.file.info.getFileIdByNames({
       applicationId: params.applicationId,
       type: _.isString(params.type) ? [params.type] : [],
-      fileNames: _.map(params.contentNameVersion, 'name'),
+      fileNames: _.keys(nameVersionObject),
     });
 
-    // replace reference component
+    let canaryFileIds: string[] = [];
+    // replace reference component, reference component do not return canary version
     fileList.forEach((file) => {
-      if (file.tags && file.tags.length > 0) {
-        const referTag = _.find(file.tags, { type: 'reference' });
-        referTag?.reference && (file.id = referTag.reference.id || '');
+      const referTag = _.find(file.tags, { type: 'reference' });
+      if (referTag?.reference) {
+        file.id = referTag.reference.id || '';
+      } else if (params.isCanary) {
+        canaryFileIds.push(file.id);
       }
     });
 
     // Get content information through fileId
     const contentList = await Service.content.file.getContentByFileIds(_.map(fileList, 'id'));
 
+    // set canary to to nameVersions variable
+    if (params.isCanary) {
+      const needGetCanaryContentList = _.filter(contentList, (content) => {
+        return canaryFileIds.indexOf(content.fileId) !== -1;
+      });
+      nameVersions = await this.setCanaryVersion(nameVersions, needGetCanaryContentList);
+    }
+
     // Get the version details corresponding to the specified name version
     const contentVersionList = await Service.version.list.getContentVersionListByNameVersion(
       contentList,
-      params.contentNameVersion,
+      nameVersions,
     );
 
     // Get the details corresponding to different versions of contentId,
@@ -408,19 +424,25 @@ export class ComponentContentService extends BaseService<Content> {
     const contentIdObject = _.keyBy(contentList, 'id');
     const contentNameObject = _.keyBy(contentList, 'title');
 
-    params.contentNameVersion.forEach((content) => {
+    nameVersions.forEach((content) => {
       contentId = contentNameObject[content.name]?.id || '';
       version = content.version || '';
 
       if (contentVersionObject[contentId + version]) {
         componentContentList.push(
-          Object.assign({ version }, content, {
-            package: Object.assign({}, contentVersionObject[contentId + version].content, {
+          Object.assign(
+            {
               name: content.name,
-              version: contentVersionObject[contentId + version].version,
-              type: fileObject[contentIdObject[contentId].fileId]?.type,
-            }),
-          }) as NameVersionPackage,
+              version: nameVersionObject[content.name]?.version || '',
+            },
+            {
+              package: Object.assign({}, contentVersionObject[contentId + version].content, {
+                name: content.name,
+                version: contentVersionObject[contentId + version].version,
+                type: fileObject[contentIdObject[contentId].fileId]?.type,
+              }),
+            },
+          ) as NameVersionPackage,
         );
       } else {
         componentContentList.push(
@@ -433,6 +455,30 @@ export class ComponentContentService extends BaseService<Content> {
     });
 
     return componentContentList;
+  }
+
+  async setCanaryVersion(nameVersions: NameVersion[], contentList: Content[]): Promise<NameVersion[]> {
+    const contentIds = _.map(contentList, 'id');
+    const canaryVersionList = await Service.version.list.find(
+      {
+        contentId: { $in: contentIds },
+        deleted: false,
+        status: VERSION.STATUS_CANARY,
+      },
+      'contentId version',
+    );
+    const contentObject = _.keyBy(contentList, 'title');
+    let canaryVersionObject: Record<string, ContentVersion> = {};
+    canaryVersionList.forEach((version) => {
+      !canaryVersionObject[version.contentId] && (canaryVersionObject[version.contentId] = version);
+    });
+    nameVersions.forEach((item) => {
+      if (canaryVersionObject[contentObject[item.name]?.id]) {
+        item.version = canaryVersionObject[contentObject[item.name].id].version || '';
+      }
+    });
+
+    return nameVersions;
   }
 
   /**
@@ -450,8 +496,10 @@ export class ComponentContentService extends BaseService<Content> {
       contentInfo = await Service.content.list.getAppContentList(params);
     } else {
       // Check whether contentIds is under the specified appId
-      contentInfo = await Service.content.list.getDetailByIds(contentIds);
-      contentInfo = _.filter(contentInfo, { deleted: false });
+      contentInfo = await Service.content.list.getContentInfo({
+        applicationId: params.applicationId,
+        contentIds,
+      });
     }
 
     // Get live details
@@ -463,10 +511,12 @@ export class ComponentContentService extends BaseService<Content> {
 
     // Data returned by splicing
     return contentVersionList.map((contentVersion) => {
-      return Object.assign(
-        { name: contentObject[contentVersion.contentId].title },
-        { version: contentVersion.version, package: contentVersion.content as ComponentDSL },
-      );
+      return {
+        name: contentObject[contentVersion.contentId].title,
+        version: contentVersion.version,
+        package: contentVersion.content as ComponentDSL,
+        deprecated: (<any>contentObject[contentVersion.contentId]).deprecated,
+      };
     });
   }
 

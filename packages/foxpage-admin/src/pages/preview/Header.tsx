@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
@@ -9,7 +9,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/header';
 import { FileType } from '@/constants/global';
-import { PageContent } from '@/types/builder';
+import { PageContent } from '@/types/index';
 import { getLocationIfo } from '@/utils/location-info';
 
 import { Actions, Catalog, GoBack } from '../builder/header/components';
@@ -85,6 +85,9 @@ const Part = styled.div`
 
 const mapStateToProps = (store: RootState) => ({
   pageList: store.builder.header.pageList,
+  versionId: store.builder.header.versionId,
+  readOnly: store.builder.main.readOnly,
+  versionList: store.history.main.versionsList,
 });
 
 const mapDispatchToProps = {
@@ -99,7 +102,9 @@ type HeaderType = ReturnType<typeof mapStateToProps> &
   };
 
 const Main: React.FC<HeaderType> = (props) => {
-  const { clearAll, fetchCatalog, selectContent, pageContent, pageList } = props;
+  const { clearAll, fetchCatalog, selectContent, pageContent, pageList, readOnly, versionId, versionList } =
+    props;
+
   const { applicationId, folderId, fileId, contentId } = getLocationIfo(useLocation());
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -145,6 +150,18 @@ const Main: React.FC<HeaderType> = (props) => {
     }
   }, [applicationId, folderId]);
 
+  const version = useMemo(() => {
+    let versionStr = '';
+
+    if (!readOnly) {
+      versionStr = pageContent.version;
+    } else {
+      versionStr = versionList.find((version) => version.id === versionId)?.version || '';
+    }
+
+    return versionStr;
+  }, [versionList, pageContent, readOnly, versionId]);
+
   return (
     <React.Fragment>
       <StyledHeader>
@@ -153,7 +170,7 @@ const Main: React.FC<HeaderType> = (props) => {
           <Catalog readOnly={true} />
           {pageContent.version && (
             <Tag color="green" style={{ marginLeft: 8 }}>
-              {pageContent.version}
+              {version}
             </Tag>
           )}
         </Part>

@@ -41,7 +41,7 @@ export class ComponentService {
    */
   async updateVersionDetail(
     params: UpdateContentVersion,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionDataType?: string },
   ): Promise<Record<string, number | string | string[]>> {
     const versionDetail = await Service.version.info.getDetailById(params.id);
     const contentDetail = await Service.content.info.getDetailById(versionDetail.contentId || '');
@@ -59,6 +59,11 @@ export class ComponentService {
         content: params.content,
       }),
     );
+    Service.userLog.addLogItem(versionDetail, {
+      ctx: options.ctx,
+      actions: [LOG.UPDATE, options.actionDataType || contentDetail.type || '', TYPE.VERSION],
+      category: { versionId: params.id, contentId: versionDetail.contentId, fileId: contentDetail.fileId },
+    });
 
     return { code: 0 };
   }
@@ -371,5 +376,68 @@ export class ComponentService {
     ]);
 
     return { list, count };
+  }
+
+  /**
+   * check component is deprecated or delete
+   * include the status of reference component
+   * @param componentItems
+   * @returns
+   */
+  async checkComponentStatus(
+    applicationId: string,
+    componentItems: { name: string }[],
+  ): Promise<{ deprecatedList: Record<string, string>[]; deletedList: Record<string, string>[] }> {
+    const componentNames = _.map(componentItems, 'name');
+    let componentFileList = await Service.file.list.find({
+      name: { $in: componentNames },
+      type: TYPE.COMPONENT,
+      applicationId,
+    });
+
+    // merge same component exist multi data with deleted status different
+    const componentFileObject: Record<string, File> = {};
+    componentFileList.forEach((component) => {
+      if (!componentFileObject[component.name] || componentFileObject[component.name].deleted) {
+        componentFileObject[component.name] = component;
+      }
+    });
+    componentFileList = _.toArray(componentFileObject);
+
+    let referenceIdMap: Record<string, string> = {};
+    let deprecatedObject: Record<string, boolean> = {};
+    componentFileList.forEach((component) => {
+      (component.tags || []).forEach((tag) => {
+        tag.type === TAG.DELIVERY_REFERENCE && (referenceIdMap[component.id] = tag.reference.id);
+        tag.type === TAG.DEPRECATED && (deprecatedObject[component.id] = tag.status);
+      });
+    });
+
+    // get reference component infos
+    let referenceList: File[] = [];
+    let referenceDeprecatedObject: Record<string, boolean> = {};
+    if (!_.isEmpty(referenceIdMap)) {
+      referenceList = await Service.file.list.getDetailByIds(_.values(referenceIdMap));
+      referenceList.forEach((reference) => {
+        const deprecatedTag = _.find(reference.tags || [], (tag) => tag.type === TAG.DEPRECATED);
+        deprecatedTag && (referenceDeprecatedObject[reference.id] = deprecatedTag.status);
+      });
+    }
+
+    let deprecatedList: Record<string, string>[] = [];
+    let deletedList: Record<string, string>[] = [];
+    const referenceObject = _.keyBy(referenceList, 'id');
+    componentFileList.forEach((component) => {
+      if (
+        component.deleted ||
+        (referenceIdMap[component.id] && referenceObject[referenceIdMap[component.id]].deleted)
+      ) {
+        deletedList.push({ id: component.id, name: component.name });
+      } else if (deprecatedObject[component.id] || referenceDeprecatedObject[referenceIdMap[component.id]]) {
+        deprecatedList.push({ id: component.id, name: component.name });
+      }
+    });
+
+    return { deprecatedList, deletedList };
   }
 }

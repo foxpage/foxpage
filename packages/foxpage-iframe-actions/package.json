@@ -1,0 +1,25 @@
+{
+  "name": "@foxpage/foxpage-iframe-actions",
+  "version": "1.0.36",
+  "description": "shared actions used by iframe",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "author": "Rongkai Liu",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "release": "tsc && yarn publish"
+  },
+  "devDependencies": {
+    "@foxpage/foxpage-client-types": "^0.0.12",
+    "@foxpage/foxpage-types": "^1.0.0",
+    "typescript": "^4.9.5"
+  }
+}

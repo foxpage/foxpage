@@ -10,7 +10,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/applications/detail/packages/fast';
 import { Pagination } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
-import { RemoteComponentItem } from '@/types/application';
+import { RemoteComponentItem } from '@/types/index';
 
 import { ComponentResource } from '../detail';
 
@@ -295,7 +295,6 @@ const Main = (props: PackagesProps) => {
             </Tips>
             <List>{packages.map(Item)}</List>
             <Pagination
-              hideOnSinglePage
               current={pageInfo.page}
               total={pageInfo?.total || 0}
               pageSize={pageInfo.size}

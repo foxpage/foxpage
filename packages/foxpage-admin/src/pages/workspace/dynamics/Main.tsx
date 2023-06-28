@@ -1,7 +1,7 @@
 import React from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import Dynamics from './personal/ComingSoon';
+import Dynamics from './personal';
 
 function WorkspaceDynamics() {
   return (

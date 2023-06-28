@@ -19,6 +19,7 @@ const mapStateToProps = (store: RootState) => ({
   authList: store.applications.detail.projects.file.authList,
   userList: store.applications.detail.projects.file.userList,
   application: store.applications.detail.settings.app.application,
+  screenshots: store.screenshot.main.screenshots,
 });
 
 const mapDispatchToProps = {
@@ -67,6 +68,7 @@ const Main: React.FC<FileListType> = (props) => {
     deleteUser,
     deleteProject,
     saveProject,
+    screenshots,
   } = props;
 
   useEffect(() => {
@@ -102,6 +104,7 @@ const Main: React.FC<FileListType> = (props) => {
       deleteUser={deleteUser}
       deleteProject={deleteProject}
       saveProject={saveProject}
+      screenshots={screenshots}
     />
   );
 };

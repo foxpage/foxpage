@@ -2,7 +2,7 @@ import produce from 'immer';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/system/user';
-import { UserOrganization } from '@/types/user';
+import { UserOrganization } from '@/types/index';
 import { getLoginUser } from '@/utils/index';
 
 export type UserActionType = ActionType<typeof ACTIONS>;

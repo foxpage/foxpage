@@ -24,7 +24,7 @@ const initialState = {
   drawerType: '',
   condition,
   editCondition,
-  scope
+  scope,
 };
 
 type InitialDataType = typeof initialState;

@@ -20,6 +20,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
   ctx.userInfo = {
     id: 'user_xxxx',
     account: 'mock_user',

@@ -1,15 +1,10 @@
-import { AbstractEntity, CommonDeleteParams, File, PaginationReqParams, PaginationResponseBody } from '@/types/index';
-
-export interface ContentEntity extends Pick<File, 'id' | 'type' | 'creator' | 'tags'> {
-  title: string;
-  fileId: string;
-  fold?: boolean;
-  urls: string[];
-  isBase?: boolean;
-  version?: string;
-  extendId?: string;
-  liveVersionNumber?: number;
-}
+import {
+  CommonDeleteParams,
+  ContentEntity,
+  ContentVersionData,
+  PaginationReqParams,
+  PaginationResponseBody,
+} from '@foxpage/foxpage-client-types';
 
 export interface ProjectContentFetchParams extends Pick<ContentEntity, 'fileId'> {
   applicationId: string;
@@ -40,13 +35,6 @@ export type ProjectContentOfflineParams = Pick<
 export interface ProjectContentSaveAsBaseParams
   extends Pick<ProjectContentOfflineParams, 'applicationId' | 'fileId'> {
   contentId: string;
-}
-
-// content history
-export interface ContentVersionData extends AbstractEntity {
-  contentId: string;
-  version: string;
-  isLive: boolean;
 }
 
 export interface ContentVersionDataFetchParams extends PaginationReqParams {

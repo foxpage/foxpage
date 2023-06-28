@@ -1,4 +1,5 @@
 export * from './cache';
+export * from './clipboard';
 export * from './differ';
 export * from './formatter';
 export * from './log-cache';

@@ -7,7 +7,7 @@ import { LOG, METHOD, PRE, TYPE } from '../../config/constant';
 import * as Model from '../models';
 import * as Service from '../services';
 import { FoxCtx, PageData } from '../types/index-types';
-import { ContentChange, DataLogPage, UserOperationParams } from '../types/log-types';
+import { ContentChange, DataLogPage } from '../types/log-types';
 import { generationId } from '../utils/tools';
 
 import { BaseService } from './base-service';
@@ -66,9 +66,12 @@ export class LogService extends BaseService<Log> {
 
         log.category.versionId &&
           (log.category.contentId = itemIdObject.version[log.category.versionId]?.contentId);
-        log.category.contentId &&
-          (log.category.fileId = itemIdObject.content[log.category.contentId]?.fileId);
-        log.category.fileId && (log.category.folderId = itemIdObject.file[log.category.fileId]?.folderId);
+        if (log.category.contentId && !log.category.fileId) {
+          log.category.fileId = itemIdObject.content[log.category.contentId]?.fileId;
+        }
+        if (log.category.fileId && !log.category.folderId) {
+          log.category.folderId = itemIdObject.file[log.category.fileId]?.folderId;
+        }
         log.category.folderId &&
           (log.category.applicationId = itemIdObject.folder[log.category.folderId]?.applicationId);
 
@@ -83,7 +86,8 @@ export class LogService extends BaseService<Log> {
         );
       }
 
-      await Model.log.addDetail(allLogs);
+      // save to log and user log collection
+      await Promise.all([Model.log.addDetail(allLogs), Model.userLog.addDetail(allLogs as any[])]);
     }
   }
 
@@ -294,52 +298,6 @@ export class LogService extends BaseService<Log> {
     });
 
     return logData;
-  }
-
-  /**
-   * Get the special user, special time, special action and special app's operation list and count
-   * @param  {UserOperationParams} params
-   * @returns {list:Log[], count:number}
-   */
-  async getUserOperationList(params: UserOperationParams): Promise<{ list: Log[]; count: number }> {
-    let applicationIds: string[] = [];
-    if (params.organizationId && !params.applicationId) {
-      const appList = await Service.application.find({
-        organizationId: params.organizationId,
-        deleted: false,
-      });
-      applicationIds = _.map(appList, 'id');
-    }
-
-    const skip = ((params.page || 1) - 1) * (params.size || 10);
-    const searchParams: any = {
-      operator: params.operator,
-      action: { $ne: 'request' },
-      // 'content.response.code': RESPONSE_LEVEL.SUCCESS,
-      createTime: {
-        $gte: new Date(new Date(params.startTime)),
-        $lt: new Date(new Date(params.endTime)),
-      },
-    };
-
-    if (applicationIds.length > 0) {
-      searchParams['category.applicationId'] = { $in: applicationIds };
-    }
-
-    if (params.applicationId) {
-      searchParams['category.applicationId'] = params.applicationId;
-    }
-
-    const [operationList, operationCount] = await Promise.all([
-      this.find(searchParams, '-_id -category._id', {
-        sort: { createTime: -1 },
-        skip,
-        limit: params.size || 10,
-      }),
-      this.getCount(searchParams),
-    ]);
-
-    return { list: operationList, count: operationCount };
   }
 
   /**

@@ -93,6 +93,27 @@ export const deleteFile = (params: CommonDeleteParams) =>
     });
   });
 
+export const deletePage = (params: CommonDeleteParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.put('/pages/status', params, (rs: ResponseBody) => {
+      resolve(rs);
+    });
+  });
+
+export const deleteTemplate = (params: CommonDeleteParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.put('/templates/status', params, (rs: ResponseBody) => {
+      resolve(rs);
+    });
+  });
+
+export const deleteBlock = (params: CommonDeleteParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.put('/blocks/status', params, (rs: ResponseBody) => {
+      resolve(rs);
+    });
+  });
+
 export const getProjectFiles = (params: ProjectFileFetchParams): Promise<ProjectFileFetchResponse> =>
   new Promise((resolve) => {
     FoxPageApi.get('/projects/files', params, (rs: ProjectFileFetchResponse) => {

@@ -1,24 +1,11 @@
 import {
-  AbstractEntity,
   CommonDeleteParams,
   CommonFetchParams,
   PaginationReqParams,
   ResponseBody,
-  User,
-} from '@/types/index';
-
-export interface TeamMemberEntity extends Pick<User, 'account'> {
-  joinTime: string;
-  status: boolean;
-  userId: string;
-}
-
-export interface TeamEntity extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
-  deleted: boolean;
-  members: TeamMemberEntity[];
-  name: string;
-  organizationId: string;
-}
+  TeamEntity,
+  TeamMemberEntity,
+} from '@foxpage/foxpage-client-types';
 
 // team list
 export interface TeamsFetchParams extends CommonFetchParams {}

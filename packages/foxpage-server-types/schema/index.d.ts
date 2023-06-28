@@ -2,6 +2,7 @@ export type ContentBaseStatus = 'base';
 export type ContentDiscardStatus = 'discard';
 export type ContentAlphaStatus = 'alpha';
 export type ContentBetaStatus = 'beta';
+export type ContentCanaryStatus = 'canary';
 export type ContentReleaseStatus = 'release';
 export type ContentReleaseCandidateStatus = 'releaseCandidate';
 
@@ -11,6 +12,7 @@ export type ContentStatus =
   | ContentDiscardStatus
   | ContentAlphaStatus
   | ContentBetaStatus
+  | ContentCanaryStatus
   | ContentReleaseStatus
   | ContentReleaseCandidateStatus;
 
@@ -379,9 +381,41 @@ export interface Log {
 export interface ContentLog {
   id: string;
   action: string;
+  actionType?: string;
   category: Record<string, string>;
   content: { id: string; type: string; content: any }[];
   creator: string;
+  createTime?: Date;
+  updateTime?: Date;
+}
+
+export interface UserLog {
+  id: string;
+  transactionId: string;
+  actionType: string;
+  category: Record<string, string>;
+  content: { id: string; type: string; content: any }[];
+  creator: string;
+  createTime?: Date;
+  updateTime?: Date;
+}
+
+export interface PicCategory {
+  applicationId: string;
+  folderId?: string;
+  fileId?: string;
+  contentId?: string;
+  locales?: string[];
+}
+
+export interface Picture {
+  id: string;
+  name: string;
+  category: PicCategory;
+  tags?: Record<string, any>[];
+  url: string;
+  creator: string;
+  deleted: boolean;
   createTime?: Date;
   updateTime?: Date;
 }

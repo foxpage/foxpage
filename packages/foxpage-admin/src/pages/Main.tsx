@@ -2,7 +2,7 @@ import 'dayjs/locale/zh-cn'; // 导入本地化语言
 
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, useHistory } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
 import { ConfigProvider, Modal } from 'antd';
 import enUS from 'antd/lib/locale/en_US';
@@ -10,10 +10,10 @@ import zhCN from 'antd/lib/locale/zh_CN';
 import styled from 'styled-components';
 
 import { updateOrganizationId } from '@/actions/system/user';
-import { LOCALE_EN, LOCALE_ZH_CN } from '@/constants/index';
+import { BROWSER_ZH_CN, LOCALE_EN, LOCALE_ZH_CN } from '@/constants/index';
 import businessLocale from '@/foxI18n/index';
 import { FoxI18n } from '@/types/index';
-import { getLoginUser, isChrome, setGlobalLocale, setLoginUser } from '@/utils/index';
+import { getLoginUser, getUserPreference, isChrome, setGlobalLocale, setLoginUser } from '@/utils/index';
 
 import { GlobalContext, Internal, Login, Register } from './system/index';
 import { Builder } from './builder';
@@ -37,35 +37,31 @@ type AppProps = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 const AppMain = (props: AppProps) => {
   const { updateOrganizationId } = props;
   const [locale, setLocale] = useState<FoxI18n>({
-    ...zhCN,
-    business: businessLocale[LOCALE_ZH_CN],
+    ...enUS,
+    business: businessLocale[LOCALE_EN],
   });
 
   // user info
-  const { languagePrefer, userInfo } = getLoginUser();
+  const { userInfo } = getLoginUser();
   const [organizationId, setOrganizationId] = useState<string>(userInfo?.organizationId || '');
 
-  const history = useHistory();
-
-  if (!organizationId) {
-    history.push({
-      pathname: '/login',
-    });
-
-    return null;
-  }
-
   useEffect(() => {
-    if (!!languagePrefer)
+    const { language } = getUserPreference();
+    if (!!language) {
       setLocale({
-        ...(languagePrefer === LOCALE_ZH_CN ? zhCN : enUS),
-        business: languagePrefer === LOCALE_ZH_CN ? businessLocale[LOCALE_ZH_CN] : businessLocale[LOCALE_EN],
+        ...(language === LOCALE_ZH_CN ? zhCN : enUS),
+        business: language === LOCALE_ZH_CN ? businessLocale[LOCALE_ZH_CN] : businessLocale[LOCALE_EN],
       });
-  }, []);
+    } else {
+      const browserLanguage = navigator.language;
 
-  useEffect(() => {
-    setGlobalLocale(locale.locale);
-  }, [locale]);
+      setLocale({
+        ...(browserLanguage === BROWSER_ZH_CN ? zhCN : enUS),
+        business:
+          browserLanguage === BROWSER_ZH_CN ? businessLocale[LOCALE_ZH_CN] : businessLocale[LOCALE_EN],
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const loginUserInfo = getLoginUser();
@@ -80,6 +76,10 @@ const AppMain = (props: AppProps) => {
 
     if (typeof updateOrganizationId === 'function') updateOrganizationId(organizationId);
   }, [organizationId, updateOrganizationId]);
+
+  useEffect(() => {
+    setGlobalLocale(locale.locale);
+  }, [locale]);
 
   return (
     <GlobalContext.Provider value={{ locale, setLocale, organizationId, setOrganizationId }}>

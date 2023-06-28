@@ -43,14 +43,8 @@ function* handleFetchCatalog(action: BuilderHeaderActionType) {
 }
 
 function* handleSelectContent(action: BuilderHeaderActionType) {
-  const {
-    applicationId,
-    folderId,
-    fileId,
-    contentId,
-    locale,
-    fileType,
-  } = action.payload as CatalogContentSelectParams;
+  const { applicationId, folderId, fileId, contentId, locale, fileType } =
+    action.payload as CatalogContentSelectParams;
 
   yield all([
     put(ACTIONS.updateLocale(locale || '')),
@@ -58,7 +52,7 @@ function* handleSelectContent(action: BuilderHeaderActionType) {
   ]);
 }
 
-// dls & mock related
+// dls, html, mock related
 function* handleFetchDsl(action: BuilderHeaderActionType) {
   yield put(ACTIONS.updateDSLLoading(true));
 
@@ -119,6 +113,7 @@ function* handleSaveMock(action: BuilderHeaderActionType) {
   const { params, cb } = action.payload as { params: MockNewParams; cb: (mockId?: string) => void };
   params.content = wrapperMock(params.content);
   const { applicationId, content } = params;
+  const { contentId } = store.getState().builder.header;
 
   // get specific api & params with different update type
   const mockId = params?.content?.id;
@@ -129,6 +124,7 @@ function* handleSaveMock(action: BuilderHeaderActionType) {
         applicationId,
         id: mockId,
         content,
+        pageContentId: contentId,
       };
   const res = yield call(api, newParams);
 
@@ -143,7 +139,7 @@ function* handleSaveMock(action: BuilderHeaderActionType) {
     if (typeof cb === 'function') cb(newVersionId);
 
     if (params?.refresh) {
-      const { applicationId: appId, contentId } = store.getState().builder.header;
+      const { applicationId: appId } = store.getState().builder.header;
       const { file } = store.getState().builder.main;
       yield put(
         fetchContent({

@@ -9,7 +9,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/system/user';
 import { GlobalContext } from '@/pages/system';
-import { getLoginUser, setLoginUser } from '@/utils/index';
+import { getLoginUser, getUserPreference, setLoginUser, setUserPreference } from '@/utils/index';
 
 const MenuGroupTitle = styled.a`
   display: flex;
@@ -64,7 +64,8 @@ function OrganizationSelector(props: IProps) {
 
   const { organizationId, setOrganizationId } = useContext(GlobalContext);
 
-  const { token, userInfo, languagePrefer, organizationPrefer } = getLoginUser();
+  const { token, userInfo } = getLoginUser();
+  const { language, organization } = getUserPreference();
 
   useEffect(() => {
     fetchList();
@@ -72,8 +73,8 @@ function OrganizationSelector(props: IProps) {
 
   useEffect(() => {
     const defaultOrg =
-      list && list.length > 0 && organizationPrefer
-        ? list.find((item) => item.id === organizationPrefer)
+      list && list.length > 0 && organization
+        ? list.find((item) => item.id === organization)
         : list.find((item) => item.default) || list?.[0];
 
     if (defaultOrg && defaultOrg?.id === organizationId) {
@@ -98,8 +99,11 @@ function OrganizationSelector(props: IProps) {
             ...userInfo,
             organizationId: newOrganizationId,
           },
-          languagePrefer,
-          organizationPrefer: newOrganizationId,
+        });
+
+        setUserPreference({
+          language,
+          organization: newOrganizationId,
         });
 
         // push new organization id to store

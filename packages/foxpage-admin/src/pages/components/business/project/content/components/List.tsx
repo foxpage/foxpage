@@ -12,10 +12,19 @@ import {
   UserOutlined,
   VerticalAlignBottomOutlined,
 } from '@ant-design/icons';
-import { Button, Dropdown, Menu, Modal, Popconfirm, Popover, Select, Table, Tag, Tooltip } from 'antd';
+import { Button, Dropdown, Image, Menu, Modal, Popconfirm, Popover, Select, Table, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 
-import { BasicTemRing, LocaleTag, LocaleView, Name, NameContainer, Ring, VLine } from '@/components/index';
+import {
+  BasicTemRing,
+  BasicTemRingMask,
+  LocaleTag,
+  LocaleView,
+  Name,
+  NameContainer,
+  Ring,
+  VLine,
+} from '@/components/index';
 import { FileType } from '@/constants/index';
 import VersionList from '@/pages/applications/detail/file/pages/content/versions';
 import UrlWithQRcode from '@/pages/components/common/QRcodeUrl';
@@ -28,8 +37,9 @@ import {
   ProjectContentDeleteParams,
   ProjectContentOfflineParams,
   ProjectContentSaveAsBaseParams,
+  Screenshots,
 } from '@/types/index';
-import { getLocationIfo, objectEmptyCheck, periodFormat } from '@/utils/index';
+import { formatter, getLocationIfo, objectEmptyCheck, periodFormat } from '@/utils/index';
 
 const IdLabel = styled.div`
   max-width: 300px;
@@ -51,6 +61,14 @@ const Label = styled.div`
   width: 70px;
 `;
 
+const ImageBox = styled(Image)`
+  width: 80px !important;
+  height: 45px !important;
+  border: 1px solid #ebebeb;
+  border-radius: 4px;
+  padding: 4px;
+`;
+
 interface ProjectContentList {
   type: string;
   loading: boolean;
@@ -58,6 +76,7 @@ interface ProjectContentList {
   extendRecord: Record<string, string[]>;
   fileDetail: File;
   locales: string[];
+  screenshots: Screenshots;
   openDrawer: (open: boolean, editContent?: Partial<ContentEntity>) => void;
   deleteContent: (params: ProjectContentDeleteParams) => void;
   copyContent?: (params: ProjectContentCopyParams, cb?: () => void) => void;
@@ -80,6 +99,7 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
     offlineContent,
     openDrawer,
     openAuthDrawer,
+    screenshots = {},
   } = props;
   const [selectContentId, setSelectContentId] = useState('');
   const [copyModalOpen, setCopyModalOpen] = useState(false);
@@ -95,6 +115,8 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
     contentName: '',
     fileType: '',
   });
+
+  const isPageContent = fileDetail?.type === FileType.page;
 
   // url search params
   const { pathname, search, applicationId, fileId } = getLocationIfo(useLocation());
@@ -115,7 +137,7 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
   const generateBaseOfflineDisabled = useCallback(
     (content) => {
       let disabled = false;
-      if (fileDetail?.type === FileType.page) {
+      if (isPageContent) {
         if (content && content?.isBase) {
           const childrenIdList = extendRecord?.[content.id] || [];
           if (!objectEmptyCheck(childrenIdList)) {
@@ -140,7 +162,11 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
   };
 
   const handleCopy = () => {
-    if (typeof copyContent === 'function' && applicationId && !objectEmptyCheck(targetContentLocales)) {
+    if (
+      typeof copyContent === 'function' &&
+      applicationId &&
+      (!isPageContent || (isPageContent && !objectEmptyCheck(targetContentLocales)))
+    ) {
       copyContent(
         {
           applicationId,
@@ -247,27 +273,36 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
       ),
     },
     {
-      title: <Tooltip title={version.liveVersion}>{version.name}</Tooltip>,
-      dataIndex: 'version',
-      key: 'version',
-      width: 90,
-      render: (text: string) => {
-        return text ? <Tag color="orange">{text}</Tag> : '';
+      title: global.screenshot,
+      dataIndex: '',
+      width: 200,
+      render: (_: string, record: File) => {
+        const pictures = screenshots[record.id] || [];
+        const [one, two, ..._rest] = pictures;
+        if (one || two) {
+          return (
+            <Image.PreviewGroup>
+              {one && <ImageBox key={one.sort} src={one.url} />}
+              {two && <ImageBox key={two.sort} src={two.url} style={{ marginLeft: 4 }} />}
+            </Image.PreviewGroup>
+          );
+        }
+        return '-';
       },
     },
     {
-      title: global.locale,
-      dataIndex: 'tag',
-      key: 'tag',
-      width: 170,
-      render: (_text: string, record: ContentEntity) => {
-        if (record.isBase) {
-          return <LocaleTag color="blue">base</LocaleTag>;
-        }
-
-        const localesTag = record.tags ? record.tags.filter((item) => item.locale) : [];
-        const localesTagFormatted = handleLocaleDuplicate(localesTag);
-        return <LocaleView locales={localesTagFormatted} />;
+      title: <Tooltip title={version.liveVersion}>{version.name}</Tooltip>,
+      dataIndex: 'liveVersionNumber',
+      key: 'liveVersionNumber',
+      width: 90,
+      render: (text: string) => {
+        return text ? (
+          <Tag color="orange" style={{ width: 40, textAlign: 'center' }}>
+            {formatter(text)}
+          </Tag>
+        ) : (
+          '-'
+        );
       },
     },
     {
@@ -288,14 +323,37 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
     },
   ];
 
-  if (fileDetail?.type === FileType.page) {
+  if (isPageContent) {
+    columns.splice(3, 1, {
+      title: global.locale,
+      dataIndex: 'tag',
+      key: 'tag',
+      width: 170,
+      render: (_text: string, record: ContentEntity) => {
+        if (record.isBase) {
+          return <LocaleTag color="blue">base</LocaleTag>;
+        }
+
+        const localesTag = record.tags ? record.tags.filter((item) => item.locale) : [];
+        const localesTagFormatted = handleLocaleDuplicate(localesTag);
+        return <LocaleView locales={localesTagFormatted} />;
+      },
+    });
+  }
+
+  if (isPageContent) {
     columns.unshift({
       title: '',
       key: '',
       width: 20,
       render: (_text: string, record: ContentEntity) => {
         if (record.isBase && extendRecord[record.id]?.length) {
-          return <BasicTemRing />;
+          return (
+            <>
+              <BasicTemRingMask />
+              <BasicTemRing />
+            </>
+          );
         }
         if (record.extendId) {
           return (
@@ -314,7 +372,7 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
     columns.push({
       title: global.actions,
       key: '',
-      width: 180,
+      width: 200,
       render: (_text: string, record: ContentEntity) => (
         <>
           <Button
@@ -443,19 +501,23 @@ const ProjectContentList: React.FC<ProjectContentList> = (props: ProjectContentL
     <>
       <Table rowKey="id" loading={loading} pagination={false} columns={columns} dataSource={contentList} />
       <Modal
-        title={`${content.copy} ${fileDetail?.type}`}
+        title={`${content.copy}`}
         open={copyModalOpen}
         onOk={handleCopy}
         onCancel={() => setCopyModalOpen(false)}>
-        <Container>
-          <Label>{global.locale}</Label>
-          <Select
-            mode="multiple"
-            options={localeOptions}
-            onChange={setTargetContentLocales}
-            style={{ width: '100%' }}
-          />
-        </Container>
+        {isPageContent ? (
+          <Container>
+            <Label>{global.locale}</Label>
+            <Select
+              mode="multiple"
+              options={localeOptions}
+              onChange={setTargetContentLocales}
+              style={{ width: '100%' }}
+            />
+          </Container>
+        ) : (
+          content.copyTips
+        )}
       </Modal>
       <VersionList
         applicationId={applicationId || ''}

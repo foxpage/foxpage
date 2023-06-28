@@ -57,7 +57,7 @@ export class SetTypeItemContentStatus extends BaseController {
         contentDetail.applicationId !== params.applicationId ||
         contentDetail.type !== apiType
       ) {
-        return Response.accessDeny(i18n.content.invalidContentId, 2161901);
+        return Response.warning(i18n.content.invalidContentId, 2161901);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, {
@@ -65,9 +65,9 @@ export class SetTypeItemContentStatus extends BaseController {
         actionType: [LOG.DELETE, apiType].join('_'),
       });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidContentId, 4161902);
+        return Response.warning(i18n.content.invalidContentId, 2161902);
       } else if (result.code === 2) {
-        return Response.warning(i18n.content.contentCannotBeDeleted, 4161903);
+        return Response.warning(i18n.content.contentCannotBeDeleted, 2161903);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);

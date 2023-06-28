@@ -70,7 +70,10 @@ export class AddTypeItemDetail extends BaseController {
       }
 
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: apiType });
-      const result = await this.service.file.info.addFileDetail(newFileDetail, { ctx });
+      const result = await this.service.file.info.addFileDetail(newFileDetail, {
+        ctx,
+        actionDataType: apiType,
+      });
 
       // Check the validity of the application ID
       if (result.code === 1) {

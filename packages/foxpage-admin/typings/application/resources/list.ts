@@ -1,15 +1,5 @@
-import { AbstractEntity, CommonFetchParams } from '@/types/index';
+import { CommonFetchParams } from '@foxpage/foxpage-client-types';
 
 export interface ApplicationResourcesFetchParams extends Pick<CommonFetchParams, 'applicationId'> {
   type?: string;
-}
-
-// AppResourceGroupType
-export interface ApplicationResourceGroupTypeEntity extends Pick<AbstractEntity, 'id'> {
-  name: string;
-  type: string;
-  detail: {
-    host: string;
-    downloadHost: string;
-  };
 }

@@ -7,7 +7,7 @@ import _ from 'lodash';
 import { Group, Title } from '@/components/widgets';
 import { ComponentType } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
-import { ComponentEditVersionEntity, ComponentRemote } from '@/types/application';
+import { ComponentEditVersionEntity, ComponentRemote } from '@/types/index';
 
 import '../style.css';
 

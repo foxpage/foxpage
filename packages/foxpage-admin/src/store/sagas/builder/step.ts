@@ -1,9 +1,11 @@
+import { message } from 'antd';
 import _ from 'lodash';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/main';
 import { RecordActionType } from '@/constants/index';
+import { getBusinessI18n } from '@/foxI18n/index';
 import * as RECORD_ACTIONS from '@/store/actions/record';
 import { store } from '@/store/index';
 import { BuilderContentActionType } from '@/store/reducers/builder/main';
@@ -13,18 +15,29 @@ import { cache, clearCache, clearCacheLogs, getCached, getCurStep, initState, se
 
 function* handlePreStep() {
   function* future() {
-    const { curStep, pageContent } = store.getState().builder.main;
-    const steps = yield call(() => getCached(pageContent.contentId));
-    if (curStep > 0) {
-      const preStep = curStep - 1;
-      const step = steps[preStep];
-      yield put(ACTIONS.updateLastModified());
-      if (step) {
-        yield put(ACTIONS.goStep(step));
-        yield put(RECORD_ACTIONS.addUserRecords(RecordActionType.PAGE_PRE_STEP, [{ id: step.id }]));
-        yield call(() => setCurStep(pageContent.contentId, preStep));
+    const {
+      record: { operationFailed },
+    } = getBusinessI18n();
+    try {
+      const { curStep, pageContent } = store.getState().builder.main;
+      const { nodeUpdateRecords, nodeUpdateIndex } = store.getState().record.main;
+      const steps = yield call(() => getCached(pageContent.contentId));
+      if (curStep > 0) {
+        const preStep = curStep - 1;
+        const step = steps[preStep];
+        yield put(ACTIONS.updateLastModified());
+        if (step) {
+          yield put(ACTIONS.goStep(step));
+          const lastUpdateContent = nodeUpdateRecords[nodeUpdateIndex].content[0].content as string;
+          const details = lastUpdateContent ? [JSON.parse(lastUpdateContent)] : [];
+          yield put(RECORD_ACTIONS.addUserRecords(RecordActionType.PAGE_PRE_STEP, details));
+          yield call(() => setCurStep(pageContent.contentId, preStep, step));
+        }
+        yield put(ACTIONS.setCurStep(preStep));
       }
-      yield put(ACTIONS.setCurStep(preStep));
+    } catch (err) {
+      console.error('handlePreStep', err);
+      message.error(operationFailed);
     }
   }
   yield put(ACTIONS.guard(future));
@@ -32,18 +45,29 @@ function* handlePreStep() {
 
 function* handleNextStep() {
   function* future() {
-    const { curStep = 0, pageContent } = store.getState().builder.main;
-    const steps = yield call(() => getCached(pageContent.contentId));
-    if (curStep < steps.length) {
-      const nextStep = curStep + 1;
-      const step = steps[nextStep];
-      yield put(ACTIONS.updateLastModified());
-      if (step) {
-        yield put(ACTIONS.goStep(step));
-        yield put(RECORD_ACTIONS.addUserRecords(RecordActionType.PAGE_NEXT_STEP, [{ id: step.id }]));
-        yield call(() => setCurStep(pageContent.contentId, nextStep));
+    const {
+      record: { operationFailed },
+    } = getBusinessI18n();
+    try {
+      const { curStep = 0, pageContent } = store.getState().builder.main;
+      const { nodeUpdateRecords, nodeUpdateIndex } = store.getState().record.main;
+      const steps = yield call(() => getCached(pageContent.contentId));
+      if (curStep < steps.length) {
+        const nextStep = curStep + 1;
+        const step = steps[nextStep];
+        yield put(ACTIONS.updateLastModified());
+        if (step) {
+          yield put(ACTIONS.goStep(step));
+          const lastUpdateContent = nodeUpdateRecords[nodeUpdateIndex + 1].content[0].content as string;
+          const details = lastUpdateContent ? [JSON.parse(lastUpdateContent)] : [];
+          yield put(RECORD_ACTIONS.addUserRecords(RecordActionType.PAGE_NEXT_STEP, details));
+          yield call(() => setCurStep(pageContent.contentId, nextStep, step));
+        }
+        yield put(ACTIONS.setCurStep(nextStep));
       }
-      yield put(ACTIONS.setCurStep(nextStep));
+    } catch (err) {
+      console.error('handleNextStep', err);
+      message.error(operationFailed);
     }
   }
   yield put(ACTIONS.guard(future));

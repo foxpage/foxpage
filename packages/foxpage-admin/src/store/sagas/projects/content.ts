@@ -12,6 +12,7 @@ import * as API from '@/apis/project';
 import { BLOCK_COMPONENT_NAME, FileType, PAGE_COMPONENT_NAME } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectContentActionType } from '@/reducers/projects/content';
+import { fetchScreenshots } from '@/store/actions/screenshot';
 import { store } from '@/store/index';
 import { initRootContentNode } from '@/store/sagas/builder/utils';
 import {
@@ -42,6 +43,13 @@ function* handleFetchList(action: ProjectContentActionType) {
 
   if (res.code === 200) {
     yield put(ACTIONS.pushContentList(res.data));
+    yield put(
+      fetchScreenshots({
+        applicationId,
+        type: 'content',
+        typeIds: res.data.map((item) => item.id),
+      }),
+    );
   } else {
     const {
       content: { fetchFailed },
@@ -100,6 +108,13 @@ function* handleSave(action: ProjectContentActionType) {
         content: initRootContentNode(component),
       };
     }
+  }
+
+  if (fileType === FileType.block || fileType === FileType.template) {
+    params = {
+      ...params,
+      isBase: true,
+    };
   }
 
   const apis = {

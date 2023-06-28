@@ -1,56 +1,16 @@
 import {
-  AbstractEntity,
   Application,
+  CheckDSLMain,
   Component,
-  Extension,
+  Content,
+  ContentVersion,
   File,
   FileType,
-  Mock,
-  Relation,
+  PageContent,
   RelationDetails,
   ResponseBody,
   StructureNode,
-} from '@/types/index';
-
-export interface Content {
-  id: string;
-  dslVersion?: string;
-  version?: string;
-  schemas: StructureNode[];
-  relation: Relation;
-  extension: Extension;
-  mock?: Mock;
-}
-
-export interface ContentCreator {
-  id: string;
-  account: string;
-  email: string;
-  nickName: string;
-}
-
-export interface PageContent extends AbstractEntity {
-  contentId: string;
-  deleted: boolean;
-  dslVersion: string;
-  status: string;
-  version: string;
-  versionNumber?: number;
-  content: Content;
-  mock: Mock;
-  relations: RelationDetails;
-  contentUpdateTime: string;
-  title?: string;
-  id: string;
-}
-
-// api data back up
-export interface ExtensionData {
-  baseContent?: PageContent;
-  curContent?: PageContent;
-  baseStructureRecord?: Record<string, StructureNode>;
-  curStructureRecord?: Record<string, StructureNode>;
-}
+} from '@foxpage/foxpage-client-types';
 
 // fetch
 export interface ContentFetchParams {
@@ -99,41 +59,7 @@ export interface CheckDSLParams {
   versionId: string;
 }
 
-export interface CheckDSLMain {
-  versionId: string;
-  contentId: string;
-  extendId: string;
-  structure: [
-    {
-      status: number;
-      data: [
-        {
-          id: string;
-          name?: string;
-          label?: string;
-        },
-      ];
-    },
-  ];
-  relation: Record<string, string>;
-  publishStatus: boolean;
-}
-
 export interface CheckDSLRes extends ResponseBody<CheckDSLMain> {}
-
-export enum PublishSteps {
-  START_PUBLISH = 0,
-  SAVE_BEFORE_PUBLISH = 1,
-  CHECK_BEFORE_PUBLISH = 2,
-  PUBLISH_CONTENT = 3,
-  PUBLISHED = 4,
-}
-
-export enum PublishStatus {
-  PROCESSING = 'process',
-  FINISH = 'finish',
-  ERROR = 'error',
-}
 
 export interface InitStateParams {
   application: Application;
@@ -149,15 +75,73 @@ export interface ContentVersionsParams {
   applicationId: string;
   id: string;
 }
-
-export interface ContentVersion {
-  id: string;
-  contentId: string;
-  version: string;
-  createTime: string;
-  creator: ContentCreator;
-}
-
 export interface ContentVersionRes extends ResponseBody {
   data: ContentVersion[];
+}
+
+export interface ContentSetLiveVersionParams {
+  applicationId: string;
+  contentId: string;
+  versionId?: string;
+  versionNumber?: number;
+}
+
+export interface StructureCopyParams {
+  applicationId: string;
+  contentId: string;
+  relationSchemas: Pick<Content, 'relation' | 'schemas'>;
+}
+
+export interface StructureCopyRes extends ResponseBody {
+  data: {
+    relations: RelationDetails;
+    relationSchemas: Pick<Content, 'relation' | 'schemas'>;
+  };
+}
+
+export interface UploadBase64Params {
+  base64Str: string;
+}
+
+export interface UploadBase64Res {
+  url: string;
+  pictureName: string;
+}
+
+export interface UpdateContentScreenshotParams {
+  applicationId: string;
+  id: string;
+  pictures: [
+    {
+      url: string;
+      type: string;
+      sort: number;
+    },
+  ];
+}
+
+export interface EncryptParams {
+  data: {
+    folderId: string;
+  }
+  expireTime?: number;
+}
+
+export interface EncryptRes extends ResponseBody {
+  data: {
+    token: string;
+  };
+}
+
+export interface EncryptValidateParams {
+  data: {
+    contentId: string;
+  }
+  token: string;
+};
+
+export interface EncryptValidateRes extends ResponseBody {
+  data: {
+    status: boolean;
+  };
 }

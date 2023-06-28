@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { File } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { METHOD, TYPE } from '../../../config/constant';
+import { LOG, METHOD, TAG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppContentStatusReq } from '../../types/validates/content-validate-types';
 import { FileDetailRes } from '../../types/validates/file-validate-types';
@@ -46,16 +46,34 @@ export class SetComponentFileStatus extends BaseController {
       }
 
       // check the component's status in store
-      const fileStoreDetail = await this.service.store.goods.getDetail({
-        'detail.id': params.id,
-        deleted: false,
-      });
+      // check reference component status
+      const [fileStoreDetail, componentDetail, referenceComponents] = await Promise.all([
+        this.service.store.goods.getDetail({ 'detail.id': params.id, deleted: false }),
+        this.service.file.info.getDetailById(params.id),
+        this.service.file.list.find({
+          tags: { $elemMatch: { type: TAG.DELIVERY_REFERENCE, 'reference.id': params.id } },
+          type: TYPE.COMPONENT,
+          deleted: false,
+        }),
+      ]);
 
-      if (fileStoreDetail && fileStoreDetail.status === 1) {
-        return Response.warning(i18n.component.componentInStore, 2111401);
+      if (this.notValid(componentDetail)) {
+        return Response.warning(i18n.component.invalidComponentIdOrAppId, 2111405);
       }
 
-      const result = await this.service.file.info.setFileDeleteStatus(params, { ctx });
+      const deprecatedTag = _.find(componentDetail.tags, (tag) => tag.type === TAG.DEPRECATED);
+      if (!deprecatedTag?.status) {
+        return Response.warning(i18n.component.mustDeprecatedFirst, 2111406);
+      } else if (fileStoreDetail && fileStoreDetail.status === 1) {
+        return Response.warning(i18n.component.componentInStore, 2111401);
+      } else if (referenceComponents.length > 0) {
+        return Response.warning(i18n.component.existReferences, 2111404);
+      }
+
+      const result = await this.service.file.info.setFileDeleteStatus(params, {
+        ctx,
+        actionType: [LOG.DELETE, TYPE.COMPONENT].join('_'),
+      });
       if (result.code === 1) {
         return Response.warning(i18n.file.invalidFileId, 2111402);
       } else if (result.code === 2) {

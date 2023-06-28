@@ -167,9 +167,11 @@ export class ContentRelationService extends BaseService<Content> {
     const needCreateRelationIds = _.keys(needCreateRelationObject);
 
     if (needCreateRelationIds.length > 0) {
-      const relationDetailObject = await Service.version.list.getLiveVersionByContentIds(
-        needCreateRelationIds,
-      );
+      const [relationLiveVersions, relationMaxVersions] = await Promise.all([
+        Service.version.list.getLiveVersionByContentIds(needCreateRelationIds),
+        Service.version.list.getContentMaxVersionDetail(needCreateRelationIds),
+      ]);
+      const relationDetailObject = Object.assign(relationMaxVersions, relationLiveVersions);
 
       for (const contentId in relationDetailObject) {
         const dependRelation = relationDetailObject[contentId].content?.relation || {};
@@ -188,6 +190,7 @@ export class ContentRelationService extends BaseService<Content> {
             folderId: options.projectId,
             name: newRelations.idNameMaps[contentId].newName,
             type: needCreateRelationObject[contentId].type,
+            subType: needCreateRelationObject[contentId].subType || '',
           },
           { ctx: options.ctx },
         );
@@ -229,7 +232,7 @@ export class ContentRelationService extends BaseService<Content> {
   }
 
   /**
-   * check the relation in content whether to create new data accroding scope
+   * check the relation in content whether to create new data according scope
    * if scope is project, do not create
    * if scope is application, create the relation in project
    * if scope is system, create all relation
@@ -241,9 +244,9 @@ export class ContentRelationService extends BaseService<Content> {
     relation: Record<string, any>,
     options: { applicationId: string; scope: string; appDefaultIds: string[] },
   ): Promise<Record<string, any>> {
-    if (options.scope === TYPE.PROJECT) {
-      return {};
-    }
+    // if (options.scope === TYPE.PROJECT) {
+    //   return {};
+    // }
 
     const relationIds = _.uniq(
       _.map(
@@ -256,14 +259,18 @@ export class ContentRelationService extends BaseService<Content> {
     if (relationIds.length > 0) {
       const contentFileObject = await Service.file.list.getContentFileByIds(relationIds);
       for (const contentId in contentFileObject) {
+        // create new relation detail in diff project or time show condition
         if (
-          options.scope === TYPE.APPLICATION &&
-          options.appDefaultIds.indexOf(contentFileObject[contentId].folderId) === -1
+          (options.scope === TYPE.APPLICATION &&
+            options.appDefaultIds.indexOf(contentFileObject[contentId].folderId) === -1) ||
+          (options.scope === TYPE.PROJECT &&
+            ['timeDisplay', 'showHide'].indexOf(contentFileObject[contentId].subType as string) !== -1)
         ) {
           needCreateRelationObject[contentId] = {
             id: contentId,
             name: contentFileObject[contentId].name,
             type: contentFileObject[contentId].type,
+            subType: contentFileObject[contentId].subType || '',
           };
         }
       }

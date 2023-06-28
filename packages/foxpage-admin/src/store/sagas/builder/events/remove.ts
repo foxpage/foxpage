@@ -1,7 +1,7 @@
 import { BLANK_NODE } from '@/constants/index';
 import { Component, Content, FormattedData, RenderStructureNode, StructureNode } from '@/types/index';
 
-import { getStyleWrapper, initNode } from '../utils';
+import { getStyleWrapper, initNode, isTPLNode } from '../utils';
 
 type RemoveOptions = {
   content: Content;
@@ -108,17 +108,19 @@ const getRemoves = (
   list: StructureNode[] = [],
   originPageNodeMap: FormattedData['originPageNodeMap'],
 ) => {
-  const { childIds = [] } = node;
-  list.push(node);
-  if (childIds.length > 0) {
-    childIds.forEach((item) => {
-      const node = originPageNodeMap[item];
-      const { __styleNode } = node as RenderStructureNode;
-      if (__styleNode && __styleNode.id) {
-        getRemoves(__styleNode, list, originPageNodeMap);
-      } else {
-        getRemoves(node, list, originPageNodeMap);
-      }
-    });
+  if (node) {
+    const { childIds = [] } = node;
+    list.push(node);
+    if (!isTPLNode(node) && childIds.length > 0) {
+      childIds.forEach((item) => {
+        const node = originPageNodeMap[item];
+        const { __styleNode } = (node || {}) as RenderStructureNode;
+        if (__styleNode && __styleNode.id) {
+          getRemoves(__styleNode, list, originPageNodeMap);
+        } else {
+          getRemoves(node, list, originPageNodeMap);
+        }
+      });
+    }
   }
 };

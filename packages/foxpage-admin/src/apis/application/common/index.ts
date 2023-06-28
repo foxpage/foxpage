@@ -1,11 +1,14 @@
+import { Application } from '@/types/index';
+
 import {
-  Application,
   ApplicationDetailFetchResponse,
   ApplicationListFetchParams,
   ApplicationListFetchResponse,
   ApplicationSaveParams,
   PaginationReqParams,
   ResponseBody,
+  ScreenshotFetchedRes,
+  ScreenshotFetchParams,
 } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
@@ -19,6 +22,13 @@ export const fetchList = (params: ApplicationListFetchParams): Promise<Applicati
 export const addApp = (params: Application): Promise<ResponseBody> =>
   new Promise((resolve) => {
     FoxPageApi.post('/applications', params, (rs: ResponseBody) => {
+      resolve(rs);
+    });
+  });
+
+export const deleteApp = (applicationId: string): Promise<ResponseBody> =>
+  new Promise((resolve) => {
+    FoxPageApi.put('/applications/status', { applicationId }, (rs: ResponseBody) => {
       resolve(rs);
     });
   });
@@ -56,6 +66,13 @@ export const fetchAllLocales = ({
 export const updateApp = (params: ApplicationSaveParams): Promise<ResponseBody> =>
   new Promise((resolve) => {
     FoxPageApi.put('/applications', params, (rs: ResponseBody) => {
+      resolve(rs);
+    });
+  });
+
+export const getScreenshot = (params: ScreenshotFetchParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.post('/pictures', params, (rs: ScreenshotFetchedRes) => {
       resolve(rs);
     });
   });

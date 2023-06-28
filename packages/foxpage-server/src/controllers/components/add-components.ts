@@ -64,7 +64,10 @@ export class AddComponentDetail extends BaseController {
         creator: '',
       };
 
-      const result = await this.service.file.info.addFileDetail(fileDetail, { ctx });
+      const result = await this.service.file.info.addFileDetail(fileDetail, {
+        ctx,
+        actionDataType: TYPE.COMPONENT,
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.component.invalidApplicationId, 2110202);

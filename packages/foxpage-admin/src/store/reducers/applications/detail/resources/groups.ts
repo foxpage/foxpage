@@ -2,7 +2,7 @@ import produce from 'immer';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/resources/groups';
-import { ApplicationResourceGroupEntity } from '@/types/application';
+import { ApplicationResourceGroupEntity } from '@/types/index';
 
 export type AppResourceGroupsActionType = ActionType<typeof ACTIONS>;
 

@@ -2,9 +2,11 @@ import _ from 'lodash';
 
 import { Content } from '@foxpage/foxpage-server-types';
 
+import { TYPE } from '../../../config/constant';
 import * as Model from '../../models';
 import { CircleDepend, ContentCheck } from '../../types/content-types';
 import { BaseService } from '../base-service';
+import * as Service from '../index';
 
 export class ContentCheckService extends BaseService<Content> {
   private static _instance: ContentCheckService;
@@ -73,5 +75,35 @@ export class ContentCheckService extends BaseService<Content> {
     );
 
     return { recursiveItem, dependencies: sourceObject };
+  }
+
+  /**
+   * check the ids or list is under app level
+   * only check items in one app
+   * block default belong to app level
+   * response the ids in app level
+   * @param params
+   * @returns
+   */
+  async appLevelContent(params: {
+    ids?: string[];
+    list?: Content[];
+    appFolderIds?: string[];
+  }): Promise<string[]> {
+    let { ids = [], list = [], appFolderIds = [] } = params;
+    if (ids.length > 0) {
+      list = await Service.content.list.getDetailByIds(ids);
+    }
+
+    const fileIds = _.map(list, 'fileId');
+    if (fileIds.length > 0) {
+      const appFileIds = await Service.file.check.appLevelFile({ ids: fileIds, appFolderIds });
+      return _(list)
+        .filter((item) => appFileIds.indexOf(item.fileId) !== -1 || item.type === TYPE.BLOCK)
+        .map('id')
+        .value();
+    }
+
+    return [];
   }
 }

@@ -21,7 +21,7 @@ import {
   ProjectContentDeleteParams,
   ProjectContentOfflineParams,
 } from '@/types/index';
-import { periodFormat } from '@/utils/period-format';
+import { formatter, periodFormat } from '@/utils/index';
 
 const IdLabel = styled.div`
   max-width: 300px;
@@ -109,10 +109,17 @@ const ContentList: React.FC<ContentListType> = (props) => {
     },
     {
       title: <Tooltip title={version.liveVersion}>{version.name}</Tooltip>,
-      dataIndex: 'version',
-      key: 'version',
+      dataIndex: 'liveVersionNumber',
+      key: 'liveVersionNumber',
       width: 90,
-      render: (version: string) => (!!version ? <Tag color="orange">{version}</Tag> : ''),
+      render: (version: string) =>
+        !!version ? (
+          <Tag color="orange" style={{ width: 40, textAlign: 'center' }}>
+            {formatter(version)}
+          </Tag>
+        ) : (
+          ''
+        ),
     },
     {
       title: global.locale,

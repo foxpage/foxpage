@@ -1,3 +1,5 @@
+import { DynamicOperationEnum } from './workspace';
+
 const FileTypes = Object.freeze([
   {
     label: 'Page',
@@ -9,8 +11,8 @@ const FileTypes = Object.freeze([
   },
   {
     label: 'BLock',
-    type: 'block'
-  }
+    type: 'block',
+  },
 ]);
 
 const Suffix = Object.freeze([
@@ -32,10 +34,20 @@ const suffixTagColor: any = {
   editor: 'geekblue',
   block: '#108ee9',
   library: 'gold',
-  refer: 'red',
+  refer: 'geekblue',
+  error: '#ff4d4f',
   post: '#49cc90',
   put: '#fca130',
   delete: '#f50',
+};
+
+const dynamicColor: { [key in DynamicOperationEnum]: string } = {
+  live: 'green',
+  publish: 'green',
+  create: 'blue',
+  update: 'blue',
+  delete: 'red',
+  set: 'blue',
 };
 
 const componentType = Object.freeze({
@@ -57,4 +69,13 @@ enum ResourceTagEnum {
   ResourceConfig = 'resourceConfig',
 }
 
-export { componentType, defaultSuffix, FileTypes, ResourceTagEnum, rootFolderType, Suffix, suffixTagColor };
+export {
+  componentType,
+  defaultSuffix,
+  dynamicColor,
+  FileTypes,
+  ResourceTagEnum,
+  rootFolderType,
+  Suffix,
+  suffixTagColor,
+};

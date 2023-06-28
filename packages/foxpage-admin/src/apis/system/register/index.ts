@@ -1,4 +1,4 @@
-import { RegisterParams, RegisterResult } from '@/types/user';
+import { RegisterParams, RegisterResult } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
 export const register = (params: RegisterParams): Promise<RegisterResult> =>

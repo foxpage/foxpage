@@ -261,7 +261,7 @@ const EditDrawer: React.FC<EditDrawerProps> = (props: EditDrawerProps) => {
       onClose={handleClose}
       actions={
         <Button type="primary" disabled={disabled} onClick={handleSave}>
-          {global.apply}
+          {global.save}
           {saveLoading && <SyncOutlined spin={true} style={{ color: '#fff' }} />}
         </Button>
       }>
@@ -286,7 +286,7 @@ const EditDrawer: React.FC<EditDrawerProps> = (props: EditDrawerProps) => {
           <Label>{global.nameLabel}</Label>
           <Input
             value={editFile?.name}
-            placeholder={file.nameLabel}
+            placeholder={global.nameLabelLength2Invalid?.toLowerCase()}
             onChange={(e) => handleUpdate('name', e.target.value)}
           />
         </Field>

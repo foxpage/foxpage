@@ -1,34 +1,15 @@
 import {
-  AbstractEntity,
-  BaseFileEntity,
   CommonDeleteParams,
   CommonFetchParams,
   CommonPublishParams,
   FileScope,
+  FuncContentEntity,
+  FuncDeleteData,
+  FuncEntity,
+  FuncNewData,
   PaginationInfo,
-  Relation,
   ResponseBody,
-  Schemas,
-} from '@/types/index';
-
-// FuncContentSchemaPropsItem
-export interface FuncContentSchemaProps {
-  async: boolean;
-  code: string;
-}
-
-// FuncContentSchemaItem
-export type FuncContentSchema = Schemas<FuncContentSchemaProps>;
-
-// FuncContentItem
-export interface FuncContentEntity {
-  id?: string;
-  schemas: FuncContentSchema[];
-  relation?: Relation;
-}
-
-// FuncItem
-export interface FuncEntity extends BaseFileEntity<FuncContentEntity> {}
+} from '@foxpage/foxpage-client-types';
 
 export interface FuncFetchParams extends Omit<CommonFetchParams, 'organizationId'> {
   folderId?: string;
@@ -51,16 +32,6 @@ export interface FuncSaveParams extends Pick<FuncFetchParams, 'applicationId' | 
   pageContentId?: string;
 }
 
-// FuncNewDataItem
-export interface FuncNewData extends AbstractEntity {
-  application: string;
-  deleted: boolean;
-  folderId: string;
-  intro: string;
-  suffix: string;
-  contentId?: string;
-}
-
 export interface FuncNewRes extends ResponseBody {
   data: FuncNewData;
 }
@@ -77,12 +48,6 @@ export interface FuncUpdateRes extends ResponseBody {
 export type FuncDeleteParams = CommonDeleteParams & {
   fun?: FuncEntity;
 };
-
-// FuncDeleteDataItem
-export interface FuncDeleteData extends Omit<FuncEntity, 'id' | 'tags' | 'type'> {
-  deleted: boolean;
-  status: string;
-}
 
 export interface FuncDeleteRes extends ResponseBody {
   data: FuncDeleteData[];

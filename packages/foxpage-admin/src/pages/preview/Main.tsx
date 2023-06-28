@@ -6,18 +6,17 @@ import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import { fetchComponentList } from '@/actions/builder/components';
-import { selectContent, updateStoreModalVisible } from '@/actions/builder/header';
+import { selectContent, updateContentInfo, updateStoreModalVisible } from '@/actions/builder/header';
 import * as ACTIONS from '@/actions/builder/main';
 import { EditDrawer as ConditionEditDrawer } from '@/pages/applications/detail/file/conditions/components';
 import { EditDrawer as FunctionEditDrawer } from '@/pages/applications/detail/file/functions/components';
 import { EditDrawer as VariableEditDrawer } from '@/pages/applications/detail/file/variables/components';
-import { FoxBuilderEvents } from '@/types/builder';
+import { FoxBuilderEvents } from '@/types/index';
 import { getLocationIfo } from '@/utils/location-info';
 
 import {
   BUILDER_WINDOW_EDITOR,
   BUILDER_WINDOW_MODAL,
-  ConditionBindDrawer,
   ToolbarModal,
   VariableBindModal,
 } from '../builder/toolbar';
@@ -52,6 +51,7 @@ const mapStateToProps = (store: RootState) => ({
   lockerState: store.builder.main.lockerState,
   loading: store.builder.main.loading,
   file: store.builder.main.file,
+  readOnly: store.builder.main.readOnly,
   components: store.builder.component.components,
   locale: store.builder.header.locale,
 });
@@ -68,6 +68,7 @@ const mapDispatchToProps = {
   deleteComponentMock: ACTIONS.deleteComponentMock,
   selectContent: selectContent,
   fetchComponents: fetchComponentList,
+  updateContentInfo: updateContentInfo,
   openStoreModal: updateStoreModalVisible,
 };
 
@@ -88,9 +89,11 @@ const Preview = (props: IProps) => {
     fetchFile,
     fetchContent,
     templateBind,
+    updateContentInfo,
     openStoreModal,
     deleteComponentMock,
     locale,
+    readOnly,
     configReadOnly,
   } = props;
   const {
@@ -102,11 +105,20 @@ const Preview = (props: IProps) => {
   } = getLocationIfo(useLocation());
 
   useEffect(() => {
-    configReadOnly(true);
     return () => {
       clear();
     };
   }, []);
+
+  useEffect(() => {
+    if (!readOnly) {
+      configReadOnly(true);
+    }
+  }, [readOnly]);
+
+  useEffect(() => {
+    if (versionId) updateContentInfo({ versionId });
+  }, [versionId]);
 
   useEffect(() => {
     if (applicationId) {
@@ -151,7 +163,6 @@ const Preview = (props: IProps) => {
       <ConditionEditDrawer applicationId={applicationId} folderId={folderId} />
       <FunctionEditDrawer applicationId={applicationId} folderId={folderId} />
       <VariableEditDrawer applicationId={applicationId} folderId={folderId} />
-      <ConditionBindDrawer />
       <ToolbarModal />
       <VariableBindModal />
     </Container>

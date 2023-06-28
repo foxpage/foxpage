@@ -1,7 +1,6 @@
+import { PageContent } from '@/types/index';
 import { mocker } from '@foxpage/foxpage-js-sdk';
-import { Mock as SDKMock, Page, RelationInfo, RenderAppInfo } from '@foxpage/foxpage-types';
-
-import { Mock, PageContent } from '@/types/index';
+import { Mock, Mock as SDKMock, Page, RelationInfo, RenderAppInfo } from '@foxpage/foxpage-types';
 
 type MockOptions = {
   extendContent?: PageContent;
@@ -37,19 +36,19 @@ export function mock(data: PageContent, opt: MockOptions) {
   };
 
   try {
-    const mockedContent = mocker.withMock(content as unknown as Page, (mocks as unknown) as SDKMock[], {
+    const mockedContent = mocker.withMock(content as unknown as Page, mocks as unknown as SDKMock[], {
       appInfo,
-      relationInfo: (relationInfo as unknown) as RelationInfo,
+      relationInfo: relationInfo as unknown as RelationInfo,
     });
 
-    return ({
+    return {
       ...data,
-      content: mockedContent.page,
+      content: mockedContent.content,
       relations: {
         ...data.relations,
         templates: mockedContent.templates,
       },
-    } as unknown) as PageContent;
+    } as unknown as PageContent;
   } catch (e) {
     console.error('Mock content error:', e);
     return null;

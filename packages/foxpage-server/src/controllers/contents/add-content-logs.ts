@@ -46,11 +46,8 @@ export class AddContentLogs extends BaseController {
 
       if (params.logs && params.logs.length > 0) {
         ctx.transactions.push(
-          this.service.contentLog.createLogQuery(params.logs, {
-            contentId,
-            versionId,
-            userId,
-          }),
+          this.service.contentLog.createLogQuery(params.logs, { contentId, versionId, userId }),
+          this.service.appContentLog.createLogQuery(params.logs, { contentId, versionId, userId }),
         );
 
         await this.service.contentLog.runTransaction(ctx.transactions);

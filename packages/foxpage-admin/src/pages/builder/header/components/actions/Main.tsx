@@ -4,8 +4,9 @@ import { connect } from 'react-redux';
 import { BugFilled } from '@ant-design/icons';
 import { RootState } from 'typesafe-actions';
 
+import { handlePageCapture } from '@foxpage/foxpage-iframe-actions';
+
 import * as ACTIONS from '@/actions/builder/header';
-import { posters } from '@/pages/builder/events';
 import { IconMsg, StyledIcon } from '@/pages/builder/header/Main';
 import { GlobalContext } from '@/pages/system';
 import * as PAGE_ACTIONS from '@/store/actions/builder/main';
@@ -16,6 +17,7 @@ const mapStateToProps = (store: RootState) => ({
   applicationId: store.builder.header.applicationId,
   folderId: store.builder.header.folderId,
   contentId: store.builder.header.contentId,
+  versionId: store.builder.main.pageContent.id,
   mock: store.builder.main.mock,
   editStatus: store.builder.main.editStatus && !!store.record.main.localRecords.length,
   saveLoading: store.builder.main.saveLoading,
@@ -35,6 +37,7 @@ const Catalog: React.FC<Type> = (props) => {
     applicationId,
     folderId,
     contentId,
+    versionId,
     mock,
     editStatus,
     saveLoading,
@@ -85,9 +88,7 @@ const Catalog: React.FC<Type> = (props) => {
       publishPageContent();
     }
 
-    if (posters.handlePageCapture) {
-      posters.handlePageCapture();
-    }
+    handlePageCapture(versionId);
   };
 
   return (

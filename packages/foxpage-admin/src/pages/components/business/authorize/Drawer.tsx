@@ -99,7 +99,7 @@ const AuthorizeDrawer: React.FC<DrawerProp> = (props) => {
     }
   }, [childDrawerVisible]);
 
-  // get multi-language
+  // i18n
   const { locale } = useContext(GlobalContext);
   const { global, authorize } = locale.business;
 

@@ -8,12 +8,13 @@ import * as API from '@/apis/project';
 import { defaultSuffix, FileType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectInvolvedFileActionType } from '@/reducers/workspace/projects/involved/file';
+import { fetchScreenshots } from '@/store/actions/screenshot';
 import { store } from '@/store/index';
 import {
   AuthorizeAddParams,
-  AuthorizeQueryParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
+  AuthorizeQueryParams,
   AuthorizeUserFetchParams,
   ParentFileFetchParams,
   ProjectFileDeleteParams,
@@ -30,6 +31,13 @@ function* handleFetchList(action: ProjectInvolvedFileActionType) {
 
   if (res.code === 200) {
     yield put(ACTIONS.pushFileList(res.data.files, res.pageInfo));
+    yield put(
+      fetchScreenshots({
+        applicationId: params.applicationId,
+        type: 'file',
+        typeIds: res.data.files.map((item) => item.id),
+      }),
+    );
   } else {
     const {
       global: { fetchListFailed },
@@ -86,8 +94,17 @@ function* handleSave(action: ProjectInvolvedFileActionType) {
 }
 
 function* handleDeleteFile(action: ProjectInvolvedFileActionType) {
-  const { id, applicationId, folderId } = action.payload as ProjectFileDeleteParams;
-  const res = yield call(API.deleteFile, {
+  const { params } = action.payload as { params: ProjectFileDeleteParams };
+  const { pageInfo } = store.getState().workspace.projects.involved.file;
+  const { fileDetail } = store.getState().workspace.projects.involved.content;
+  const apiMap = {
+    [FileType.block]: API.deleteBlock,
+    [FileType.page]: API.deletePage,
+    [FileType.template]: API.deleteTemplate,
+  };
+  const { id, applicationId, folderId } = params;
+  const api = apiMap[fileDetail.type];
+  const res = yield call(api, {
     id,
     applicationId,
     status: true,
@@ -100,7 +117,7 @@ function* handleDeleteFile(action: ProjectInvolvedFileActionType) {
   if (res.code === 200) {
     message.success(deleteSuccess);
 
-    const { pageInfo } = store.getState().workspace.projects.involved.file;
+    // refresh list
     yield put(
       ACTIONS.fetchFileList({
         ...pageInfo,

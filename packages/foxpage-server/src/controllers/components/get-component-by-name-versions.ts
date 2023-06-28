@@ -58,6 +58,7 @@ export class GetAppComponentListByNameVersion extends BaseController {
           applicationId: params.applicationId,
           contentNameVersion: params.nameVersions,
           type: params.type || [],
+          isCanary: params.isCanary || false,
         });
       let contentIds: string[] = [];
       let liveContentIds: string[] = [];

@@ -94,10 +94,12 @@
         }
       ],
       "liveVersionNumber": 0,
+      "liveVersionId": "",
       "deleted": false,
       "id": "cont_oF0Kkr6Cdffwpt1",
       "applicationId": "appl_yqfu8BI1BRe15fs",
       "title": "232323232",
+      "type": "variable",
       "fileId": "file_VFxUmmLsW2qfyfI",
       "creator": "user-dvbfW1qsl8qkz39",
       "createTime": "2021-12-29T18:38:24.372+08:00",
@@ -106,11 +108,13 @@
     {
       "tags": [],
       "liveVersionNumber": 1,
+      "liveVersionId": "cver_BF6avr9FPsB7XZ5",
       "deleted": false,
       "id": "cont_Iw5VfV3avqaRhHC",
       "applicationId": "appl_yqfu8BI1BRe15fs",
       "title": "@ccc/cloud-flight-seo-weather-container_editor",
       "fileId": "file_dYjtcxziYi1vewE",
+      "type": "mock",
       "creator": "user-dvbfW1qsl8qkz39",
       "createTime": "2021-12-29T17:40:09.614+08:00",
       "updateTime": "2021-12-29T17:40:09.614+08:00"
@@ -382,7 +386,7 @@
             "children": [
               {
                 "id": "stru_4Cgcu45rawdxM7R",
-                "name": "cloud-flight-seo-common-head",
+                "name": "@fox/cloud-flight-seo-common-head",
                 "label": "common-head",
                 "props": {
                   "configProps": "{{injector:pageInfo:jsonParams:custom['tdk']:props}}"
@@ -396,7 +400,7 @@
               },
               {
                 "id": "stru_Vcnf6Ps74FgMRze",
-                "name": "cloud-flight-seo-flight-searchbox-container",
+                "name": "@fox/cloud-flight-seo-flight-searchbox-container",
                 "label": "flight-searchbox",
                 "props": {
                   "configProps": "{{injector:pageInfo:jsonParams:custom['flight-search-box']:props}}"
@@ -411,7 +415,7 @@
               },
               {
                 "id": "stru_mEKB4XKBaeepjPe",
-                "name": "cloud-flight-seo-flight-list-container",
+                "name": "@fox/cloud-flight-seo-flight-list-container",
                 "label": "flight-list",
                 "props": {
                   "configProps": "{{injector:pageInfo:jsonParams:custom['flight-list']:props}}"
@@ -548,7 +552,7 @@
                       },
                       {
                         "id": "stru_2ms8lsac4ueJGmP",
-                        "name": "cloud-flight-seo-context-provider",
+                        "name": "@fox/cloud-flight-seo-context-provider",
                         "label": "context-provider",
                         "props": {},
                         "extension": {
@@ -570,7 +574,7 @@
                       },
                       {
                         "id": "stru_BKtNxFV0bLl5IJy",
-                        "name": "cloud-flight-seo-common-ubt",
+                        "name": "@fox/cloud-flight-seo-common-ubt",
                         "label": "ubt",
                         "props": {
                           "pageId": "{{injector:pageInfo:pageId}}"

@@ -28,8 +28,9 @@ import {
   ProjectEntity,
   ProjectFileDeleteParams,
   ProjectFileSaveParams,
+  Screenshots,
   User,
-} from '@/types//index';
+} from '@/types/index';
 import { getLocationIfo } from '@/utils/index';
 
 import { BasicInfo, Toolbar } from '../common/index';
@@ -57,6 +58,7 @@ interface ProjectContentType {
   editFile?: File;
   fileDrawerOpen?: boolean;
   fileSaveLoading?: boolean;
+  screenshots: Screenshots;
   fetchList: (params: ProjectContentFetchParams) => void;
   fetchFileDetail: (params: FilesFetchParams) => void;
   fetchParentFiles: (params: ParentFileFetchParams, cb?: (folder) => void) => void;
@@ -130,6 +132,7 @@ const ProjectContentComponent: React.FC<ProjectContentType> = (props: ProjectCon
     updateFile,
     updateEditFile,
     fetchApplicationInfo,
+    screenshots,
   } = props;
   const [folderId, setFolderId] = useState<string | undefined>();
   const [folderName, setFolderName] = useState<string>('');
@@ -311,16 +314,16 @@ const ProjectContentComponent: React.FC<ProjectContentType> = (props: ProjectCon
                 {
                   name: global.project,
                   link: `${ROUTE_FOLDER_MAP[type].replace(':applicationId', applicationId)}?page=${
-                      folderPage || ''
+                    folderPage || ''
                   }&appId=${folderSearch || ''}`,
                 },
                 {
                   name: folderName,
                   link: `${ROUTE_FILE_MAP[type].replace(
-                      ':applicationId',
-                      applicationId,
+                    ':applicationId',
+                    applicationId,
                   )}?applicationId=${applicationId}&folderId=${folderId}&folderPage=${
-                      folderPage || ''
+                    folderPage || ''
                   }&folderSearch=${folderSearch || ''}&page=${filePage || ''}`,
                 },
                 {
@@ -360,6 +363,7 @@ const ProjectContentComponent: React.FC<ProjectContentType> = (props: ProjectCon
             offlineContent={offlineContent}
             openDrawer={openDrawer}
             openAuthDrawer={handleAuthorize}
+            screenshots={screenshots}
           />
         </FoxPageContent>
       </Content>

@@ -34,25 +34,26 @@ export class ContentListService extends BaseService<Content> {
    * @returns {Content} Promise
    */
   async getAppContentList(params: AppFileType): Promise<Content[]> {
-    let contentObject: Record<string, Content> = {};
+    let contentList: Content[] = [];
 
     // Get all files id of the specified type under the App
     const fileList: File[] = await Service.file.list.getAppTypeFileList(params);
 
     if (fileList.length > 0) {
       // Check if file is a reference
-      let referenceFileObject: Record<string, string> = {};
+      let referenceIdMap: Record<string, string> = {};
+      let referenceLiveMap: Record<string, string> = {};
       fileList.forEach((file) => {
-        file.tags?.forEach((tag) => {
-          if (tag.type === TAG.DELIVERY_REFERENCE) {
-            referenceFileObject[file.id] = tag.reference.id;
-          }
-        });
+        const referenceTag = _.find(file.tags, (tag) => tag.type === TAG.DELIVERY_REFERENCE);
+        if (referenceTag && referenceTag.reference?.id) {
+          referenceIdMap[referenceTag.reference.id] = file.id;
+          referenceLiveMap[referenceTag.reference.id] = referenceTag.reference.liveVersionId || '';
+        }
       });
 
       // Concurrently 1 time each time, 200 fileIds are requested each time
-      const referenceIds: string[] = _.values(referenceFileObject);
-      const fileIds = _.concat(_.pullAll(_.map(fileList, 'id'), _.keys(referenceFileObject)), referenceIds);
+      const referenceIds: string[] = _.keys(referenceIdMap);
+      const fileIds = _.concat(_.pullAll(_.map(fileList, 'id'), _.values(referenceIdMap)), referenceIds);
 
       let promises: any[] = [];
       const limit = pLimit(1);
@@ -60,24 +61,39 @@ export class ContentListService extends BaseService<Content> {
         promises.push(limit(() => Model.content.getDetailByFileIds(fileIds)));
       });
 
-      contentObject = _.keyBy(_.flatten(await Promise.all(promises)), 'id');
-
-      // replace referenced file id, use fileId as key is to avoid has multi same reference content id
+      contentList = _.flatten(await Promise.all(promises));
+      const fileObject = _.keyBy(fileList, 'id');
+      let referenceFileObject: Record<string, File> = {};
+      let referenceVersionObject: Record<string, ContentVersion> = {};
       if (referenceIds.length > 0) {
-        let referenceContentObject: Record<string, Content> = _.pick(contentObject, referenceIds);
-        contentObject = _.omit(contentObject, referenceIds);
-
-        for (const fileId in referenceFileObject) {
-          if (referenceContentObject[referenceFileObject[fileId]]) {
-            contentObject[fileId] = Object.assign({}, referenceContentObject[referenceFileObject[fileId]], {
-              fileId,
-            });
-          }
-        }
+        const [referenceFileList, referenceVersionList] = await Promise.all([
+          Service.file.list.getDetailByIds(referenceIds),
+          Service.version.list.getDetailByIds(_.pull(_.values(referenceLiveMap), '')),
+        ]);
+        referenceFileObject = _.keyBy(referenceFileList, 'id');
+        referenceVersionObject = _.keyBy(referenceVersionList, 'id');
       }
+
+      contentList.forEach((content) => {
+        const fileId = referenceIdMap[content.fileId] || content.fileId;
+        const referenceId = fileId !== content.fileId ? content.fileId : '';
+        const deprecatedTag = _.find(fileObject[fileId]?.tags || [], (tag) => tag.type === TAG.DEPRECATED);
+        const referenceDeprecatedTag = _.find(
+          referenceFileObject[referenceId]?.tags || [],
+          (tag) => tag.type === TAG.DEPRECATED,
+        );
+
+        (<any>content).deprecated = (deprecatedTag?.status | referenceDeprecatedTag?.status) === 1;
+
+        // response reference live version
+        if (fileId && referenceLiveMap[content.fileId]) {
+          content.liveVersionId = referenceLiveMap[content.fileId];
+          content.liveVersionNumber = referenceVersionObject[referenceLiveMap[content.fileId]]?.versionNumber;
+        }
+      });
     }
 
-    return _.toArray(contentObject);
+    return contentList;
   }
 
   /**
@@ -253,5 +269,47 @@ export class ContentListService extends BaseService<Content> {
     });
 
     return contentLiveIdMap;
+  }
+
+  /**
+   * Get content list by ids,
+   * if the content is reference, then get the reference info (live version id)
+   * @param params
+   * @returns
+   */
+  async getContentInfo(params: { applicationId: string; contentIds: string[] }): Promise<Content[]> {
+    let contentList = await Service.content.list.getDetailByIds(params.contentIds);
+    contentList = _.filter(contentList, { deleted: false });
+    const fileIds = _.map(contentList, 'fileId');
+
+    // Get the reference infos
+    const referenceFileList = await Service.file.list.find({
+      tags: { $elemMatch: { type: TAG.DELIVERY_REFERENCE, 'reference.id': { $in: fileIds } } },
+      applicationId: params.applicationId,
+    });
+
+    let referenceObject: Record<string, any> = {};
+    referenceFileList.forEach((item) => {
+      const referenceTag = _.find(item.tags, { type: TAG.DELIVERY_REFERENCE });
+      referenceTag.type && (referenceObject[referenceTag.reference.id] = referenceTag?.reference);
+    });
+
+    let referenceList: Content[] = [];
+    contentList.forEach((content) => {
+      if (referenceObject[content.fileId] && referenceObject[content.fileId].liveVersionId) {
+        referenceList.push(
+          Object.assign({}, content, {
+            liveVersionId: referenceObject[content.fileId].liveVersionId,
+            liveVersionNumber: Service.version.number.createNumberFromVersion(
+              referenceObject[content.fileId].liveVersion,
+            ),
+          }),
+        );
+      } else {
+        referenceList.push(content);
+      }
+    });
+
+    return referenceList;
   }
 }

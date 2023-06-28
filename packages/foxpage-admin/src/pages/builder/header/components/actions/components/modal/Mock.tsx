@@ -6,12 +6,13 @@ import { Button, Checkbox, Modal as AntModal, Spin, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
+import { MockContent } from '@/types/index';
+
 import * as ACTIONS from '@/actions/builder/header';
 import * as PAGE_ACTIONS from '@/actions/builder/main';
 import { JSONCodeEditor } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
 import { wrapperMock } from '@/sagas/builder/utils';
-import { MockContent } from '@/types/builder';
 
 const Modal = styled(AntModal)`
   .ant-modal-content {

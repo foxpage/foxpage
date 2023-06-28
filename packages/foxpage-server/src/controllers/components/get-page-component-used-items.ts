@@ -55,34 +55,99 @@ export class GetComponentUsedList extends BaseController {
   async index(@QueryParams() params: GetComponentUsedReq): Promise<ResData<ComponentUsedItem[]>> {
     try {
       const pageSize = this.service.relation.setPageSize(params);
-      const usedItemList = await this.service.relation.aggregate([
-        {
-          $match: {
-            applicationId: params.applicationId,
-            tags: { $elemMatch: { type: TYPE.COMPONENT, key: 'name', value: params.name } },
-            level: TYPE.VERSION,
-            deleted: false,
+      let aggregateList: Record<string, any>[] = [];
+      if (params.live) {
+        aggregateList = [
+          {
+            $match: {
+              applicationId: params.applicationId,
+              tags: { $elemMatch: { type: TYPE.COMPONENT, key: 'name', value: params.name } },
+              level: TYPE.VERSION,
+              deleted: false,
+            },
           },
-        },
-        { $unwind: '$parentItems' },
-        { $match: { 'parentItems.type': 'content' } },
-        { $group: { _id: '$parentItems.id', updateTime: { $max: '$updateTime' } } },
-        { $sort: { updateTime: -1 } },
-        {
-          $facet: {
-            metadata: [{ $count: 'total' }, { $addFields: { page: pageSize.page } }],
-            data: [{ $skip: (pageSize.page - 1) * pageSize.size }, { $limit: pageSize.size }],
+          { $unwind: '$parentItems' },
+          { $match: { 'parentItems.type': TYPE.VERSION } },
+          {
+            $lookup: {
+              from: 'fp_application_content',
+              localField: 'parentItems.id',
+              foreignField: 'liveVersionId',
+              as: 'contentItem',
+            },
           },
-        },
-      ]);
-
+          {
+            $group: {
+              _id: '$contentItem.id',
+              updateTime: { $max: '$versionItem.updateTime' },
+              versionIds: { $push: '$contentItem.liveVersionId' },
+            },
+          },
+          { $match: { _id: { $ne: [] } } },
+          { $sort: { updateTime: -1 } },
+          {
+            $facet: {
+              metadata: [{ $count: 'total' }, { $addFields: { page: pageSize.page } }],
+              data: [{ $skip: (pageSize.page - 1) * pageSize.size }, { $limit: pageSize.size }],
+            },
+          },
+        ];
+      } else {
+        aggregateList = [
+          {
+            $match: {
+              applicationId: params.applicationId,
+              tags: { $elemMatch: { type: TYPE.COMPONENT, key: 'name', value: params.name } },
+              level: TYPE.VERSION,
+              deleted: false,
+            },
+          },
+          { $unwind: '$parentItems' },
+          { $match: { 'parentItems.type': TYPE.VERSION } },
+          {
+            $lookup: {
+              from: 'fp_application_content_version',
+              localField: 'parentItems.id',
+              foreignField: 'id',
+              as: 'versionItem',
+            },
+          },
+          {
+            $group: {
+              _id: '$versionItem.contentId',
+              updateTime: { $max: '$versionItem.updateTime' },
+              versionIds: { $push: '$versionItem.id' },
+            },
+          },
+          { $sort: { updateTime: -1 } },
+          {
+            $facet: {
+              metadata: [{ $count: 'total' }, { $addFields: { page: pageSize.page } }],
+              data: [{ $skip: (pageSize.page - 1) * pageSize.size }, { $limit: pageSize.size }],
+            },
+          },
+        ];
+      }
+      const usedItemList = await this.service.relation.aggregate(aggregateList);
       // get page parent level infos
-      const contentIds = _.map(usedItemList[0]?.data, '_id');
-      const contentParentObject = await this.service.content.list.getContentAllParents(contentIds);
+      const contentIds: string[] = _.flatten(_.map(usedItemList[0]?.data, '_id'));
+      const versionIds: string[] = _.flatten(_.flatten(_.map(usedItemList[0]?.data, 'versionIds')));
+      const [contentParentObject, versionInfoList] = await Promise.all([
+        this.service.content.list.getContentAllParents(contentIds),
+        this.service.version.list.find(
+          { id: { $in: versionIds }, deleted: false },
+          'id version versionNumber contentId createTime updateTime',
+        ),
+      ]);
 
       let contentParentBaseObject: Record<string, any> = {};
       let userIds: string[] = [];
-      for (const contentId in contentParentObject) {
+      for (const version of versionInfoList) {
+        const contentId = version.contentId;
+        if (contentParentBaseObject[contentId]) {
+          continue;
+        }
+
         contentParentBaseObject[contentId] = { applicationId: params.applicationId };
         (contentParentObject[contentId] as any[]).forEach((item) => {
           item.parentFolderId &&
@@ -99,6 +164,11 @@ export class GetComponentUsedList extends BaseController {
             );
             userIds.push(item.creator);
           }
+          contentParentBaseObject[contentId].version = Object.assign(
+            {},
+            _.pick(version, ['id', 'version', 'versionNumber', 'createTime', 'updateTime']),
+            { isLive: version.id === item.liveVersionId },
+          );
         });
       }
 
@@ -115,7 +185,7 @@ export class GetComponentUsedList extends BaseController {
 
       return Response.success(
         {
-          pageInfo: this.paging(usedItemList[0]?.metadata?.[0].total || 0, pageSize),
+          pageInfo: this.paging(usedItemList[0]?.metadata?.[0]?.total || 0, pageSize),
           data: componentUsedPages,
         },
         1112801,

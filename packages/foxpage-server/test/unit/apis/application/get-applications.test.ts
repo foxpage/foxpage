@@ -10,6 +10,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
 });
 
 describe('Post: /applications/list', () => {

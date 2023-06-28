@@ -48,7 +48,7 @@ export class UpdateComponentContentDetail extends BaseController {
           tags: params.tags || [],
           type: TYPE.COMPONENT as FileTypes,
         },
-        { ctx },
+        { ctx, actionDataType: TYPE.COMPONENT },
       );
 
       if (result.code === 1 || result.code === 2) {

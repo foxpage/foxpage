@@ -1,7 +1,7 @@
 import { message } from 'antd';
 
 import { getBusinessI18n } from '@/foxI18n/index';
-import { PageContent, RelationDetails } from '@/types/builder';
+import { PageContent, RelationDetails } from '@/types/index';
 
 import { initRelation } from '../utils';
 

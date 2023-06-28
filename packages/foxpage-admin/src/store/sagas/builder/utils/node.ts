@@ -1,4 +1,9 @@
-import { BLOCK_COMPONENT_NAME, PAGE_COMPONENT_NAME, REACT_COMPONENT_TYPE } from '@/constants/index';
+import {
+  BLOCK_COMPONENT_NAME,
+  DSL_TPL_TYPE,
+  PAGE_COMPONENT_NAME,
+  REACT_COMPONENT_TYPE,
+} from '@/constants/index';
 import { Component, Content, RenderStructureNode, StructureNode } from '@/types/index';
 
 import { generateStructureId } from './common';
@@ -53,7 +58,15 @@ export const initRootContentNode = (component: Component) => {
  * @returns
  */
 export const getRootNode = (nodes: StructureNode[] = []) => {
-  return nodes.find((item) => isPageNode(item) || isBlockNode(item));
+  return nodes.find((item) => isRootNode(item));
+};
+
+/**
+ * is root node
+ * @param node
+ */
+export const isRootNode = (node: StructureNode) => {
+  return isPageNode(node) || isBlockNode(node);
 };
 
 /**
@@ -63,6 +76,7 @@ export const getRootNode = (nodes: StructureNode[] = []) => {
  */
 export const isPageNode = (node: StructureNode) => {
   return node.name === PAGE_COMPONENT_NAME;
+  // return (node.name === PAGE_COMPONENT_NAME) && (node.type === ComponentType.dslTemplate);
 };
 
 /**
@@ -80,11 +94,11 @@ export const isBlockNode = (node: StructureNode) => {
  * @returns
  */
 export const initMockNode = (node: StructureNode) => {
-  return ({
+  return {
     id: node.id || generateStructureId(),
     name: node.name,
     props: {},
-  } as unknown) as StructureNode;
+  } as unknown as StructureNode;
 };
 
 /**
@@ -114,3 +128,7 @@ export function treeToList(nodes: StructureNode[] = [], list: StructureNode[] = 
     }
   });
 }
+
+export const isTPLNode = (nodes: StructureNode) => {
+  return nodes.type === DSL_TPL_TYPE;
+};

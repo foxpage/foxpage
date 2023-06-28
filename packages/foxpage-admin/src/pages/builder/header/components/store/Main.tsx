@@ -14,6 +14,7 @@ import { Modal } from './components';
 const mapStateToProps = (store: RootState) => ({
   fileType: store.builder.main.file?.type,
   blocked: store.builder.main.lockerState.blocked,
+  extend: store.builder.main.extend,
   content: store.builder.main.content,
 });
 
@@ -24,16 +25,20 @@ const mapDispatchToProps = {
 type PageCopyType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
 
 const PageCopy: React.FC<PageCopyType> = (props) => {
-  const { fileType, blocked, content, openModal } = props;
-  const isExtend = !!content?.extension?.extendId;
-
+  const { fileType, blocked, extend, content, openModal } = props;
+  const show =
+    content &&
+    content.id &&
+    fileType === FileType.page &&
+    extend !== undefined &&
+    Object.keys(extend).length === 0;
   // i18n
   const { locale } = useContext(GlobalContext);
   const { file } = locale.business;
 
   return (
     <>
-      {fileType === FileType.page && !isExtend && (
+      {show && (
         <>
           <StyledIcon
             className={blocked ? 'disabled' : ''}
@@ -44,7 +49,7 @@ const PageCopy: React.FC<PageCopyType> = (props) => {
               openModal(true);
             }}>
             <FileSearchOutlined />
-            <IconMsg>{file.page}</IconMsg>
+            <IconMsg>{file.pageBoilerplate}</IconMsg>
           </StyledIcon>
           <Modal />
         </>

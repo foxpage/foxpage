@@ -19,7 +19,11 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
-  ctx.userInfo = { id: 'xxx', account: 'xx' };
+  ctx.userLogs = [];
+  ctx.userInfo = {
+    id: Data.user.id as string,
+    account: Data.user.account,
+  };
   params = {
     applicationId: Data.app.id,
     folderId: Data.folder.id,

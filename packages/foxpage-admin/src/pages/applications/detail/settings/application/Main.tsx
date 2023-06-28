@@ -11,7 +11,7 @@ import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { ResourceTypeArray } from '@/constants/resource';
 import { GlobalContext } from '@/pages/system';
 import * as ACTIONS from '@/store/actions/applications/detail/settings/application';
-import { ApplicationEntityMultiHost, ApplicationRegion } from '@/types/application';
+import { ApplicationEntityMultiHost, ApplicationRegion } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/index';
 
 const { Option } = Select;
@@ -615,7 +615,7 @@ const Main: React.FC<SettingType> = (props) => {
             <Col span={6}>
               <Label>{setting.editor}</Label>
             </Col>
-            <Col span={10}>{hostSlug ? `${hostSlug}/_foxpage/visual-editor.html` : '-'}</Col>
+            <Col span={10}>{hostSlug ? `${hostSlug}/_foxpage/designer` : '-'}</Col>
           </Row>
           <Row>
             <Col span={6}>

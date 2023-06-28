@@ -5,7 +5,7 @@ import * as ACTIONS from '@/actions/system/register';
 import * as API from '@/apis/system/register/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { RegisterActionType } from '@/reducers/system/register';
-import { RegisterParams } from '@/types/user';
+import { RegisterParams } from '@/types/index';
 import { errorToast } from '@/utils/error-toast';
 
 export function* handleRegister(action: RegisterActionType) {

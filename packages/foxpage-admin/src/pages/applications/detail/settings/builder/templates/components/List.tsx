@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { ArrowDownOutlined, ArrowUpOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Button, Popconfirm, Table, Tag, Tooltip } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/settings/builder/template';
-import { StoreGoodsPurchaseType, suffixTagColor } from '@/constants/index';
+import { ROUTE_CONTENT_MAP, StoreGoodsPurchaseType, suffixTagColor } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ApplicationSettingBuilderComponent } from '@/types/index';
 
@@ -61,6 +61,15 @@ const ComponentList = (props: IProps) => {
       title: global.idLabel,
       dataIndex: 'id',
       width: 300,
+      render: (id: string) => (
+        <Link
+          to={{
+            pathname: `${ROUTE_CONTENT_MAP['application'].replace(':applicationId', applicationId)}`,
+            search: `?applicationId=${applicationId}&fileId=${id}`,
+          }}>
+          {id}
+        </Link>
+      ),
     },
     {
       title: global.actions,
@@ -126,7 +135,7 @@ const ComponentList = (props: IProps) => {
           idx: template.idx,
           name: template.name || '',
           status: !template.status,
-        },
+        } as any,
       ],
     });
   };

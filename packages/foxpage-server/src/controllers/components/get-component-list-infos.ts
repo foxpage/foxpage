@@ -19,6 +19,7 @@ interface ComponentCells extends ComponentContentInfo {
   category?: ComponentCategory;
   defaultValue?: Record<string, any>;
   status?: boolean;
+  deprecated?: boolean;
 }
 
 @JsonController('components')
@@ -111,15 +112,16 @@ export class GetAppComponentListInfos extends BaseController {
       const componentSettingObject = _.keyBy(appDetail.setting?.[TYPE.COMPONENT] || [], 'id');
       for (let content of contentList) {
         const componentCell = (content.package || {}) as ComponentCells;
+        const componentBuildSet = componentSettingObject[contentFileObject[componentCell.id]?.id || ''] || {};
 
         componentCell.type = contentFileObject[componentCell.id]?.type || '';
         componentCell.componentType = contentFileObject[componentCell.id]?.componentType || '';
         componentCell.name = content.name;
         componentCell.version = <string>content.version;
         componentCell.components = [];
-        const componentBuildSet = componentSettingObject[contentFileObject[componentCell.id]?.id || ''] || {};
         componentCell.defaultValue = componentBuildSet.defaultValue || {};
         componentCell.status = componentBuildSet.status || false;
+        componentCell.deprecated = (<any>content).deprecated || false;
         componentCell.category = (componentBuildSet.category || {}) as ComponentCategory;
         componentCell.resource = this.service.version.component.assignResourceToComponent(
           componentCell.resource || {},
@@ -175,6 +177,7 @@ export class GetAppComponentListInfos extends BaseController {
               schema: {} as any,
               version: '',
               changelog: '',
+              deprecated: false,
             } as any;
             components.push(blockCell);
           }

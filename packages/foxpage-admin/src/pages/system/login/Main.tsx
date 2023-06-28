@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Form, Input, message, Spin } from 'antd';
@@ -10,7 +10,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/system/login';
 import Logo from '@/components/common/Logo';
 import { GlobalContext } from '@/pages/system';
-import { LoginReturn } from '@/types/user';
+import { LoginReturn } from '@/types/index';
 import { setLoginUser } from '@/utils/login-user';
 
 const Container = styled.div`
@@ -107,6 +107,15 @@ const Login: React.FC<LoadingType> = (props) => {
             <Form.Item>
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Remember me</Checkbox>
+              </Form.Item>
+              <Form.Item name="register" valuePropName="checked" noStyle>
+                <Link
+                  to={{
+                    pathname: '/register',
+                  }}
+                  style={{ float: 'right' }}>
+                  To register
+                </Link>
               </Form.Item>
             </Form.Item>
 

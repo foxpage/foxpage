@@ -74,6 +74,40 @@ function* handleSaveApp() {
   yield put(ACTIONS.updateSaveLoading(false));
 }
 
+function* handleDeleteApp(actions: ApplicationsActionType) {
+  yield put(ACTIONS.updateSaveLoading(true));
+
+  const { applicationId } = actions.payload as { applicationId: string };
+  const res: ResponseBody = yield call(API.deleteApp, applicationId);
+
+  const {
+    global: { deleteFailed, deleteSuccess },
+  } = getBusinessI18n();
+
+  if (res.code === 200) {
+    message.success(deleteSuccess);
+
+    // close drawer & refresh application list
+    yield put(ACTIONS.openEditDrawer(false));
+
+    const { pageInfo } = store.getState().workspace.applications.list;
+    const { organizationId } = store.getState().system.user;
+
+    yield put(
+      ACTIONS.fetchList({
+        organizationId,
+        type: 'user',
+        ...pageInfo,
+        search: '',
+      }),
+    );
+  } else {
+    errorToast(res, deleteFailed);
+  }
+
+  yield put(ACTIONS.updateSaveLoading(false));
+}
+
 function* handleAuthFetchList(action: ApplicationsActionType) {
   yield put(ACTIONS.updateAuthListLoading(true));
 
@@ -147,6 +181,7 @@ function* handleAuthDelete(action: ApplicationsActionType) {
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchList), handleFetchList);
   yield takeLatest(getType(ACTIONS.saveApp), handleSaveApp);
+  yield takeLatest(getType(ACTIONS.deleteApp), handleDeleteApp);
   yield takeLatest(getType(ACTIONS.fetchAuthList), handleAuthFetchList);
   yield takeLatest(getType(ACTIONS.fetchUserList), handleAuthUserFetchList);
   yield takeLatest(getType(ACTIONS.saveAuthUser), handleAuthAdd);

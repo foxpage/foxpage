@@ -6,10 +6,18 @@ import {
   Mock,
   PageContent,
   RenderStructureNode,
+  RightClickMenuConfig,
   StructureNode,
 } from '@/types/index';
 
-import { getStyleWrapper, initMockNode, structureToNodeMap, withCondition, withVariable } from '../utils';
+import {
+  getStyleWrapper,
+  initMockNode,
+  isTPLNode,
+  structureToNodeMap,
+  withCondition,
+  withVariable,
+} from '../utils';
 
 export type FormatOptions = {
   origin: PageContent;
@@ -37,7 +45,9 @@ export const format = (data: PageContent, opt: FormatOptions) => {
 
   // prepare
   const templates = (origin.relations?.templates || []).concat(extend?.relations?.templates || []);
+  const blocks = (origin.relations?.blocks || []).concat(extend?.relations?.blocks || []);
   const { nodeMap: templateNodeMap } = prepareTemplate(templates);
+  const { nodeMap: blockNodeMap } = prepareTemplate(blocks);
   const { nodeMap: originPageNodeMap } = preparePage(origin);
   const { nodeMap: extendPageNodeMap } = extend && extend.id ? preparePage(extend) : { nodeMap: {} };
   const { idMap: idMockMap } = prepareMock(mocks);
@@ -45,13 +55,14 @@ export const format = (data: PageContent, opt: FormatOptions) => {
 
   // format content.schemas
   const formattedSchemas = formatSchemas(content.schemas, {
+    blockNodeMap,
     templateNodeMap,
     originPageNodeMap,
     extendPageNodeMap,
     idMockMap,
     componentMap,
-    pageContent: origin,
     rootNode,
+    pageContent: origin,
     extendContent: extend,
   });
 
@@ -66,7 +77,16 @@ export const format = (data: PageContent, opt: FormatOptions) => {
 };
 
 const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptions) => {
-  const { templateNodeMap, extendPageNodeMap, idMockMap, pageContent, rootNode, extendContent } = opt;
+  const {
+    templateNodeMap,
+    extendPageNodeMap,
+    idMockMap,
+    pageContent,
+    rootNode,
+    extendContent,
+    blockNodeMap,
+    componentMap,
+  } = opt;
   const mockEnable = !!pageContent.mock?.enable;
 
   function doFormat(structures: Content['schemas'] = []) {
@@ -75,6 +95,8 @@ const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptio
     structures.forEach((item) => {
       const renderNode = { ...item } as RenderStructureNode;
       const templateNode = templateNodeMap[item.id];
+      const blockNode = blockNodeMap[item.id];
+      const isBlockRoot = !templateNode && isTPLNode(item);
       const styleNode = getStyleWrapper(item, opt as unknown as FormattedData);
 
       renderNode.props = item.__parsedProps || {};
@@ -101,15 +123,23 @@ const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptio
         extendContent?.content?.relation,
       );
       const isBlockRootNode = item.name === BLOCK_COMPONENT_NAME && item.id === rootNode?.id;
+      const component = componentMap[item.name];
+      const enableChildren = !!component?.enableChildren && !(!!templateNode || isBlockRoot);
+      const rightClickConfig: RightClickMenuConfig = {
+        enablePasteIn: enableChildren,
+        // enableCopyAll: enableChildren
+      };
       renderNode.__editorConfig = {
         visible: item.name !== BLANK_NODE,
         showInStructure:
           !templateNode &&
+          ((blockNode && isBlockRoot) || !blockNode) &&
           item.name !== STYLE_CONTAINER &&
           item.name !== PAGE_COMPONENT_NAME &&
           !isBlockRootNode,
-        editable: !templateNode,
-        moveable: !item.extension?.extendId && !extendPageNodeMap[item.id],
+        editable: !templateNode && ((blockNode && isBlockRoot) || !blockNode),
+        isTplNode: !!templateNode || isBlockRoot,
+        moveable: !isExtend,
         directiveable: false,
         styleable: !!styleNode,
         isExtend,
@@ -118,6 +148,7 @@ const formatSchemas = (schemas: Content['schemas'] = [], opt: FormatSchemasOptio
         hasCondition,
         hasVariable,
         hasMock: mockEnable && !!idMockMap[item.id],
+        rightClickConfig,
       };
 
       if (mockEnable) {

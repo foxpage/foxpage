@@ -10,7 +10,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/data/list';
 import { FoxPageBreadcrumb, FoxPageContent, JSONCodeEditor } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
-import { DataBaseQueryParams } from '@/types/data';
+import { DataBaseQueryParams } from '@/types/index';
 
 const { TextArea } = Input;
 

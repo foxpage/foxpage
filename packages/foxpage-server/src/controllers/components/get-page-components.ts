@@ -18,6 +18,7 @@ import { BaseController } from '../base-controller';
 interface FileContentUserInfo extends FileUserInfo {
   contentId: string;
   online?: boolean;
+  deprecated?: boolean;
 }
 
 @JsonController('component-searchs')
@@ -83,7 +84,7 @@ export class GetPageComponentList extends BaseController {
       ]);
       const contentObject = _.keyBy(contentList, 'fileId');
       const referenceObject = _.keyBy(referenceList, 'fileId');
-      const referneceFileObject = _.keyBy(referenceFileList, 'id');
+      const referenceFileObject = _.keyBy(referenceFileList, 'id');
       const fileOnlineObject: Record<string, any> = _.keyBy(_.map(onlineList, 'details'), 'id');
 
       const componentBuildVersionObject = await this.service.version.list.getContentMaxVersionDetail(
@@ -92,21 +93,33 @@ export class GetPageComponentList extends BaseController {
 
       let fileContentList: FileContentUserInfo[] = [];
       fileList.list.forEach((file) => {
-        let contentId =
-          contentObject[file.id]?.id || referenceObject[file?.tags?.[0]?.reference?.id]?.id || '';
+        const referenceTag = _.find(file.tags || [], (tag) => tag.type === TAG.DELIVERY_REFERENCE);
+        const referenceFileId = referenceTag?.reference.id;
+
+        let contentId = contentObject[file.id]?.id || referenceObject[referenceFileId]?.id || '';
         let liveVersionNumber = contentObject[file.id]?.liveVersionNumber || 0;
-        if (liveVersionNumber === 0 && file.tags?.[0]?.type === TAG.DELIVERY_REFERENCE) {
-          liveVersionNumber = referenceObject[file?.tags?.[0]?.reference?.id]?.liveVersionNumber || 0;
-          file.componentType = referneceFileObject[file?.tags?.[0]?.reference?.id]?.componentType || '';
+        if (liveVersionNumber === 0 && referenceFileId) {
+          liveVersionNumber = referenceObject[referenceFileId]?.liveVersionNumber || 0;
+          file.componentType = referenceFileObject[referenceFileId]?.componentType || '';
+        }
+
+        // get component deprecated status
+        let deprecatedTag = _.find(file.tags || [], (tag) => tag.type === TAG.DEPRECATED);
+        if ((!deprecatedTag || !deprecatedTag.status) && referenceFileId) {
+          deprecatedTag = _.find(
+            referenceFileObject[referenceFileId]?.tags || [],
+            (tag) => tag.type === TAG.DEPRECATED,
+          );
         }
 
         fileContentList.push(
           Object.assign(
             {
               release:
-                liveVersionNumber > 0
+                referenceTag?.reference.liveVersion ||
+                (liveVersionNumber > 0
                   ? this.service.version.number.getVersionFromNumber(liveVersionNumber)
-                  : '',
+                  : ''),
               base:
                 componentBuildVersionObject[contentId] &&
                 componentBuildVersionObject[contentId].status === VERSION.STATUS_BASE
@@ -114,6 +127,7 @@ export class GetPageComponentList extends BaseController {
                   : '',
               online: !!fileOnlineObject[file.id],
               contentId,
+              deprecated: deprecatedTag?.status || false,
             },
             file,
           ),

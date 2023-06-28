@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const path = require('path');
 const webpackBaseConfig = require('./webpack.base.config');
@@ -54,6 +55,14 @@ module.exports = merge(webpackBaseConfig, {
       'process.env': {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV),
       },
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: '../src/index.html' },
+        { from: '../src/environment.html' },
+        { from: '../src/images', to: 'images' },
+        { from: '../../../node_modules/monaco-editor/min/vs', to: 'vs' },
+      ],
     }),
   ],
 });

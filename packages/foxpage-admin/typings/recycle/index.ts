@@ -1,4 +1,9 @@
-import { CommonFetchParams, PaginationInfo, ProjectEntity, ResponseBody } from '@/types/index';
+import {
+  CommonFetchParams,
+  PaginationInfo,
+  ProjectEntity,
+  ResponseBody,
+} from '@foxpage/foxpage-client-types';
 
 export type RecycleFetchParams = CommonFetchParams;
 

@@ -18,7 +18,7 @@ const storeOrderSchema = new Schema<StoreOrder>(
   },
 );
 
-storeOrderSchema.pre('save', function(next) {
+storeOrderSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {

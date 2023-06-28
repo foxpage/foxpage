@@ -11,7 +11,7 @@ import * as ACTIONS from '@/actions/teams/list';
 import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { WIDTH_DEFAULT } from '@/constants/global';
 import { GlobalContext } from '@/pages/system';
-import { TeamEntity } from '@/types/team';
+import { TeamEntity } from '@/types/index';
 import { periodFormat } from '@/utils/period-format';
 
 import EditDrawer from './components/EditDrawer';

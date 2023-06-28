@@ -38,20 +38,24 @@ export class SetPageContentStatus extends BaseController {
 
     try {
       const apiType = this.getRoutePath(ctx.request.url);
-      let contentDetail = await this.service.content.info.getDetailById(params.id);
+      ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: apiType });
+
+      let [hasAuth, contentDetail] = await Promise.all([
+        this.service.auth.content(params.id, { ctx }),
+        this.service.content.info.getDetailById(params.id),
+      ]);
+
       if (this.notValid(contentDetail)) {
         return Response.warning(i18n.content.invalidContentId, 2051101);
       }
 
-      ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: apiType });
-      const hasAuth = await this.service.auth.content(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051101);
       }
 
       // check delete status
-      if (contentDetail.liveVersionNumber > 0) {
-        return Response.warning(i18n.content.contentHasLiveVersion, 2051103);
+      if (contentDetail.liveVersionId) {
+        return Response.warning(i18n.content.contentHasLiveVersion, 2051102);
       }
 
       const result = await this.service.content.info.setContentDeleteStatus(params, {
@@ -59,13 +63,15 @@ export class SetPageContentStatus extends BaseController {
         actionType: [LOG.DELETE, apiType].join('_'),
       });
       if (result.code === 1) {
-        return Response.warning(i18n.content.invalidContentId, 2051101);
+        return Response.warning(i18n.content.invalidContentId, 2051103);
       } else if (result.code === 2) {
-        return Response.warning(i18n.page.contentCannotBeDeleted, 2051102);
+        return Response.warning(i18n.page.contentCannotBeDeleted, 2051104);
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
       contentDetail = await this.service.content.info.getDetailById(params.id);
+
+      this.service.relation.removeVersionRelations({ contentIds: [params.id] });
 
       return Response.success(contentDetail, 1051101);
     } catch (err) {

@@ -1,4 +1,4 @@
-import { StoreFileResource } from '@/types/store';
+import { StoreFileResource } from '@/types/index';
 
 export const getImageUrlByEnv = (link: string) => {
   if (!link) {

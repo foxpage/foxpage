@@ -9,16 +9,16 @@ import {
   Tag,
 } from '@foxpage/foxpage-server-types';
 
-import { AppBaseInfo } from './app-types';
 import { ContentInfo } from './content-types';
 import { Creator, FoxCtx, IdName, Search } from './index-types';
 import { UserBase } from './user-types';
 
 export type FolderInfo = Exclude<Folder, 'creator' | 'applicationId'> & { creator: Creator } & {
-  application: AppBaseInfo;
+  application: IdName;
+  organization?: IdName;
 };
 export type FileInfo = Exclude<File, 'creator' | 'applicationId'> & { creator: Creator } & {
-  application: AppBaseInfo;
+  application: IdName;
   hasContent?: boolean;
   hasLiveContent?: boolean;
 };
@@ -70,6 +70,7 @@ export interface AppFileType {
   applicationId: string;
   type: string | string[];
   search?: string;
+  loadOnIgnite?: boolean | undefined;
 }
 
 export interface FileCheck {
@@ -130,6 +131,7 @@ export interface AppFolderSearch extends Search {
 export interface FolderChildrenSearch extends Search {
   types?: string[];
   applicationIds?: string[];
+  organizationId?: string;
   folderIds?: string[];
   userIds?: string[];
   searchType?: string;
@@ -230,4 +232,19 @@ export interface NewResourceDetail {
   isNew: boolean;
   meta?: Record<string, any>;
   schema?: Record<string, any>;
+}
+
+export interface TypeItemPicInfo {
+  id: string;
+  name: string;
+  versionId: string;
+  version: string;
+  pictures: { url: string; type: string; sort?: number }[];
+}
+
+export interface ThirdPartyPicRes {
+  data: {
+    url: string;
+    name: string;
+  };
 }

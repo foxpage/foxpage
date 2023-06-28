@@ -22,7 +22,7 @@ import {
   RemoteResourceSavedData,
   RemoteResourceSavedRes,
   RemoteResourceSaveParams,
-} from '@/types/application';
+} from '@/types/index';
 import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchPackages(action: ApplicationPackagesFastActionType) {

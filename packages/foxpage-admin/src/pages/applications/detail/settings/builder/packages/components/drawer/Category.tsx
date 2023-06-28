@@ -5,7 +5,7 @@ import { Button, Input, Select, Tooltip } from 'antd';
 import styled from 'styled-components';
 
 import { GlobalContext } from '@/pages/system';
-import { CategoryType } from '@/types/component';
+import { CategoryType } from '@/types/index';
 
 const { Option } = Select;
 

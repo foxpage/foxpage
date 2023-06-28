@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { Content, File, FileTypes, Folder } from '@foxpage/foxpage-server-types';
 
-import { TAG, TYPE, VERSION } from '../../../config/constant';
+import { PRE, TAG, TYPE, VERSION } from '../../../config/constant';
 import * as Model from '../../models';
 import { FileContentAndVersion } from '../../types/content-types';
 import {
@@ -335,11 +335,12 @@ export class FileListService extends BaseService<File> {
     applicationId: string;
     type: string;
     userId: string;
+    search?: string;
     skip?: number;
     limit?: number;
   }): Promise<{ counts: number; list: File[] }> {
     const { applicationId = '', userId = '' } = params;
-    const userInvoloveItems = await Service.auth.find(
+    const userInvolveItems = await Service.auth.find(
       {
         targetId: userId,
         allow: true,
@@ -351,7 +352,7 @@ export class FileListService extends BaseService<File> {
 
     let projectIds: string[] = [];
     let fileIds: string[] = [];
-    userInvoloveItems.forEach((item) => {
+    userInvolveItems.forEach((item) => {
       if (item.relation?.fileId) {
         fileIds.push(item.relation.fileId);
       } else if (item.relation?.projectId) {
@@ -360,23 +361,31 @@ export class FileListService extends BaseService<File> {
     });
 
     const fileParams: Record<string, any> = {
-      $or: [],
       creator: { $ne: userId },
       type: params.type,
       deleted: false,
     };
 
-    if (fileIds.length > 0) {
-      fileParams['$or'].push({ id: { $in: _.uniq(fileIds) } });
-    }
+    if (params.search && params.search.length === 20 && _.startsWith(params.search, PRE.FILE + '_')) {
+      fileParams.id = params.search;
+    } else {
+      fileParams['$or'] = [];
+      if (fileIds.length > 0) {
+        fileParams['$or'].push({ id: { $in: _.uniq(fileIds) } });
+      }
 
-    if (projectIds.length > 0) {
-      fileParams['$or'].push({ folderId: { $in: _.uniq(projectIds) } });
+      if (projectIds.length > 0) {
+        fileParams['$or'].push({ folderId: { $in: _.uniq(projectIds) } });
+      }
+
+      if (params.search) {
+        fileParams.name = { $regex: new RegExp(params.search, 'i') };
+      }
     }
 
     let counts = 0;
     let fileList: File[] = [];
-    if (fileParams['$or'].length > 0) {
+    if (fileParams['$or']?.length > 0 || fileParams.id) {
       [counts, fileList] = await Promise.all([
         this.getCount(fileParams),
         this.find(fileParams, '', { skip: params.skip || 0, limit: params.limit || 10 }),

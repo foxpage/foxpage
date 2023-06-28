@@ -140,7 +140,9 @@ export class AppListReq extends PagingReq {
   @Length(20, 20)
   organizationId: string;
 
-  @JSONSchema({ description: 'App type, user, organization, default is organization' })
+  @JSONSchema({
+    description: 'App type, user|organization|project|user_project|involve_project, default is organization',
+  })
   @IsString()
   @IsOptional()
   type: string;

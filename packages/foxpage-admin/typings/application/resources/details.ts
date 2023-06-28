@@ -1,4 +1,4 @@
-import { CommonFetchParams } from '@/types/common';
+import { CommonFetchParams } from '@foxpage/foxpage-client-types';
 
 export interface AppResourcesDetailsFetchResourcesListParams
   extends Pick<CommonFetchParams, 'applicationId'> {

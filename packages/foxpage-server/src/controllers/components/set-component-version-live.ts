@@ -32,7 +32,7 @@ export class SetComponentLiveVersions extends BaseController {
     operationId: 'set-component-live-versions',
   })
   @ResponseSchema(ContentDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: AppContentLiveReq): Promise<ResData<Content>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentLiveReq): Promise<ResData<Content>> {
     try {
       // Permission check
       const hasAuth = await this.service.auth.content(params.id, { ctx });

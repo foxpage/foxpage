@@ -1,15 +1,14 @@
 import _ from 'lodash';
 
 import { FileType } from '@/constants/global';
-import { InitStateParams, Mock, PageContent, StructureNode } from '@/types/index';
+import { InitStateParams, Mock, PageContent, ParseOptions, StructureNode } from '@/types/index';
 
 import { format, FormatOptions } from './formatter';
 import { merge } from './merger';
 import { mock } from './mocker';
-import { parse, ParseOptions } from './parser';
+import { parse } from './parser';
 
 interface ParseContentOptions extends ParseOptions {
-  extendContent?: PageContent;
   mocks: Mock[];
 }
 
@@ -36,13 +35,15 @@ export const getMocks = (data: PageContent) => {
  * @returns
  */
 export const parseContent = async (data: PageContent, opt: ParseContentOptions) => {
-  const { application, extendContent, file, mocks = [] } = opt || {};
-  const { type } = file || {};
+  const { application, extendContent, mocks = [], file } = opt || {};
   let parsed: PageContent | null = Object.assign({}, data);
+  let merged: PageContent | null = null;
+  let mocked: PageContent | null = null;
 
   // merge
   if (extendContent) {
-    parsed = merge(parsed, extendContent);
+    merged = merge(parsed, extendContent);
+    parsed = merged;
     if (!parsed) {
       return null;
     }
@@ -54,22 +55,23 @@ export const parseContent = async (data: PageContent, opt: ParseContentOptions) 
 
   // mock
   if (!!parsed.mock?.enable && mocks.length > 0) {
-    parsed = mock(parsed, {
+    mocked = mock(parsed, {
       applicationId: application.id,
       extendContent,
       mocks,
     });
+    parsed = mocked;
     if (!parsed) {
       return null;
     }
   }
 
   // parse
-  if (type === FileType.page) {
+  if (file.type === FileType.page || file.type === FileType.block) {
     parsed = await parse(parsed, opt);
   }
 
-  return parsed;
+  return { parsed, merged, mocked };
 };
 
 /**
@@ -100,14 +102,15 @@ export const initState = async (page: PageContent, opt: InitStateParams) => {
   const mocks = getMocks(page);
 
   // parse content
-  const parsed = await parseContent(page, {
-    application: opt.application,
-    extendContent: _.cloneDeep(opt.extendPage),
-    locale: opt.locale,
-    mocks,
-    file: opt.file,
-    parseInLocal: opt.parseInLocal,
-  });
+  const { parsed, merged } =
+    (await parseContent(page, {
+      application: opt.application,
+      extendContent: _.cloneDeep(opt.extendPage),
+      locale: opt.locale,
+      mocks,
+      file: opt.file,
+      parseInLocal: opt.parseInLocal,
+    } as any)) || {};
   if (!parsed) {
     return null;
   }
@@ -122,7 +125,7 @@ export const initState = async (page: PageContent, opt: InitStateParams) => {
   });
 
   console.timeEnd('INIT_STATE');
-  return formatted;
+  return { ...formatted, mergedContent: merged };
 };
 
 const backupParsedProps = (schemas: StructureNode[] = []) => {

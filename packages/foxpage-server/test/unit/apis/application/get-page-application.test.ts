@@ -10,6 +10,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
 });
 
 const params = { organizationId: Data.org.id, type: '', search: '' };
@@ -18,7 +19,7 @@ describe('Post: /application-searchs', () => {
   it('response list', async () => {
     jest
       .spyOn(ApplicationService.prototype, 'getPageList')
-      .mockResolvedValueOnce({ pageInfo: { page: 1, size: 10, total: 1 }, data: Data.app.list });
+      .mockResolvedValueOnce({ total: 1, appList: Data.app.list });
     const result = await appInstance.index(<FoxCtx>ctx, params);
     expect(result.code).toEqual(200);
   });

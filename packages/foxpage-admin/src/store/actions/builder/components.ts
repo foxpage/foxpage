@@ -1,6 +1,12 @@
 import { createAction } from 'typesafe-actions';
 
-import { Component, ComponentVersionDetailsFetchedRes, ComponentVersionDetailsFetchParams, ComponentVersionFetchParams, Content } from '@/types/index';
+import {
+  Component,
+  ComponentVersionDetailsFetchedRes,
+  ComponentVersionDetailsFetchParams,
+  ComponentVersionFetchParams,
+  Content,
+} from '@/types/index';
 
 export const clearAll = createAction('BUILDER_COMPONENT_LIST__CLEAR_ALL', () => ({}))();
 
@@ -8,7 +14,7 @@ export const fetchComponentList = createAction(
   'BUILDER_COMPONENT_LIST__FETCH_COMPONENT_LIST',
   (applicationId: string, locale: string) => ({
     applicationId,
-    locale
+    locale,
   }),
 )();
 
@@ -39,7 +45,7 @@ export const fetchComponentVersions = createAction(
 
 export const pushComponentVersions = createAction(
   'BUILDER_COMPONENT_LIST__PUSH_COMPONENT_VERSIONS',
-  (list: Component[]=[]) => ({
+  (list: Component[] = []) => ({
     list,
   }),
 )();
@@ -53,7 +59,7 @@ export const fetchComponentVersionDetails = createAction(
 
 export const pushComponentVersionDetails = createAction(
   'BUILDER_COMPONENT_LIST__PUSH_COMPONENT_VERSION_DETAILS',
-  (list: ComponentVersionDetailsFetchedRes['data']=[]) => ({
+  (list: ComponentVersionDetailsFetchedRes['data'] = []) => ({
     list,
   }),
 )();

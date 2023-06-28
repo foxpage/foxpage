@@ -1,9 +1,0 @@
-{
-  "extends": "../tsconfig.json",
-  "include": [
-    "typings"
-  ],
-  "files": [
-    "src/Index.tsx"
-  ]
-}

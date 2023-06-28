@@ -1,25 +1,9 @@
 import {
-  AbstractEntity,
-  Application,
   CommonDeleteParams,
   CommonFetchParams,
-  ContentEntity,
-  File,
-  FileTag,
+  ProjectEntity,
   ResponseBody,
-} from '@/types/index';
-
-export interface ProjectEntity extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
-  application: Pick<Application, 'id' | 'name'>;
-  applicationId?: string;
-  deleted: boolean;
-  folderPath: string;
-  intro: string;
-  name?: string;
-  parentFolderId: string;
-  tags: FileTag[];
-  type?: string;
-}
+} from '@foxpage/foxpage-client-types';
 
 export interface ProjectListFetchParams extends Partial<CommonFetchParams> {
   applicationId?: string;
@@ -53,35 +37,4 @@ export interface ProjectUpdateParams extends ProjectAddParams {
 
 export interface ProjectPageTemplateContentFetchParams extends Omit<CommonFetchParams, 'organizationId'> {
   projectId: string;
-}
-
-export interface ProjectSearchResult {
-  folders: ProjectEntity[];
-  files: File[];
-  contents: ContentEntity[];
-}
-
-export interface ProjectSearchEntity {
-  id: string;
-  name: string;
-  type: string;
-  level: string;
-  parent: {
-    fileId?: string;
-    fileName?: string;
-    folderId?: string;
-    folderName?: string;
-  };
-  application: {
-    id: string;
-    name: string;
-  };
-  creator: {
-    id: string;
-    account: string;
-    email: string;
-    nickName: string;
-  };
-  createTime: string;
-  updateTime: string;
 }

@@ -4,13 +4,14 @@ import { connect } from 'react-redux';
 import { BugFilled } from '@ant-design/icons';
 import { message, Modal as AntdModal, Radio as AntRadio, Spin } from 'antd';
 import stringify from 'json-stable-stringify';
+import { isEmpty } from 'lodash';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/file/variables';
 import { variableBind } from '@/actions/builder/events';
 import * as PAGE_ACTIONS from '@/actions/builder/main';
-import { Title } from '@/components/index';
+import { Title } from '@/components/widgets';
 import { EditorInputEnum } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ComponentProps } from '@/types/index';
@@ -190,9 +191,15 @@ const VariableBind: React.FC<VariableBindProps> = (props) => {
 
   useEffect(() => {
     if (open) {
-      const _value = component?.props?.[keys] || '';
+      const componentProps = { ...(component?.props || {}) };
+      const keyPath: string[] = keys.split('.') || [];
+      const finalProps = keyPath.reduce((a: any, c: string) => {
+        if (typeof a[c] !== 'undefined') return a[c];
+        a[c] = {};
+        return a[c];
+      }, componentProps);
 
-      setValue(_value);
+      setValue(finalProps);
     }
   }, [open, component]);
 
@@ -334,11 +341,12 @@ const VariableBind: React.FC<VariableBindProps> = (props) => {
                     overflow: 'auto',
                     border: '1px solid #1f38584d',
                     whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
                   }}>
                   {stringifiedValue}
                 </div>
               ) : (
-                <BindContext.Provider value={{ value: value || '', setValue }}>
+                <BindContext.Provider value={{ value: isEmpty(value) ? '' : value, setValue }}>
                   {ContentEditor}
                 </BindContext.Provider>
               )}

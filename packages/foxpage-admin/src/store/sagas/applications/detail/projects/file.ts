@@ -9,12 +9,13 @@ import * as API from '@/apis/project';
 import { defaultSuffix, FileType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationProjectsFileActionType } from '@/reducers/applications/detail/projects/file';
+import { fetchScreenshots } from '@/store/actions/screenshot';
 import { store } from '@/store/index';
 import {
   AuthorizeAddParams,
-  AuthorizeQueryParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
+  AuthorizeQueryParams,
   AuthorizeUserFetchParams,
   ParentFileFetchParams,
   ProjectFileDeleteParams,
@@ -31,6 +32,13 @@ function* handleFetchList(action: ApplicationProjectsFileActionType) {
 
   if (res.code === 200) {
     yield put(ACTIONS.pushFileList(res.data.files, res.pageInfo));
+    yield put(
+      fetchScreenshots({
+        applicationId: params.applicationId,
+        type: 'file',
+        typeIds: res.data.files.map((item) => item.id),
+      }),
+    );
   } else {
     const {
       global: { fetchListFailed },
@@ -91,8 +99,16 @@ function* handleSaveFile(action: ApplicationProjectsFileActionType) {
 
 function* handleDeleteFile(action: ApplicationProjectsFileActionType) {
   const { params, cb } = action.payload as { params: ProjectFileDeleteParams; cb?: () => void };
+  const { pageInfo } = store.getState().applications.detail.projects.file;
+  const { fileDetail } = store.getState().applications.detail.projects.content;
+  const apiMap = {
+    [FileType.block]: API.deleteBlock,
+    [FileType.page]: API.deletePage,
+    [FileType.template]: API.deleteTemplate,
+  };
+  const api = apiMap[fileDetail.type];
   const { id, applicationId, folderId } = params;
-  const res = yield call(API.deleteFile, {
+  const res = yield call(api, {
     id,
     applicationId,
     status: true,
@@ -105,7 +121,6 @@ function* handleDeleteFile(action: ApplicationProjectsFileActionType) {
   if (res.code === 200) {
     message.success(deleteSuccess);
 
-    const { pageInfo } = store.getState().applications.detail.projects.file;
     yield put(
       ACTIONS.fetchFileList({
         ...pageInfo,

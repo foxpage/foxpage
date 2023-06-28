@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { Modal } from 'antd';
@@ -21,6 +21,7 @@ import {
   ProjectFileFetchParams,
   ProjectFileSaveParams,
   ProjectSaveParams,
+  Screenshots,
   User,
 } from '@/types/index';
 import { getLocationIfo } from '@/utils/index';
@@ -43,6 +44,7 @@ interface ProjectFileType {
   authLoading?: boolean;
   userList?: User[];
   authList?: AuthorizeListItem[];
+  screenshots: Screenshots;
   application?: Application;
   fetchFileList: (params: ProjectFileFetchParams) => void;
   fetchParentFiles: (params: ParentFileFetchParams, cb?: (folder) => void) => void;
@@ -67,6 +69,7 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
     loading,
     saveLoading,
     fileList,
+    screenshots,
     drawerOpen,
     editFile,
     authDrawerOpen = false,
@@ -158,6 +161,14 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
     }
   }, [type]);
 
+  const deleteDisabled = useMemo(() => {
+    let disabled = true;
+
+    if (fileList.length === 0) disabled = false;
+
+    return disabled;
+  }, [fileList.length]);
+
   const handleAuthorize = () => {
     if (typeof openAuthDrawer === 'function') {
       setAuthType('folder');
@@ -176,7 +187,7 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
           deleteProject(folder.id, folder.application.id, () => {
             history.push({
               pathname: ROUTE_FOLDER_MAP[type].replace(':applicationId', applicationId),
-              search: `?page=${folderPage || 1}&appId=${folderSearch}`,
+              search: `?page=${folderPage || 1}&appId=${folderSearch || ''}`,
             });
           });
       },
@@ -247,7 +258,7 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
             type="folder"
             folderDetail={folder}
             createDisabled={pageInfo.total >= 20}
-            deleteDisabled={false}
+            deleteDisabled={deleteDisabled}
             onAuthorize={handleAuthorize}
             onCreate={openDrawer}
             onDelete={handleDeleteProject}
@@ -259,6 +270,7 @@ const ProjectFileComponent: React.FC<ProjectFileType> = (props: ProjectFileType)
             loading={loading}
             pageInfo={pageInfo}
             fileList={fileList}
+            screenshots={screenshots}
             openDrawer={openDrawer}
           />
         </FoxPageContent>

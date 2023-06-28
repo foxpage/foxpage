@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { AppFolderTypes, Folder, StoreOrder } from '@foxpage/foxpage-server-types';
+import { AppFolderTypes, Folder, StoreGoods, StoreOrder } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { PRE, TAG, TYPE } from '../../../config/constant';
@@ -47,14 +47,14 @@ export class AddStorePageToApplication extends BaseController {
         params.appIds.map((appId) => this.service.auth.application(appId, { ctx })),
       );
       if (hasAuth.indexOf(false) !== -1) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4130801);
       }
 
       // Check the status of the goods
       const goodsList = await this.service.store.goods.getDetailByIds(params.goodsIds);
 
       if (goodsList.length === 0) {
-        return Response.warning(i18n.store.invalidGoodsIds, 2130301);
+        return Response.warning(i18n.store.invalidGoodsIds, 2130801);
       }
 
       const invalidGoods = _.filter(goodsList, (goods) => {
@@ -62,7 +62,7 @@ export class AddStorePageToApplication extends BaseController {
       });
 
       if (invalidGoods.length > 0) {
-        return Response.warning(i18n.store.invalidGoods + _.map(invalidGoods, 'name').join(','), 2130302);
+        return Response.warning(i18n.store.invalidGoods + _.map(invalidGoods, 'name').join(','), 2130802);
       }
 
       // Get the file details corresponding to the goods
@@ -143,7 +143,7 @@ export class AddStorePageToApplication extends BaseController {
           // Add goods order
           goodsOrders.push({
             id: generationId(PRE.ORDER),
-            goodsId: goodsFileObject?.[file.id]?.id || '',
+            goodsId: (goodsFileObject?.[file.id] as StoreGoods)?.id || '',
             goodsVersionId: '',
             customer: {
               id: newFileId || '',
@@ -162,9 +162,9 @@ export class AddStorePageToApplication extends BaseController {
 
       await this.service.store.goods.runTransaction(ctx.transactions);
 
-      return Response.success(i18n.store.addGoodsToAppSuccess, 1130301);
+      return Response.success(i18n.store.addGoodsToAppSuccess, 1130801);
     } catch (err) {
-      return Response.error(err, i18n.store.addStorePageToApplicationFailed, 3130301);
+      return Response.error(err, i18n.store.addStorePageToApplicationFailed, 3130801);
     }
   }
 }

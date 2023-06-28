@@ -65,7 +65,7 @@ export const saveFile = createAction(
 // delete related
 export const deleteFile = createAction(
   'WORKSPACE_PROJECTS_INVOLVED_FILE__DELETE_FILE',
-  (params: ProjectFileDeleteParams) => ({ ...params }),
+  (params: ProjectFileDeleteParams) => ({ params }),
 )();
 
 // parent file relation

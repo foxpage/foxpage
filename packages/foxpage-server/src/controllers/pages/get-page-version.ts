@@ -84,19 +84,19 @@ export class GetPageVersionDetail extends BaseController {
       const [versionInfo, templateVersionInfo] = await Promise.all(versionInfoPromise);
 
       // add mock and extension to template
-      if (apiType === TYPE.PAGE && versionInfo.relations.templates && versionInfo.relations.templates[0]) {
+      if (apiType === TYPE.PAGE && versionInfo.relations?.templates?.[0]) {
         versionInfo.relations.templates[0] = _.merge(
           {},
           versionInfo.relations.templates[0],
-          templateVersionInfo.mockObject[versionInfo.relations.templates[0].id] || {},
+          templateVersionInfo.mockObject?.[versionInfo.relations.templates[0].id] || {},
         );
       }
 
       // Splicing return result
-      versionDetail.content.extension = versionInfo.mockObject[params.id]?.extension || {};
+      versionDetail.content.extension = versionInfo.mockObject?.[params.id]?.extension || {};
       versionDetail.content.dslVersion = versionDetail.dslVersion || DSL_VERSION;
 
-      const mockRelations = versionInfo.mockObject[params.id]?.relations || {};
+      const mockRelations = versionInfo.mockObject?.[params.id]?.relations || {};
       versionInfo.relations = this.service.version.relation.moveMockRelations(
         versionInfo.relations,
         mockRelations,
@@ -104,7 +104,7 @@ export class GetPageVersionDetail extends BaseController {
 
       if (apiType === TYPE.PAGE) {
         const mockTemplateRelations =
-          templateVersionInfo?.mockObject[templateVersion.contentId as string]?.relations || {};
+          templateVersionInfo?.mockObject?.[templateVersion.contentId as string]?.relations || {};
         versionInfo.relations = this.service.version.relation.moveMockRelations(
           versionInfo.relations,
           mockTemplateRelations,
@@ -116,7 +116,7 @@ export class GetPageVersionDetail extends BaseController {
         {
           title: contentDetail.title,
           relations: versionInfo.relations || {},
-          mock: versionInfo.mockObject[params.id]?.mock || {},
+          mock: versionInfo.mockObject?.[params.id]?.mock || {},
           components: _.concat(versionInfo.componentList, templateVersionInfo?.componentList || []),
         },
       );

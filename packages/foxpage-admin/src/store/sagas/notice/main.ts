@@ -3,7 +3,7 @@ import { getType } from 'typesafe-actions';
 
 import * as API from '@/apis/notice';
 import * as ACTIONS from '@/store/actions/notice';
-import { Notice, NoticeFetchedResponse } from '@/types/notice';
+import { Notice, NoticeFetchedResponse } from '@/types/index';
 
 function* handleFetchNotices() {
   const res: NoticeFetchedResponse = yield call(API.fetchNotices, {});

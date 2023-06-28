@@ -4,7 +4,7 @@ import { Creator, Search } from './index-types';
 import { UserBase } from './user-types';
 
 export type AppInfo = Exclude<Application, 'creator'> & { creator: Creator };
-export type AppSearch = Search & { organizationId?: string; creator?: string };
+export type AppSearch = Search & { organizationId?: string; creator?: string; type?: string };
 export type AppWithFolder = Application & { folders: Folder[] };
 export type AppBaseInfo = Pick<Application, 'id' | 'name'>;
 export type AppOrgInfo = Pick<Application, 'id' | 'name'> & {

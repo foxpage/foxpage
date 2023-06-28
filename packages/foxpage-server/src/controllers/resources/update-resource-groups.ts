@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Folder } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TAG } from '../../../config/constant';
+import { LOG, TAG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { ContentVersionDetailRes } from '../../types/validates/content-validate-types';
 import { UpdateResourceConfigReq } from '../../types/validates/resource-validate-types';
@@ -34,7 +34,7 @@ export class UpdateResourceGroup extends BaseController {
     operationId: 'update-resource-group',
   })
   @ResponseSchema(ContentVersionDetailRes)
-  async index (@Ctx() ctx: FoxCtx, @Body() params: UpdateResourceConfigReq): Promise<ResData<Folder>> {
+  async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateResourceConfigReq): Promise<ResData<Folder>> {
     try {
       if (!params.name) {
         return Response.warning(i18n.resource.invalidName, 2122201);
@@ -46,7 +46,7 @@ export class UpdateResourceGroup extends BaseController {
       }
 
       let groupDetail = await this.service.folder.info.getDetailById(params.id);
-      let tags = groupDetail.tags || [];
+      let tags = _.cloneDeep(groupDetail.tags || []);
 
       // Check id is a group id
       let isGroup = false;
@@ -70,7 +70,7 @@ export class UpdateResourceGroup extends BaseController {
         name: params.name,
         deleted: false,
         'tags.type': TAG.RESOURCE_CONFIG,
-        'tags.resourceId': resourceTag.resourceId
+        'tags.resourceId': resourceTag.resourceId,
       });
 
       if (existGroup.length > 0) {
@@ -84,6 +84,11 @@ export class UpdateResourceGroup extends BaseController {
         folderPath: formatToPath(params.name),
         tags,
         intro: params.intro || groupDetail.intro,
+      });
+      this.service.userLog.addLogItem(groupDetail, {
+        ctx,
+        actions: [LOG.UPDATE, TYPE.RESOURCE, TYPE.FOLDER],
+        category: { folderId: params.id },
       });
 
       groupDetail = await this.service.folder.info.getDetailById(params.id);

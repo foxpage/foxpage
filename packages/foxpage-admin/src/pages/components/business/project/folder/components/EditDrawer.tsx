@@ -57,7 +57,7 @@ const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
 
   // i18n
   const { locale, organizationId } = useContext(GlobalContext);
-  const { project, global, application: applicationI18n } = locale.business;
+  const { global, application: applicationI18n } = locale.business;
 
   useEffect(() => {
     if (typeof fetchApps === 'function') fetchApps({ page: 1, size: APP_PAGE_SIZE });
@@ -107,7 +107,7 @@ const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
       }}
       actions={
         <Button type="primary" onClick={handleSave}>
-          {global.apply}
+          {global.save}
           {saveLoading && <SyncOutlined spin={true} style={{ color: '#fff' }} />}
         </Button>
       }>
@@ -116,7 +116,7 @@ const Drawer: React.FC<DrawerProps> = (props: DrawerProps) => {
           <Form.Item {...formItemLayout} label={global.nameLabel}>
             <Input
               defaultValue={editProject.name}
-              placeholder={project.nameLabel}
+              placeholder={applicationI18n.nameLengthInvalid?.toLowerCase()}
               onChange={(e) => updateEditProject('name', e.target.value)}
             />
           </Form.Item>

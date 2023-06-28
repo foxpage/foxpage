@@ -14,7 +14,7 @@ import {
   TeamMembersParams,
   TeamSaveParams,
   TeamsFetchParams,
-} from '@/types/team';
+} from '@/types/index';
 import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchTeamList(actions: TeamsActionType) {
@@ -30,7 +30,7 @@ function* handleFetchTeamList(actions: TeamsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -63,7 +63,7 @@ function* handleSaveTeam(actions: TeamsActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-   errorToast(res, saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 
@@ -85,7 +85,7 @@ function* handleDeleteTeam(actions: TeamsActionType) {
     const page = list.length === 1 && pageInfo.page > 1 ? pageInfo.page - 1 : pageInfo.page;
     yield put(ACTIONS.fetchTeamList({ organizationId, page, size: pageInfo.size }));
   } else {
-   errorToast(res, deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -105,7 +105,7 @@ function* handleAddTeamUsers(actions: TeamsActionType) {
 
     if (typeof cb === 'function') cb();
   } else {
-   errorToast(res, saveFailed);
+    errorToast(res, saveFailed);
   }
 }
 
@@ -123,7 +123,7 @@ function* handleDeleteTeamUsers(actions: TeamsActionType) {
 
     yield put(ACTIONS.updateTeamUsersAfterDelete(users));
   } else {
-   errorToast(res, deleteFailed);
+    errorToast(res, deleteFailed);
   }
 }
 
@@ -140,7 +140,7 @@ function* handleFetchTeamUsers(actions: TeamsActionType) {
       team: { fetchUsersFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchUsersFailed);
+    errorToast(res, fetchUsersFailed);
   }
 }
 
@@ -157,7 +157,7 @@ function* handleFetchOrganizationUsers(actions: TeamsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));

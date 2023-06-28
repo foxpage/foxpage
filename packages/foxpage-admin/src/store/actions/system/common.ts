@@ -11,10 +11,6 @@ export const pushOrganizationList = createAction(
   }),
 )();
 
-export const updateOrganizationId = createAction('SYSTEM__UPDATE_ORGANIZATION_ID', (id: string) => ({
-  id,
-}))();
-
 export const fetchTeamMembers = createAction(
   'SYSTEM__FETCH_TEAM_MEMBERS',
   (params: TeamMembersFetchParams) => ({

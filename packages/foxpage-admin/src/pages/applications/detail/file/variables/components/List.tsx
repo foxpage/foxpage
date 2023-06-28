@@ -11,7 +11,7 @@ import * as ACTIONS from '@/actions/applications/detail/file/variables';
 import { Name, PublishIcon } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
 import { Creator, VariableEntity } from '@/types/index';
-import { periodFormat } from '@/utils/index';
+import { formatter, periodFormat } from '@/utils/index';
 
 const Table = styled(AntTable)`
   .ant-table-pagination.ant-pagination {
@@ -140,7 +140,7 @@ function ConditionList(props: ConditionListType) {
       key: 'version',
       width: 90,
       render: (version: Record<string, string>) =>
-        version?.live ? <Tag color="orange">{version.live}</Tag> : '',
+        version?.live ? <Tag color="orange">{formatter(version.live)}</Tag> : '',
     },
     {
       title: global.type,

@@ -2,8 +2,7 @@ import produce from 'immer';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/builder/components';
-import { Component } from '@/types/component';
-import { Content } from '@/types/index';
+import { Component, Content } from '@/types/index';
 
 export type ComponentsActionType = ActionType<typeof ACTIONS>;
 
@@ -13,6 +12,7 @@ const nameVersionDetails: Component[] = [];
 const initialState = {
   components,
   blockDSLMap: {} as Record<string, Content>,
+  blocks: [] as Content[],
   versions,
   nameVersionDetails,
 };
@@ -34,6 +34,7 @@ const reducer = (state: InitialDataType = initialState, action: ComponentsAction
 
       case getType(ACTIONS.pushBlockDSL): {
         draft.blockDSLMap = action.payload.data;
+        draft.blocks = Object.values(draft.blockDSLMap).filter((item) => !!item.id);
         break;
       }
 

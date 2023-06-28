@@ -21,11 +21,12 @@ const TooltipContainer = styled.p`
 `;
 
 const CoverBox = styled.div`
+  position: relative;
   text-align: center;
   padding: 12px;
   border: 1px dashed #ddd;
   margin-top: 8px;
-  > div {
+  .cover {
     width: 280px;
     height: 140px;
     margin: 0 auto;
@@ -124,7 +125,7 @@ function BasicInfoPanel(props: IProps) {
               showUploadList={false}
               beforeUpload={beforeUpload}
               customRequest={(img) => uploadBase64File(img.file as RcFile)}>
-              <div>
+              <div className="cover">
                 <img src={screenshot || getImageUrlByEnv('/images/placeholder.png')} width="100%" />
               </div>
             </Upload>

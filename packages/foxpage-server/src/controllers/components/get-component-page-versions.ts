@@ -39,11 +39,14 @@ export class GetComponentPageVersionList extends BaseController {
       this.service.content.info.setPageSize(params);
 
       let fileId = params.id;
+      let liveVersionId = '';
 
       // Check if file is a reference component
       const fileDetail = await this.service.file.info.getDetailById(fileId);
-      if (fileDetail.tags && fileDetail.tags?.[0]?.type === TAG.DELIVERY_REFERENCE) {
-        fileId = fileDetail.tags?.[0]?.reference?.id;
+      const referenceTag = _.find(fileDetail.tags || [], { type: TAG.DELIVERY_REFERENCE });
+      if (referenceTag && !_.isEmpty(referenceTag)) {
+        fileId = referenceTag.reference?.id;
+        liveVersionId = referenceTag.reference?.liveVersionId || '';
       }
 
       // Get the content ID under the file
@@ -81,7 +84,7 @@ export class GetComponentPageVersionList extends BaseController {
         contentVersionList.push(
           Object.assign(
             {
-              isLiveVersion: version.versionNumber === contentDetail.liveVersionNumber,
+              isLiveVersion: version.id === (liveVersionId || contentDetail.liveVersionId),
             },
             _.omit(version, ['operator', 'contentUpdateTime']),
           ),

@@ -8,14 +8,14 @@ import { merger } from '@foxpage/foxpage-core';
 import { ContentVersion } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { TYPE, VERSION } from '../../../config/constant';
+import { LOG, TYPE, VERSION } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { CloneContentReq, ContentVersionDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
 @JsonController('pages')
-export class UpdatePageVersionDetail extends BaseController {
+export class UpdatePageVersionDetailByClone extends BaseController {
   constructor() {
     super();
   }
@@ -40,6 +40,8 @@ export class UpdatePageVersionDetail extends BaseController {
   })
   @ResponseSchema(ContentVersionDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: CloneContentReq): Promise<ResData<ContentVersion>> {
+    let versionId = '';
+
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.PAGE });
 
@@ -71,7 +73,7 @@ export class UpdatePageVersionDetail extends BaseController {
           ['extendId'],
         );
 
-        if (params.includeBase) {
+        if (params.includeBase || params.targetContentLocales.length === 0) {
           params.targetContentLocales = [{ isBase: true }];
         } else if (!_.isEmpty(sourceContentExtend)) {
           params.targetContentLocales.push(sourceContentExtend);
@@ -133,7 +135,7 @@ export class UpdatePageVersionDetail extends BaseController {
       );
       sourceContentInfo.schemas = schemaObject.schemas || [];
 
-      const newVersionObject = await this.service.version.info.createCopyVersion(
+      const newVersionObject = this.service.version.info.createCopyVersion(
         sourceContentInfo,
         newRelationObject.idMaps,
       );
@@ -142,23 +144,28 @@ export class UpdatePageVersionDetail extends BaseController {
       // save new content
       if (targetContentLevelInfo?.versionInfo?.status !== VERSION.STATUS_BASE) {
         const maxVersion = await this.service.version.info.getMaxContentVersionDetail(params.targetContentId);
-        ctx.transactions.push(
-          this.service.version.info.create(
-            {
-              contentId: params.targetContentId,
-              version: this.service.version.number.getVersionFromNumber((maxVersion?.versionNumber || 0) + 1),
-              versionNumber: (maxVersion?.versionNumber || 0) + 1,
-              content: newVersionObject.newVersion,
-            },
-            { ctx },
-          ),
+        const versionDetail = this.service.version.info.create(
+          {
+            contentId: params.targetContentId,
+            version: this.service.version.number.getVersionFromNumber((maxVersion?.versionNumber || 0) + 1),
+            versionNumber: (maxVersion?.versionNumber || 0) + 1,
+            content: newVersionObject.newVersion,
+          },
+          { ctx },
         );
+        versionId = versionDetail.id;
       } else {
+        versionId = targetContentLevelInfo.versionInfo.id;
         ctx.transactions.push(
           this.service.version.info.updateDetailQuery(targetContentLevelInfo.versionInfo.id, {
             content: newVersionObject.newVersion,
           }),
         );
+        this.service.userLog.addLogItem(targetContentLevelInfo.versionInfo, {
+          ctx,
+          actions: [LOG.CLONE, targetContentLevelInfo.contentInfo.type || '', TYPE.VERSION],
+          category: { versionId, contentId: params.targetContentId },
+        });
       }
 
       await this.service.content.info.runTransaction(ctx.transactions);
@@ -166,6 +173,11 @@ export class UpdatePageVersionDetail extends BaseController {
       return Response.success(i18n.content.saveToBaseContentSuccess, 1052001);
     } catch (err) {
       return Response.error(err, i18n.content.saveToBaseContentFailed, 3052001);
+    } finally {
+      if (versionId) {
+        const versionRelationQuery = await this.service.relation.saveVersionRelations(versionId);
+        await this.service.version.info.runTransaction([versionRelationQuery]);
+      }
     }
   }
 }

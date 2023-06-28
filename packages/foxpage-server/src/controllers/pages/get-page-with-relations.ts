@@ -13,7 +13,7 @@ import { AppContentListRes, AppContentVersionReq } from '../../types/validates/p
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-@JsonController('pages')
+@JsonController()
 export class GetAppPageLiveInfoList extends BaseController {
   constructor() {
     super();
@@ -26,12 +26,13 @@ export class GetAppPageLiveInfoList extends BaseController {
    * @param  {AppContentVersionReq} params
    * @returns {PageContentData[]}
    */
-  @Post('/live-infos')
+  @Post('pages/live-infos')
+  @Post('blocks/live-infos')
   @OpenAPI({
     summary: i18n.sw.getAppPagesLiveInfo,
     description: '',
     tags: ['Page'],
-    operationId: 'get-page-live-version-info-list',
+    operationId: 'get-type-live-version-info-list',
   })
   @ResponseSchema(AppContentListRes)
   async index(

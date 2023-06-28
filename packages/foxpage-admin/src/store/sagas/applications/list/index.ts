@@ -52,7 +52,7 @@ function* handleSaveApp() {
     yield put(
       ACTIONS.fetchList({
         organizationId,
-        type: 'user',
+        type: '',
         ...pageInfo,
         search: '',
       }),

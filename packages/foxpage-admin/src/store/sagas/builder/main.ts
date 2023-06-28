@@ -16,7 +16,7 @@ import * as API from '@/apis/builder/content';
 import { clonePage } from '@/apis/builder/page';
 import { fetchFileDetail } from '@/apis/project';
 import { FileType } from '@/constants/global';
-import { RecordActionType } from '@/constants/index';
+import { FOXPAGE_USER_TICKET, RecordActionType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import * as HISTORY_ACTIONS from '@/store/actions/history';
 import * as RECORD_ACTIONS from '@/store/actions/record';
@@ -33,6 +33,8 @@ import {
   ContentPublishParams,
   ContentSavedRes,
   ContentSaveParams,
+  EncryptRes,
+  EncryptValidateRes,
   FilesFetchedResponse,
   FilesFetchParams,
   FormattedData,
@@ -168,9 +170,41 @@ async function afterFetch(data?: PageContent | null) {
   return { state, extend, pageNode, pageContent, initParams };
 }
 
+async function checkToken(token?: string) {
+  if (!token) return false;
+  const { contentId } = store.getState().builder.header;
+  const result: EncryptValidateRes = await API.checkToken({
+    data: {
+      contentId,
+    },
+    token,
+  });
+  if (result.code === 200) {
+    return result.data.status;
+  }
+  return false;
+}
+
+function* handleLoadToken() {
+  let token = localStorage.getItem(FOXPAGE_USER_TICKET);
+  const { folderId } = store.getState().builder.header;
+  const validate = yield call(checkToken, token as string);
+  if (!validate) {
+    const result: EncryptRes = yield call(API.fetchToken, {
+      data: {
+        folderId,
+      },
+    });
+    if (result.code === 200) {
+      token = result.data.token;
+      localStorage.setItem(FOXPAGE_USER_TICKET, result.data.token);
+    }
+  }
+}
+
 function* handleFetchContent(action: ReturnType<typeof ACTIONS.fetchContent>) {
   yield put(ACTIONS.updateLoading(true));
-
+  yield put(ACTIONS.loadToken());
   const { applicationId, id, type = 'page', versionId } = action.payload;
   // preview old version or build version
   const apis = versionId
@@ -250,7 +284,7 @@ function* handleSaveContent(action: ReturnType<typeof ACTIONS.saveContent>) {
     const appId = application?.id || '';
     const relations = {
       ...pageContent.relations,
-      variables: (pageContent.relations.variables || []).concat(localVariables),
+      variables: (pageContent?.relations?.variables || []).concat(localVariables),
     };
 
     // get the need save content, filter props
@@ -302,6 +336,7 @@ function* handleSaveContent(action: ReturnType<typeof ACTIONS.saveContent>) {
         }),
       );
 
+      // yield put(RECORD_ACTIONS.updateNodeUpdateRecordsIndex(-1));
       yield put(ACTIONS.pushContentOnly(res.data));
       yield put(LOCKER_ACTIONS.resetClientContentTime());
 
@@ -330,9 +365,9 @@ function* handleSaveContent(action: ReturnType<typeof ACTIONS.saveContent>) {
 function* handlePublishContent(action: ReturnType<typeof ACTIONS.publishContent>) {
   const { application, file, pageContent, content, readOnly = false } = store.getState().builder.main;
   const { saved = false } = action.payload;
-  if (readOnly) {
-    return;
-  }
+  // if (readOnly) {
+  //   return;
+  // }
 
   yield put(ACTIONS.updatePublishing(true));
   yield put(ACTIONS.updateShowPublishModal(true));
@@ -364,12 +399,21 @@ function* handlePublishContent(action: ReturnType<typeof ACTIONS.publishContent>
   };
 
   yield put(ACTIONS.pushPublishStep(PublishSteps.PUBLISH_CONTENT));
-  const params = {
-    applicationId: appId,
-    id: pageContent.id,
-    status: 'release',
-  } as ContentPublishParams;
-  const res: ContentFetchedRes = yield call(apis[file.type || 'page'], params);
+  const params = readOnly
+    ? {
+        applicationId: appId,
+        contentId: pageContent.contentId,
+        versionNumber: pageContent.versionNumber,
+      }
+    : ({
+        applicationId: appId,
+        id: pageContent.id,
+        status: 'release',
+      } as ContentPublishParams);
+  const res: ContentFetchedRes = yield call(
+    readOnly ? API.setLiveVersion : apis[file.type || 'page'],
+    params,
+  );
   yield delay(500);
 
   if (res.code === 200) {
@@ -378,7 +422,7 @@ function* handlePublishContent(action: ReturnType<typeof ACTIONS.publishContent>
       RECORD_ACTIONS.addUserRecords(RecordActionType.PAGE_PUBLISH, [params], {
         save: true,
         applicationId: appId,
-        contentId: pageContent.id,
+        contentId: pageContent.contentId,
       }),
     );
     yield put(clearByContentChange(pageContent.id, true));
@@ -389,9 +433,12 @@ function* handlePublishContent(action: ReturnType<typeof ACTIONS.publishContent>
     );
     // refresh catalog
     const { applicationId, folderId } = store.getState().builder.header;
-    yield put(fetchCatalog({ applicationId, folderId }));
+    if (!readOnly) yield put(fetchCatalog({ applicationId, folderId }));
     yield put(HISTORY_ACTIONS.resetHistory());
-    yield put(HISTORY_ACTIONS.initHistory({ applicationId, id: content.id }, res.data?.id));
+
+    // handle different response
+    const versionId = readOnly ? res.data?.liveVersionId : res.data?.id;
+    yield put(HISTORY_ACTIONS.initHistory({ applicationId, id: content.id }, versionId));
   } else {
     errorToast(res, publishFailed);
     yield put(ACTIONS.pushPublishStatus(PublishStatus.ERROR));
@@ -579,6 +626,9 @@ function* handleContentUnlock() {
     return;
   }
   try {
+    if (!application?.id || !content.id || !contentVersion) {
+      return;
+    }
     const params = {
       applicationId: application?.id,
       contentId: content.id,
@@ -631,14 +681,19 @@ function* guard(actions) {
 
 function* handlePrasePageInServer(actions: BuilderContentActionType) {
   const { page, opt } = actions.payload as { page: PageContent; opt: InitStateParams };
-  const formatted = (yield call(initState, page, { ...opt, parseInLocal: false })) as FormattedData;
+  const formatted = (yield call(initState, page, { ...opt, parseInLocal: true })) as FormattedData;
   yield put(ACTIONS.pushRenderDSL(formatted.formattedSchemas));
+  // get random string
+  const randomStr = Math.random().toString(36).substr(2);
+  yield put(ACTIONS.updateParseParams(randomStr, { page, opt }));
 }
 
+// just for test
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchApp), handleFetchApp);
   yield takeLatest(getType(ACTIONS.fetchFile), handleFetchFile);
   yield takeLatest(getType(ACTIONS.fetchContent), handleFetchContent);
+  yield takeLatest(getType(ACTIONS.loadToken), handleLoadToken);
   yield takeLatest(getType(ACTIONS.fetchLiveContent), handleFetchLiveContent);
   yield takeLatest(getType(ACTIONS.saveContent), handleSaveContent);
   yield takeLatest(getType(ACTIONS.publishContent), handlePublishContent);

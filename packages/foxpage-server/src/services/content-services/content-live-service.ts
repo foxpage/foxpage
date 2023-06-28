@@ -82,18 +82,21 @@ export class ContentLiveService extends BaseService<Content> {
     }
 
     // Verify content details
-    const [result, contentDetail] = await Promise.all([
+    const [result, contentDetail, validateResult] = await Promise.all([
       Service.version.relation.getVersionRelationAndComponents(params.applicationId, versionDetail.content),
       Service.content.info.getDetailById(versionDetail.contentId),
+      Service.version.check.versionCanPublish(versionDetail.id),
     ]);
 
-    if (result.code === 0) {
+    if (result.code === 0 && validateResult.publishStatus) {
       this.setLiveContent(versionDetail.contentId, versionDetail.versionNumber, versionDetail.id, {
         ctx: options.ctx,
         content: contentDetail,
         actionType: options.actionType,
       });
       return { code: 0 };
+    } else if (validateResult.publishStatus) {
+      return { code: 4, data: JSON.stringify(validateResult) };
     } else {
       return { code: 3, data: JSON.stringify(result) };
     }
@@ -113,10 +116,7 @@ export class ContentLiveService extends BaseService<Content> {
     options: { ctx: FoxCtx; content?: Content; actionType?: string },
   ): void {
     options.ctx.transactions.push(
-      this.updateDetailQuery(contentId, {
-        liveVersionNumber: versionNumber,
-        liveVersionId: versionId,
-      }),
+      this.updateDetailQuery(contentId, { liveVersionNumber: versionNumber, liveVersionId: versionId }),
     );
     options.ctx.operations.push(
       ...Service.log.addLogItem(LOG.LIVE, options.content || ({} as Content), {

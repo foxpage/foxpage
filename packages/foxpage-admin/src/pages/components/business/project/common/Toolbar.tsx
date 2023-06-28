@@ -12,7 +12,7 @@ import {
 import { Button, Dropdown, Input, Menu, Select, Tooltip } from 'antd';
 
 import { GlobalContext } from '@/pages/system';
-import { Application, File, FileType, ProjectEntity } from '@/types/index';
+import { Application, ComponentType, File, FileType, ProjectEntity } from '@/types/index';
 
 const { Search } = Input;
 
@@ -72,12 +72,23 @@ const Toolbar: React.FC<ToolbarType> = (props: ToolbarType) => {
   }, [type, fileI18n, projectI18n]);
 
   const deleteDisabledTitle = useMemo(() => {
-    return type === 'file' && deleteDisabled
-      ? fileDetail?.online
-        ? fileI18n.fileCommitToStoreTips
-        : fileI18n.filePageLiveTips
-      : '';
-  }, [type, deleteDisabled, fileDetail?.online, fileI18n]);
+    let title = '';
+
+    if (deleteDisabled) {
+      if (type === 'file') {
+        if (fileDetail?.online) {
+          title = fileI18n.fileCommitToStoreTips;
+        } else {
+          title = fileI18n.filePageLiveTips;
+        }
+      }
+      if (type === 'folder') {
+        title = folderI18n.deleteDisabledTips;
+      }
+    }
+
+    return title;
+  }, [type, deleteDisabled, fileDetail?.online, fileI18n, folderI18n]);
 
   const searchTypeOptions = useMemo(
     () => [
@@ -118,7 +129,7 @@ const Toolbar: React.FC<ToolbarType> = (props: ToolbarType) => {
         name: fileDetail?.name || '',
         folderId: fileDetail?.folderId || '',
         type: fileDetail?.type as FileType,
-        componentType: fileDetail?.componentType as any,
+        componentType: fileDetail?.componentType || ('' as ComponentType),
         createTime: fileDetail?.createTime,
         updateTime: fileDetail?.updateTime,
         creator: fileDetail?.creator,

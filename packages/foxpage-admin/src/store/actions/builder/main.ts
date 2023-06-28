@@ -72,7 +72,13 @@ export const fetchContent = createAction('BUILDER_MAIN__FETCH_CONTENT', (params:
   ...params,
 }))();
 
+export const loadToken = createAction('BUILDER_MAIN__LOAD_TOKEN', () => ({}))();
+
 export const pushContent = createAction('BUILDER_MAIN__PUSH_CONTENT', (data: ContentFetchedRes['data']) => ({
+  data,
+}))();
+
+export const addRelations = createAction('BUILDER_MAIN__ADD_RELATIONS', (data: RelationDetails) => ({
   data,
 }))();
 
@@ -125,6 +131,14 @@ export const pushRenderDSL = createAction(
   }),
 )();
 
+export const updateParseParams = createAction(
+  'BUILDER_MAIN__UPDATE_PARSE_PARAMS',
+  (parseKey: string, data: { page: PageContent; opt: InitStateParams }) => ({
+    parseKey,
+    data,
+  }),
+)();
+
 export const completeFetched = createAction('BUILDER_MAIN__COMPLETE_FETCHED', () => ({}))();
 
 export const fetchLiveContent = createAction(
@@ -151,9 +165,15 @@ export const pushFile = createAction('BUILDER_MAIN__PUSH_FILE', (data: FilesFetc
 
 export const selectComponent = createAction(
   'BUILDER_MAIN__SELECT_COMPONENT',
-  (params: RenderStructureNode | null) => ({
-    params,
+  (node: RenderStructureNode | null, opt: { from: 'sider' | 'viewer' | null }) => ({
+    node,
+    opt,
   }),
+)();
+
+export const updateContentScreenshot = createAction(
+  'BUILDER_MAIN__UPDATE_CONTENT_SCREENSHOT',
+  (data: { img: string; versionId?: string }) => data,
 )();
 
 // steps
@@ -226,6 +246,12 @@ export const updateShowPublishModal = createAction(
 
 export const resetPublishStatus = createAction('BUILDER_MAIN__RESET_PUBLISH_STATUS', () => ({}))();
 
+export const updatePublishVersionId = createAction(
+  'BUILDER_MAIN__UPDATE_PUBLISH_VERSION_ID',
+  (id: string) => ({
+    id,
+  }),
+)();
 // block multi-user editing
 // Begin
 export const updateLockerState = createAction(

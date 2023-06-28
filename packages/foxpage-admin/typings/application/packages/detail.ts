@@ -1,21 +1,25 @@
-import { ComponentType } from '@/constants/index';
 import {
   BaseResponse,
   CommonFetchParams,
-  ComponentEditVersionEntity,
+  ComponentRemote,
+  EditorComponent,
+  PaginationReqParams,
+} from '@foxpage/foxpage-client-types';
+
+import {
   ComponentsLiveVersionUpdateParams,
   ComponentsVersionPublishParams,
   ComponentsVersionSaveParams,
   ComponentsVersionUpdateParams,
-  ComponentVersionEntityResource,
-  PaginationReqParams,
-  RemoteResource,
-} from '@/types/index';
+} from './list';
 
 // type api
 export type AppComponentDetailFetchComponentInfoParams = Pick<CommonFetchParams, 'applicationId' | 'id'>;
 
-export interface AppComponentDetailFetchComponentVersionsParams {}
+export interface AppComponentDetailFetchComponentVersionsParams {
+  page?: number;
+  size?: number;
+}
 
 export type AppComponentDetailAddComponentVersionParams = Partial<ComponentsVersionSaveParams>;
 export type AppComponentDetailEditComponentVersionParams = ComponentsVersionUpdateParams;
@@ -32,51 +36,9 @@ export interface ComponentRemoteSaveParams<T = ComponentRemote> {
   components: T[];
 }
 
-// design is ugly
-export interface EditorComponent {
-  name: string;
-  groupId: string;
-  component: {
-    id?: string;
-    version?: string;
-    content: {
-      resource: {
-        entry: {
-          browser?: string;
-          css?: string;
-          debug?: string;
-          node?: string;
-          editor?: string;
-        };
-        ['editor-entry']?: any[];
-      };
-      meta: {};
-      schema: {};
-    };
-  };
-}
-
 export type EditorComponentSaveParams = ComponentRemoteSaveParams<EditorComponent>;
 
 export interface EditorComponentSavedRes extends BaseResponse<Record<string, string>> {}
-
-export interface ComponentRemote {
-  component: {
-    content: {
-      meta?: {};
-      resource: ComponentVersionEntityResource;
-    };
-    id: string;
-    version: string;
-  };
-  resource: RemoteResource;
-  componentType: ComponentType;
-}
-
-export interface RemoteComponentItem {
-  lastVersion: ComponentEditVersionEntity;
-  components: ComponentRemote[];
-}
 
 export interface EditorBatchPublishParams {
   applicationId: string;
@@ -86,4 +48,11 @@ export interface EditorBatchPublishParams {
 export interface ComponentUsedFetchParams extends PaginationReqParams {
   applicationId: string;
   name: string;
+  live: boolean;
+}
+
+export interface ComponentDisabledSaveParams {
+  applicationId: string;
+  id: string;
+  status: boolean;
 }

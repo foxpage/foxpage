@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { AppFolderTypes, FileTypes, StoreOrder } from '@foxpage/foxpage-server-types';
+import { AppFolderTypes, FileTypes, StoreGoods, StoreOrder } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { LOG, PRE, TAG, TYPE } from '../../../config/constant';
@@ -133,7 +133,7 @@ export class AddStorePackageToApplication extends BaseController {
 
             goodsOrders.push({
               id: generationId(PRE.ORDER),
-              goodsId: goodsFileObject?.[file.id]?.id || '',
+              goodsId: (goodsFileObject?.[file.id] as StoreGoods)?.id || '',
               goodsVersionId: '',
               customer: {
                 id: file.id,

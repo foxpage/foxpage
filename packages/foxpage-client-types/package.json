@@ -1,0 +1,26 @@
+{
+  "name": "@foxpage/foxpage-client-types",
+  "version": "0.0.21",
+  "description": "foxpage-client-types",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "release": "tsc && yarn publish"
+  },
+  "keywords": [
+    "foxpage",
+    "foxpage-client-types",
+    "typescript"
+  ],
+  "author": "Rongkai Liu",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^4.9.5"
+  }
+}

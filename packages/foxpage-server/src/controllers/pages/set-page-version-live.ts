@@ -71,6 +71,8 @@ export class SetPageLiveVersions extends BaseController {
         } else if (contentResult.code === 4) {
           return Response.warning(i18n.content.RelationDependRecursive + ':' + contentResult.data, 2051406);
         }
+      } else if (result.code === 4) {
+        return Response.warning(i18n.content.invalidVersionContent, 2051407);
       }
 
       await this.service.content.live.runTransaction(ctx.transactions);

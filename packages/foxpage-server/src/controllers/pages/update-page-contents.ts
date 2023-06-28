@@ -49,7 +49,6 @@ export class UpdatePageContentDetail extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4051701);
       }
 
-      // TODO De-duplicate tags
       _.remove(sourceContentDetail.tags, (tag) => {
         return _.isNil(tag.isBase) || _.isNil(tag.extendId);
       });
@@ -59,7 +58,7 @@ export class UpdatePageContentDetail extends BaseController {
 
       const result = await this.service.content.info.updateContentDetail(
         Object.assign({}, params, { type: apiType as FileTypes }),
-        { ctx, actionType: [LOG.UPDATE, apiType].join('_') },
+        { ctx, actionDataType: apiType, actionType: [LOG.UPDATE, apiType].join('_') },
       );
 
       if (result.code === 1) {

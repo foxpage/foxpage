@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Content, FileTypes } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, TYPE } from '../../../config/constant';
+import { TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AddContentReq, ContentBaseDetailRes } from '../../types/validates/content-validate-types';
 import * as Response from '../../utils/response';
@@ -77,7 +77,7 @@ export class AddPageContentDetail extends BaseController {
             ctx,
             content: { relation: params.content?.relation || {}, schemas: params.content?.schemas || [] },
             type: apiType as FileTypes,
-            actionType: [LOG.CREATE, apiType].join('_'),
+            actionDataType: apiType,
           });
         });
       } else {
@@ -86,7 +86,7 @@ export class AddPageContentDetail extends BaseController {
           ctx,
           content: { relation: params.content?.relation || {}, schemas: params.content?.schemas || [] },
           type: apiType as FileTypes,
-          actionType: [LOG.CREATE, apiType].join('_'),
+          actionDataType: apiType,
         });
       }
 

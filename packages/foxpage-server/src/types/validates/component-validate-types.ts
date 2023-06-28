@@ -14,6 +14,18 @@ import { JSONSchema } from 'class-validator-jsonschema';
 
 import { ContentIdVersion, PagingReq, ResponseBase, ResponsePageBase } from './index-validate-types';
 
+export class AppComponentId {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  @Length(20, 20)
+  applicationId: string;
+
+  @JSONSchema({ description: 'Component File ID' })
+  @IsString()
+  @Length(20, 20)
+  id: string;
+}
+
 export class AppComponentsReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
@@ -34,6 +46,11 @@ export class AppComponentsReq {
   @IsString()
   @IsOptional()
   search: string;
+
+  @JSONSchema({ description: 'Component load On ignite, only effect in component ids is empty' })
+  @IsBoolean()
+  @IsOptional()
+  loadOnIgnite: boolean;
 }
 
 export class ResourceEntry {
@@ -275,6 +292,11 @@ export class UpdateComponentReq {
   @IsString()
   intro: string;
 
+  @JSONSchema({ description: 'Component delivery on sdk ignite' })
+  @IsBoolean()
+  @IsOptional()
+  loadOnIgnite: boolean;
+
   @JSONSchema({ description: 'Component type' })
   @IsString()
   @IsOptional()
@@ -321,6 +343,11 @@ export class AppNameVersionPackagesReq {
   @IsArray()
   @IsOptional()
   type: Array<string>;
+
+  @JSONSchema({ description: 'return canary component' })
+  @IsBoolean()
+  @IsOptional()
+  isCanary: boolean;
 }
 
 export class RemotePackageReq {
@@ -574,19 +601,9 @@ export class ComponentCategory {
   screenshot?: string;
 }
 
-export class DeleteComponentCategoryReq {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  @Length(20, 20)
-  applicationId: string;
+export class DeleteComponentCategoryReq extends AppComponentId {}
 
-  @JSONSchema({ description: 'Component File ID' })
-  @IsString()
-  @Length(20, 20)
-  id: string;
-}
-
-export class SetComponentCategoryReq extends DeleteComponentCategoryReq {
+export class SetComponentCategoryReq extends AppComponentId {
   @JSONSchema({ description: 'Resource category detail' })
   @ValidateNested()
   @Type(() => ComponentCategory)
@@ -646,4 +663,21 @@ export class GetComponentUsedReq extends PagingReq {
   @JSONSchema({ description: 'Component name' })
   @IsString()
   name: string;
+
+  @JSONSchema({ description: 'Only response live version, default is true' })
+  @IsBoolean()
+  @IsOptional()
+  live: boolean;
+}
+
+export class SetComponentDeprecatedReq extends AppComponentId {
+  @JSONSchema({ description: 'Deprecated status, true|false' })
+  @IsBoolean()
+  status: boolean;
+}
+
+export class SetReferenceComponentLiveReq extends AppComponentId {
+  @JSONSchema({ description: 'Version id, if version id is empty, then clear it' })
+  @IsString()
+  versionId: string;
 }

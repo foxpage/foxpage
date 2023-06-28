@@ -52,14 +52,14 @@ export const structureToList = (structures: StructureNode[]) => {
 };
 
 // finders
-const createSelector = <K extends keyof StructureNode>(key: K, val: StructureNode[K]) => (
-  structure?: StructureNode,
-) => {
-  return structure && structure[key] === val;
-};
+const createSelector =
+  <K extends keyof StructureNode>(key: K, val: StructureNode[K]) =>
+  (structure?: StructureNode) => {
+    return structure && structure[key] === val;
+  };
 
 export const findStructure = (
-  list: StructureNode[],
+  list: StructureNode[] = [],
   selector: (structure?: StructureNode<any> | undefined) => boolean | undefined,
   opt?: {
     returnBrother?: boolean;
@@ -100,9 +100,10 @@ export const findBrothers = (dsl: StructureNode[], value: string) => {
   return findStructure(dsl, (node) => node?.id === value, { returnBrother: true }) as StructureNode[] | null;
 };
 
-
 export const findBrothersByParentId = (dsl: StructureNode[], value: string) => {
-  return findStructure(dsl, (node) => node?.extension && node?.extension?.parentId === value, { returnBrother: true }) as StructureNode[] | null;
+  return findStructure(dsl, (node) => node?.extension && node?.extension?.parentId === value, {
+    returnBrother: true,
+  }) as StructureNode[] | null;
 };
 
 // filter removed
@@ -117,4 +118,22 @@ export const removeStructure = <T extends StructureNode>(structure: T[] = [], re
       }
       return item;
     });
+};
+
+/**
+ * get selected node
+ * @param structure
+ * @param selectedNodeId
+ * @returns
+ */
+export const getSelectedNode = (structure: StructureNode[], selectedNodeId: string) => {
+  // get real selected node in render structure
+  let _selectedNode: StructureNode | undefined;
+  if (selectedNodeId) {
+    _selectedNode = findStructureById(structure, selectedNodeId) as StructureNode;
+    if (!_selectedNode) {
+      _selectedNode = findStructureByExtendId(structure, selectedNodeId) as StructureNode;
+    }
+  }
+  return _selectedNode;
 };

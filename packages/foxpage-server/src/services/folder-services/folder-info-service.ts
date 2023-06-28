@@ -35,9 +35,13 @@ export class FolderInfoService extends BaseService<Folder> {
   /**
    * Add the details of the new folder, return to the new query
    * @param  {Partial<Folder>} params
+   * @param {Options.ignoreUserLog} The status that do not save to content log, default is false
    * @returns Folder
    */
-  create(params: Partial<Folder>, options: { ctx: FoxCtx }): Folder {
+  create(
+    params: Partial<Folder>,
+    options: { ctx: FoxCtx; actionDataType?: string; ignoreUserLog?: boolean },
+  ): Folder {
     const folderDetail: Folder = {
       id: params.id || generationId(PRE.FOLDER),
       name: _.trim(params.name) || '',
@@ -51,6 +55,15 @@ export class FolderInfoService extends BaseService<Folder> {
     };
 
     options.ctx.transactions.push(Model.folder.addDetailQuery(folderDetail));
+    !options.ignoreUserLog &&
+      Service.userLog.addLogItem(
+        { id: folderDetail.id },
+        {
+          ctx: options.ctx,
+          actions: [LOG.CREATE, options.actionDataType || '', TYPE.FOLDER],
+          category: { applicationId: folderDetail.applicationId, folderId: folderDetail.id },
+        },
+      );
 
     return folderDetail;
   }
@@ -176,7 +189,12 @@ export class FolderInfoService extends BaseService<Folder> {
    */
   async addTypeFolderDetail(
     folderDetail: Partial<Folder>,
-    options: { ctx: FoxCtx; type: AppFolderTypes; actionType?: string; distinctParams?: Record<string, any> },
+    options: {
+      ctx: FoxCtx;
+      type: AppFolderTypes;
+      actionDataType?: string;
+      distinctParams?: Record<string, any>;
+    },
   ): Promise<Record<string, number | Folder>> {
     // Get the folder Id of the specified type under the application
     const typeDetail = await Model.folder.findOne({
@@ -210,7 +228,10 @@ export class FolderInfoService extends BaseService<Folder> {
 
     // Create folder
     folderDetail.parentFolderId = typeDetail.id;
-    const newFolderDetail = this.create(folderDetail, { ctx: options.ctx });
+    const newFolderDetail = this.create(folderDetail, {
+      ctx: options.ctx,
+      actionDataType: options.actionDataType,
+    });
 
     return { code: 0, data: newFolderDetail };
   }
@@ -223,10 +244,10 @@ export class FolderInfoService extends BaseService<Folder> {
    */
   async updateTypeFolderDetail(
     folderDetail: AppTypeFolderUpdate,
-    options: { ctx: FoxCtx },
+    options: { ctx: FoxCtx; actionType?: string },
   ): Promise<Record<string, number>> {
     // Get current folder details
-    const typeDetail = await this.model.findOne({
+    const typeDetail = await this.getDetail({
       id: folderDetail.id,
       applicationId: folderDetail.applicationId,
     });
@@ -252,6 +273,11 @@ export class FolderInfoService extends BaseService<Folder> {
     const updateDetail = _.omit(folderDetail, ['applicationId', 'id']);
     if (!_.isEmpty(updateDetail)) {
       options.ctx.transactions.push(Model.folder.updateDetailQuery(folderDetail.id, updateDetail));
+      Service.userLog.addLogItem(typeDetail, {
+        ctx: options.ctx,
+        actions: [LOG.UPDATE, options.actionType || '', TYPE.FOLDER],
+        category: { applicationId: typeDetail.applicationId, folderId: folderDetail.id },
+      });
     }
 
     return { code: 0 };

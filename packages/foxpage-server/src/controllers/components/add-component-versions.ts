@@ -82,7 +82,10 @@ export class AddComponentVersionDetail extends BaseController {
         versionNumber: versionNumber,
         content: params.content,
       };
-      this.service.version.info.create(newVersionDetail, { ctx });
+      this.service.version.info.create(newVersionDetail, {
+        ctx,
+        actionDataType: TYPE.COMPONENT,
+      });
 
       await this.service.version.info.runTransaction(ctx.transactions);
 

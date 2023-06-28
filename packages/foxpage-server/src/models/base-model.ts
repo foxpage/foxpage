@@ -1,3 +1,5 @@
+import './schema/';
+
 import _ from 'lodash';
 import mongoose from 'mongoose';
 
@@ -7,7 +9,7 @@ import { DBQuery, SearchModel } from '../types/index-types';
 
 export class BaseModel<T> {
   protected model: mongoose.Model<T>;
-  protected ignoreFields: string = ' -_id -members._id -tags._id -host._id -resources._id';
+  protected ignoreFields: string = ' -_id -members._id -tags._id -host._id -resources._id -category._id';
 
   constructor(model: mongoose.Model<T>) {
     this.model = model;

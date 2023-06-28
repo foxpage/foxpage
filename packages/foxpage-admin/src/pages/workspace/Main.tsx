@@ -3,7 +3,7 @@ import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from 
 
 import {
   AppstoreOutlined,
-  ProfileOutlined,
+  // ProfileOutlined,
   ProjectOutlined,
   RestOutlined,
   StarFilled,
@@ -53,7 +53,6 @@ const WorkSpace = () => {
   // i18n
   const { locale, organizationId } = useContext(GlobalContext);
   const { workspace, project, application, dynamic } = locale.business;
-
   // if organization id empty, back to login page
   if (!organizationId) {
     history.push({
@@ -79,72 +78,80 @@ const WorkSpace = () => {
     setSiderCollapsed(broken);
   }, []);
 
+  const handleCollapse = useCallback((collapsed) => {
+    setSiderCollapsed(collapsed);
+  }, []);
+
   return (
-    <Layout hasSider style={{ height: '100%' }}>
+    <Layout hasSider style={{ height: '100%', overflow: 'hidden' }}>
       <Sider
         theme="light"
         breakpoint="xxl"
         width={250}
+        collapsible
         collapsedWidth={60}
         onBreakpoint={handleBreakPoint}
-        style={{ height: '100%', overflow: 'auto' }}>
+        onCollapse={handleCollapse}
+        style={{ height: '100%' }}>
         <Tooltip title={workspace.name} placement="right">
           <Location style={{ paddingLeft: siderCollapsed ? 8 : 18 }}>{workspace.name}</Location>
         </Tooltip>
-        <Menu
-          mode="inline"
-          theme="light"
-          defaultOpenKeys={['projects', 'applications', 'dynamics']}
-          selectedKeys={selectedKeys}
-          onClick={handleClick}>
-          <Menu.ItemGroup
-            key="projects"
-            title={
-              <MenuItemGroupTitle style={{ textAlign: siderCollapsed ? 'center' : 'left' }}>
-                {project.name}
-              </MenuItemGroupTitle>
-            }>
-            <Menu.SubMenu key="projects" title={project.myProject} icon={<ProjectOutlined />}>
-              <Menu.Item key="personal" icon={<UserOutlined />}>
-                {project.personal}
-              </Menu.Item>
-              <Menu.Item key="shared" icon={<TeamOutlined />}>
-                {project.shared}
-              </Menu.Item>
-              <Menu.Item key="starred" icon={<StarFilled />}>
-                {project.starred}
-              </Menu.Item>
-            </Menu.SubMenu>
-            <Menu.Item key="team-projects" icon={<ProfileOutlined />}>
+        <div className="h-full overflow-auto">
+          <Menu
+            mode="inline"
+            theme="light"
+            defaultOpenKeys={['projects', 'applications', 'dynamics']}
+            selectedKeys={selectedKeys}
+            onClick={handleClick}>
+            <Menu.ItemGroup
+              key="projects"
+              title={
+                <MenuItemGroupTitle style={{ paddingLeft: siderCollapsed ? 4 : 0 }}>
+                  {project.name}
+                </MenuItemGroupTitle>
+              }>
+              <Menu.SubMenu key="projects" title={project.myProject} icon={<ProjectOutlined />}>
+                <Menu.Item key="personal" icon={<UserOutlined />}>
+                  {project.personal}
+                </Menu.Item>
+                <Menu.Item key="shared" icon={<TeamOutlined />}>
+                  {project.shared}
+                </Menu.Item>
+                <Menu.Item key="starred" icon={<StarFilled />}>
+                  {project.starred}
+                </Menu.Item>
+              </Menu.SubMenu>
+              {/* <Menu.Item key="team-projects" icon={<ProfileOutlined />}>
               {project.teamProject}
-            </Menu.Item>
-            <Menu.Item key="recycle-bin" icon={<RestOutlined />}>
-              {project.recycleBin}
-            </Menu.Item>
-          </Menu.ItemGroup>
-          <Menu.ItemGroup
-            key="applications"
-            title={
-              <MenuItemGroupTitle style={{ textAlign: siderCollapsed ? 'center' : 'left' }}>
-                {application.name}
-              </MenuItemGroupTitle>
-            }>
-            <Menu.Item key="applications" icon={<AppstoreOutlined />}>
-              {application.myApplication}
-            </Menu.Item>
-          </Menu.ItemGroup>
-          <Menu.ItemGroup
-            key="dynamics"
-            title={
-              <MenuItemGroupTitle style={{ textAlign: siderCollapsed ? 'center' : 'left' }}>
-                {dynamic.name}
-              </MenuItemGroupTitle>
-            }>
-            <Menu.Item key="dynamics" icon={<SwitcherOutlined />}>
-              {dynamic.myDynamic}
-            </Menu.Item>
-          </Menu.ItemGroup>
-        </Menu>
+            </Menu.Item> */}
+              <Menu.Item key="recycle-bin" icon={<RestOutlined />}>
+                {project.recycleBin}
+              </Menu.Item>
+            </Menu.ItemGroup>
+            <Menu.ItemGroup
+              key="applications"
+              title={
+                <MenuItemGroupTitle style={{ paddingLeft: siderCollapsed ? 4 : 0 }}>
+                  {application.name}
+                </MenuItemGroupTitle>
+              }>
+              <Menu.Item key="applications" icon={<AppstoreOutlined />}>
+                {application.myApplication}
+              </Menu.Item>
+            </Menu.ItemGroup>
+            <Menu.ItemGroup
+              key="dynamics"
+              title={
+                <MenuItemGroupTitle style={{ paddingLeft: siderCollapsed ? 4 : 0 }}>
+                  {dynamic.name}
+                </MenuItemGroupTitle>
+              }>
+              <Menu.Item key="dynamics" icon={<SwitcherOutlined />}>
+                {dynamic.myDynamic}
+              </Menu.Item>
+            </Menu.ItemGroup>
+          </Menu>
+        </div>
       </Sider>
       <Switch>
         <Route path="/workspace/applications" component={Applications} />

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
-import { PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Table } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
@@ -38,7 +38,7 @@ interface IProps {
   pageContentId?: string;
   onChange: (selectedFunction: FuncEntity | undefined) => void;
   onClose: () => void;
-  onFuncOpen: () => void;
+  onFuncOpen: (open: boolean, editFunc?: FuncEntity, type?: string) => void;
 }
 
 type FunctionSelectType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps & IProps;
@@ -110,6 +110,18 @@ const ConditionSelect: React.FC<FunctionSelectType> = (props) => {
         return <span>{type ? 'async' : 'sync'}</span>;
       },
     },
+    {
+      title: global.actions,
+      dataIndex: 'actions',
+      key: 'actions',
+      align: 'center' as 'center',
+      width: 60,
+      render: (_text: string, record: FuncEntity) => (
+        <Button shape="circle" size="small" onClick={() => onFuncOpen(true, record)}>
+          <EditOutlined />
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -138,7 +150,7 @@ const ConditionSelect: React.FC<FunctionSelectType> = (props) => {
               setGroup(group);
             }}
           />
-          <Button type="link" icon={<PlusOutlined />} onClick={onFuncOpen}>
+          <Button type="link" icon={<PlusOutlined />} onClick={() => onFuncOpen(true)}>
             {functionI18n.add}
           </Button>
         </Toolbar>

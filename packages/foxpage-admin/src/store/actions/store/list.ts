@@ -101,12 +101,9 @@ export const fetchApplicationList = createAction(
   }),
 )();
 
-export const pushApplicationList = createAction(
-  'STORE__PUSH_APPLICATION_LIST',
-  (list: Application[]) => ({
-    list,
-  }),
-)();
+export const pushApplicationList = createAction('STORE__PUSH_APPLICATION_LIST', (list: Application[]) => ({
+  list,
+}))();
 
 export const fetchAllApplicationList = createAction(
   'STORE__FETCH_ALL_APPLICATION_LIST',

@@ -17,7 +17,7 @@ const organizationSchema = new Schema<Organization>(
   },
 );
 
-organizationSchema.pre('save', function(next) {
+organizationSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {

@@ -8,10 +8,7 @@ import * as ACTIONS from '@/actions/applications/detail/resources/groups';
 import { Group, OperationDrawer } from '@/components/index';
 import { ResourceTagEnum } from '@/constants/file';
 import { GlobalContext } from '@/pages/system';
-import {
-  ApplicationResourceGroupTypeEntity,
-  ApplicationResourcesGroupSaveParams,
-} from '@/types/application/resources';
+import { ApplicationResourceGroupTypeEntity, ApplicationResourcesGroupSaveParams } from '@/types/index';
 import { objectEmptyCheck } from '@/utils/empty-check';
 
 const formItemLayout = {
@@ -66,8 +63,9 @@ const Drawer: React.FC<ComponentsProps> = (props) => {
 
   useEffect(() => {
     if (!objectEmptyCheck(editGroup)) {
-      const resourceScope = editGroup.tags.find((item) => item.type === ResourceTagEnum.ResourceConfig)
-        ?.resourceScope;
+      const resourceScope = editGroup.tags.find(
+        (item) => item.type === ResourceTagEnum.ResourceConfig,
+      )?.resourceScope;
       const resourceId = editGroup.tags.find((item) => item.resourceId)?.resourceId;
 
       if (resourceScope) {
@@ -168,7 +166,7 @@ const Drawer: React.FC<ComponentsProps> = (props) => {
             <Input onChange={(e) => handleScopeChange(e.target.value)} />
           </Form.Item>
           <Form.Item name="resourceScopeTips" label={resource.resourceScopeAddress}>
-            <a href={resourceUrl} target="_blank">
+            <a href={resourceUrl} target="_blank" style={{ wordBreak: 'break-all' }}>
               {resourceUrl}
             </a>
           </Form.Item>

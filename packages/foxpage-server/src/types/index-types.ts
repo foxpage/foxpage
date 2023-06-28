@@ -7,6 +7,7 @@ export type TRecord<T> = Record<string, T>;
 
 export interface FoxCtx extends Context {
   operations: any[];
+  contentLogs: any[];
   transactions: any[];
   userInfo: {
     id: string;

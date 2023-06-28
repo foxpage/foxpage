@@ -1,6 +1,6 @@
 import { createAction } from 'typesafe-actions';
 
-import { Notice } from '@/types/notice';
+import { Notice } from '@/types/index';
 
 export const clearAll = createAction('SYSTEM_NOTICE__CLEAR_ALL', () => ({}))();
 

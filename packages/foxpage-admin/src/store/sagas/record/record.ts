@@ -4,6 +4,7 @@ import { getType } from 'typesafe-actions';
 import * as API from '@/apis/record';
 import { RecordActionType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
+import * as RECYCLE_BIN_ACTIONS from '@/store/actions/builder/recyclebin';
 import * as ACTIONS from '@/store/actions/record';
 import { store } from '@/store/index';
 import { ComponentsActionType } from '@/store/reducers/builder/component';
@@ -28,8 +29,20 @@ function* handleAddRecords(action: ComponentsActionType) {
       contentId?: string;
     };
   };
+  if (!details?.length) return;
+  const { nodeUpdateIndex, nodeUpdateRecords } = store.getState().record.main;
   const { save = false, applicationId = '', contentId = '' } = opt || {};
   const newLog = initRecordLog(actionType, details);
+  const updateIndex = actionType === RecordActionType.PAGE_PRE_STEP ? nodeUpdateIndex - 1 : nodeUpdateIndex + 1;
+  yield put(ACTIONS.updateNodeUpdateRecordsIndex(updateIndex));
+  // prev step and next step just change stack index
+  if (![RecordActionType.PAGE_PRE_STEP, RecordActionType.PAGE_NEXT_STEP].includes(actionType)) {
+    const updateCloned = nodeUpdateRecords.slice(0, updateIndex + 1);
+    updateCloned.push(newLog);
+    yield put(ACTIONS.updateNodeUpdateRecords(updateCloned));
+  } else {
+    yield put(RECYCLE_BIN_ACTIONS.diffRecords());
+  }
   if (save) {
     yield put(ACTIONS.saveUserRecords({ applicationId, contentId, logs: [newLog] }));
   } else {

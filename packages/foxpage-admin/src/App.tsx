@@ -5,6 +5,8 @@ import { Provider } from 'react-redux';
 import { Page } from './pages';
 import { store } from './store';
 
+import './style/index.less';
+
 const App = () => (
   <Provider store={store}>
     <CookiesProvider>

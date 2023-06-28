@@ -51,6 +51,7 @@ export class GetAppComponentList extends BaseController {
         applicationId: params.applicationId,
         type: (params.type as FileTypes[]) || TYPE.COMPONENT,
         contentIds: params.componentIds || [],
+        loadOnIgnite: params.loadOnIgnite,
       });
       metric.block('getComponentVersionLiveDetails', 'component-live-version');
 

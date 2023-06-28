@@ -96,7 +96,7 @@ export class SaveEditorComponents extends BaseController {
             componentType: editorObject[name]?.componentType || COMPONENT_TYPE.REACT_COMPONENT,
             tags: [{ type: TAG.RESOURCE_GROUP, resourceGroupId: editorObject[name]?.groupId || '' }],
           },
-          { ctx },
+          { ctx, actionDataType: TYPE.EDITOR },
         );
 
         nameContentDetail[name] = this.service.content.info.create(

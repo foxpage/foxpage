@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 import { File } from '@foxpage/foxpage-server-types';
 
+import { TAG } from '../../config/constant';
 import { AppFileType, FileNameSearch, FilePageSearch } from '../types/file-types';
 
 import fileModel from './schema/file';
@@ -130,11 +131,17 @@ export class FileModel extends BaseModel<File> {
    * @returns Promise
    */
   async getAppFileList(params: AppFileType): Promise<File[]> {
-    let searchParams: { applicationId: string; type: any; deleted: boolean; $or?: any } = {
+    let searchParams: { applicationId: string; type: any; deleted: boolean; $or?: any; tags?: any } = {
       applicationId: params.applicationId,
       type: _.isString(params.type) ? params.type : { $in: params.type },
       deleted: false,
     };
+
+    if (!_.isNil(params.loadOnIgnite) && params.loadOnIgnite === true) {
+      searchParams['tags'] = {
+        $elemMatch: { type: TAG.LOAD_ON_IGNITE, status: true },
+      };
+    }
 
     if (params.search) {
       searchParams['$or'] = [{ id: params.search }, { name: { $regex: new RegExp(params.search, 'i') } }];

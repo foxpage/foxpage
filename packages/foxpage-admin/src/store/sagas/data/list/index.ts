@@ -5,7 +5,7 @@ import * as ACTIONS from '@/actions/data/list';
 import * as API from '@/apis/data';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { DataActionType } from '@/reducers/data/list';
-import { DataBaseQueryParams } from '@/types/data';
+import { DataBaseQueryParams } from '@/types/index';
 import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchCollectionList() {

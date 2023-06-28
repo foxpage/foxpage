@@ -1,11 +1,3 @@
-import { ResponseBody } from '../common';
-
-export interface Notice {
-  type: 'info' | 'warning' | 'error';
-  status: boolean;
-  language: string;
-  message: string;
-  closable?: boolean;
-}
+import { Notice, ResponseBody } from '@foxpage/foxpage-client-types';
 
 export interface NoticeFetchedResponse extends ResponseBody<Notice> {}

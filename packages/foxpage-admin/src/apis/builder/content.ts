@@ -7,11 +7,16 @@ import {
   ContentPublishParams,
   ContentSavedRes,
   ContentSaveParams,
-  ContentVersionRes,
-  ContentVersionsParams,
+  ContentSetLiveVersionParams,
+  EncryptParams,
+  EncryptRes,
+  EncryptValidateParams,
+  EncryptValidateRes,
   LockerParams,
   LockerResponse,
   PageContent,
+  StructureCopyParams,
+  StructureCopyRes,
 } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
@@ -103,6 +108,38 @@ export const unlockEdit = (params: LockerParams) => {
 export const heartBeat = (params: LockerParams) => {
   return new Promise((resolve) => {
     FoxPageApi.put('/contents/heartbeat', params, (rs: LockerResponse) => {
+      resolve(rs);
+    });
+  });
+};
+
+export const setLiveVersion = (params: ContentSetLiveVersionParams) => {
+  return new Promise((resolve) => {
+    FoxPageApi.put('/content/version/live', params, (rs: BaseResponse) => {
+      resolve(rs);
+    });
+  });
+};
+
+export const copyStructure = (params: StructureCopyParams) => {
+  return new Promise((resolve) => {
+    FoxPageApi.post('/projects/relations-clone', params, (rs: StructureCopyRes) => {
+      resolve(rs);
+    });
+  });
+};
+
+export const fetchToken = (params: EncryptParams): Promise<EncryptRes> => {
+  return new Promise((resolve) => {
+    FoxPageApi.post('/contents/encrypt', params, (rs: EncryptRes) => {
+      resolve(rs);
+    });
+  });
+};
+
+export const checkToken = (params: EncryptValidateParams): Promise<EncryptValidateRes> => {
+  return new Promise((resolve) => {
+    FoxPageApi.post('/contents/encrypt-validate', params, (rs: EncryptValidateRes) => {
       resolve(rs);
     });
   });

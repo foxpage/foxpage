@@ -1,6 +1,6 @@
 import { createAction } from 'typesafe-actions';
 
-import { DataBaseQueryParams } from '@/types/data';
+import { DataBaseQueryParams } from '@/types/index';
 
 export const clearAll = createAction('DATA__CLEAR_ALL', () => ({}))();
 

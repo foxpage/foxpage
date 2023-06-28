@@ -27,6 +27,9 @@ export abstract class StorageAbstract {
   abstract storageZipFolders(source: string, target: string): Promise<Record<string, any>>;
   abstract storageZipFileContent(target: string): Buffer;
   abstract storageCopyObject(options: StorageCopyOptions): Promise<any>;
+  abstract getBuildLog(options: BuildLogOptions): Promise<any>;
+  abstract startBuild(options: StartBuildOptions): Promise<any>;
+  abstract getBuildResult(buildId: string): Promise<any>;
 }
 
 export interface StorageListOptions {
@@ -54,4 +57,22 @@ export interface StorageCopyOptions {
   sourceKey: string;
   targetBucket: string;
   targetKey: string;
+}
+
+export interface BuildLogOptions {
+  logGroupName: string;
+  logStreamName: string;
+  startTime: number;
+  endTime: number;
+  limit?: number;
+  nextToken?: string;
+}
+
+export interface StartBuildOptions {
+  projectName: string;
+  envVariables: {
+    name: string;
+    value: string;
+    type: string;
+  }[];
 }

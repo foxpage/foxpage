@@ -5,7 +5,7 @@ import { ContentRelation, ContentVersion, File } from '@foxpage/foxpage-server-t
 
 import { PRE, TYPE } from '../../config/constant';
 import * as Model from '../models';
-import { ContentVersionString } from '../types/content-types';
+import { ContentVersionString, RelationContentVersion } from '../types/content-types';
 import { generationId } from '../utils/tools';
 
 import { BaseService } from './base-service';
@@ -205,6 +205,40 @@ export class RelationService extends BaseService<ContentRelation> {
   }
 
   /**
+   * get relations and dependent live version detail
+   * @param contentIds
+   * @returns
+   */
+  async getRelationsAndDeps(contentIds: string[]): Promise<RelationContentVersion[]> {
+    let relationInfoList: RelationContentVersion[] = [];
+    if (contentIds.length === 0) {
+      return relationInfoList;
+    }
+
+    const relationList = await Service.content.list.getDetailByIds(contentIds);
+    const relationVersionList = await Service.version.list.getDetailByIds(
+      _.map(relationList, 'liveVersionId') as string[],
+    );
+    const relationVersionObject = _.keyBy(relationVersionList, 'contentId');
+    relationInfoList = relationList.map((item) => {
+      return {
+        id: item.id,
+        fileId: item.fileId,
+        content: item,
+        version: relationVersionObject[item.id],
+      };
+    });
+
+    const depsRelations = this.getRelationIdsFromVersion(relationVersionList);
+    if (depsRelations.ids && depsRelations.ids.length > 0) {
+      const depsRelationList = await this.getRelationsAndDeps(depsRelations.ids);
+      relationInfoList = relationInfoList.concat(depsRelationList);
+    }
+
+    return relationInfoList;
+  }
+
+  /**
    * Get the id and version information of the relation from the version details
    * @param  {ContentVersion[]} versionList
    * @param  {string[]=[]} ignoreType
@@ -300,12 +334,60 @@ export class RelationService extends BaseService<ContentRelation> {
 
     if (versionRelationDetail?.id) {
       // update
-      return this.updateDetailQuery(versionRelationDetail.id, Object.assign({ deleted: false }, relations));
+      return this.updateDetailQuery(
+        versionRelationDetail.id,
+        Object.assign({}, relations, { deleted: false }),
+      );
     } else {
       // create
       return this.addDetailQuery(
         Object.assign({ id: generationId(PRE.RELATION), level: TYPE.VERSION }, relations) as any,
       );
+    }
+  }
+
+  /**
+   * delete the filter condition's version relations
+   * @param params
+   */
+  async removeVersionRelations(params: {
+    folderIds?: string[];
+    fileIds?: string[];
+    contentIds?: string[];
+    versionIds?: string[];
+  }): Promise<void> {
+    const { folderIds = [], fileIds = [], contentIds = [], versionIds = [] } = params;
+    let filters: Record<string, any>[] = [];
+    if (folderIds.length > 0) {
+      filters.push({
+        parentItems: { $elemMatch: { type: TYPE.FOLDER, id: { $in: folderIds } } },
+      });
+    }
+
+    if (fileIds.length > 0) {
+      filters.push({
+        parentItems: { $elemMatch: { type: TYPE.FILE, id: { $in: fileIds } } },
+      });
+    }
+
+    if (contentIds.length > 0) {
+      filters.push({
+        parentItems: { $elemMatch: { type: TYPE.CONTENT, id: { $in: contentIds } } },
+      });
+    }
+
+    if (versionIds.length > 0) {
+      filters.push({
+        parentItems: { $elemMatch: { type: TYPE.VERSION, id: { $in: versionIds } } },
+      });
+    }
+
+    if (filters.length > 0) {
+      const relationList = await Service.relation.find({ $or: filters, deleted: false });
+      const relationIds = _.map(relationList, 'id');
+      if (relationIds.length > 0) {
+        await Service.relation.batchUpdateDetail(relationIds, { deleted: true });
+      }
     }
   }
 

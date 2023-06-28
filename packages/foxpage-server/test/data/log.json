@@ -18,5 +18,104 @@
       "createTime": "2022-12-30T15:24:56",
       "updateTime": "2022-12-30T15:26:56"
     }
+  ],
+  "changeList": [
+    {
+      "actionType": "",
+      "category": {
+        "type": "application",
+        "applicationId": "appl_lrtAwm4oU6etnty"
+      },
+      "deleted": false,
+      "action": "live",
+      "content": {
+        "id": "cont_6ESMwBTnPNtGe8H"
+      },
+      "transactionId": "trns_EzRI67bWTclyur6",
+      "id": "logs_AmwHaSyGmbqSOjb",
+      "operator": "user_xPSngYGevPoVYo8",
+      "createTime": "2023-03-30T22:34:16.838+08:00",
+      "updateTime": "2023-03-30T22:34:16.838+08:00"
+    },
+    {
+      "actionType": "delete_page",
+      "category": {
+        "type": "content",
+        "contentId": "cont_n3vM1aHQzSa55Bk",
+        "fileId": "file_dyUt8nNdz60T60k",
+        "folderId": "fold_Wx9yrRwqaSSGxtB",
+        "applicationId": "appl_lrtAwm4oU6etnty"
+      },
+      "deleted": false,
+      "action": "content_remove",
+      "content": {
+        "id": "cont_l3Tpc2UxEmxFlzk"
+      },
+      "transactionId": "trns_k5WW8RVaBPRYdWp",
+      "id": "logs_JTF8SulpTof5zMI",
+      "operator": "user_Q60pPmtPUtUTP7V",
+      "createTime": "2023-03-29T10:39:09.541+08:00",
+      "updateTime": "2023-03-29T10:39:09.541+08:00"
+    },
+    {
+      "actionType": "update_content",
+      "category": {
+        "type": "content",
+        "contentId": "cont_n3vM1aHQzSa55Bk",
+        "fileId": "file_dyUt8nNdz60T60k",
+        "folderId": "fold_Wx9yrRwqaSSGxtB",
+        "applicationId": "appl_lrtAwm4oU6etnty"
+      },
+      "deleted": false,
+      "action": "content_offline",
+      "content": {
+        "id": "cont_n3vM1aHQzSa55Bk"
+      },
+      "transactionId": "trns_Ud8juHyBbljcQkI",
+      "id": "logs_lq1GdWjWyDd25Kx",
+      "operator": "user_xPSngYGevPoVYo8",
+      "createTime": "2023-03-21T12:49:52.896+08:00",
+      "updateTime": "2023-03-21T12:49:52.896+08:00"
+    },
+    {
+      "actionType": "update_version",
+      "category": {
+        "type": "version",
+        "versionId": "cver_isj34bsdSkld4ff",
+        "contentId": "cont_n3vM1aHQzSa55Bk",
+        "fileId": "file_dyUt8nNdz60T60k",
+        "folderId": "fold_Wx9yrRwqaSSGxtB",
+        "applicationId": "appl_lrtAwm4oU6etnty"
+      },
+      "deleted": false,
+      "action": "update",
+      "content": {
+        "id": "cver_isj34bsdSkld4ff"
+      },
+      "transactionId": "trns_Ud8juHyBbljcQkI",
+      "id": "logs_lq1GdWjWyDd25Kx",
+      "operator": "user_xPSngYGevPoVYo8",
+      "createTime": "2023-03-21T12:49:52.896+08:00",
+      "updateTime": "2023-03-21T12:49:52.896+08:00"
+    },
+    {
+      "actionType": "update_page",
+      "category": {
+        "type": "file",
+        "fileId": "file_1gLFVTqoQkKG896",
+        "folderId": "fold_sQPb5nCMgWswbVA",
+        "applicationId": "appl_lrtAwm4oU6etnty"
+      },
+      "deleted": false,
+      "action": "file_tag",
+      "content": {
+        "id": "file_1gLFVTqoQkKG896"
+      },
+      "transactionId": "trns_cybdvtJEtznFl0O",
+      "id": "logs_kes8jNauhPXVf7W",
+      "operator": "user_jxTACUjswDfgmXo",
+      "createTime": "2023-02-23T15:08:07.501+08:00",
+      "updateTime": "2023-02-23T15:08:07.501+08:00"
+    }
   ]
 }

@@ -41,14 +41,17 @@ export class UpdateProjectDetail extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4040901);
       }
 
-      if (params.name && !checkName(params.name)) {
+      if (!params.name || !checkName(params.name)) {
         return Response.warning(i18n.folder.invalidName, 2040901);
       }
 
-      const folderDetail: AppTypeFolderUpdate = Object.assign(_.omit(params, ['path', 'projectId']), {
-        id: params.projectId,
-        folderPath: params.path || undefined,
-      });
+      const folderDetail: AppTypeFolderUpdate = Object.assign(
+        _.pick(params, ['applicationId', 'name', 'intro']),
+        {
+          id: params.projectId,
+          folderPath: params.path || undefined,
+        },
+      );
 
       const result = await this.service.folder.info.updateTypeFolderDetail(folderDetail, { ctx });
 

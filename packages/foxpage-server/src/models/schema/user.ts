@@ -21,7 +21,7 @@ const userSchema = new Schema<User>(
   },
 );
 
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {

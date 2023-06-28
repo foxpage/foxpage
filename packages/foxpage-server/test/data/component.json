@@ -1,0 +1,253 @@
+{
+  "contentList": [
+    {
+      "tags": [],
+      "liveVersionNumber": 4,
+      "liveVersionId": "cver_BF6avr9FPsB7XZ5",
+      "type": "component",
+      "deleted": false,
+      "id": "cont_kwVgKvYh552WPnH",
+      "title": "@test/test-component-1",
+      "fileId": "file_VO4QmYzU3hUnbsG",
+      "applicationId": "appl_lrtAwm4oU6etnty",
+      "creator": "user_Lt2xyPFQPLR7WyX",
+      "createTime": "2023-03-09T17:30:19.653+08:00",
+      "updateTime": "2023-03-10T09:18:30.406+08:00"
+    },
+    {
+      "tags": [],
+      "liveVersionNumber": 4,
+      "liveVersionId": "cver_tFqesB44jR1PWJd",
+      "type": "component",
+      "deleted": false,
+      "id": "cont_qW6cfWcCLu6m8R4",
+      "title": "@test/test-component-2",
+      "fileId": "file_e5TkZbIH4dkED5w",
+      "applicationId": "appl_lrtAwm4oU6etnty",
+      "creator": "user_Lt2xyPFQPLR7WyX",
+      "createTime": "2023-03-08T09:06:07.116+08:00",
+      "updateTime": "2023-03-13T18:16:29.225+08:00"
+    }
+  ],
+  "versionList": [
+    {
+      "version": "0.0.4",
+      "versionNumber": 4,
+      "dslVersion": "1.0",
+      "status": "release",
+      "pictures": [],
+      "contentUpdateTime": null,
+      "deleted": false,
+      "id": "cver_BF6avr9FPsB7XZ5",
+      "contentId": "cont_kwVgKvYh552WPnH",
+      "content": {
+        "id": "cont_kwVgKvYh552WPnH",
+        "resource": {
+          "entry": {
+            "browser": "cont_UzK1UQE4ceweJmQ",
+            "css": "cont_DZQNURuCuqvaPkB",
+            "debug": "cont_SiexozC4WrlaVfr",
+            "node": "cont_2x5Uah2fCXBAuPA"
+          },
+          "editor-entry": [
+            {
+              "id": "cont_K9eCXFkJenxTULO",
+              "name": "@test/test-component-1_editor"
+            }
+          ],
+          "dependencies": []
+        },
+        "meta": "{}",
+        "schema": "{}"
+      },
+      "creator": "user_Lt2xyPFQPLR7WyX",
+      "operator": {},
+      "createTime": "2023-03-10T09:18:23.574+08:00",
+      "updateTime": "2023-03-10T09:18:28.867+08:00"
+    },
+    {
+      "version": "0.0.4",
+      "versionNumber": 4,
+      "dslVersion": "1.0",
+      "status": "release",
+      "pictures": [],
+      "contentUpdateTime": null,
+      "deleted": false,
+      "id": "cver_tFqesB44jR1PWJd",
+      "contentId": "cont_qW6cfWcCLu6m8R4",
+      "content": {
+        "id": "cont_qW6cfWcCLu6m8R4",
+        "resource": {
+          "entry": {
+            "browser": "cont_KGUfqWlPIjjahPH",
+            "css": "cont_SfIDvoRnO5WEXUj",
+            "debug": "cont_P52VbsNhDYQ9eJ7",
+            "node": "cont_B8flhBvq16bkqnN"
+          },
+          "editor-entry": [
+            {
+              "id": "cont_quhedzPHS2YhiYU",
+              "name": "@test/test-component-2_editor"
+            }
+          ],
+          "dependencies": [
+            {
+              "id": "cont_ahsczPHS2YhiYU",
+              "name": "@test/test-component-2_depend"
+            }
+          ]
+        },
+        "meta": "{}",
+        "schema": "{}"
+      },
+      "creator": "user_Lt2xyPFQPLR7WyX",
+      "operator": {},
+      "createTime": "2023-03-13T18:16:24.374+08:00",
+      "updateTime": "2023-03-13T18:16:27.658+08:00"
+    }
+  ],
+  "component": {
+    "id": "",
+    "resource": {},
+    "schema": {},
+    "meta": {},
+    "useStyleEditor": false,
+    "changelog": ""
+  },
+  "dependentIdVersions": [
+    { "id": "cont_K9eCXFkJenxTULO", "name": "@test/test-component-1_editor" },
+    { "id": "cont_quhedzPHS2YhiYU", "name": "@test/test-component-2_editor" },
+    { "id": "cont_ahsczPHS2YhiYU", "name": "@test/test-component-2_depend" }
+  ],
+  "dependentList": [
+    {
+      "version": "0.0.4",
+      "versionNumber": 4,
+      "dslVersion": "1.0",
+      "status": "release",
+      "pictures": [],
+      "contentUpdateTime": null,
+      "deleted": false,
+      "id": "cver_inicU3ESSRDkpjN",
+      "contentId": "cont_quhedzPHS2YhiYU",
+      "content": {
+        "id": "cont_quhedzPHS2YhiYU",
+        "resource": {
+          "entry": {
+            "browser": "cont_eerYaZ4VExNVfx0"
+          }
+        },
+        "meta": "{}",
+        "schema": "{}"
+      },
+      "creator": "user_Lt2xyPFQPLR7WyX",
+      "operator": {},
+      "createTime": "2023-03-13T18:16:24.166+08:00",
+      "updateTime": "2023-03-13T18:16:24.251+08:00"
+    },
+    {
+      "version": "0.0.4",
+      "versionNumber": 4,
+      "dslVersion": "1.0",
+      "status": "release",
+      "pictures": [],
+      "contentUpdateTime": null,
+      "deleted": false,
+      "id": "cver_inicU3ESSRDkpjN",
+      "contentId": "cont_quhedzPHS2YhiYU",
+      "content": {
+        "id": "cont_quhedzPHS2YhiYU",
+        "resource": {
+          "entry": {
+            "browser": "cont_eerYaZ4VExNVfx0"
+          }
+        },
+        "meta": "{}",
+        "schema": "{}"
+      },
+      "creator": "user_Lt2xyPFQPLR7WyX",
+      "operator": {},
+      "createTime": "2023-03-13T18:16:24.166+08:00",
+      "updateTime": "2023-03-13T18:16:24.251+08:00"
+    }
+  ],
+  "fileList": [
+    {
+      "intro": "",
+      "tags": [
+        {
+          "type": "resourceGroup",
+          "resourceGroupId": "fold_y2FeJZOql44p1aS"
+        }
+      ],
+      "subType": "",
+      "suffix": "",
+      "deleted": false,
+      "id": "file_VO4QmYzU3hUnbsG",
+      "applicationId": "appl_lrtAwm4oU6etnty",
+      "name": "@test/test-component-1",
+      "folderId": "fold_9T7UESc5Cc45UBk",
+      "type": "component",
+      "componentType": "react.component",
+      "creator": "user_Lt2xyPFQPLR7WyX",
+      "createTime": "2023-03-09T17:30:19.650+08:00",
+      "updateTime": "2023-03-09T17:30:19.649+08:00"
+    }
+  ],
+  "folderList": [
+    {
+      "tags": [
+        {
+          "type": "component"
+        },
+        {
+          "resourceId": "cont_1211dasaefDd"
+        }
+      ],
+      "parentFolderId": "",
+      "folderPath": "_component",
+      "deleted": false,
+      "id": "fold_9T7UESc5Cc45UBk",
+      "name": "_component",
+      "intro": "",
+      "applicationId": "appl_lrtAwm4oU6etnty",
+      "creator": "user_eYqUw3xaorJNXzP",
+      "createTime": "2022-09-15T14:50:24.581+08:00",
+      "updateTime": "2022-09-15T14:50:24.581+08:00"
+    }
+  ],
+  "contentInfo": [
+    {
+      "id": "cont_kwVgKvYh552WPnH",
+      "resource": {
+        "entry": {
+          "browser": "cont_UzK1UQE4ceweJmQ",
+          "css": "cont_DZQNURuCuqvaPkB",
+          "debug": "cont_SiexozC4WrlaVfr",
+          "node": "cont_2x5Uah2fCXBAuPA"
+        },
+        "editor-entry": [
+          {
+            "id": "cont_K9eCXFkJenxTULO",
+            "name": "@test/test-component_editor"
+          }
+        ],
+        "dependencies": [
+          {
+            "id": "cont_K9eCXFkJenxTULS",
+            "name": "@test/test-component_depend"
+          }
+        ]
+      },
+      "schema": "{}",
+      "meta": {},
+      "useStyleEditor": false,
+      "changelog": "",
+      "name": "@test/test-component",
+      "version": "0.0.4",
+      "type": "component",
+      "isLive": true,
+      "componentType": ""
+    }
+  ]
+}

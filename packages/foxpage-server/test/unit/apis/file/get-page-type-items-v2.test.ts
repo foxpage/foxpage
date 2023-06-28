@@ -22,6 +22,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
   ctx.userInfo = {
     id: Data.user.id,
     account: Data.user.account,

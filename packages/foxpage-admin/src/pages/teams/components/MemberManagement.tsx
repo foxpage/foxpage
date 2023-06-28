@@ -8,7 +8,7 @@ import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/teams/list';
 import { GlobalContext } from '@/pages/system/index';
-import { TeamMemberEntity } from '@/types/team';
+import { TeamMemberEntity } from '@/types/index';
 import { periodFormat } from '@/utils/period-format';
 
 const { Option } = Select;

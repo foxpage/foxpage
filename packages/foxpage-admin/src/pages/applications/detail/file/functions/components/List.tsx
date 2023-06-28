@@ -12,7 +12,7 @@ import { FunctionTypeEnum } from '@/constants/index';
 import { Name, PublishIcon } from '@/pages/components';
 import { GlobalContext } from '@/pages/system';
 import { Creator, FuncEntity } from '@/types/index';
-import { periodFormat } from '@/utils/index';
+import { formatter, periodFormat } from '@/utils/index';
 
 const Table = styled(AntTable)`
   .ant-table-pagination.ant-pagination {
@@ -122,7 +122,7 @@ function FunctionList(props: FunctionListType) {
       key: 'version',
       width: 90,
       render: (version: Record<string, string>) =>
-        version?.live ? <Tag color="orange">{version.live}</Tag> : '',
+        version?.live ? <Tag color="orange">{formatter(version.live)}</Tag> : '',
     },
     {
       title: global.type,

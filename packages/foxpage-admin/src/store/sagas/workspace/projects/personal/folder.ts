@@ -24,7 +24,10 @@ import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchApp(action: ProjectListActionType) {
   const { params } = action.payload as { params: ApplicationListFetchParams };
-  const res = yield call(APPLICATION_API.fetchList, params);
+  const res = yield call(APPLICATION_API.fetchList, {
+    ...params,
+    type: 'user_project',
+  });
 
   if (res.code === 200) {
     yield put(ACTIONS.pushApps(res.data || []));
@@ -91,6 +94,7 @@ function* handleSave(action: ProjectListActionType) {
   const { params, cb } = action.payload as { params: ProjectSaveParams; cb?: () => void };
   const { editProject: project, applicationId } = params || {};
   const { editProject: storeProject } = store.getState().workspace.projects.personal.folder;
+  const { organizationId } = store.getState().system.user;
   const editProject = !objectEmptyCheck(project) ? project : storeProject;
 
   const api: any = editProject?.id ? API.updateProject : API.addProject;
@@ -99,6 +103,7 @@ function* handleSave(action: ProjectListActionType) {
     name: editProject?.name,
     applicationId: editProject?.application?.id || applicationId,
     type: rootFolderType.project,
+    organizationId,
   });
 
   if (res.code === 200) {

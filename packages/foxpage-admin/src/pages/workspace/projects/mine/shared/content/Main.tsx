@@ -22,6 +22,7 @@ const mapStateToProps = (store: RootState) => ({
   authLoading: store.workspace.projects.involved.content.authListLoading,
   authList: store.workspace.projects.involved.content.authList,
   userList: store.workspace.projects.involved.content.userList,
+  screenshots: store.screenshot.main.screenshots,
 });
 
 const mapDispatchToProps = {
@@ -83,6 +84,7 @@ const Content: React.FC<ProjectContentType> = (props) => {
     fetchUserList,
     saveUser,
     deleteUser,
+    screenshots,
   } = props;
 
   useEffect(() => {
@@ -126,6 +128,7 @@ const Content: React.FC<ProjectContentType> = (props) => {
       fetchUserList={fetchUserList}
       saveUser={saveUser}
       deleteUser={deleteUser}
+      screenshots={screenshots}
     />
   );
 };

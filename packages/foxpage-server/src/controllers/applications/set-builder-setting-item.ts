@@ -5,6 +5,7 @@ import { Body, Ctx, JsonController, Put } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 import { i18n } from '../../../app.config';
+import { LOG, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppSettingDetailReq } from '../../types/validates/app-validate-types';
 import { ResponseBase } from '../../types/validates/index-validate-types';
@@ -98,6 +99,18 @@ export class UpdateApplicationSettingDetail extends BaseController {
             { ctx },
           );
         }
+
+        this.service.userLog.addLogItem(
+          { id: params.applicationId, item },
+          {
+            ctx,
+            actions: [!item.idx ? LOG.CREATE : LOG.UPDATE, params.type, TYPE.BUILDER],
+            category: {
+              applicationId: params.applicationId,
+              fileId: item.id,
+            },
+          },
+        );
       }
 
       await this.service.application.runTransaction(ctx.transactions);

@@ -5,13 +5,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const favicon = require('serve-favicon');
-const package_json = require('../package.json');
+const packageJson = require('../package.json');
 const config = require('../config.profile');
 
-const port = package_json.config ? package_json.config.port : '3002';
+const port = packageJson.config ? packageJson.config.port : '3002';
 let ENV = 'dev'; // default ENV fat
-if (package_json.config && package_json.config.env) {
-  ENV = package_json.config.env.toLowerCase();
+if (packageJson.config && packageJson.config.env) {
+  ENV = packageJson.config.env.toLowerCase();
 }
 
 const slug = (config[ENV] || config.fat)?.slug || '';

@@ -57,7 +57,6 @@ const mapStateToProps = (store: RootState) => ({
 const mapDispatchToProps = {
   openModal: ACTIONS.updateToolbarModalVisible,
   templateOpenInPage: ACTIONS.templateOpenInPage,
-  updatePageNode: ACTIONS.updatePageNode,
   clearAllCondition: CONDITION_ACTIONS.clearAll,
   deleteCondition: CONDITION_ACTIONS.deleteCondition,
   fetchConditions: CONDITION_ACTIONS.fetchList,
@@ -114,7 +113,6 @@ const ToolbarModal: React.FC<ToolbarModalModalType> = (props) => {
     updateFunctionPageInfo,
     updateVariablePageInfo,
     pageNode,
-    // updatePageNode,
     templateOpenInPage,
   } = props;
   const [title, setTitle] = useState('');

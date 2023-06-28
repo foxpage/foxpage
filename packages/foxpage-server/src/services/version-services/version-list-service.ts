@@ -45,7 +45,6 @@ export class VersionListService extends BaseService<ContentVersion> {
     const contentNameObject = _.keyBy(contentList, 'title');
     let contentVersion: ContentVersionString[] = [];
     let contentLiveIds: string[] = [];
-
     nameVersions.forEach((content) => {
       if (contentNameObject[content.name]) {
         if (content.version) {

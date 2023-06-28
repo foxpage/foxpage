@@ -1,4 +1,4 @@
-import { Application, CommonFetchParams, ResponseBody } from '@/types/index';
+import { Application, CommonFetchParams, ResponseBody } from '@foxpage/foxpage-client-types';
 
 export interface ApplicationListFetchParams extends CommonFetchParams {
   type?: string;

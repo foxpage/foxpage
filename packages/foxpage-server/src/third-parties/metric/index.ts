@@ -1,8 +1,8 @@
 import * as appConfig from '../../../app.config';
 
-import Metric from './metric';
+import DefaultMetric from './default-metric';
 
-let defaultMetric = new Metric();
+let defaultMetric = new DefaultMetric();
 if (appConfig.config.metric?.name) {
   try {
     defaultMetric = require('./' + appConfig.config.metric.name);

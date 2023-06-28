@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/store/actions/applications/detail/settings/application';
-import { Application } from '@/types/application';
+import { Application } from '@/types/index';
 
 export type ApplicationSettingsActionType = ActionType<typeof ACTIONS>;
 

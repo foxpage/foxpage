@@ -31,7 +31,7 @@ type TeamEditDrawerType = ReturnType<typeof mapStateToProps> & typeof mapDispatc
 const Drawer: React.FC<TeamEditDrawerType> = (props) => {
   const { saveLoading, drawerOpen, editApp, closeDrawer, updateApp, saveApp } = props;
 
-  // get multi-language
+  // i18n
   const { locale } = useContext(GlobalContext);
   const { global, application } = locale.business;
 

@@ -21,6 +21,7 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
       any
     >;
     ctx.operations = [];
+    ctx.userLogs = [];
     ctx.transactions = [];
     ctx.logAttr = {
       transactionId: generationId(PRE.TRAN),
@@ -78,10 +79,13 @@ export class LoggerMiddleware implements KoaMiddlewareInterface {
         (<any>ctx.body).code || 0,
       );
 
-      (<any>ctx.body).code === RESPONSE_LEVEL.SUCCESS && Service.log.saveChangeLogs(ctx);
+      if ((<any>ctx.body).code === RESPONSE_LEVEL.SUCCESS) {
+        Service.log.saveChangeLogs(ctx);
+        Service.userLog.saveLogs(ctx);
+      }
 
       // Save log to db
-      if (config.env !== 'test' && ctx.request.url !== '/healthcheck') {
+      if (config.saveRequestLog && config.env !== 'test' && ctx.request.url !== '/healthcheck') {
         try {
           Service.log.saveRequest({ ctx });
         } catch (err) {

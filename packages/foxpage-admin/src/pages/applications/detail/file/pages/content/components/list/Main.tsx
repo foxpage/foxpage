@@ -16,6 +16,7 @@ import { Button, Dropdown, Menu, Modal, Popconfirm, Popover, Select, Table, Tag,
 import styled from 'styled-components';
 
 import { BasicTemRing, LocaleTag, LocaleView, Name, NameContainer, Ring, VLine } from '@/components/index';
+import { FileType } from '@/constants/global';
 import UrlWithQRcode from '@/pages/components/common/QRcodeUrl';
 import { GlobalContext } from '@/pages/system';
 import {
@@ -26,8 +27,7 @@ import {
   ProjectContentOfflineParams,
   ProjectContentSaveAsBaseParams,
 } from '@/types/index';
-import { objectEmptyCheck } from '@/utils/empty-check';
-import { periodFormat } from '@/utils/period-format';
+import { formatter, objectEmptyCheck, periodFormat } from '@/utils/index';
 
 import VersionList from '../../versions';
 
@@ -104,6 +104,7 @@ const ContentList: React.FC<ContentListType> = (props) => {
   // i18n
   const { locale } = useContext(GlobalContext);
   const { content, global, version, history } = locale.business;
+  const isPageContent = fileDetail?.type === FileType.page;
 
   // re-sort by inherit relation
   useEffect(() => {
@@ -160,7 +161,11 @@ const ContentList: React.FC<ContentListType> = (props) => {
   };
 
   const handleCopy = () => {
-    if (typeof copyContent === 'function' && applicationId && !objectEmptyCheck(targetContentLocales)) {
+    if (
+      typeof copyContent === 'function' &&
+      applicationId &&
+      (!isPageContent || (isPageContent && !objectEmptyCheck(targetContentLocales)))
+    ) {
       copyContent(
         {
           applicationId,
@@ -253,10 +258,17 @@ const ContentList: React.FC<ContentListType> = (props) => {
     },
     {
       title: <Tooltip title={version.liveVersion}>{version.name}</Tooltip>,
-      dataIndex: 'version',
-      key: 'version',
+      dataIndex: 'liveVersionNumber',
+      key: 'liveVersionNumber',
       width: 90,
-      render: (version: string) => (!!version ? <Tag color="orange">{version}</Tag> : ''),
+      render: (version: string) =>
+        !!version ? (
+          <Tag color="orange" style={{ width: 40, textAlign: 'center' }}>
+            {formatter(version)}
+          </Tag>
+        ) : (
+          ''
+        ),
     },
     {
       title: global.locale,
@@ -416,20 +428,25 @@ const ContentList: React.FC<ContentListType> = (props) => {
     <>
       <Table rowKey="id" loading={loading} pagination={false} columns={columns} dataSource={list} />
       <Modal
-        title={`${content.copy} ${fileDetail?.type}`}
+        title={`${content.copy}`}
         open={copyModalOpen}
         onOk={handleCopy}
         onCancel={() => setCopyModalOpen(false)}>
-        <Container>
-          <Label>{global.locale}</Label>
-          <Select
-            mode="multiple"
-            options={localeOptions}
-            onChange={setTargetContentLocales}
-            style={{ width: '100%' }}
-          />
-        </Container>
+        {isPageContent ? (
+          <Container>
+            <Label>{global.locale}</Label>
+            <Select
+              mode="multiple"
+              options={localeOptions}
+              onChange={setTargetContentLocales}
+              style={{ width: '100%' }}
+            />
+          </Container>
+        ) : (
+          content.copyTips
+        )}
       </Modal>
+
       <VersionList
         applicationId={applicationId}
         fileId={fileDetail.id}

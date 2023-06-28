@@ -81,25 +81,27 @@ const Data: React.FC<DataProps> = (props) => {
         width={250}
         collapsedWidth={60}
         onBreakpoint={handleBreakPoint}
-        style={{ height: '100%', overflow: 'auto' }}>
+        style={{ height: '100%' }}>
         <Tooltip title={data.name} placement="right">
           <Location style={{ paddingLeft: siderCollapsed ? 8 : 18 }}>{authorize.admin}</Location>
         </Tooltip>
-        <Menu
-          mode="inline"
-          theme="light"
-          defaultOpenKeys={['data']}
-          selectedKeys={selectedKeys}
-          onClick={handleClick}>
-          <Menu.SubMenu key="data" title={data.awsMongoDB} icon={<DashboardOutlined />}>
-            {collections &&
-              collections.map((collect) => (
-                <Menu.Item key={collect} icon={<DatabaseOutlined />} style={{ userSelect: 'none' }}>
-                  {collect}
-                </Menu.Item>
-              ))}
-          </Menu.SubMenu>
-        </Menu>
+        <div className="h-full overflow-auto">
+          <Menu
+            mode="inline"
+            theme="light"
+            defaultOpenKeys={['data']}
+            selectedKeys={selectedKeys}
+            onClick={handleClick}>
+            <Menu.SubMenu key="data" title={data.awsMongoDB} icon={<DashboardOutlined />}>
+              {collections &&
+                collections.map((collect) => (
+                  <Menu.Item key={collect} icon={<DatabaseOutlined />} style={{ userSelect: 'none' }}>
+                    {collect}
+                  </Menu.Item>
+                ))}
+            </Menu.SubMenu>
+          </Menu>
+        </div>
       </Sider>
       <Switch>
         <Route path="/data/:collect" component={Query} />

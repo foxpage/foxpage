@@ -7,6 +7,7 @@ import history from './history';
 import notice from './notice';
 import projects from './projects';
 import record from './record';
+import screenshot from './screenshot';
 import store from './store';
 import system from './system';
 import teams from './teams';
@@ -24,4 +25,5 @@ export default function* rootSaga() {
   yield fork(workspace);
   yield fork(notice);
   yield fork(history);
+  yield fork(screenshot);
 }

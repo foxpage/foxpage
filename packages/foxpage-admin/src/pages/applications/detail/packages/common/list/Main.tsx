@@ -9,7 +9,7 @@ import * as ACTIONS from '@/actions/applications/detail/packages/list';
 import { GetComponentSearchsProps } from '@/apis/application';
 import { Content, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
-import { AppComponentFetchParams } from '@/types/application';
+import { AppComponentFetchParams } from '@/types/index';
 import { getLocationIfo } from '@/utils/location-info';
 
 import { RegisterModal } from '../fast';

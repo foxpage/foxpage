@@ -1,7 +1,7 @@
-import { LocaleTimeZone } from '@/types/common';
+import { LocaleTimeZone } from '@/types/index';
 
 export const localeTimeZone: LocaleTimeZone = {
-  'en_US': [
+  en_US: [
     {
       key: 1,
       value: '-05',
@@ -39,7 +39,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'America',
     },
   ],
-  'ko_KR': [
+  ko_KR: [
     {
       key: 7,
       value: '+09',
@@ -47,7 +47,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Korea',
     },
   ],
-  'ja_JP': [
+  ja_JP: [
     {
       key: 8,
       value: '+09',
@@ -55,7 +55,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Japan',
     },
   ],
-  'zh_HK': [
+  zh_HK: [
     {
       key: 9,
       value: '+08',
@@ -63,7 +63,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Hong Kong',
     },
   ],
-  'en_HK': [
+  en_HK: [
     {
       key: 9,
       value: '+08',
@@ -71,7 +71,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Hong Kong',
     },
   ],
-  'zh_TW': [
+  zh_TW: [
     {
       key: 10,
       value: '+08',
@@ -79,7 +79,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Taiwan',
     },
   ],
-  'en_SG': [
+  en_SG: [
     {
       key: 11,
       value: '+08',
@@ -87,7 +87,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Singapore',
     },
   ],
-  'en_AU': [
+  en_AU: [
     {
       key: 12,
       value: '+10',
@@ -107,7 +107,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Australia',
     },
   ],
-  'ru_RU': [
+  ru_RU: [
     {
       key: 15,
       value: '+03',
@@ -169,7 +169,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Russia',
     },
   ],
-  'es_ES': [
+  es_ES: [
     {
       key: 25,
       value: '+01',
@@ -177,7 +177,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Spain',
     },
   ],
-  'fr_FR': [
+  fr_FR: [
     {
       key: 26,
       value: '+01',
@@ -185,7 +185,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'France',
     },
   ],
-  'de_DE': [
+  de_DE: [
     {
       key: 27,
       value: '+01',
@@ -193,7 +193,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Germany',
     },
   ],
-  'id_ID': [
+  id_ID: [
     {
       key: 28,
       value: '+07',
@@ -213,7 +213,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Indonesia',
     },
   ],
-  'ms_MY': [
+  ms_MY: [
     {
       key: 31,
       value: '+08',
@@ -221,7 +221,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Malaysia',
     },
   ],
-  'tl_PH': [
+  tl_PH: [
     {
       key: 32,
       value: '+08',
@@ -229,7 +229,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Philippines',
     },
   ],
-  'th_TH': [
+  th_TH: [
     {
       key: 33,
       value: '+07',
@@ -237,7 +237,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Thailand',
     },
   ],
-  'vi_VN': [
+  vi_VN: [
     {
       key: 34,
       value: '+07',
@@ -245,7 +245,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Vietnam',
     },
   ],
-  'it_IT': [
+  it_IT: [
     {
       key: 35,
       value: '+01',
@@ -253,7 +253,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Italy',
     },
   ],
-  'en_GB': [
+  en_GB: [
     {
       key: 36,
       value: '+00',
@@ -261,7 +261,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'United Kingdom',
     },
   ],
-  'en_MY': [
+  en_MY: [
     {
       key: 31,
       value: '+08',
@@ -269,7 +269,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Malaysia',
     },
   ],
-  'nl_NL': [
+  nl_NL: [
     {
       key: 38,
       value: '+01',
@@ -277,7 +277,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Netherlands',
     },
   ],
-  'pl_PL': [
+  pl_PL: [
     {
       key: 39,
       value: '+01',
@@ -285,7 +285,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Poland',
     },
   ],
-  'el_GR': [
+  el_GR: [
     {
       key: 40,
       value: '+02',
@@ -293,7 +293,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Greece',
     },
   ],
-  'tr_TR': [
+  tr_TR: [
     {
       key: 41,
       value: '+03',
@@ -301,7 +301,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Turkey',
     },
   ],
-  'pt_BR': [
+  pt_BR: [
     {
       key: 42,
       value: '-03',
@@ -309,7 +309,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Brazil',
     },
   ],
-  'en_IL': [
+  en_IL: [
     {
       key: 43,
       value: '+02',
@@ -317,7 +317,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Israel',
     },
   ],
-  'en_SA': [
+  en_SA: [
     {
       key: 44,
       value: '+03',
@@ -325,7 +325,7 @@ export const localeTimeZone: LocaleTimeZone = {
       country: 'Saudi Arabia',
     },
   ],
-  'en_AE': [
+  en_AE: [
     {
       key: 44,
       value: '+04',

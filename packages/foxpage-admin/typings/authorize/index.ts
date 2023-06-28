@@ -1,23 +1,12 @@
 import {
-  AbstractEntity,
+  AuthorizeCommon,
+  AuthorizeResCommon,
   CommonFetchParams,
   Creator,
   PaginationReqParams,
   ResponseBody,
   User,
-} from '@/types/index';
-
-export interface AuthorizeCommon
-  extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
-  type?: string;
-  deleted: boolean;
-  mask: number;
-  typeId: string;
-}
-
-export interface AuthorizeResCommon extends AuthorizeCommon {
-  targetId: string;
-}
+} from '@foxpage/foxpage-client-types';
 
 // list
 export type AuthorizeListFetchParams = Pick<AuthorizeCommon, 'type' | 'typeId'> &

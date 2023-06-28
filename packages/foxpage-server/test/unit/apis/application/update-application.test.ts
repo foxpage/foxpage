@@ -17,6 +17,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
   params = {
     organizationId: Data.org.id,
     name: '',

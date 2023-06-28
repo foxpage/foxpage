@@ -57,7 +57,7 @@ export class VersionLiveService extends BaseService<ContentVersion> {
 
     // Check the status of the version
     const versionDetail = await this.getDetailById(params.id);
-    if (this.notValid(versionDetail) || versionDetail.status !== VERSION.STATUS_BASE) {
+    if (this.notValid(versionDetail) || versionDetail.status === VERSION.STATUS_RELEASE) {
       return { code: 1 }; // The current status does not allow re-publishing
     }
 

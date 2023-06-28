@@ -41,6 +41,7 @@ const config = {
     '!src/types/**/*',
   ],
   coverageDirectory: '<rootDir>/coverage',
+  coverageReporters: ['clover', 'json', 'lcov', ['json-summary', { skipFull: true }]],
 };
 
 module.exports = config;

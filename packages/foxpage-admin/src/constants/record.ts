@@ -10,6 +10,7 @@ export enum RecordActionType {
   STRUCTURE_UPDATE_BATCH = 12,
   STRUCTURE_REMOVE = 13,
   STRUCTURE_MOVE = 14,
+  STRUCTURE_RECOVER = 15,
   // variable
   VARIABLE_CREATE = 20,
   VARIABLE_UPDATE = 21,
@@ -40,6 +41,7 @@ export const STRUCTURE_ACTIONS = [
   RecordActionType.STRUCTURE_REMOVE,
   RecordActionType.STRUCTURE_UPDATE,
   RecordActionType.STRUCTURE_UPDATE_BATCH,
+  RecordActionType.STRUCTURE_RECOVER,
 ];
 
 export const VARIABLE_ACTIONS = [
@@ -67,6 +69,7 @@ export const CREATE_ACTION = 'add';
 export const UPDATE_ACTION = 'update';
 export const REMOVE_ACTION = 'remove';
 export const MOVE_ACTION = 'move';
+export const RECOVER_ACTION = 'recover';
 export const PUBLISH_ACTION = 'publish';
 export const BATCH_UPDATE_ACTION = 'updateBatch';
 export const CLONE_ACTION = 'clone';
@@ -111,6 +114,10 @@ export const actionConfig = {
   [RecordActionType.STRUCTURE_MOVE]: {
     text: MOVE_ACTION,
     textColor: '#1890ff',
+  },
+  [RecordActionType.STRUCTURE_RECOVER]: {
+    text: RECOVER_ACTION,
+    textColor: '#FFA217',
   },
   // variable
   [RecordActionType.VARIABLE_CREATE]: {

@@ -38,7 +38,6 @@ export class SetPageContentOffline extends BaseController {
   async index(@Ctx() ctx: FoxCtx, @Body() params: AppContentOfflineReq): Promise<ResData<Content>> {
     try {
       const apiType = this.getRoutePath(ctx.request.url);
-
       ctx.logAttr = Object.assign(ctx.logAttr, { type: apiType });
 
       const [hasAuth, contentDetail] = await Promise.all([
@@ -50,7 +49,7 @@ export class SetPageContentOffline extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4052301);
       }
 
-      if (contentDetail.deleted || contentDetail.liveVersionNumber === 0) {
+      if (this.notValid(contentDetail) || !contentDetail.liveVersionId) {
         return Response.warning(i18n.page.pageContentIsOffline, 2052301);
       }
 
@@ -59,7 +58,7 @@ export class SetPageContentOffline extends BaseController {
         this.service.store.goods.getDetailByAppFileId(params.applicationId, contentDetail.fileId),
         this.service.content.list.find({
           'tags.extendId': contentDetail.id,
-          liveVersionNumber: { $gt: 0 },
+          liveVersionId: { $ne: '' },
           deleted: false,
         }),
       ]);

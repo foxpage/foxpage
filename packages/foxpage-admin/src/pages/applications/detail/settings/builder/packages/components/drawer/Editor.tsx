@@ -10,7 +10,7 @@ import * as ACTIONS from '@/actions/applications/detail/settings/builder/compone
 import { OperationDrawer } from '@/components/index';
 import { JSONCodeEditor } from '@/pages/components/common';
 import { GlobalContext } from '@/pages/system';
-import { Component } from '@/types/component';
+import { Component } from '@/types/index';
 
 import BasicInfoPanel from './BasicInfoPanel';
 

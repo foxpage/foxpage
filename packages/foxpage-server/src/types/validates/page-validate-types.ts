@@ -111,7 +111,7 @@ export class AppPageBuilderItemReq extends PagingReq {
   @IsString()
   type: string;
 
-  @JSONSchema({ description: 'Builder filter, name of file id' })
+  @JSONSchema({ description: 'Builder filter, name or file id' })
   @IsString()
   @IsOptional()
   search: string;
@@ -369,10 +369,15 @@ export class TypeItemVersionsItem {
   @IsBoolean()
   isLive: boolean;
 
-  @JSONSchema({ description: 'Page Content ID' })
+  @JSONSchema({ description: 'Page Creator' })
   @ValidateNested({ each: true })
   @IsObject()
   creator: UserBase;
+
+  @JSONSchema({ description: 'Page Publish user' })
+  @ValidateNested({ each: true })
+  @IsObject()
+  publisher: UserBase;
 
   @JSONSchema({ description: 'Version Create Time' })
   @IsString()
@@ -381,6 +386,10 @@ export class TypeItemVersionsItem {
   @JSONSchema({ description: 'Version Update Time' })
   @IsString()
   updateTime: Date;
+
+  @JSONSchema({ description: 'Version Publish Time' })
+  @IsString()
+  publishTime: Date;
 }
 
 export class TypeItemVersionsRes extends ResponseBase {

@@ -221,10 +221,11 @@ export class FolderListService extends BaseService<Folder> {
   async getFolderChildrenList(params: FolderChildrenSearch): Promise<PageData<FolderInfo>> {
     let folderPageInfo: PageData<FolderInfo> = { list: [], count: 0 };
 
-    const searchParams: any = {
+    const searchParams: Record<string, any> = {
       types: params.types || [TYPE.PROJECT_FOLDER],
       userIds: params.userIds || [],
       applicationIds: params.applicationIds || [],
+      organizationId: params.organizationId || '',
       page: params.page || 1,
       size: params.size || 10,
       search: params.search || '',

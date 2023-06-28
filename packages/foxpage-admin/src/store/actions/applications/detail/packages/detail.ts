@@ -8,9 +8,11 @@ import {
   AppComponentDetailFetchComponentVersionsParams,
   AppComponentDetailLiveComponentVersionParams,
   AppComponentDetailUpdateComponentVersionStatueParams,
+  ComponentDisabledSaveParams,
   ComponentEditVersionEntity,
   ComponentRemote,
   ComponentRemoteSaveParams,
+  ComponentsReferLiveVersionUpdateParams,
   FilesFetchParams,
   OptionsAction,
   RemoteComponentFetchParams,
@@ -98,6 +100,11 @@ export const liveComponentVersionAction = createAction(
   (params: AppComponentDetailLiveComponentVersionParams, options?: OptionsAction) => ({ params, options }),
 )();
 
+export const referLiveComponentVersionAction = createAction(
+  'APPLICATION_PACKAGES_DETAIL__REFER_LIVE_COMPONENT_VERSION_API',
+  (params: ComponentsReferLiveVersionUpdateParams, options?: OptionsAction) => ({ params, options }),
+)();
+
 export const updateComponentOnlineStatus = createAction(
   'APPLICATION_PACKAGES_DETAIL__UPDATE_COMPONENT_ONLINE_STATUS',
   (online: boolean) => ({ online }),
@@ -151,10 +158,16 @@ export const updateCloudSyncDrawerLoadingStatus = createAction(
 // deps
 export const fetchComponentUsed = createAction(
   'APPLICATION_PACKAGES_DETAIL__FETCH_COMPONENT_USED',
-  () => ({}),
+  (page?: number, size?: number, live?: boolean) => ({ page, size, live }),
 )();
 
 export const pushComponentUsed = createAction(
   'APPLICATION_PACKAGES_DETAIL__PUSH_COMPONENT_USED',
   (list: any[]) => ({ list }),
+)();
+
+// disabled
+export const saveComponentDisabled = createAction(
+  'APPLICATION_PACKAGES_DETAIL__SAVE_COMPONENT_DISABLED',
+  (params: ComponentDisabledSaveParams, cb?: () => void) => ({ params, cb }),
 )();

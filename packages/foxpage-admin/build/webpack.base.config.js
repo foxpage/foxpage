@@ -1,5 +1,6 @@
 const path = require('path');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 module.exports = {
   context: path.resolve(__dirname),
@@ -9,13 +10,9 @@ module.exports = {
     chunkFilename: '[name].[contenthash:8].js',
     path: path.resolve(__dirname, '../dist'),
   },
+  plugins: [new NodePolyfillPlugin()],
   resolve: {
     extensions: ['.js', '.ts', '.tsx', '.css'],
-    fallback: {
-      crypto: require.resolve('crypto-browserify'),
-      stream: require.resolve('stream-browserify'),
-      util: require.resolve('util'),
-    },
     plugins: [
       // @ts-ignore
       new TsconfigPathsPlugin({
@@ -40,6 +37,10 @@ module.exports = {
       {
         test: /\.md$/,
         loader: 'raw-loader',
+      },
+      {
+        test: /\.less$/,
+        use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader'],
       },
       {
         test: /\.css$/,

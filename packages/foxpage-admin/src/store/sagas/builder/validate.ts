@@ -11,7 +11,7 @@ function* handleValidate() {
   const { pageContent, localVariables = [] } = store.getState().builder.main;
   const relations = {
     ...pageContent.relations,
-    variables: (pageContent.relations.variables || []).concat(localVariables),
+    variables: (pageContent?.relations?.variables || []).concat(localVariables),
   };
   // validate
   const result = validateContent(pageContent, { relations });

@@ -20,6 +20,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
 
   params = {
     applicationId: Data.app.id,
@@ -50,6 +51,7 @@ describe('Put: /applications/builder-setting', () => {
     jest.spyOn(AuthService.prototype, 'runTransaction').mockResolvedValueOnce();
 
     const result = await appInstance.index(<FoxCtx>ctx, params);
+    console.log(result);
     expect(result.status).toEqual(1031201);
   });
 

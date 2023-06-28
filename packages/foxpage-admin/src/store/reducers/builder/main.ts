@@ -3,6 +3,7 @@ import produce from 'immer';
 import cloneDeep from 'lodash/cloneDeep';
 import { ActionType, getType } from 'typesafe-actions';
 
+import { FileType } from '@/constants/index';
 import * as ACTIONS from '@/store/actions/builder/main';
 import {
   Application,
@@ -10,6 +11,7 @@ import {
   Content,
   File,
   FormattedData,
+  InitStateParams,
   LockerManagerState,
   LockerState,
   Mock,
@@ -28,12 +30,12 @@ const application = {} as Application | null;
 const content = {} as Content; // cur page content
 const file = {} as File; // cur page file
 const pageContent = {} as PageContent; // page content
-const pageNode = null as StructureNode | null; // page node
+const pageNode = undefined as StructureNode | null | undefined; // page node
 const mock = {} as Mock; // cur page mock
 const relations = {} as RelationDetails; // cur page relations
-const extendContent = {} as PageContent;
 const formattedData = {} as FormattedData; // formatted data(contains: formatted page content, maps)
 const renderDSL = [] as RenderStructureNode[];
+const selectNodeFrom = null as 'sider' | 'viewer' | null;
 const selectedNode = null as RenderStructureNode | null;
 const localVariables = [] as RelationDetails['variables'] | undefined;
 const publishStep = -1;
@@ -46,6 +48,15 @@ const lockerState: LockerState = {
   operationTime: dayjs(0).toISOString(),
   needUpdate: false,
 };
+const parseState: {
+  parseKey: string;
+  opt: InitStateParams | null;
+  page: PageContent | null;
+} = {
+  parseKey: '',
+  opt: null,
+  page: null,
+};
 const lockerManagerState: LockerManagerState = {
   noticeVisible: false,
 };
@@ -54,8 +65,9 @@ const contentState = {
   mock,
   relations,
   pageNode,
-  extend: extendContent,
+  extend: undefined as PageContent | undefined,
   selectedNode,
+  selectNodeFrom,
   curStep: 0,
   stepCount: 0,
   localVariables,
@@ -65,6 +77,7 @@ const contentState = {
   serverUpdateTime: dayjs(0).toISOString(),
   readOnly: false,
 };
+const rootNode = undefined as RenderStructureNode | null | undefined;
 
 const initialState = {
   // toolbar
@@ -84,6 +97,7 @@ const initialState = {
   formattedData,
   renderDSL,
   pageContent,
+  rootNode,
   // content states
   ...contentState,
   // TODO
@@ -94,6 +108,7 @@ const initialState = {
   publishErrors,
   showPublishModal,
   completeFetched: 0,
+  parseState,
 };
 
 type InitialDataType = typeof initialState;
@@ -182,6 +197,19 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
         break;
       }
 
+      case getType(ACTIONS.addRelations): {
+        const old = cloneDeep(draft.relations);
+        const newData = action.payload.data;
+        draft.relations = {
+          ...old,
+          variables: (old.variables || []).concat(newData.variables || []),
+          conditions: (old.conditions || []).concat(newData.conditions || []),
+          functions: (old.functions || []).concat(newData.functions || []),
+          blocks: (old.blocks || []).concat(newData.blocks || []),
+        };
+        break;
+      }
+
       case getType(ACTIONS.pushContentOnly): {
         const { content, updateTime } = action.payload.data || ({} as PageContent);
         draft.content = cloneDeep(content);
@@ -221,11 +249,27 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
 
       case getType(ACTIONS.pushRenderDSL): {
         draft.renderDSL = cloneDeep(action.payload.data);
+        // rootNode init
+        const isPage = draft.file?.type === FileType.page;
+        const pageNode = draft.pageNode;
+        if (pageNode === undefined || pageNode === null) {
+          draft.rootNode = null;
+        } else {
+          draft.rootNode = {
+            ...pageNode,
+            childIds: (pageNode.children || []).map((item) => item.id),
+            __editorConfig: {
+              templateBind: isPage,
+              disableTemplateBind: isPage && !!pageNode.extension?.extendId,
+            },
+          } as unknown as RenderStructureNode;
+        }
         break;
       }
 
       case getType(ACTIONS.selectComponent): {
-        draft.selectedNode = action.payload.params;
+        draft.selectedNode = action.payload.node;
+        draft.selectNodeFrom = action.payload.opt.from;
         break;
       }
 
@@ -303,6 +347,16 @@ const reducer = (state: InitialDataType = initialState, action: BuilderContentAc
 
       case getType(ACTIONS.completeFetched): {
         draft.completeFetched = new Date().getTime();
+        break;
+      }
+
+      case getType(ACTIONS.updateParseParams): {
+        draft.parseState = {
+          parseKey: action.payload.parseKey,
+          opt: action.payload.data.opt,
+          page: action.payload.data.page,
+        };
+        break;
       }
 
       default:

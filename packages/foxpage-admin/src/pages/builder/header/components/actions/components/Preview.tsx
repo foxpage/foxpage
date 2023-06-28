@@ -13,7 +13,7 @@ import { Empty, Modal, Popover, Spin, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
-import { DEBUG_PATH, FileType, PREVIEW_PATH } from '@/constants/index';
+import { DEBUG_PATH, FileType, FOXPAGE_USER_TICKET, PREVIEW_PATH } from '@/constants/index';
 import { IconMsg, StyledIcon } from '@/pages/builder/header/Main';
 import { ZoneTimeSelector } from '@/pages/components';
 import UrlWithQRcode from '@/pages/components/common/QRcodeUrl';
@@ -73,6 +73,7 @@ type PreviewType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProp
 const Main: React.FC<PreviewType> = (props) => {
   const { appInfo, contentId, mock, pageContent, pageLocale, pageType, file, editStatus } = props;
   const [zoneTime, setZoneTime] = useState('');
+  const token = localStorage.getItem(FOXPAGE_USER_TICKET);
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -90,7 +91,9 @@ const Main: React.FC<PreviewType> = (props) => {
       ? pageLocaleHost &&
         pageLocaleHost
           .map((item) =>
-            item?.url ? `${item.url}/${slug}${pathnameTag.pathname}?locale=${pageLocale}&preview=1` : '',
+            item?.url
+              ? `${item.url}/${slug}${pathnameTag.pathname}?locale=${pageLocale}&pageid=${contentId}&preview=1`
+              : '',
           )
           .filter((item) => !!item)
       : [];
@@ -133,107 +136,106 @@ const Main: React.FC<PreviewType> = (props) => {
 
   const [open, setOpen] = useState<boolean>(false);
 
+  const urlAppendWithTicket = (url) => url + '&_foxpage_ticket=' + token;
+
   const handleClick = (url) => {
+    const urlWithTicket = urlAppendWithTicket(url);
     if (editStatus) {
       setOpen(false);
       Modal.confirm({
         title: builder.unsavedContentPreviewTip,
         onCancel() {
-          window.open(url);
+          window.open(urlWithTicket);
         },
         cancelText: builder.unsavedPreviewIgnored,
         centered: true,
       });
     } else {
-      window.open(url);
+      window.open(urlWithTicket);
     }
   };
 
-  return (
-    <>
-      {pageType === FileType.page && (
-        <Popover
-          placement="bottomLeft"
-          overlayClassName="foxpage-builder-header_popover foxpage-builder-header_preview_popover"
-          trigger={['hover']}
-          style={{ width: 300 }}
-          onOpenChange={setOpen}
-          content={
-            open && (
-              <div>
-                <div style={{ borderBottom: '1px solid #ddd', padding: '4px', display: 'flex' }}>
-                  <Tooltip placement="bottom" title={builder.timePreviewTips}>
-                    <QuestionCircleOutlined
-                      style={{ lineHeight: '46px', paddingLeft: '10px', color: '#656565' }}
-                    />
-                  </Tooltip>
-                  <div style={{ flexGrow: 1 }}>
-                    <ZoneTimeSelector locale={pageLocale || 'en_US'} onChange={setZoneTime} />
-                  </div>
-                </div>
-                <Tips>
-                  <InfoCircleOutlined style={{ marginRight: '6px' }} />
-                  {builder.previewTips}
-                </Tips>
-                {appInfo?.id ? (
+  return pageType === FileType.page || pageType === FileType.block ? (
+    <Popover
+      placement="bottomLeft"
+      overlayClassName="foxpage-builder-header_popover foxpage-builder-header_preview_popover"
+      trigger={['hover']}
+      style={{ width: 300 }}
+      onOpenChange={setOpen}
+      content={
+        open && (
+          <div>
+            <div style={{ borderBottom: '1px solid #ddd', padding: '4px', display: 'flex' }}>
+              <Tooltip placement="bottom" title={builder.timePreviewTips}>
+                <QuestionCircleOutlined
+                  style={{ lineHeight: '46px', paddingLeft: '10px', color: '#656565' }}
+                />
+              </Tooltip>
+              <div style={{ flexGrow: 1 }}>
+                <ZoneTimeSelector locale={pageLocale || 'en_US'} onChange={setZoneTime} />
+              </div>
+            </div>
+            <Tips>
+              <InfoCircleOutlined style={{ marginRight: '6px' }} />
+              {builder.previewTips}
+            </Tips>
+            {appInfo?.id ? (
+              <>
+                {realViews.length > 0 || debugs.length > 0 ? (
                   <>
-                    {realViews.length > 0 || debugs.length > 0 ? (
-                      <>
-                        {realViews.map((url) => (
-                          <MoreItem key={url} onClick={() => handleClick(url)}>
-                            <Mark style={{ color: '#48a700' }}>
-                              [ <EyeOutlined /> {builder.realPreview} ]
-                            </Mark>
-                            <UrlWithQRcode url={url} />
-                            {url}
-                          </MoreItem>
-                        ))}
-                        {mocks.map((mockUrl) => (
-                          <MoreItem key={mockUrl} onClick={() => handleClick(mockUrl)}>
-                            <Mark style={{ color: '#ff6a5b' }}>
-                              [ <BugOutlined /> {builder.mockPreview} ]
-                            </Mark>
-                            <UrlWithQRcode url={mockUrl} />
-                            {mockUrl}
-                          </MoreItem>
-                        ))}
-                        {pageContent?.versionNumber &&
-                          pageContent.versionNumber > 1 &&
-                          debugs.map((debugUrl) => (
-                            <MoreItem key={debugUrl} onClick={() => handleClick(debugUrl)}>
-                              <Mark style={{ color: '#00a8f7' }}>
-                                [ <ThunderboltOutlined /> {builder.debugPreview} ]
-                              </Mark>
-                              <UrlWithQRcode url={debugUrl} />
-                              {debugUrl}
-                            </MoreItem>
-                          ))}
-                      </>
-                    ) : (
-                      <MoreItem key="unknown">
-                        <Link to={`/applications/${appInfo.id}/settings/application`}>
-                          <Empty
-                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            description={<span>{builder.previewUrlEmptyTips}</span>}
-                          />
-                        </Link>
+                    {realViews.map((url) => (
+                      <MoreItem key={url} onClick={() => handleClick(url)}>
+                        <Mark style={{ color: '#48a700' }}>
+                          [ <EyeOutlined /> {builder.realPreview} ]
+                        </Mark>
+                        <UrlWithQRcode url={urlAppendWithTicket(url)} />
+                        {url}
                       </MoreItem>
-                    )}
+                    ))}
+                    {mocks.map((mockUrl) => (
+                      <MoreItem key={mockUrl} onClick={() => handleClick(mockUrl)}>
+                        <Mark style={{ color: '#ff6a5b' }}>
+                          [ <BugOutlined /> {builder.mockPreview} ]
+                        </Mark>
+                        <UrlWithQRcode url={urlAppendWithTicket(mockUrl)} />
+                        {mockUrl}
+                      </MoreItem>
+                    ))}
+                    {pageContent?.versionNumber &&
+                      pageContent.versionNumber > 1 &&
+                      debugs.map((debugUrl) => (
+                        <MoreItem key={debugUrl} onClick={() => handleClick(debugUrl)}>
+                          <Mark style={{ color: '#00a8f7' }}>
+                            [ <ThunderboltOutlined /> {builder.debugPreview} ]
+                          </Mark>
+                          <UrlWithQRcode url={urlAppendWithTicket(debugUrl)} />
+                          {debugUrl}
+                        </MoreItem>
+                      ))}
                   </>
                 ) : (
-                  <Spin spinning size="small" />
+                  <MoreItem key="unknown">
+                    <Link to={`/applications/${appInfo.id}/settings/application`}>
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={<span>{builder.previewUrlEmptyTips}</span>}
+                      />
+                    </Link>
+                  </MoreItem>
                 )}
-              </div>
-            )
-          }>
-          <StyledIcon onMouseEnter={() => setOpen(true)}>
-            <EyeOutlined />
-            <IconMsg>{builder.preview}</IconMsg>
-          </StyledIcon>
-        </Popover>
-      )}
-    </>
-  );
+              </>
+            ) : (
+              <Spin spinning size="small" />
+            )}
+          </div>
+        )
+      }>
+      <StyledIcon onMouseEnter={() => setOpen(true)}>
+        <EyeOutlined />
+        <IconMsg>{builder.preview}</IconMsg>
+      </StyledIcon>
+    </Popover>
+  ) : null;
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Main);

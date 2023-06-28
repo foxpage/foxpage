@@ -88,7 +88,7 @@ function* handleSaveTemplate(action: ApplicationTemplateActionType) {
 function* handleDeleteTemplate(action: ApplicationTemplateActionType) {
   const { params, cb } = action.payload as { params: ProjectFileDeleteParams; cb?: () => void };
   const { id, applicationId } = params;
-  const res = yield call(PROJECT_API.deleteFile, {
+  const res = yield call(PROJECT_API.deleteTemplate, {
     id,
     applicationId,
     status: true,

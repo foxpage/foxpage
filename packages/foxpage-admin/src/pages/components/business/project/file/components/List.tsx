@@ -2,13 +2,13 @@ import React, { useContext } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
 import { BlockOutlined, BuildOutlined, FileOutlined, FileTextOutlined } from '@ant-design/icons';
-import { Button, Table as AntTable, Tag, Tooltip } from 'antd';
+import { Button, Image, Table as AntTable, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 
 import { Name } from '@/components/index';
 import { FileType, ROUTE_CONTENT_MAP, suffixTagColor } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
-import { File, PaginationInfo } from '@/types/index';
+import { File, PaginationInfo, Screenshots } from '@/types/index';
 import { getLocationIfo, periodFormat } from '@/utils/index';
 
 const Table = styled(AntTable)`
@@ -17,16 +17,34 @@ const Table = styled(AntTable)`
   }
 `;
 
+const ID = styled.div`
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #00000040;
+`;
+
+const ImageBox = styled(Image)`
+  width: 80px !important;
+  height: 45px !important;
+  border: 1px solid #ebebeb;
+  border-radius: 4px;
+  padding: 4px;
+`;
+
 interface ProjectFileListProps {
   type: string;
   loading: boolean;
   pageInfo: PaginationInfo;
   fileList: File[];
+  screenshots: Screenshots;
   openDrawer: (open: boolean, editFile?: File) => void;
 }
 
 const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListProps) => {
-  const { type, loading, pageInfo, fileList } = props;
+  const { type, loading, pageInfo, fileList, screenshots = {} } = props;
 
   // url search params
   const history = useHistory();
@@ -55,26 +73,44 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
       title: global.nameLabel,
       dataIndex: 'name',
       render: (text: string, record: File) => (
-        <Link
-          onClick={() => {
-            localStorage['foxpage_project_file'] = JSON.stringify(record);
-          }}
-          to={{
-            pathname: `${ROUTE_CONTENT_MAP[type].replace(':applicationId', applicationId)}`,
-            search: `?applicationId=${applicationId}&fileId=${record.id}&filePage=${page || ''}&folderPage=${
-              folderPage || ''
-            }&folderSearch=${folderSearch || ''}`,
-          }}>
-          <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
-            <Name style={{ maxWidth: type === 'projects' ? 260 : 240 }}>{text}</Name>
-          </Tooltip>
-        </Link>
+        <div>
+          <Link
+            onClick={() => {
+              localStorage['foxpage_project_file'] = JSON.stringify(record);
+            }}
+            to={{
+              pathname: `${ROUTE_CONTENT_MAP[type].replace(':applicationId', applicationId)}`,
+              search: `?applicationId=${applicationId}&fileId=${record.id}&filePage=${
+                page || ''
+              }&folderPage=${folderPage || ''}&folderSearch=${folderSearch || ''}`,
+            }}>
+            <Tooltip placement="topLeft" mouseEnterDelay={1} title={text}>
+              <Name style={{ maxWidth: type === 'projects' ? 260 : 240 }}>{text}</Name>
+            </Tooltip>
+          </Link>
+          <ID>
+            {global.idLabel}: {record.id}
+          </ID>
+        </div>
       ),
     },
     {
-      title: global.idLabel,
-      dataIndex: 'id',
-      width: 100,
+      title: global.screenshot,
+      dataIndex: '',
+      width: 220,
+      render: (_: string, record: File) => {
+        const pictures = screenshots[record.id] || [];
+        const [one, two, ..._rest] = pictures;
+        if (one || two) {
+          return (
+            <Image.PreviewGroup>
+              {one && <ImageBox key={one.url} src={one.url} />}
+              {two && <ImageBox key={two.url} src={two.url} style={{ marginLeft: 4 }} />}
+            </Image.PreviewGroup>
+          );
+        }
+        return '-';
+      },
     },
     {
       title: global.type,
@@ -103,7 +139,7 @@ const ProjectFileList: React.FC<ProjectFileListProps> = (props: ProjectFileListP
     {
       title: global.actions,
       key: '',
-      width: 80,
+      width: 100,
       render: (_text: string, record: File) => (
         <Button
           type="default"

@@ -22,7 +22,7 @@ export class AppContentId {
   @IsString()
   applicationId: string;
 
-  @JSONSchema({ description: 'Content ID' })
+  @JSONSchema({ description: 'Page Content ID' })
   @IsString()
   id: string;
 }
@@ -71,17 +71,7 @@ export class AddContentReq {
   content: Record<string, string>;
 }
 
-export class UpdateContentReq {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  @Length(20, 20)
-  applicationId: string;
-
-  @JSONSchema({ description: 'page content ID' })
-  @IsString()
-  @Length(20, 20)
-  id: string;
-
+export class UpdateContentReq extends AppContentId {
   @JSONSchema({ description: 'Page Title' })
   @IsString()
   @IsOptional()
@@ -360,17 +350,7 @@ export class ContentSchemaRelation {
   extension: Record<string, any>;
 }
 
-export class ContentVersionUpdateReq {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  @Length(20, 20)
-  applicationId: string;
-
-  @JSONSchema({ description: 'page content ID' })
-  @IsString()
-  @Length(20, 20)
-  id: string;
-
+export class ContentVersionUpdateReq extends AppContentId {
   @JSONSchema({ description: 'Page version content' })
   @IsObject()
   @ValidateNested()
@@ -392,17 +372,7 @@ export class ContentVersionUpdateReq {
   contentUpdateTime: string;
 }
 
-export class ContentVersionBaseUpdateReq {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  @Length(20, 20)
-  applicationId: string;
-
-  @JSONSchema({ description: 'page content ID' })
-  @IsString()
-  @Length(20, 20)
-  id: string;
-
+export class ContentVersionBaseUpdateReq extends AppContentId {
   @JSONSchema({ description: 'Page version content' })
   @IsObject()
   @ValidateNested()
@@ -460,27 +430,26 @@ export class ContentVersionBaseDetail extends ContentVersionCommonDetail {
 }
 
 export class ContentLiveReq {
-  @JSONSchema({ description: 'Page ID' })
-  @IsString()
-  @Length(20, 20)
-  contentId: string;
-
-  @JSONSchema({ description: 'Live version number' })
-  @IsNumber()
-  versionNumber: number;
-}
-
-export class ContentVersionListReq {
   @JSONSchema({ description: 'Application ID' })
   @IsString()
-  @Length(20, 20)
   applicationId: string;
 
   @JSONSchema({ description: 'Page ID' })
   @IsString()
-  @Length(20, 20)
-  id: string;
+  contentId: string;
 
+  @JSONSchema({ description: 'Live version number' })
+  @IsNumber()
+  @IsOptional()
+  versionNumber: number;
+
+  @JSONSchema({ description: 'Live version id' })
+  @IsString()
+  @IsOptional()
+  versionId: string;
+}
+
+export class ContentVersionListReq extends AppContentId {
   @JSONSchema({ description: 'File ID to which the page belongs' })
   @IsString()
   @Length(20, 20)
@@ -622,32 +591,14 @@ export class AppFileContentStatusReq {
   status: boolean;
 }
 
-export class AppContentStatusReq {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  @Length(20, 20)
-  applicationId: string;
-
-  @JSONSchema({ description: 'ID' })
-  @IsString()
-  @Length(20, 20)
-  id: string;
-
+export class AppContentStatusReq extends AppContentId {
   @JSONSchema({ description: 'Delete status' })
   @IsBoolean()
   @IsOptional()
   status: boolean;
 }
 
-export class AppContentLiveReq {
-  @JSONSchema({ description: 'Application ID' })
-  @IsString()
-  applicationId: string;
-
-  @JSONSchema({ description: 'Content ID' })
-  @IsString()
-  id: string;
-
+export class AppContentLiveReq extends AppContentId {
   @JSONSchema({ description: 'live version number' })
   @IsNumber()
   versionNumber: number;
@@ -677,7 +628,7 @@ export class VersionPublishStatusReq {
   @Length(20, 20)
   id: string;
 
-  @JSONSchema({ description: 'Version status' })
+  @JSONSchema({ description: 'Version status, canary | release' })
   @IsString()
   status: ContentStatus;
 }
@@ -887,4 +838,49 @@ export class LockBuildContentResDetail {
 export class LockBuildContentRes extends ResponseBase {
   @ValidateNested({ each: true })
   data: LockBuildContentResDetail;
+}
+
+export class getContentSyncInfoRes extends ResponseBase {
+  @ValidateNested({ each: true })
+  data: any;
+}
+
+export class UpdateVersionBySyncReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Sync source info' })
+  @IsObject()
+  syncSource: Record<string, any>;
+
+  @JSONSchema({ description: 'Content infos' })
+  @IsObject()
+  contentInfo: any;
+}
+
+export class SetContentTagsReq extends AppContentId {
+  @JSONSchema({ description: 'Content tags' })
+  @IsArray()
+  tags: Record<string, any>[];
+}
+
+export class EncryptContentsReq {
+  @JSONSchema({ description: 'The data need to encrypt' })
+  @IsObject()
+  data: Record<string, string>;
+
+  @JSONSchema({ description: 'Expire time, timestamps second, default 7 days' })
+  @IsNumber()
+  @IsOptional()
+  expireTime: number;
+
+  @JSONSchema({ description: 'The token to validate' })
+  @IsString()
+  @IsOptional()
+  token: string;
 }

@@ -107,7 +107,7 @@ export class BaseService<T> {
       return {};
     }
     const objectList = await this.getDetailByIds(objectIds, projection);
-    return _.keyBy(objectList, 'id');
+    return _.keyBy(objectList, 'id') as Record<string, T>;
   }
 
   /**

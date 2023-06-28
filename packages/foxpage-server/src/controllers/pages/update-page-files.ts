@@ -37,7 +37,7 @@ export class UpdatePageDetail extends BaseController {
   @ResponseSchema(FileDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: UpdateFileDetailReq): Promise<ResData<File>> {
     // Check the validity of the name
-    if (!checkName(params.name)) {
+    if (!checkName(params.name) || !params.name) {
       return Response.warning(i18n.file.invalidName, 2051801);
     }
 
@@ -45,35 +45,42 @@ export class UpdatePageDetail extends BaseController {
       const apiType = this.getRoutePath(ctx.request.url);
 
       ctx.logAttr = Object.assign(ctx.logAttr, { type: apiType });
-      const hasAuth = await this.service.auth.file(params.id, { ctx });
+      let [hasAuth, pageDetail] = await Promise.all([
+        this.service.auth.file(params.id, { ctx }),
+        this.service.file.info.getDetailById(params.id),
+      ]);
+
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051801);
+      } else if (
+        this.notValid(pageDetail) ||
+        pageDetail.applicationId !== params.applicationId ||
+        pageDetail.type !== apiType
+      ) {
+        return Response.warning(i18n.page.invalidTypeIdOrAppId, 2051802);
       }
 
       params.tags = this.service.content.tag.formatTags(apiType, params.tags);
-      const result: Record<string, any> = await this.service.file.info.updateFileDetail(params, {
+      const result = await this.service.file.info.updateFileDetail(params, {
         ctx,
+        actionDataType: apiType,
         actionType: [LOG.UPDATE, apiType].join('_'),
       });
 
       if (result.code === 1) {
         return Response.warning(i18n.page.invalidPageId, 2051803);
-      }
-
-      if (result.code === 2) {
-        return Response.warning(i18n.page.pageNameExist, 2051803);
-      }
-
-      // Check if the path of the file already exists
-      if (result.code === 3) {
+      } else if (result.code === 2) {
+        return Response.warning(i18n.page.pageNameExist, 2051804);
+      } else if (result.code === 3) {
+        // Check if the path of the file already exists
         return Response.warning(
           i18n.file.pathNameExist + ':"' + ((result.data || []) as string[]).join(',') + '"',
-          2051804,
+          2051805,
         );
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
-      const pageDetail = await this.service.file.info.getDetailById(params.id);
+      pageDetail = await this.service.file.info.getDetailById(params.id);
 
       return Response.success(pageDetail, 1051801);
     } catch (err) {

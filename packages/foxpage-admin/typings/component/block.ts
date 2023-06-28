@@ -1,4 +1,3 @@
-import { Content } from '../builder/content';
-import { BaseResponse } from '../common';
+import { BaseResponse, Content } from '@foxpage/foxpage-client-types';
 
-export interface FetchLiveBlockDslRes extends BaseResponse<Record<string, Content>> {};
+export interface FetchLiveBlockDslRes extends BaseResponse<Record<string, Content>> {}

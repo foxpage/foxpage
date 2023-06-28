@@ -1,27 +1,29 @@
-export const dynamicType = {
-  put: 'modify',
-  post: 'add',
-  delete: 'delete',
-};
+export enum DynamicOperationEnum {
+  create = 'create',
+  update = 'update',
+  delete = 'delete',
+  live = 'live',
+  publish = 'publish',
+  set = 'set',
+  clone = 'clone',
+}
 
-export enum DynamicDataTypeEnum {
+export enum DynamicOperationTargetEnum {
   application = 'application',
   project = 'project',
   page = 'page',
+  content = 'content',
+  block = 'block',
   template = 'template',
   function = 'function',
   condition = 'condition',
   variable = 'variable',
-  team = 'team',
-  organization = 'organization',
   component = 'component',
+  folder = 'folder',
   resource = 'resource',
 }
 
-export enum DynamicDataLevelEnum {
-  application = 'application',
-  folder = 'folder',
-  file = 'file',
-  content = 'content',
+export enum DynamicContentType {
   version = 'version',
+  file = 'file',
 }

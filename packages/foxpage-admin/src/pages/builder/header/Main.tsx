@@ -6,29 +6,17 @@ import { Layout } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
+import * as COMPONENT_ACTIONS from '@/actions/builder/components';
 import * as ACTIONS from '@/actions/builder/header';
 import { History } from '@/pages/components/history';
 import { getLocationIfo } from '@/utils/location-info';
 
+import { DeviceToolbar } from './components/device';
 import { Actions, Catalog, GoBack, Record, Steps, Store } from './components';
 
 import './index.css';
 
 const { Header } = Layout;
-
-const StyledHeader = styled(Header)`
-  background: rgb(255, 255, 255) !important;
-  border-bottom: 1px solid rgb(242, 242, 242);
-  display: flex;
-  -webkit-box-pack: justify;
-  justify-content: space-between;
-  -webkit-box-align: center;
-  align-items: center;
-  z-index: 100;
-  line-height: 48px;
-  height: 48px;
-  padding: 0;
-`;
 
 export const StyledIcon = styled.div`
   min-width: 44px;
@@ -89,6 +77,7 @@ const mapDispatchToProps = {
   clearAll: ACTIONS.clearAll,
   fetchCatalog: ACTIONS.fetchCatalog,
   selectContent: ACTIONS.selectContent,
+  clearComponentList: COMPONENT_ACTIONS.pushComponentList,
 };
 
 type HeaderType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -96,13 +85,14 @@ type HeaderType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps
 let _editStatus = false;
 
 const Main: React.FC<HeaderType> = (props) => {
-  const { editStatus, clearAll, fetchCatalog, selectContent } = props;
+  const { editStatus, clearAll, fetchCatalog, selectContent, clearComponentList } = props;
   const { applicationId, folderId, fileId, contentId } = getLocationIfo(useLocation());
   _editStatus = editStatus;
 
   useEffect(() => {
     return () => {
       clearAll();
+      clearComponentList([]);
     };
   }, []);
 
@@ -140,25 +130,28 @@ const Main: React.FC<HeaderType> = (props) => {
 
   return (
     <React.Fragment>
-      <StyledHeader>
+      <Header className="foxpage-builder-header">
         <Part style={{ flex: 1, justifyContent: 'flex-start' }}>
           <GoBack />
           <Catalog />
         </Part>
         <Part style={{ flex: 1, justifyContent: 'flex-start' }}>
-          <Store />
           <History />
+          <Store />
         </Part>
         <Part style={{ flex: 1, justifyContent: 'flex-center' }}>
-          <Steps />
+          <DeviceToolbar />
         </Part>
         <Part style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <div style={{ marginRight: 8, display: 'flex' }}>
+            <Steps />
+          </div>
           <Record />
         </Part>
         <Part style={{ flex: 1, justifyContent: 'flex-end', paddingRight: 12 }}>
           <Actions />
         </Part>
-      </StyledHeader>
+      </Header>
     </React.Fragment>
   );
 };

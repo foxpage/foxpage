@@ -2,15 +2,21 @@ import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Link, useHistory } from 'react-router-dom';
 
-import { ArrowUpOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import { Button, Input, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
+import {
+  ArrowUpOutlined,
+  PlusOutlined,
+  StarFilled,
+  StarOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
+import { Button, Input, Modal, Popconfirm, Table as AntTable, Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/packages/list';
 import * as RESOURCES_ACTIONS from '@/actions/applications/detail/resources/groups';
 import { DeleteButton } from '@/components/index';
-import { StoreGoodsPurchaseType, suffixTagColor } from '@/constants/index';
+import { ComponentTagType, StoreGoodsPurchaseType, suffixTagColor } from '@/constants/index';
 import { GlobalContext } from '@/pages/system';
 import { ComponentEntity, ResourceGroup } from '@/types/index';
 import { getLocationIfo, periodFormat } from '@/utils/index';
@@ -38,6 +44,7 @@ const mapStateToProps = (store: RootState) => ({
 
 const mapDispatchToProps = {
   deleteComponent: ACTIONS.deleteComponentAction,
+  setComponent: ACTIONS.setComponentAction,
   openDrawer: ACTIONS.updateComponentDrawerState,
   fetchGroups: RESOURCES_ACTIONS.fetchResourcesGroups,
 };
@@ -58,10 +65,12 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
     componentList,
     selectPackage,
     deleteComponent,
+    setComponent,
     fetchGroups,
     openDrawer,
     openQuicklyModal,
   } = props;
+  const isComponent = selectPackage === 'component';
   const [inputData, setInputData] = useState({
     inputVal: '',
     searchFlag: false,
@@ -73,7 +82,7 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
 
   // i18n
   const { locale } = useContext(GlobalContext);
-  const { global, package: packageI18n, resource } = locale.business;
+  const { file: fileI18n, global, package: packageI18n, resource, store: storeI18n } = locale.business;
 
   useEffect(() => {
     if (applicationId) {
@@ -109,6 +118,24 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
     });
   };
 
+  const handleSetImportant = (id, active) => {
+    Modal.confirm({
+      title: packageI18n.loadOnIgniteTitle,
+      content: packageI18n.loadOnIgniteMsg,
+      okText: global.yes,
+      okType: 'primary',
+      cancelText: global.no,
+      onOk() {
+        setComponent({
+          applicationId,
+          id: id,
+          intro: '',
+          loadOnIgnite: !active,
+        });
+      },
+    });
+  };
+
   const columns: any = [
     {
       title: global.nameLabel,
@@ -117,16 +144,6 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
       render: (text: string, record: ComponentEntity) => {
         return (
           <>
-            {record.tags?.find((item) => item.type === StoreGoodsPurchaseType.reference) && (
-              <Tag color={suffixTagColor.refer} style={{ zoom: 0.8 }}>
-                refer
-              </Tag>
-            )}
-            {record.online && (
-              <Tag color="cyan" style={{ zoom: 0.8 }}>
-                inStore
-              </Tag>
-            )}
             <Link
               to={`/applications/${applicationId}/package/${type}s/detail?fileId=${record.id}&filePage=${
                 filePage || ''
@@ -134,6 +151,21 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
               style={{ paddingRight: 8 }}>
               {text}
             </Link>
+            {record.tags?.find((item) => item.type === StoreGoodsPurchaseType.reference) && (
+              <Tag color={suffixTagColor.refer} style={{ zoom: 0.8 }}>
+                {storeI18n.refer}
+              </Tag>
+            )}
+            {record.deprecated && (
+              <Tag color="error" style={{ zoom: 0.8 }}>
+                {packageI18n.disabled}
+              </Tag>
+            )}
+            {record.online && (
+              <Tag color="cyan" style={{ zoom: 0.8 }}>
+                {fileI18n.inStore}
+              </Tag>
+            )}
           </>
         );
       },
@@ -162,7 +194,7 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
       key: 'tags',
       width: 200,
       render: (tags: ComponentEntity['tags']) => {
-        const group = getGroup(tags, groups as any);
+        const group = getGroup(tags, groups);
         return group ? group.name : '-';
       },
     },
@@ -183,11 +215,26 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
     {
       title: global.actions,
       key: 'actions',
-      width: 90,
+      width: 100,
       render: (record: ComponentEntity) => {
-        const { id, release } = record;
+        const { id, tags, release, deprecated } = record;
+        const loadOnIgnite =
+          tags && tags.find((tag) => tag.type === ComponentTagType.loadOnIgnite && tag.status);
+
         return (
           <>
+            {isComponent && (
+              <Tooltip title={!!release ? '' : packageI18n.liveVersionTips}>
+                <Button
+                  size="small"
+                  shape="circle"
+                  disabled={!release || deprecated}
+                  title={global.star}
+                  onClick={() => handleSetImportant(record.id, !!loadOnIgnite)}>
+                  {!!loadOnIgnite ? <StarFilled style={{ color: '#287dfa' }} /> : <StarOutlined />}
+                </Button>
+              </Tooltip>
+            )}
             <Popconfirm
               title={`${global.deleteMsg}${record.name}?`}
               onConfirm={() => {
@@ -197,7 +244,7 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
                     id,
                   });
               }}
-              disabled={!!release}
+              disabled={!!release && !deprecated}
               okText={global.yes}
               cancelText={global.no}
               placement="topRight">
@@ -205,7 +252,7 @@ const PackageList: React.FC<ProjectListProp> = (props) => {
                 type="default"
                 size="small"
                 shape="circle"
-                disabled={!!release}
+                disabled={!!release && !deprecated}
                 title={global.remove}
                 style={{ marginLeft: 8 }}
               />

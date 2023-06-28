@@ -11,7 +11,6 @@ import { initNode } from './node';
  * @returns style node
  */
 export const getStyleWrapper = (node: StructureNode, formattedData: FormattedData) => {
-  
   const { componentMap = {}, originPageNodeMap, extendPageNodeMap } = formattedData;
   const component = componentMap[node.name];
   if (!component) {

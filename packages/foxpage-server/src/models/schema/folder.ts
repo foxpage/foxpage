@@ -22,7 +22,7 @@ const folderSchema = new Schema<Folder>(
   },
 );
 
-folderSchema.pre('save', function(next) {
+folderSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {
@@ -33,7 +33,6 @@ folderSchema.pre('save', function(next) {
 
 folderSchema.index({ id: 1 });
 folderSchema.index({ applicationId: 1 });
-folderSchema.index({ folderId: 1 });
 folderSchema.index({ parentFolderId: 1 });
 folderSchema.index({ 'tags.type': 1 });
 folderSchema.index({ creator: 1 });

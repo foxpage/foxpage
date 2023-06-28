@@ -10,6 +10,8 @@ export type RecordActionType = ActionType<typeof ACTIONS>;
 const pageInfo: PaginationInfo = { page: 1, size: 10, total: 0 };
 const records: RecordLog[] = [];
 const localRecords: RecordLog[] = [];
+const nodeUpdateRecords: RecordLog[] = [];
+const nodeUpdateIndex: number = -1;
 const recordStatus: RecordStatus = {
   structure: {},
   variable: {},
@@ -19,6 +21,8 @@ const recordStatus: RecordStatus = {
 const initialState = {
   loading: false,
   localRecords,
+  nodeUpdateRecords,
+  nodeUpdateIndex,
   records,
   pageInfo,
   pageNum: 1,
@@ -58,6 +62,16 @@ const reducer = (state: InitialDataType = initialState, action: RecordActionType
         break;
       }
 
+      case getType(ACTIONS.updateNodeUpdateRecords): {
+        draft.nodeUpdateRecords = action.payload.data || [];
+        break;
+      }
+
+      case getType(ACTIONS.updateNodeUpdateRecordsIndex): {
+        draft.nodeUpdateIndex = action.payload.index;
+        break;
+      }
+
       case getType(ACTIONS.updateLocalRecords): {
         const _list = action.payload.data.concat(draft.localRecords);
         draft.localRecords = _list;
@@ -65,9 +79,17 @@ const reducer = (state: InitialDataType = initialState, action: RecordActionType
         break;
       }
 
+      case getType(ACTIONS.updateRemoteRecords): {
+        const _list = draft.records.slice();
+        const { index, record } = action.payload;
+        _list.splice(index, 1, record);
+        draft.records = _list;
+        break;
+      }
+
       case getType(ACTIONS.pushLocalRecords): {
         draft.localRecords = action.payload.data;
-        draft.recordStatus = format( draft.localRecords, _.cloneDeep(draft.recordStatus));
+        draft.recordStatus = format(draft.localRecords, _.cloneDeep(draft.recordStatus));
         break;
       }
 

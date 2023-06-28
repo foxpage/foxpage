@@ -93,6 +93,11 @@ export class WorkspaceDynamicListReq {
   @IsOptional()
   applicationId: string;
 
+  @JSONSchema({ description: 'Workspace type, user|application, default is user' })
+  @IsString()
+  @IsOptional()
+  type: string;
+
   @JSONSchema({ description: 'Filter fields, currently only filter by organization name' })
   @IsString()
   @IsOptional()

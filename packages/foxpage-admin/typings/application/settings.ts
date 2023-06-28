@@ -1,24 +1,9 @@
-import { AbstractEntity, Application, CommonFetchParams, ComponentCategory } from '@/types/index';
-
-export interface ApplicationRegion {
-  name: string;
-  languages: string[];
-}
+import { Application, CommonFetchParams, ComponentCategory } from '@foxpage/foxpage-client-types';
 
 export interface ApplicationSaveParams
   extends Pick<Application, 'host' | 'intro' | 'locales' | 'name' | 'resources'> {
   applicationId: string;
   slug: string;
-}
-
-export interface ApplicationSettingBuilderComponent extends AbstractEntity {
-  category: ComponentCategory;
-  delivery: string;
-  name: string;
-  status: boolean;
-  type: string;
-  defaultValue?: any;
-  idx: string;
 }
 
 export interface ApplicationSettingBuilderFetchParams extends Omit<CommonFetchParams, 'organizationId'> {
@@ -29,10 +14,10 @@ export interface ApplicationSettingBuilderSaveParams extends Pick<ApplicationSav
   type: string;
   setting: Array<{
     id: string;
-    idx: string;
+    idx?: string;
     name: string;
     status: boolean;
-    category: ComponentCategory;
+    category?: ComponentCategory;
     defaultValue?: any;
   }>;
 }

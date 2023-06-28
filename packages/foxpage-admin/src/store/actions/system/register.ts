@@ -1,6 +1,6 @@
 import { createAction } from 'typesafe-actions';
 
-import { RegisterParams } from '@/types/user';
+import { RegisterParams } from '@/types/index';
 
 export const register = createAction(
   'SYSTEM_REGISTER__REGISTER',

@@ -42,6 +42,8 @@ export class SetComponentVersionStatus extends BaseController {
         return Response.accessDeny(i18n.system.accessDeny, 4111701);
       }
 
+      // TODO: check component referenced has deleted
+
       const result = await this.service.version.info.setVersionDeleteStatus(params, { ctx });
 
       if (result.code === 1) {

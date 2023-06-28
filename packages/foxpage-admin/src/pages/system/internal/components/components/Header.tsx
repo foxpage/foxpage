@@ -14,7 +14,13 @@ import { OrganizationSelector } from '@/components/index';
 import { LOCALE_EN, LOCALE_ZH_CN, superAdminTeamId } from '@/constants/index';
 import businessLocale from '@/foxI18n/index';
 import { GlobalContext } from '@/pages/system/index';
-import { getImageUrlByEnv, getLoginUser, setLoginUser } from '@/utils/index';
+import {
+  getImageUrlByEnv,
+  getLoginUser,
+  getUserPreference,
+  setLoginUser,
+  setUserPreference,
+} from '@/utils/index';
 
 const { Header } = Layout;
 
@@ -174,10 +180,11 @@ const FoxPageHeader = (props: FoxPageHeaderProps) => {
     setLocale(newLocale);
 
     // sync language prefer data to local storage
-    const loginUserInfo = getLoginUser();
-    setLoginUser({
-      ...loginUserInfo,
-      languagePrefer: locale.locale === LOCALE_ZH_CN ? LOCALE_EN : LOCALE_ZH_CN,
+    const userPrefer = getUserPreference();
+
+    setUserPreference({
+      ...userPrefer,
+      language: locale.locale === LOCALE_ZH_CN ? LOCALE_EN : LOCALE_ZH_CN,
     });
   };
 
@@ -243,7 +250,7 @@ const FoxPageHeader = (props: FoxPageHeaderProps) => {
             {global.application}
           </NavLinkContent>
         </NavItem>
-        <NavItem>
+        {/* <NavItem>
           <NavLinkContent
             activeStyle={{
               fontWeight: 'bold',
@@ -252,7 +259,7 @@ const FoxPageHeader = (props: FoxPageHeaderProps) => {
             to="/teams">
             {global.team}
           </NavLinkContent>
-        </NavItem>
+        </NavItem> */}
         <NavItem>
           <NavLinkContent
             activeStyle={{

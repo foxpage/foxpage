@@ -35,25 +35,28 @@ export class SetFolderStatus extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: TYPE.PROJECT });
 
-      const hasAuth = await this.service.auth.folder(params.projectId, { ctx, mask: 4 });
-      if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny, 4040801);
-      }
+      const [hasAuth, folderDetail] = await Promise.all([
+        this.service.auth.folder(params.projectId, { ctx, mask: 4 }),
+        this.service.folder.info.getDetailById(params.projectId),
+      ]);
 
-      const folderDetail = await this.service.folder.info.getDetailById(params.projectId);
       if (this.notValid(folderDetail)) {
         return Response.warning(i18n.folder.invalidFolderId, 2040801);
+      }
+
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4040801);
       }
 
       if (folderDetail.parentFolderId === '') {
         return Response.warning(i18n.project.cannotDeleteSystemFolders, 2040802);
       }
 
-      // get project page and template file list
+      // get project page, template, block file list
       const fileList = await this.service.file.list.find({
         folderId: params.projectId,
         deleted: false,
-        type: { $in: [TYPE.PAGE, TYPE.TEMPLATE] },
+        type: { $in: [TYPE.PAGE, TYPE.TEMPLATE, TYPE.BLOCK] },
       });
       // check file has live content
       const hasLiveContentFileIds = await this.service.file.check.checkFileHasLiveContent(
@@ -84,6 +87,8 @@ export class SetFolderStatus extends BaseController {
       const newFolderDetail = await this.service.folder.info.getDetailById(params.projectId);
 
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.projectId, type: TYPE.PROJECT });
+
+      this.service.relation.removeVersionRelations({ folderIds: [params.projectId] });
 
       return Response.success(newFolderDetail, 1040801);
     } catch (err) {

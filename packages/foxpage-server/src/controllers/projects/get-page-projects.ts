@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { i18n } from '../../../app.config';
 import { TYPE } from '../../../config/constant';
 import { FolderInfo } from '../../types/file-types';
-import { FoxCtx, PageData, ResData } from '../../types/index-types';
+import { FoxCtx, IdName, PageData, ResData } from '../../types/index-types';
 import { ProjectListReq, ProjectListRes } from '../../types/validates/project-validate-types';
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
@@ -50,10 +50,12 @@ export class GetProjectPageList extends BaseController {
         }
       }
 
+      let differentOrg = false;
       let appIds: string[] = [];
       if (params.applicationId) {
         const appDetail = await this.service.application.getDetailById(params.applicationId);
         appIds = [appDetail.id];
+        differentOrg = !!params.organizationId && appDetail.organizationId !== params.organizationId;
       } else if (params.organizationId) {
         const appList = await this.service.application.find({ organizationId: params.organizationId });
         appIds = _.map(appList, 'id');
@@ -85,10 +87,16 @@ export class GetProjectPageList extends BaseController {
         userIds.length === 0 ? (userIds = [ctx.userInfo.id]) : (userIds = _.uniq(userIds));
       } else if (params.type === TYPE.USER) {
         userIds = [ctx.userInfo.id];
+      } else if (differentOrg) {
+        const userList = await this.service.user.find(
+          { defaultOrganizationId: params.organizationId, deleted: false },
+          'id',
+        );
+        userIds = _.map(userList, 'id') as string[];
       }
 
       const baseSearchParams = Object.assign(
-        { applicationIds: appIds },
+        { applicationIds: appIds, organizationId: params.organizationId || '' },
         _.pick(params, ['page', 'size', 'search']),
       );
 
@@ -118,6 +126,23 @@ export class GetProjectPageList extends BaseController {
             }),
           );
         }
+      }
+
+      if (orgFolderData.list && orgFolderData.list.length > 0) {
+        const applicationIds = _.map(orgFolderData.list, 'application.id');
+        const applicationList = await this.service.application.getDetailByIds(
+          _.pull(applicationIds, '', undefined),
+        );
+        const orgList = await this.service.org.getDetailByIds(_.map(applicationList, 'organizationId'));
+        const orgObject = _.keyBy(orgList, 'id');
+        const appObject = _.keyBy(applicationList, 'id');
+        orgFolderData.list.forEach((project) => {
+          project.organization = (
+            project.application?.id
+              ? _.pick(orgObject[appObject[project.application.id]?.organizationId], ['id', 'name'])
+              : {}
+          ) as IdName;
+        });
       }
 
       return Response.success(

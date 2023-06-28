@@ -72,6 +72,7 @@ export class UserService extends BaseService<User> {
       defaultOrganizationId: params.defaultOrganizationId || '',
       password: params.password ? crypto.createHash('md5').update(params.password).digest('hex') : '',
     };
+    console.log(JSON.stringify(newUserParams));
 
     const userData = await Model.user.addUser(newUserParams);
 

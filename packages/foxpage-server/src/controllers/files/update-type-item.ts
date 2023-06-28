@@ -112,15 +112,23 @@ export class UpdateTypeItemDetail extends BaseController {
         );
       }
 
-      this.service.content.info.updateContentItem(contentId, { title: contentName }, { ctx });
+      this.service.content.info.updateContentItem(
+        contentId,
+        { title: contentName },
+        { ctx, actionDataType: apiType },
+      );
       if (versionStatus === VERSION.STATUS_BASE) {
-        this.service.version.info.updateVersionItem(versionId, { content: params.content }, { ctx });
+        this.service.version.info.updateVersionItem(
+          versionId,
+          { content: params.content },
+          { ctx, actionDataType: apiType },
+        );
       } else {
         // Add new version
         const version = this.service.version.number.getVersionFromNumber(++versionNumber);
         this.service.version.info.create(
           { contentId, version, versionNumber, content: params.content },
-          { ctx, fileId: params.id, actionType: [LOG.CREATE, apiType].join('_') },
+          { ctx, fileId: params.id, actionDataType: apiType },
         );
       }
 

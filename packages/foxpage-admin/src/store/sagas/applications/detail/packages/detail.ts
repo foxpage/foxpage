@@ -4,7 +4,6 @@ import { getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/packages/detail';
 import * as API from '@/apis/application';
-import * as PROJECT_API from '@/apis/project';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationPackagesDetailActionType } from '@/reducers/applications/detail/packages/detail';
 import { store } from '@/store/index';
@@ -15,7 +14,9 @@ import {
   AppComponentDetailFetchComponentVersionsParams,
   AppComponentDetailLiveComponentVersionParams,
   AppComponentDetailUpdateComponentVersionStatueParams,
+  ComponentDisabledSaveParams,
   ComponentRemoteSaveParams,
+  ComponentsReferLiveVersionUpdateParams,
   FilesFetchParams,
   OptionsAction,
   RemoteComponentFetchParams,
@@ -98,7 +99,7 @@ function* fetchVersionList(action: ApplicationPackagesDetailActionType) {
     }),
   );
 
-  const { options = {} } = action.payload as {
+  const { params, options = {} } = action.payload as {
     params: AppComponentDetailFetchComponentVersionsParams;
     options?: OptionsAction;
   };
@@ -108,8 +109,8 @@ function* fetchVersionList(action: ApplicationPackagesDetailActionType) {
   const res = yield call(API.getComponentsVersionSearchs, {
     applicationId,
     id: fileId,
-    size,
-    page,
+    page: params?.page || page,
+    size: params?.size || size,
   });
 
   if (res.code === 200) {
@@ -178,9 +179,29 @@ function* liveVersion(action: ApplicationPackagesDetailActionType) {
   }
 }
 
+function* referLiveVersion(action: ApplicationPackagesDetailActionType) {
+  const { params, options = {} } = action.payload as {
+    params: ComponentsReferLiveVersionUpdateParams;
+    options?: OptionsAction;
+  };
+  const res = yield call(API.putComponentsReferLiveVersion, params);
+
+  if (res.code === 200) {
+    yield put(ACTIONS.fetchComponentVersionsAction({}));
+
+    const { onSuccess } = options;
+    if (typeof onSuccess === 'function') onSuccess();
+  } else {
+    const {
+      global: { saveFailed },
+    } = getBusinessI18n();
+    errorToast(res, saveFailed);
+  }
+}
+
 function* handleFetchFileDetail(action: ApplicationPackagesDetailActionType) {
   const { applicationId, ids } = action.payload as FilesFetchParams;
-  const res = yield call(PROJECT_API.fetchFileDetail, {
+  const res = yield call(API.fetchComponentDetail, {
     applicationId,
     ids,
   });
@@ -231,24 +252,31 @@ function* handleSaveComponentRemote(action: ApplicationPackagesDetailActionType)
   yield put(ACTIONS.updateCloudSyncDrawerLoadingStatus(false));
 }
 
-function* handleFetchComponentUsed() {
+function* handleFetchComponentUsed(action: ApplicationPackagesDetailActionType) {
   yield put(
     ACTIONS.updateVersionListState({
       loading: true,
     }),
   );
 
+  const { page, size, live } = action.payload as { page?: number; size?: number; live?: boolean };
   const { applicationId, pageInfo } = store.getState().applications.detail.packages.detail.versionList;
   const componentInfo = store.getState().applications.detail.packages.detail.componentInfo;
   const res = yield call(API.fetchComponentUsed, {
     applicationId,
     name: componentInfo.title,
-    page: pageInfo.page,
-    size: pageInfo.size,
+    page: page || pageInfo.page,
+    size: size || pageInfo.size,
+    live: live || false,
   });
 
   if (res.code === 200) {
     yield put(ACTIONS.pushComponentUsed(res.data));
+    yield put(
+      ACTIONS.updateVersionListState({
+        pageInfo: res.pageInfo,
+      }),
+    );
   } else {
     const {
       global: { fetchListFailed },
@@ -264,6 +292,21 @@ function* handleFetchComponentUsed() {
   );
 }
 
+function* handleSaveComponentDisabled(action: ApplicationPackagesDetailActionType) {
+  const { params, cb } = action.payload as { params: ComponentDisabledSaveParams; cb?: () => void };
+  const res = yield call(API.saveComponentDisabled, params);
+
+  if (res.code === 200) {
+    if (typeof cb === 'function') cb();
+  } else {
+    const {
+      package: { disabledFailed },
+    } = getBusinessI18n();
+
+    errorToast(res, disabledFailed);
+  }
+}
+
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchComponentInfoAction), fetchComponentInfo);
   yield takeLatest(getType(ACTIONS.addComponentVersionAction), addVersion);
@@ -271,10 +314,12 @@ function* watch() {
   yield takeLatest(getType(ACTIONS.fetchComponentVersionsAction), fetchVersionList);
   yield takeLatest(getType(ACTIONS.updateComponentVersionStatusAction), updateVersionStatus);
   yield takeLatest(getType(ACTIONS.liveComponentVersionAction), liveVersion);
+  yield takeLatest(getType(ACTIONS.referLiveComponentVersionAction), referLiveVersion);
   yield takeLatest(getType(ACTIONS.fetchFileDetail), handleFetchFileDetail);
   yield takeLatest(getType(ACTIONS.fetchComponentRemotes), handleFetchComponentRemotes);
   yield takeLatest(getType(ACTIONS.saveComponentRemote), handleSaveComponentRemote);
   yield takeLatest(getType(ACTIONS.fetchComponentUsed), handleFetchComponentUsed);
+  yield takeLatest(getType(ACTIONS.saveComponentDisabled), handleSaveComponentDisabled);
 }
 
 export default function* rootSaga() {

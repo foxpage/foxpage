@@ -99,6 +99,9 @@ export class GetPageBuilderSettingList extends BaseController {
                 ? TAG.DELIVERY_REFERENCE
                 : '',
               creator: userBaseObject[fileObject[item.id]?.creator] || {},
+              deprecated:
+                _.find(fileObject[item.id]?.tags || [], (tag) => tag.type === TAG.DEPRECATED)?.status ||
+                false,
             },
           ) as AppSettingInfo,
         );

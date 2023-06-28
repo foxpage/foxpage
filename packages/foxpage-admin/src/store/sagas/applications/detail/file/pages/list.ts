@@ -88,7 +88,7 @@ function* handleSavePage(action: ApplicationPageActionType) {
 function* handleDeletePage(action: ApplicationPageActionType) {
   const { params, cb } = action.payload as { params: ProjectFileDeleteParams; cb?: () => void };
   const { id, applicationId } = params;
-  const res = yield call(PROJECT_API.deleteFile, {
+  const res = yield call(PROJECT_API.deletePage, {
     id,
     applicationId,
     status: true,

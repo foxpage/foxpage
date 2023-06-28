@@ -2,10 +2,10 @@ import { createAction } from 'typesafe-actions';
 
 import {
   AuthorizeAddParams,
-  AuthorizeQueryParams,
   AuthorizeDeleteParams,
   AuthorizeListFetchParams,
   AuthorizeListItem,
+  AuthorizeQueryParams,
   AuthorizeUserFetchParams,
   File,
   PaginationInfo,

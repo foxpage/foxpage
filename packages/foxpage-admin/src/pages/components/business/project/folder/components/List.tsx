@@ -34,7 +34,7 @@ const ProjectList: React.FC<ProjectListProp> = (props: ProjectListProp) => {
   const { appId: folderSearch, page: folderPage } = getLocationIfo(history.location);
 
   // i18n
-  const { locale } = useContext(GlobalContext);
+  const { locale, organizationId } = useContext(GlobalContext);
   const { global } = locale.business;
 
   const columns: any = [
@@ -68,10 +68,22 @@ const ProjectList: React.FC<ProjectListProp> = (props: ProjectListProp) => {
       title: global.application,
       dataIndex: 'application',
       key: 'application',
-      width: 200,
-      render: (_text: string, record: ProjectEntity) => (
-        <Link to={`/applications/${record.application.id}/`}>{record.application.name}</Link>
-      ),
+      width: 220,
+      render: (_text: string, record: ProjectEntity) => {
+        const projectOrgId = record?.organization?.id;
+
+        return organizationId === projectOrgId ? (
+          <>
+            <Link to={`/applications/${record.application.id}/`}>{record.application.name}</Link>
+            <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)' }}>{record?.organization?.name || ''}</p>
+          </>
+        ) : (
+          <>
+            <p>{record.application.name}</p>
+            <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)' }}>{record?.organization?.name || ''}</p>
+          </>
+        );
+      },
     },
     {
       title: global.creator,

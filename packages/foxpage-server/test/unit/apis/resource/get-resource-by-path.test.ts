@@ -23,6 +23,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
   params = {
     applicationId: Data.app.id,
     path: '',

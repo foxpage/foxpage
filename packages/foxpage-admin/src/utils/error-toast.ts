@@ -1,6 +1,6 @@
 import { message } from 'antd';
 
-import { ResponseBody } from '@/types/common';
+import { ResponseBody } from '@/types/index';
 
 import { getBusinessI18n } from '../locales';
 

@@ -15,7 +15,9 @@ export default {
     '/components/version-infos',
     '/pages/lives',
     '/templates/lives',
+    '/blocks/lives',
     '/content/tag-versions',
+    '/content/tag-contents',
     '/contents',
     '/contents/changes',
     '/functions/lives',
@@ -23,7 +25,9 @@ export default {
     '/variables/lives',
     '/mocks/lives',
     '/pages/live-infos',
+    '/blocks/live-infos',
     '/pages/draft-infos',
+    '/blocks/draft-infos',
     '/files',
   ],
   mongodb: mongoConfig || '',
@@ -34,4 +38,5 @@ export default {
     debug: false,
   },
   allLocales: ['en-US', 'zh-HK', 'en-HK', 'ko-KR', 'ja-JP'], // Supported locales
+  saveRequestLog: false,
 };

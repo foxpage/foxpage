@@ -103,7 +103,7 @@ export class UpdateComponentVersionDetail extends BaseController {
           content: versionContent,
           version: params.version || versionDetail.version,
         },
-        { ctx },
+        { ctx, actionDataType: contentDetail.type },
       );
 
       if (result.code === 1) {

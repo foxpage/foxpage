@@ -151,7 +151,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
       }}
       actions={
         <Button type="primary" onClick={handleSave}>
-          {global.apply}
+          {global.save}
           {saveLoading && <SyncOutlined spin={true} style={{ color: '#fff' }} />}
         </Button>
       }>
@@ -165,7 +165,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
               onBlur={(e) => updateContentValue('title', e.target.value)}
             />
           </Field>
-          {drawerOpen && !isBase && !objectEmptyCheck(locales) && (
+          {drawerOpen && !isBase && fileDetail?.type === FileType.page && !objectEmptyCheck(locales) && (
             <>
               <Field>
                 <Label>{global.locale}</Label>
@@ -200,7 +200,7 @@ const EditDrawer: React.FC<ProjectContentEditDrawer> = (props: ProjectContentEdi
             </>
           )}
 
-          {drawerOpen && !isBase && (
+          {drawerOpen && !isBase && fileDetail?.type === FileType.page && (
             <Field>
               <Label>{content.query}</Label>
               <JSONCodeEditor

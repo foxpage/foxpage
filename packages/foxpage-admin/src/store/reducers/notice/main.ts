@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/store/actions/notice';
-import { Notice } from '@/types/notice';
+import { Notice } from '@/types/index';
 
 export type NoticeActionType = ActionType<typeof ACTIONS>;
 

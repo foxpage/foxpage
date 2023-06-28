@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { EditOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Table as AntTable, Tooltip } from 'antd';
+import { Button, Popconfirm, Table as AntTable, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/workspace/applications/list';
-import { Name } from '@/components/index';
+import { DeleteButton, Name } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
-import { Application } from '@/types/application';
+import { Application } from '@/types/index';
 import { periodFormat } from '@/utils/index';
 
 const Table = styled(AntTable)`
@@ -26,6 +26,7 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = {
+  deleteApp: ACTIONS.deleteApp,
   fetchList: ACTIONS.fetchList,
   openDrawer: ACTIONS.openEditDrawer,
   openAuthDrawer: ACTIONS.updateAuthDrawerVisible,
@@ -37,11 +38,11 @@ type ApplicationListProps = ReturnType<typeof mapStateToProps> &
   };
 
 const ApplicationList = (props: ApplicationListProps) => {
-  const { list, loading, pageInfo, search, fetchList, openDrawer, openAuthDrawer } = props;
+  const { list, loading, pageInfo, search, deleteApp, fetchList, openDrawer, openAuthDrawer } = props;
 
   // i18n
   const { locale, organizationId } = useContext(GlobalContext);
-  const { global } = locale.business;
+  const { global, application: appI18n } = locale.business;
 
   const handleEdit = (app) => {
     openDrawer(true, app);
@@ -75,7 +76,7 @@ const ApplicationList = (props: ApplicationListProps) => {
     {
       title: global.actions,
       dataIndex: '',
-      width: 100,
+      width: 130,
       render: (_text: string, record: Application) => {
         return (
           <>
@@ -98,6 +99,21 @@ const ApplicationList = (props: ApplicationListProps) => {
               style={{ marginLeft: 8 }}>
               <UserOutlined />
             </Button>
+            <Popconfirm
+              title={appI18n.deleteMessage}
+              onConfirm={() => deleteApp(record.id)}
+              okText={global.yes}
+              cancelText={global.no}
+              placement="topRight">
+              <DeleteButton
+                danger
+                type="default"
+                size="small"
+                shape="circle"
+                title={global.remove}
+                style={{ marginLeft: 8 }}
+              />
+            </Popconfirm>
           </>
         );
       },

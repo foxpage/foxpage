@@ -4,9 +4,11 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
+import { FormattedData } from '@/types/index';
+
 import * as ACTIONS from '@/actions/builder/header';
 import * as MAIN_ACTIONS from '@/actions/builder/main';
-import { CatalogContentSelectParams } from '@/types/builder';
+import { CatalogContentSelectParams } from '@/types/index';
 
 import { List } from './components';
 
@@ -31,6 +33,8 @@ const mapDispatchToProps = {
   selectFoldStatus: ACTIONS.updateFileFold,
   updateLocale: ACTIONS.updateLocale,
   unlockContent: MAIN_ACTIONS.unlockContent,
+  clearRenderDSL: MAIN_ACTIONS.pushRenderDSL,
+  pushFormatData: MAIN_ACTIONS.pushFormatData,
 };
 
 type Type = ReturnType<typeof mapStateToProps> &
@@ -51,11 +55,15 @@ const Catalog: React.FC<Type> = (props) => {
     selectFoldStatus,
     updateLocale,
     unlockContent,
+    clearRenderDSL,
+    pushFormatData,
     readOnly = false,
   } = props;
 
   const handleSelectContent = (params: CatalogContentSelectParams) => {
     unlockContent();
+    clearRenderDSL([]);
+    pushFormatData({} as FormattedData);
     selectContent(params);
   };
 

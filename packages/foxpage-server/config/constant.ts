@@ -8,6 +8,7 @@ export const PRE = {
   LOG: 'logs',
   ORDER: 'oder',
   ORGANIZATION: 'orga',
+  PICTURE: 'pics',
   REGISTER: 'regi',
   RELATION: 'rela',
   RESOURCE: 'rsos',
@@ -34,7 +35,7 @@ export const TYPE = {
   COMPONENT: 'component',
   CONDITION: 'condition',
   EDITOR: 'editor',
-  SYSCOMPONENT: 'sysComponent',
+  SYSCOMPONENT: 'systemComponent',
   FUNCTION: 'function',
   LIBRARY: 'library',
   PACKAGE: 'package',
@@ -52,6 +53,8 @@ export const TYPE = {
   INVOLVE: 'involve',
 
   TAG: 'tag',
+
+  BUILDER: 'builder',
 };
 
 export const LOG = {
@@ -63,6 +66,8 @@ export const LOG = {
   LOGIN: 'login',
   LOGOUT: 'logout',
   SET: 'set',
+  CLONE: 'clone',
+  SYNC: 'sync',
 
   VERSION_UPDATE: 'version_update',
   VERSION_REMOVE: 'version_remove',
@@ -88,6 +93,7 @@ export const VERSION = {
   STATUS_BASE: 'base',
   STATUS_ALPHA: 'alpha',
   STATUS_BETA: 'beta',
+  STATUS_CANARY: 'canary',
   STATUS_RELEASE_CANDIDATE: 'release candidate',
   STATUS_RELEASE: 'release',
 };
@@ -105,6 +111,10 @@ export const TAG = {
   RESOURCE_CONFIG: 'resourceConfig',
   DELIVERY_CLONE: 'clone',
   DELIVERY_REFERENCE: 'reference',
+  LOAD_ON_IGNITE: 'loadOnIgnite',
+  SYNC_FROM: 'syncFrom',
+  SYNC_TO: 'syncTo',
+  DEPRECATED: 'deprecated',
 };
 
 export const CONT_STORE = 'store';
@@ -141,4 +151,28 @@ export const METHOD = {
 
 export const COMPONENT_TYPE = {
   REACT_COMPONENT: 'react.component',
+};
+
+export const STRUCTURE_TYPE = {
+  DSL_TEMPLATE: 'dsl.template',
+};
+
+export const CACHE = {
+  APP_DETAIL: 'application-detail-',
+  COMPONENT_DETAIL: 'component-detail-',
+};
+
+export const COLLECT = {
+  APP: 'fp_application',
+  AUTH: 'fp_authorize',
+  CONTENT: 'fp_application_content',
+  CLOG: 'fp_content_log',
+  FILE: 'fp_application_file',
+  FOLD: 'fp_application_folder',
+  LOG: 'fp_log',
+  ORG: 'fp_organization',
+  RELATION: 'fp_application_content_relation',
+  TEAM: 'fp_team',
+  USER: 'fp_user',
+  VERSION: 'fp_application_content_version',
 };

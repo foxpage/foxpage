@@ -19,7 +19,7 @@ const storeGoodsSchema = new Schema<StoreGoods>(
   },
 );
 
-storeGoodsSchema.pre('save', function(next) {
+storeGoodsSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   if (!this.id) {

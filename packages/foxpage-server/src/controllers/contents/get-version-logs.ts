@@ -64,7 +64,7 @@ export class GetContentVersionChangeLogs extends BaseController {
       }
 
       const [logList, contentLogList] = await Promise.all([
-        this.service.log.find({ 'category.versionId': versionId, action: { $in: [LOG.PUBLISH, LOG.LIVE] } }),
+        this.service.log.find({ 'content.id': versionId, action: { $in: [LOG.PUBLISH, LOG.LIVE] } }),
         this.service.contentLog.find({ 'category.versionId': versionId }),
       ]);
 
@@ -72,7 +72,7 @@ export class GetContentVersionChangeLogs extends BaseController {
       const userObject = await this.service.user.getUserBaseObjectByIds(userIds);
 
       let versionChangeLogs: VersionLogItem[] = [];
-      logList.forEach((log) => {
+      logList.forEach((log: any) => {
         versionChangeLogs.push({
           id: versionId,
           contentId,

@@ -52,18 +52,18 @@ const ComponentList = (props: IProps) => {
       ),
     },
     {
-      title: version.status,
-      dataIndex: 'status',
-      width: 100,
-      render: (status: boolean) => status && <Tag color="cyan">Live</Tag>,
-    },
-    {
       title: category.label,
       dataIndex: 'label',
       width: 300,
       render: (_text: string, record: ApplicationSettingBuilderComponent) => (
         <span>{record.category?.name}</span>
       ),
+    },
+    {
+      title: version.status,
+      dataIndex: 'status',
+      width: 100,
+      render: (status: boolean) => status && <Tag color="cyan">Live</Tag>,
     },
     {
       title: category.category,

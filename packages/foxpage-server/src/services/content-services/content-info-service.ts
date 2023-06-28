@@ -33,7 +33,7 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Partial<Content>} params
    * @returns Content
    */
-  create(params: Partial<Content>, options: { ctx: FoxCtx; actionType?: string }): Content {
+  create(params: Partial<Content>, options: { ctx: FoxCtx; actionDataType?: string }): Content {
     const contentDetail: Content = {
       id: params.id || generationId(PRE.CONTENT),
       title: _.trim(params?.title) || '',
@@ -47,6 +47,18 @@ export class ContentInfoService extends BaseService<Content> {
     };
 
     options.ctx.transactions.push(Model.content.addDetailQuery(contentDetail));
+    Service.userLog.addLogItem(
+      { id: contentDetail.id },
+      {
+        ctx: options.ctx,
+        actions: [LOG.CREATE, options.actionDataType || params.type || '', TYPE.CONTENT],
+        category: {
+          applicationId: params.applicationId,
+          fileId: params.fileId,
+          contentId: contentDetail.id,
+        },
+      },
+    );
 
     return contentDetail;
   }
@@ -60,9 +72,14 @@ export class ContentInfoService extends BaseService<Content> {
    */
   addContentDetail(
     params: Partial<Content>,
-    options: { ctx: FoxCtx; type: FileTypes; content?: Record<string, any>; actionType?: string },
+    options: {
+      ctx: FoxCtx;
+      type: FileTypes;
+      content?: Record<string, any>;
+      actionDataType?: string;
+    },
   ): Content {
-    const contentDetail = this.create(params, { ctx: options.ctx });
+    const contentDetail = this.create(params, _.pick(options, ['ctx', 'actionDataType']));
     if ([TYPE.COMPONENT, TYPE.EDITOR, TYPE.LIBRARY].indexOf(options.type) === -1) {
       if (!options.content) {
         options.content = {};
@@ -71,7 +88,7 @@ export class ContentInfoService extends BaseService<Content> {
       options.content.id = contentDetail.id;
       Service.version.info.create(
         { contentId: contentDetail.id, content: options?.content || {} },
-        { ctx: options.ctx, fileId: params.fileId },
+        { ctx: options.ctx, fileId: params.fileId, ignoreUserLog: true },
       );
     }
 
@@ -85,7 +102,7 @@ export class ContentInfoService extends BaseService<Content> {
    */
   async updateContentDetail(
     params: UpdateTypeContent,
-    options: { ctx: FoxCtx; actionType?: string },
+    options: { ctx: FoxCtx; actionDataType?: string; actionType?: string },
   ): Promise<Record<string, number>> {
     const contentDetail = await this.getDetailById(params.id);
     if (this.notValid(contentDetail)) {
@@ -123,9 +140,21 @@ export class ContentInfoService extends BaseService<Content> {
             contentId: contentDetail.id,
             fileId: contentDetail.fileId,
             folderId: fileDetail.folderId,
+            applicationId: fileDetail.applicationId,
           },
         }),
       );
+    } else {
+      Service.userLog.addLogItem(contentDetail, {
+        ctx: options.ctx,
+        actions: [LOG.UPDATE, options.actionDataType || contentDetail.type || '', TYPE.CONTENT],
+        category: {
+          contentId: contentDetail.id,
+          fileId: contentDetail.id,
+          folderId: fileDetail.folderId,
+          applicationId: fileDetail.applicationId,
+        },
+      });
     }
 
     return { code: 0 };
@@ -137,8 +166,22 @@ export class ContentInfoService extends BaseService<Content> {
    * @param  {Partial<Content>} params
    * @returns void
    */
-  updateContentItem(id: string, params: Partial<Content>, options: { ctx: FoxCtx }): void {
+  updateContentItem(
+    id: string,
+    params: Partial<Content>,
+    options: { ctx: FoxCtx; actionDataType?: string },
+  ): void {
     options.ctx.transactions.push(Model.content.updateDetailQuery(id, params));
+    Service.userLog.addLogItem(
+      { id: id },
+      {
+        ctx: options.ctx,
+        actions: [LOG.UPDATE, options.actionDataType || '', TYPE.CONTENT],
+        category: {
+          contentId: id,
+        },
+      },
+    );
   }
 
   /**

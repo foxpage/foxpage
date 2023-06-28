@@ -2,6 +2,7 @@ import _ from 'lodash';
 
 import { File, Tag } from '@foxpage/foxpage-server-types';
 
+import { TYPE } from '../../../config/constant';
 import * as Model from '../../models';
 import { AppFileTag, FileCheck } from '../../types/file-types';
 import { BaseService } from '../base-service';
@@ -111,5 +112,33 @@ export class FileCheckService extends BaseService<File> {
     });
 
     return hasLiveContentFileIds;
+  }
+
+  /**
+   * check the ids or list is under app level
+   * only check items in one app
+   * block default belong to app level
+   * response the ids in app level
+   * @param params
+   * @returns
+   */
+  async appLevelFile(params: { ids?: string[]; list?: File[]; appFolderIds?: string[] }): Promise<string[]> {
+    let { ids = [], list = [], appFolderIds = [] } = params;
+    if (ids.length > 0) {
+      list = await Service.file.list.getDetailByIds(ids);
+    }
+
+    if (list.length > 0) {
+      if (appFolderIds.length === 0) {
+        appFolderIds = await Service.folder.info.getAppDefaultItemFolderIds(list[0].applicationId);
+      }
+
+      return _(list)
+        .filter((item) => appFolderIds.indexOf(item.folderId) !== -1 || item.type === TYPE.BLOCK)
+        .map('id')
+        .value();
+    }
+
+    return [];
   }
 }

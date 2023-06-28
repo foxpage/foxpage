@@ -68,7 +68,10 @@ export class UpdateTypeItemVersionDetail extends BaseController {
         );
       }
 
-      const result = await this.service.version.info.updateVersionDetail(params, { ctx });
+      const result = await this.service.version.info.updateVersionDetail(params, {
+        ctx,
+        actionDataType: apiType,
+      });
 
       if (result.code === 1) {
         return Response.warning(i18n.content.invalidVersionId, 2162301);
@@ -77,11 +80,14 @@ export class UpdateTypeItemVersionDetail extends BaseController {
       } else if (result.code === 3) {
         return Response.warning(i18n.content.versionExist, 2162303);
       } else if (result.code === 4) {
-        return Response.warning(i18n.content.missingFields + (<string[]>result.data).join(','), 2162304);
+        return Response.warning(
+          i18n.content.missingFields + (<string[]>result.data || []).join(','),
+          2162305,
+        );
       } else if (result.code === 5 && apiType === TYPE.CONDITION) {
         return Response.warning(
-          i18n.condition.invalidRelations + (<string[]>result?.data).join(','),
-          2162305,
+          i18n.condition.invalidRelations + (<string[]>result.data || []).join(','),
+          2162306,
         );
       }
 

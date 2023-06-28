@@ -5,11 +5,13 @@ import { Button, Form, Input, message, Select, Switch } from 'antd';
 import { RootState } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/applications/detail/packages/detail';
-import { getComponentsEditVersions } from '@/apis/application';
-import { Group, OperationDrawer, Title } from '@/components/index';
+import { fetchPackages } from '@/actions/applications/detail/packages/fast';
+import { fetchRemoteComponents, getComponentsEditVersions } from '@/apis/application';
+import { DiffEditor, Group, OperationDrawer, Title } from '@/components/index';
+import { ResourceTagEnum } from '@/constants/index';
 import { StoreGoodsPurchaseType } from '@/constants/store';
 import { GlobalContext } from '@/pages/system';
-import { ComponentEditVersionEntity } from '@/types/application';
+import { ComponentEditVersionEntity } from '@/types/index';
 
 import { JSONEditorFormItem, PackageSelect, ResPathTreeSelect } from './components/index';
 
@@ -18,6 +20,7 @@ const { Option } = Select;
 const mapStateToProps = (store: RootState) => ({
   applicationId: store.applications.detail.settings.app.applicationId,
   contentId: store.applications.detail.packages.detail.componentInfo?.id,
+  packages: store.applications.detail.packages.fast.packages,
   packageType: store.applications.detail.packages.detail.componentInfo?.type,
   fileDetail: store.applications.detail.packages.detail.fileDetail,
   open: store.applications.detail.packages.detail.versionDrawer?.open,
@@ -30,6 +33,7 @@ const mapDispatchToProps = {
   closeDrawer: ACTIONS.resetVersionDrawerState,
   addVersion: ACTIONS.addComponentVersionAction,
   editVersion: ACTIONS.editComponentVersionAction,
+  fetchPackages,
 };
 
 type ComponentDetailEditDrawerType = ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps;
@@ -41,6 +45,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
     open,
     type,
     data,
+    packages,
     versionList,
     closeDrawer,
     addVersion,
@@ -50,6 +55,8 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
 
   const initialValuesRef = useRef<Promise<ComponentEditVersionEntity | undefined> | undefined>();
   const versionDetailRef = useRef<ComponentEditVersionEntity | undefined>();
+  const [componentMeta, setComponentMeta] = useState<string>('');
+  const [versionMeta, setVersionMeta] = useState<string>('');
 
   const isSystemComponent = fileDetail?.type === 'systemComponent';
   const isComponent = fileDetail?.type === 'component' || isSystemComponent;
@@ -99,8 +106,26 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
     return disabled;
   }, [data, type, versionList]);
 
-  const afterVisibleChange = useCallback((visiable) => {
+  const afterVisibleChange = useCallback(async (visiable) => {
     if (visiable) {
+      let component = packages?.[0]?.components?.[0]?.component;
+      const fileTag = fileDetail?.tags?.find(
+        (item) => item.type === ResourceTagEnum.ResourceGroup && item.resourceGroupId,
+      ) as unknown as { type: string; resourceGroupId: string };
+
+      const groupId = fileTag?.resourceGroupId;
+
+      if (!packages.length && groupId) {
+        const remoteRes = await fetchRemoteComponents({
+          applicationId,
+          groupId,
+          name: fileDetail.name,
+        });
+        component = remoteRes.data?.[0]?.components?.[0]?.component;
+      }
+      const componentMeta = component ? component.content.meta : {};
+      setComponentMeta(JSON.stringify(componentMeta));
+
       initialValuesRef.current?.then((data) => {
         if (data) {
           versionDetailRef.current = data;
@@ -115,9 +140,11 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
           } = content || {};
           const { entry, 'editor-entry': editorEntry, dependencies = [] } = resource || {};
           const { browser, node, debug, css } = entry || {};
+          const mergedMeta = Object.assign({}, componentMeta, meta);
+          setVersionMeta(JSON.stringify(meta));
           const initForm = {
             version,
-            meta,
+            meta: mergedMeta,
             schema,
             browser: parseValueForTreeSelect(browser),
             node: parseValueForTreeSelect(node),
@@ -137,7 +164,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
       initialValuesRef.current = undefined;
       form.resetFields();
     }
-  }, []);
+  }, [packages, fileDetail]);
 
   const onSave = () => {
     if (isRefer) {
@@ -154,7 +181,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
               ...params,
               applicationId,
               contentId,
-            } as any,
+            },
             {
               onSuccess: () => closeDrawer(),
             },
@@ -166,7 +193,7 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
               ...params,
               applicationId,
               id: versionId,
-            } as any,
+            },
             {
               onSuccess: () => closeDrawer(),
             },
@@ -392,8 +419,12 @@ const VersionEditDrawer: React.FC<ComponentDetailEditDrawerType> = (props) => {
                 <JSONEditorFormItem disabled={isRefer || disableState} value={form.getFieldValue(['meta'])} />
               </Form.Item>
               <Form.Item name="schema" label="Schema">
-                <JSONEditorFormItem disabled={isRefer || disableState} value={form.getFieldValue(['schema'])} />
+                <JSONEditorFormItem
+                  disabled={isRefer || disableState}
+                  value={form.getFieldValue(['schema'])}
+                />
               </Form.Item>
+              {/* <DiffEditor original={componentMeta} modified={versionMeta} height={300} originalLanguage="json" modifiedLanguage="json" /> */}
             </>
           )}
           <Form.Item name="changelog" label={version.changelog}>

@@ -9,6 +9,7 @@ import {
 } from '@/types/index';
 
 export const VARIABLE_REG = /\{\{.*?(?=(\}\}))/g;
+export const BLOCK_KEY = '__blocks';
 export const CONDITION_RELATION_KEY = '__conditions';
 export const TEMPLATE_RELATION_KEY = '__templates';
 export const FUNCTION_RELATION_KEY = '__functions';
@@ -21,7 +22,7 @@ const getPrefixes = (str: string, prefixStrMap: Record<string, string>) => {
   const endIdx = str.lastIndexOf(']');
   const [prefix, ..._rest] = startIdx > -1 ? str.substring(0, startIdx).split(':') : str.split(':');
 
-  if (!(prefix.includes('\'') || prefix.includes('"'))) {
+  if (!(prefix.includes("'") || prefix.includes('"'))) {
     prefixStrMap[str] = prefix;
   }
 
@@ -71,6 +72,10 @@ export const initRelation = (content: Content, relations: RelationDetails) => {
         switch (prefix) {
           case TEMPLATE_RELATION_KEY: {
             result = initTemplateRelation(rest[0]);
+            break;
+          }
+          case BLOCK_KEY: {
+            result = initBlockRelation(rest[0]);
             break;
           }
           case CONDITION_RELATION_KEY: {
@@ -149,6 +154,15 @@ export const initFunctionRelation = (functionId: string) => {
  */
 export const initTemplateRelation = (templateId: string) => {
   return { id: templateId, type: 'template' } as RelationValue;
+};
+
+/**
+ * init template relation
+ * @param blockId
+ * @returns
+ */
+export const initBlockRelation = (blockId: string) => {
+  return { id: blockId, type: 'block' } as RelationValue;
 };
 
 /**
@@ -247,6 +261,10 @@ export const getConditionRelationKey = (contentId: string) => {
 
 export const getTemplateRelationKey = (contentId: string) => {
   return `${TEMPLATE_RELATION_KEY}:${contentId}:schemas`;
+};
+
+export const getBlockRelationKey = (contentId: string) => {
+  return `${BLOCK_KEY}:${contentId}:schemas`;
 };
 
 export const isTimeConditionRelation = (schemaItems: ConditionContentSchema) => {

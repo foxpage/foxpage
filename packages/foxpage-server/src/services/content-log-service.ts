@@ -55,7 +55,7 @@ export class ContentLogService extends BaseService<ContentLog> {
    * @param contentIds
    */
   async getChangedContent(contentIds: string[]): Promise<string[]> {
-    let changedContentIds:string[] = [];
+    let changedContentIds: string[] = [];
     if (contentIds.length === 0) {
       return changedContentIds;
     }
@@ -65,18 +65,21 @@ export class ContentLogService extends BaseService<ContentLog> {
       status: VERSION.STATUS_BASE,
     });
     const maxBaseVersionObject: Record<string, string> = {};
-    versionList.forEach(version => {
-      if(!maxBaseVersionObject[version.contentId]) {
+    versionList.forEach((version) => {
+      if (!maxBaseVersionObject[version.contentId]) {
         maxBaseVersionObject[version.contentId] = version.id;
       }
     });
     const versionIds = _.values(maxBaseVersionObject);
-    if (versionIds.length >0 ){
-      const logVersionList = await Service.contentLog.find({
-        'category.versionId': { $in: versionIds }
-      }, 'category.contentId');
-      logVersionList.map(item => {
-        changedContentIds.push(item.category?.contentId|| '');
+    if (versionIds.length > 0) {
+      const logVersionList = await Service.contentLog.find(
+        {
+          'category.versionId': { $in: versionIds },
+        },
+        'category.contentId',
+      );
+      logVersionList.map((item) => {
+        changedContentIds.push(item.category?.contentId || '');
       });
     }
 

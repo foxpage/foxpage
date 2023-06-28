@@ -34,16 +34,16 @@ export function merge(current: PageContent, base: PageContent) {
   try {
     const mergedContent =
       !!baseContent.schemas && curContent?.schemas
-        ? merger.merge((baseContent as unknown) as Page, (curContent as unknown) as Page, {
+        ? merger.merge(baseContent as unknown as Page, curContent as unknown as Page, {
             strategy: merger.MergeStrategy.COMBINE_BY_EXTEND,
           })
         : curContent;
 
-    return ({
+    return {
       ...current,
       content: mergedContent,
       relations: mergeRelations(base?.relations || {}, current.relations),
-    } as unknown) as PageContent;
+    } as unknown as PageContent;
   } catch (e) {
     console.error('mergeContent error:', e);
     return null;

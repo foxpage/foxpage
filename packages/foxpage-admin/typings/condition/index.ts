@@ -1,57 +1,18 @@
 import {
-  AbstractEntity,
-  BaseFileEntity,
-  BaseObjectEntity,
   CommonDeleteParams,
   CommonFetchParams,
   CommonPublishParams,
+  ConditionContentEntity,
+  ConditionEntity,
   FileScope,
   PaginationInfo,
-  Relation,
   ResponseBody,
-  Schemas,
-} from '@/types/index';
-
-export interface TimeZoneType extends BaseObjectEntity {
-  desc: string;
-  country: string;
-}
-
-export interface LocaleTimeZoneConfigType {
-  [locale: string]: TimeZoneType[];
-}
+} from '@foxpage/foxpage-client-types';
 
 export interface ConditionFetchParams extends Omit<CommonFetchParams, 'organizationId'> {
   folderId?: string;
   type?: string;
   scope?: FileScope;
-}
-
-// ConditionContentSchemaChildrenPropsItem
-export interface ConditionContentSchemaChildrenProps extends BaseObjectEntity {
-  operation: string;
-}
-
-// ConditionContentSchemaChildrenItem
-export interface ConditionContentSchemaChildren {
-  type: string;
-  props: ConditionContentSchemaChildrenProps;
-}
-
-// ConditionContentSchemaItem
-export interface ConditionContentSchema extends Schemas<any> {
-  children: ConditionContentSchemaChildren[];
-}
-
-// ConditionContentItem
-export interface ConditionContentEntity extends Pick<AbstractEntity, 'id'> {
-  relation?: Relation;
-  schemas: ConditionContentSchema[];
-}
-
-// ConditionItem
-export interface ConditionEntity extends Omit<BaseFileEntity<ConditionContentEntity>, 'type'> {
-  type?: 'condition';
 }
 
 export interface ConditionFetchRes extends ResponseBody {

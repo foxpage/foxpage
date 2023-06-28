@@ -35,6 +35,12 @@ export class DeleteTeamMemberList extends BaseController {
     try {
       ctx.logAttr = Object.assign(ctx.logAttr, { type: TYPE.TEAM });
 
+      // Permission check
+      const hasAuth = await this.service.auth.team(params.teamId, { ctx });
+      if (!hasAuth) {
+        return Response.accessDeny(i18n.system.accessDeny, 4020301);
+      }
+
       this.service.team.updateMembersStatus(params.teamId, params.userIds, { ctx, status: false });
       await this.service.team.runTransaction(ctx.transactions);
       const teamInfo = await this.service.team.getDetailById(params.teamId);

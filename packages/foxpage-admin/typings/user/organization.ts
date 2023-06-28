@@ -1,4 +1,4 @@
-import { ResponseBody, TeamMemberEntity } from '@/types/index';
+import { ResponseBody, TeamMemberEntity } from '@foxpage/foxpage-client-types';
 
 export interface AddOrganizationUserParams {
   organizationId: string;

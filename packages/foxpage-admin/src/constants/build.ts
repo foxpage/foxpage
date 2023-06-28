@@ -1,6 +1,7 @@
 export const STYLE_CONTAINER = '@fox-design/react-container';
 
 export const REACT_COMPONENT_TYPE = 'react.component';
+export const DSL_TPL_TYPE = 'dsl.template';
 
 export const nameRuleReg = /[^0-9a-zA-Z\-_/@ ]/;
 

@@ -120,6 +120,7 @@ contentVersionSchema.post(['find', 'findOne'], function (result) {
     });
   }
 });
+
 contentVersionSchema.index({ id: 1 });
 contentVersionSchema.index({ contentId: 1 });
 contentVersionSchema.index({ versionNumber: -1 });

@@ -1,22 +1,11 @@
-import { ApplicationSettingBuilderComponent } from '../application';
-import { BaseResponse, PaginationReqParams, PaginationResponseBody } from '../common';
-
-export interface ComponentCategory {
-  type?: string;
-  name: string;
-  categoryName: string;
-  groupName: string;
-  sort: number;
-  rank: number;
-  props: {};
-  description: string;
-  screenshot: string;
-}
-
-export interface CategoryType {
-  categoryName: string;
-  groupNames: string[];
-}
+import {
+  ApplicationSettingBuilderComponent,
+  BaseResponse,
+  CategoryType,
+  ComponentCategory,
+  PaginationReqParams,
+  PaginationResponseBody,
+} from '@foxpage/foxpage-client-types';
 
 export interface ComponentCategoryFetchParams extends PaginationReqParams {
   applicationId: string;

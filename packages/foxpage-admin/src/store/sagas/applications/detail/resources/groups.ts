@@ -37,7 +37,7 @@ function* fetchResourceGroups(action: AppResourceGroupsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -88,7 +88,7 @@ function* saveResourceGroup(action: AppResourceGroupsActionType) {
       global: { saveFailed },
     } = getBusinessI18n();
 
-   errorToast(res, saveFailed);
+    errorToast(res, saveFailed);
 
     if (onFail) onFail();
   }
@@ -119,7 +119,7 @@ function* deleteResourceGroup(action: AppResourceGroupsActionType): any {
 
     if (typeof onSuccess === 'function') onSuccess();
   } else {
-   errorToast(res, deleteFailed);
+    errorToast(res, deleteFailed);
 
     if (typeof onFail === 'function') onFail();
   }
@@ -150,7 +150,7 @@ function* handleFetchResourcesGroupTypes(action: AppResourceGroupsActionType) {
       global: { fetchListFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 

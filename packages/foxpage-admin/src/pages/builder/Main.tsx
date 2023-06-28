@@ -9,7 +9,6 @@ import { fetchComponentList } from '@/actions/builder/components';
 import { selectContent, updateStoreModalVisible } from '@/actions/builder/header';
 import * as LOCKER_ACTIONS from '@/actions/builder/locker';
 import * as ACTIONS from '@/actions/builder/main';
-import * as HISTORY_ACTIONS from '@/actions/history/index';
 import * as RECORD_ACTIONS from '@/actions/record/index';
 import { FileType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
@@ -17,19 +16,13 @@ import { EditDrawer as ConditionEditDrawer } from '@/pages/applications/detail/f
 import { EditDrawer as VariableEditDrawer } from '@/pages/applications/detail/file/variables/components';
 import { fetchUserRecordStatus } from '@/store/actions/record';
 import { checkExist, clearCache } from '@/store/sagas/builder/services';
-import { FoxBuilderEvents } from '@/types/builder';
+import { FoxBuilderEvents } from '@/types/index';
 
 import { Notice } from '../notice';
 
 import { Header } from './header';
 import LockerNotice from './LockerNotice';
-import {
-  BUILDER_WINDOW_EDITOR,
-  BUILDER_WINDOW_MODAL,
-  ConditionBindDrawer,
-  ToolbarModal,
-  VariableBindModal,
-} from './toolbar';
+import { BUILDER_WINDOW_EDITOR, BUILDER_WINDOW_MODAL, ToolbarModal, VariableBindModal } from './toolbar';
 import Viewer from './Viewer';
 
 const Container = styled.div`
@@ -171,6 +164,11 @@ const Builder = (props: IProps) => {
   useEffect(() => {
     if (applicationId) {
       fetchApp(applicationId);
+    }
+  }, [applicationId]);
+
+  useEffect(() => {
+    if (applicationId && locale !== undefined) {
       fetchComponents(applicationId, locale);
     }
   }, [applicationId, locale]);
@@ -243,7 +241,6 @@ const Builder = (props: IProps) => {
       <Viewer key={locale} loading={loading} changeWindow={handleWindowChange} />
       <ConditionEditDrawer applicationId={applicationId} folderId={folderId} pageContentId={contentId} />
       <VariableEditDrawer applicationId={applicationId} folderId={folderId} pageContentId={contentId} />
-      <ConditionBindDrawer />
       <ToolbarModal />
       <VariableBindModal />
     </Container>

@@ -69,7 +69,7 @@ export class SetTypeItemLiveVersions extends BaseController {
         const contentResult: any = JSON.parse(<string>result.data);
         if (contentResult.code === 3) {
           return Response.warning(
-            i18n.content.RelationInfoNotExist + ':' + contentResult.data.join(','),
+            i18n.content.RelationInfoNotExist + ':' + (contentResult.data || []).join(','),
             2162003,
           );
         } else if (contentResult.code === 4) {

@@ -9,7 +9,6 @@ const Root = styled.div`
 `;
 
 interface IProps {
-  hideOnSinglePage: boolean;
   size?: 'default' | 'small';
   current: number;
   total: number;

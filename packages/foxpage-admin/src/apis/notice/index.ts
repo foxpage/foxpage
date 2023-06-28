@@ -1,4 +1,4 @@
-import { NoticeFetchedResponse } from '@/types/notice';
+import { NoticeFetchedResponse } from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
 export const fetchNotices = (params: {}): Promise<NoticeFetchedResponse> =>

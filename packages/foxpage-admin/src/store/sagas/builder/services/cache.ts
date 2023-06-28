@@ -30,9 +30,13 @@ export const cache = async (content: PageContent, curStep: number) => {
   return caches.length;
 };
 
-export const setCurStep = async (key: string, step: number = 0) => {
+export const setCurStep = async (key: string, step: number = 0, content: PageContent) => {
   const caches = await getCached(key);
   // caches
+  if (caches.length > MAX_CACHED_NUM) {
+    caches.shift();
+  }
+  caches.push(content);
   const cached = { id: key, contents: caches, curStep: step };
   localforage.setItem(BUILDER_DSL, encrypt(JSON.stringify(cached)));
   return caches.length;

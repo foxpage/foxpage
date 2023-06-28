@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Application, AppResource } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { PRE, TYPE } from '../../../config/constant';
+import { LOG, PRE, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AppDetailRes, UpdateAppReq } from '../../types/validates/app-validate-types';
 import * as Response from '../../utils/response';
@@ -93,6 +93,11 @@ export class UpdateApplicationDetail extends BaseController {
 
       // Save logs
       ctx.logAttr = Object.assign(ctx.logAttr, { id: params.applicationId, type: TYPE.APPLICATION });
+      this.service.userLog.addLogItem(appDetail, {
+        ctx,
+        actions: [LOG.UPDATE, '', TYPE.APPLICATION],
+        category: { applicationId: appDetail.id },
+      });
 
       return Response.success(newAppDetail, 1031001);
     } catch (err) {

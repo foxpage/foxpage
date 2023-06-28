@@ -9,6 +9,7 @@ import { clonePage } from '@/apis/builder';
 import * as PROJECT_API from '@/apis/project';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ApplicationPageContentActionType } from '@/reducers/applications/detail/file/pages/content';
+import { fetchScreenshots } from '@/store/actions/screenshot';
 import { store } from '@/store/index';
 import {
   AuthorizeAddParams,
@@ -31,6 +32,13 @@ function* handleFetchPageContents(action: ApplicationPageContentActionType) {
 
   if (res.code === 200) {
     yield put(ACTIONS.pushPageContentList(res.data || [], res.pageInfo));
+    yield put(
+      fetchScreenshots({
+        applicationId: params.applicationId,
+        type: 'content',
+        typeIds: res.data.map((item) => item.id),
+      }),
+    );
   } else {
     const {
       content: { fetchFailed },

@@ -2,7 +2,7 @@ import {
   ApplicationSettingBuilderDeleteParams,
   ApplicationSettingBuilderFetchParams,
   ApplicationSettingBuilderSaveParams,
-} from '@/types/application';
+} from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
 export const getApplicationsBuilderSetting = (params: ApplicationSettingBuilderFetchParams) =>

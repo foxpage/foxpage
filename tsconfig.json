@@ -20,8 +20,6 @@
     "paths": {},
     "resolveJsonModule": true
   },
-  "include": [
-    "packages/**/*",
-  ],
+  "include": ["packages/**/*"],
   "exclude": ["node_modules"]
 }

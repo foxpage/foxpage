@@ -5,7 +5,7 @@ import debounce from 'lodash/debounce';
 
 import { getComponentSearchs } from '@/apis/application';
 import { suffixTagColor } from '@/constants/file';
-import { AppComponentFetchParams, AppPackageSearchItem } from '@/types/application';
+import { AppComponentFetchParams, AppPackageSearchItem } from '@/types/index';
 import { getAbsoluteTypes } from '@/utils/parse-helper';
 
 const { Option } = Select;

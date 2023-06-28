@@ -19,6 +19,7 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
   ctx.userInfo = {
     id: 'user_xxxx',
     account: 'mock_user',
@@ -43,7 +44,7 @@ describe('Get: /contents/logs', () => {
     jest.spyOn(ContentLogService.prototype, 'getCount').mockResolvedValue(1);
 
     const result = await appInstance.index(params);
-    expect(result.status).toEqual(1161101);
+    expect(result.status).toEqual(1162801);
   });
 
   it('response invalid app or contentId', async () => {
@@ -52,7 +53,7 @@ describe('Get: /contents/logs', () => {
     params.structureId = null as any;
 
     const result = await appInstance.index(params);
-    expect(result.status).toEqual(2161001);
+    expect(result.status).toEqual(2162801);
   });
 
   it('response success with invalid versionId', async () => {
@@ -65,7 +66,7 @@ describe('Get: /contents/logs', () => {
     jest.spyOn(ContentLogService.prototype, 'getCount').mockResolvedValue(1);
 
     const result = await appInstance.index(params);
-    expect(result.status).toEqual(1161101);
+    expect(result.status).toEqual(1162801);
   });
 
   it('response error', async () => {
@@ -75,6 +76,6 @@ describe('Get: /contents/logs', () => {
     jest.spyOn(ContentLogService.prototype, 'find').mockRejectedValue(new Error('mock error'));
 
     const result = await appInstance.index(params);
-    expect(result.status).toEqual(3161101);
+    expect(result.status).toEqual(3162801);
   });
 });

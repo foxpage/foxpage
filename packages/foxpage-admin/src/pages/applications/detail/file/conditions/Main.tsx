@@ -10,9 +10,9 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/applications/detail/file/conditions';
 import { FileScopeSelector, FoxPageBreadcrumb, FoxPageContent } from '@/components/index';
 import { GlobalContext } from '@/pages/system';
+import { getLocationIfo } from '@/utils/location-info';
 
 import { EditDrawer, List } from './components';
-import { getLocationIfo } from '@/utils/location-info';
 
 const { Search } = Input;
 
@@ -115,7 +115,6 @@ const Main: React.FC<ConditionType> = (props) => {
         </OptionsBox>
         <List search={search} />
       </FoxPageContent>
-
       <EditDrawer applicationId={applicationId} search={search} />
     </>
   );

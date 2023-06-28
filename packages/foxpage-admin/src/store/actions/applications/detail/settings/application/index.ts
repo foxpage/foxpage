@@ -1,6 +1,6 @@
 import { createAction } from 'typesafe-actions';
 
-import { Application, ApplicationEntityMultiHost } from '@/types/application';
+import { Application, ApplicationEntityMultiHost } from '@/types/index';
 
 export const clearAll = createAction('APPLICATION_SETTINGS_APP__CLEAR_ALL', () => ({}))();
 
@@ -29,9 +29,12 @@ export const fetchAllLocales = createAction(
   }),
 )();
 
-export const pushAllLocales = createAction('APPLICATION_SETTINGS_APP__PUSH_ALL_LOCALES', (locales: string[]) => ({
-  locales,
-}))();
+export const pushAllLocales = createAction(
+  'APPLICATION_SETTINGS_APP__PUSH_ALL_LOCALES',
+  (locales: string[]) => ({
+    locales,
+  }),
+)();
 
 export const saveApplication = createAction(
   'APPLICATION_SETTINGS_APP__SAVE_APPLICATION',

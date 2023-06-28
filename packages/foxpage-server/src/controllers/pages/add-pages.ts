@@ -38,7 +38,7 @@ export class AddPageDetail extends BaseController {
   })
   @ResponseSchema(FileDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: FileDetailReq): Promise<ResData<File>> {
-    if (!checkName(params.name)) {
+    if (!checkName(params.name) || !params.name) {
       return Response.warning(i18n.file.invalidName, 2050201);
     }
 
@@ -65,7 +65,10 @@ export class AddPageDetail extends BaseController {
 
       params.tags = this.service.content.tag.formatTags(apiType, params.tags);
       const newFileDetail: NewFileInfo = Object.assign({}, params, { type: apiType });
-      const result = await this.service.file.info.addFileDetail(newFileDetail, { ctx });
+      const result = await this.service.file.info.addFileDetail(newFileDetail, {
+        ctx,
+        actionDataType: apiType,
+      });
 
       // Check the validity of the application ID
       if (result.code === 1) {

@@ -21,7 +21,7 @@ function* handleSearchRecycles(action: RecycleActionType) {
       global: { searchFailed },
     } = getBusinessI18n();
 
-   errorToast(res, searchFailed);
+    errorToast(res, searchFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));

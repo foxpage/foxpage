@@ -1,9 +1,11 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
 
-import { ComingSoon } from '@/components/index';
+import { Dynamics as DynamicsComponent } from '@/components/index';
 
 const Dynamics = () => {
-  return <ComingSoon />;
+  const { applicationId } = useParams<{ applicationId: string }>();
+  return applicationId ? <DynamicsComponent applicationId={applicationId} /> : null;
 };
 
 export default Dynamics;

@@ -47,7 +47,7 @@ export class GetContentChangeItemIdLogs extends BaseController {
         return Response.success({}, 1161202);
       }
 
-      let queryParams: Record<string, string> = {
+      let queryParams: Record<string, any> = {
         'category.contentId': contentId,
         'category.versionId': versionId,
       };

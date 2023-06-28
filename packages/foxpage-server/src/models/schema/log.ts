@@ -30,7 +30,7 @@ const logSchema = new Schema<Log>(
 );
 
 logSchema.set('toJSON', { getters: true });
-logSchema.pre('save', function(next) {
+logSchema.pre('save', function (next) {
   const currentTime = Date.now();
   this.updateTime = currentTime;
   this.createTime = currentTime;
@@ -43,6 +43,8 @@ logSchema.index({ operator: 1 });
 logSchema.index({ 'content.realMethod': 1 });
 logSchema.index({ 'content.response.code': 1 });
 logSchema.index({ 'content.applicationId': 1 });
+logSchema.index({ 'content.id': 1, action: 1 });
+logSchema.index({ action: 1, 'category.versionId': 1 });
 logSchema.index({ createTime: -1 });
 logSchema.index({ deleted: 1 });
 

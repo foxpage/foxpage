@@ -1,6 +1,6 @@
 import { createAction } from 'typesafe-actions';
 
-import { UserOrganization } from '@/types/user';
+import { UserOrganization } from '@/types/index';
 
 export const fetchOrganizationList = createAction('SYSTEM__FETCH_ORGANIZATION_LIST', () => ({}))();
 

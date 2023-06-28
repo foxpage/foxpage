@@ -7,6 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { Log } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
+import { TYPE } from '../../../config/constant';
 import { UserBase } from '../../../src/types/user-types';
 import { FoxCtx, PageData, ResData } from '../../types/index-types';
 import { DynamicListRes, WorkspaceDynamicListReq } from '../../types/validates/log-validate-types';
@@ -47,6 +48,7 @@ export class GetWorkspaceDynamicList extends BaseController {
   ): Promise<ResData<PageData<DynamicItem>>> {
     try {
       const creator = ctx.userInfo.id;
+      !params.type && (params.type = TYPE.USER);
       if (!creator) {
         return Response.warning(i18n.user.invalidUser, 2140201);
       }
@@ -73,14 +75,23 @@ export class GetWorkspaceDynamicList extends BaseController {
 
       this.service.folder.info.setPageSize(params);
 
-      // Default time range is last 7 days
+      if (params.type === TYPE.APPLICATION && !params.applicationId) {
+        return Response.warning(i18n.app.invalidAppId, 2140202);
+      } else if (params.type === TYPE.APPLICATION) {
+        const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+        if (!hasAuth) {
+          return Response.accessDeny(i18n.system.accessDeny, 4140201);
+        }
+      }
+
+      // Default time range is last 90 days
       if (!params.startTime || !params.endTime) {
-        params.startTime = new Date().getTime() - 7 * 86400000;
+        params.startTime = new Date().getTime() - 90 * 86400000;
         params.endTime = new Date().getTime();
       }
 
-      const operationResult = await this.service.log.getUserOperationList(
-        Object.assign({ operator: creator, organizationId: orgDetail.id }, params),
+      const operationResult = await this.service.userLog.getUserOperationList(
+        Object.assign({ creator, organizationId: orgDetail.id }, params),
       );
 
       // Get operation data base info, include app name
@@ -96,7 +107,7 @@ export class GetWorkspaceDynamicList extends BaseController {
         data.category?.fileId && fileIds.push(data.category.fileId);
         data.category?.folderId && folderIds.push(data.category.folderId);
         data.category?.applicationId && applicationIds.push(data.category?.applicationId);
-        userIds.push(data.operator);
+        userIds.push(data.creator);
       });
 
       const [versionObject, contentObject, fileObject, folderObject, appObject, userObject] =
@@ -120,17 +131,16 @@ export class GetWorkspaceDynamicList extends BaseController {
         log.category.applicationId &&
           (log.category.applicationName = appObject[log.category.applicationId]?.name || '');
 
-        const actionArr = log.action.split('_');
         const actionTypeArr = log.actionType.split('_');
         dynamicList.push(
           Object.assign({}, log, {
             dataType: {
-              scope: actionArr[0] || '',
+              scope: actionTypeArr[2] || '',
               type: actionTypeArr[1] || '',
               action: actionTypeArr[0] || '',
             },
-            creator: userObject[log.operator] || {},
-          }) as DynamicItem,
+            creator: userObject[log.creator] || {},
+          }) as unknown as DynamicItem,
         );
       });
 

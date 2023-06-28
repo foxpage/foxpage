@@ -9,6 +9,7 @@ import * as API from '@/apis/project';
 import { defaultSuffix, FileType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectFileActionType } from '@/reducers/workspace/projects/personal/file';
+import { fetchScreenshots } from '@/store/actions/screenshot';
 import { store } from '@/store/index';
 import {
   AuthorizeAddParams,
@@ -31,6 +32,13 @@ function* handleFetchList(action: ProjectFileActionType) {
 
   if (res.code === 200) {
     yield put(ACTIONS.pushFileList(res.data.files, res.pageInfo));
+    yield put(
+      fetchScreenshots({
+        applicationId: params.applicationId,
+        type: 'file',
+        typeIds: res.data.files.map((item) => item.id),
+      }),
+    );
   } else {
     const {
       global: { fetchListFailed },
@@ -92,8 +100,15 @@ function* handleSaveFile(action: ProjectFileActionType) {
 
 function* handleDeleteFile(action: ProjectFileActionType) {
   const { params, cb } = action.payload as { params: ProjectFileDeleteParams; cb?: () => void };
+  const { fileDetail } = store.getState().workspace.projects.personal.content;
+  const apiMap = {
+    [FileType.block]: API.deleteBlock,
+    [FileType.page]: API.deletePage,
+    [FileType.template]: API.deleteTemplate,
+  };
+  const api = apiMap[fileDetail.type];
   const { id, applicationId } = params;
-  const res = yield call(API.deleteFile, {
+  const res = yield call(api, {
     id,
     applicationId,
     status: true,

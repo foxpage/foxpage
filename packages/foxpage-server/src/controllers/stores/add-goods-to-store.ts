@@ -59,8 +59,8 @@ export class AddGoodsToStore extends BaseController {
         return Response.warning(i18n.store.invalidTypeId, 2130102);
       }
 
-      const contentLiveNumbers = _.pull(_.map(fileContentList?.[params.id] || [], 'liveVersionNumber'), 0);
-      if (contentLiveNumbers.length === 0) {
+      const contentLiveIds = _.pull(_.map(fileContentList?.[params.id] || [], 'liveVersionId'), '');
+      if (contentLiveIds.length === 0) {
         return Response.warning(i18n.store.mustHasLiveVersion, 2130103);
       }
 

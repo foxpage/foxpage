@@ -1,5 +1,6 @@
 import { UpdateComponentFileDetail } from '../../../../src/controllers/components/update-components';
 import { AuthService } from '../../../../src/services/authorization-service';
+import { FileContentService } from '../../../../src/services/content-services/file-content-service';
 import { FileInfoService } from '../../../../src/services/file-services/file-info-service';
 import { FoxCtx } from '../../../../src/types/index-types';
 import Data from '../../../data';
@@ -12,18 +13,21 @@ let params = {
   id: Data.file.id,
   intro: '',
   componentType: 'react.component',
+  loadOnIgnite: true,
 };
 
 beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
 
   params = {
     applicationId: Data.app.id,
     id: Data.file.id,
     intro: '',
     componentType: 'react.component',
+    loadOnIgnite: true,
   };
 });
 
@@ -33,6 +37,7 @@ describe('Put: /components', () => {
     jest.spyOn(FileInfoService.prototype, 'updateFileDetail').mockResolvedValue({ code: 0 });
     jest.spyOn(FileInfoService.prototype, 'runTransaction').mockResolvedValue();
     jest.spyOn(FileInfoService.prototype, 'getDetailById').mockResolvedValue(<any>Data.file.list[0]);
+    jest.spyOn(FileContentService.prototype, 'getContentByFileIds').mockResolvedValue(<any>Data.content.list);
 
     const result = await comInstance.index(<FoxCtx>ctx, params);
 

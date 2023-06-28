@@ -9,7 +9,7 @@ import { RootState } from 'typesafe-actions';
 import * as ACTIONS from '@/actions/store/list';
 import { FileType } from '@/constants/global';
 import { GlobalContext } from '@/pages/system';
-import { StorePackageResource, StoreProjectResource } from '@/types/store';
+import { StorePackageResource, StoreProjectResource } from '@/types/index';
 
 const ToolRow = styled.div`
   display: flex;

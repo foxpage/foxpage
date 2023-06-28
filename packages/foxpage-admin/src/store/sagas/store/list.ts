@@ -49,7 +49,7 @@ function* handleFetchResources(action: StoreResourceListActionType) {
       store: { fetchResourceFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchResourceFailed);
+    errorToast(res, fetchResourceFailed);
   }
 
   yield put(ACTIONS.updateLoading(false));
@@ -66,7 +66,7 @@ function* handleFetchApplicationList(actions: StoreResourceListActionType) {
       application: { fetchListFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -81,7 +81,7 @@ function* handleFetchAllApplicationList(action: StoreResourceListActionType) {
       application: { fetchListFailed },
     } = getBusinessI18n();
 
-   errorToast(res, fetchListFailed);
+    errorToast(res, fetchListFailed);
   }
 }
 
@@ -110,7 +110,7 @@ function* handleAddGoods(action: StoreResourceListActionType) {
 
     yield put(ACTIONS.updateBuyModalVisible(false));
   } else {
-   errorToast(res, buyFailed);
+    errorToast(res, buyFailed);
   }
 }
 

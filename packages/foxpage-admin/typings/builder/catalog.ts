@@ -1,10 +1,10 @@
-import { CommonFetchParams, ContentEntity, File, ProjectEntity, ResponseBody } from '@/types/index';
-
-// catalog
-export interface CatalogFileEntity extends File {
-  contents: ContentEntity[];
-  fold: boolean;
-}
+import {
+  CatalogFileEntity,
+  CommonFetchParams,
+  ContentEntity,
+  ProjectEntity,
+  ResponseBody,
+} from '@foxpage/foxpage-client-types';
 
 export interface CatalogFetchParams extends Omit<CommonFetchParams, 'organizationId'> {
   deleted?: boolean;
@@ -31,5 +31,6 @@ export interface CatalogContentSelectParams {
   fileId?: string;
   fileType?: string;
   folderId?: string;
+  versionId?: string;
   locale?: string;
 }

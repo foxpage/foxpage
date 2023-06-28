@@ -2,7 +2,7 @@ import produce from 'immer';
 import { ActionType, getType } from 'typesafe-actions';
 
 import * as ACTIONS from '@/actions/system/common';
-import { TeamMemberEntity } from '@/types/team';
+import { TeamMemberEntity } from '@/types/index';
 
 export type SystemActionType = ActionType<typeof ACTIONS>;
 

@@ -1,5 +1,6 @@
-import { LoginParams, LoginReturn } from './login';
-import { User } from './user';
+import { LoginReturn, User } from '@foxpage/foxpage-client-types';
+
+import { LoginParams } from './login';
 
 export type RegisterParams = Pick<User, 'email'> & LoginParams;
 

@@ -90,10 +90,9 @@ export const updateVariableRelations = createAction(
   (relations: RelationDetails) => ({ relations }),
 )();
 
-export const updateScope = createAction(
-  'APPLICATION_FILE_VARIABLES__UPDATE_SCOPE',
-  (scope: FileScope) => ({ scope }),
-)();
+export const updateScope = createAction('APPLICATION_FILE_VARIABLES__UPDATE_SCOPE', (scope: FileScope) => ({
+  scope,
+}))();
 
 export const updateVariableContentValue = createAction(
   'APPLICATION_FILE_VARIABLES__UPDATE_VARIABLE_CONTENT_VALUE',

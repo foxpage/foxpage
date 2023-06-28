@@ -63,12 +63,13 @@ const RecycleBin: React.FC<ProjectsProps> = (props) => {
   }, [searchText]);
 
   useEffect(() => {
-    fetchRecycles({
-      organizationId,
-      page: pageNum,
-      size: pageInfo.size,
-      search: search || '',
-    });
+    if (organizationId)
+      fetchRecycles({
+        organizationId,
+        page: pageNum,
+        size: pageInfo.size,
+        search: search || '',
+      });
   }, [pageNum, search, organizationId]);
 
   const columns = [

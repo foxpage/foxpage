@@ -22,10 +22,13 @@ const initialState = {
   fileId: '',
   applicationId: '',
   contentId: '',
+  versionId: '',
   fileType: '',
   loading: false,
-  locale: '',
+  locale: undefined as string | undefined,
   project: '',
+  zoom: 1,
+  viewWidth: '',
   // store related
   storeModalTemplates,
   storeModalTemplatesBackup,
@@ -65,7 +68,13 @@ const reducer = (state: InitialDataType = initialState, action: BuilderHeaderAct
       }
 
       case getType(ACTIONS.updateLocale): {
-        draft.locale = action.payload.locale;
+        draft.locale = action.payload.locale || '';
+        break;
+      }
+
+      case getType(ACTIONS.updateEditorConfig): {
+        draft.zoom = action.payload.params['zoom'];
+        draft.viewWidth = action.payload.params['viewWidth'];
         break;
       }
 
@@ -106,19 +115,21 @@ const reducer = (state: InitialDataType = initialState, action: BuilderHeaderAct
       }
 
       case getType(ACTIONS.updateContentInfo): {
-        const { applicationId, folderId, fileId, contentId, fileType } = action.payload;
+        const { applicationId, folderId, fileId, contentId, versionId, fileType } = action.payload;
 
         const _applicationId = state.applicationId;
         const _contentId = state.contentId;
         const _fileId = state.fileId;
         const _fileType = state.fileType;
         const _folderId = state.folderId;
+        const _versionId = state.versionId;
 
         draft.applicationId = applicationId || _applicationId;
         draft.contentId = contentId || _contentId;
         draft.fileId = fileId || _fileId;
         draft.fileType = fileType || _fileType;
         draft.folderId = folderId || _folderId;
+        draft.versionId = versionId || _versionId;
         break;
       }
 

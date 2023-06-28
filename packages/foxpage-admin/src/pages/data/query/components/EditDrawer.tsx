@@ -31,7 +31,7 @@ type TeamEditDrawerType = ReturnType<typeof mapStateToProps> & typeof mapDispatc
 const Drawer: React.FC<TeamEditDrawerType> = (props) => {
   const { pageInfo, editTeam, editDrawerOpen, closeDrawer, updateTeamValue, saveTeam, fetchList } = props;
 
-  // get multi-language
+  // i18n
   const { locale, organizationId } = useContext(GlobalContext);
   const { global, team } = locale.business;
 

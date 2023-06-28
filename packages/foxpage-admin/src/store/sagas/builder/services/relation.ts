@@ -28,12 +28,12 @@ export async function getRelation(content: Content, relations: RelationDetails, 
       return name;
     });
 
-    const result: ResponseBody<VariableEntity[]> = await searchVariable(({
+    const result: ResponseBody<VariableEntity[]> = await searchVariable({
       applicationId: application?.id || opt?.applicationId,
       id: file.folderId,
       names: Array.from(new Set(invalidNames)),
       size: 100,
-    } as unknown) as VariableSearchParams);
+    } as unknown as VariableSearchParams);
 
     // init invalids
     if (result.code === 200) {

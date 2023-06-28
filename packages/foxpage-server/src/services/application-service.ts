@@ -3,16 +3,9 @@ import _ from 'lodash';
 
 import { Application, AppResource, Folder, Organization } from '@foxpage/foxpage-server-types';
 
-import { PRE } from '../../config/constant';
+import { LOG, PRE, TYPE } from '../../config/constant';
 import * as Model from '../models';
-import {
-  AddAppSetting,
-  AppInfo,
-  AppOrgInfo,
-  AppSearch,
-  AppWithFolder,
-  UpdateAppSetting,
-} from '../types/app-types';
+import { AddAppSetting, AppOrgInfo, AppSearch, AppWithFolder, UpdateAppSetting } from '../types/app-types';
 import { FolderFileContent } from '../types/content-types';
 import { FoxCtx, PageList } from '../types/index-types';
 import { AppHostInfo } from '../types/validates/app-validate-types';
@@ -57,6 +50,14 @@ export class ApplicationService extends BaseService<Application> {
     };
 
     options.ctx.transactions.push(Model.application.addDetailQuery(appDetail));
+    Service.userLog.addLogItem(
+      { id: appDetail.id },
+      {
+        ctx: options.ctx,
+        actions: [LOG.CREATE, '', TYPE.APPLICATION],
+        category: { applicationId: appDetail.id },
+      },
+    );
 
     return appDetail;
   }
@@ -112,35 +113,15 @@ export class ApplicationService extends BaseService<Application> {
   /**
    * Get a list of apps containing paging information
    * @param  {AppSearch} params
-   * @returns {AppInfo} Promise
+   * @returns {Application} Promise
    */
-  async getPageList(params: AppSearch): Promise<PageList<AppInfo>> {
+  async getPageList(params: AppSearch): Promise<{ total: number; appList: Application[] }> {
     const [appList, total] = await Promise.all([
       Model.application.getAppList(params),
       Model.application.getTotal(params),
     ]);
 
-    // Obtain user name data based on app lists data
-    let appUserList: AppInfo[] = [];
-    if (appList.length > 0) {
-      const userBase = await Service.user.getDetailByIds(_.map(appList, 'creator'));
-      const userBaseObject = _.keyBy(
-        _.map(userBase, (user) => _.pick(user, ['id', 'account'])),
-        'id',
-      );
-
-      appList.map((app) => {
-        const appBase = Object.assign(_.omit(app, 'creator'), {
-          creator: userBaseObject[app.creator],
-        }) as AppInfo;
-        appUserList.push(appBase);
-      });
-    }
-
-    return {
-      pageInfo: { page: <number>params.page, size: <number>params.size, total: total },
-      data: appUserList,
-    };
+    return { total, appList };
   }
 
   /**

@@ -6,10 +6,11 @@ import dayjs from 'dayjs';
 import { RootState } from 'typesafe-actions';
 import { clearInterval, setInterval } from 'worker-timers';
 
+import { LockerManagerState, LockerState } from '@/types/index';
+
 import * as ACTIONS from '@/actions/builder/main';
 import * as RECORD_ACTIONS from '@/actions/record/index';
 import { clearCache } from '@/store/sagas/builder/services';
-import { LockerManagerState, LockerState } from '@/types/builder';
 
 import { GlobalContext } from '../system';
 

@@ -28,9 +28,11 @@ const versionList = {
   fileId: '',
   loading: false,
   versions: [] as ComponentVersionEntity[],
-  pageInfo: { total: 0, page: 1, size: 1000 } as PaginationInfo,
+  pageInfo: { total: 0, page: 1, size: 10 } as PaginationInfo,
 };
-const depList: any[] = [];
+const depList = {
+  list: [] as any[],
+};
 
 const initialState = {
   fileDetail,
@@ -135,7 +137,7 @@ const reducer = (state: InitialDataType = initialState, action: ApplicationPacka
       }
 
       case getType(ACTIONS.pushComponentUsed): {
-        draft.depList = action.payload.list;
+        draft.depList.list = action.payload.list;
         break;
       }
 

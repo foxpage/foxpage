@@ -8,6 +8,7 @@ import * as API from '@/apis/project';
 import { defaultSuffix, FileType } from '@/constants/index';
 import { getBusinessI18n } from '@/foxI18n/index';
 import { ProjectFileActionType } from '@/reducers/projects/file';
+import { fetchScreenshots } from '@/store/actions/screenshot';
 import { store } from '@/store/index';
 import {
   AuthorizeAddParams,
@@ -30,6 +31,13 @@ function* handleFetchList(action: ProjectFileActionType) {
 
   if (res.code === 200) {
     yield put(ACTIONS.pushFileList(res.data.files, res.pageInfo));
+    yield put(
+      fetchScreenshots({
+        applicationId: params.applicationId,
+        type: 'file',
+        typeIds: res.data.files.map((item) => item.id),
+      }),
+    );
   } else {
     const {
       global: { fetchListFailed },
@@ -80,9 +88,16 @@ function* handleSave(action: ProjectFileActionType) {
 
 function* handleDelete(action: ProjectFileActionType) {
   const { params, cb } = action.payload as { params: ProjectFileDeleteParams; cb?: () => void };
-  const { id, applicationId, folderId } = params;
   const { pageInfo } = store.getState().projects.file;
-  const res = yield call(API.deleteFile, {
+  const { fileDetail } = store.getState().projects.content;
+  const apiMap = {
+    [FileType.block]: API.deleteBlock,
+    [FileType.page]: API.deletePage,
+    [FileType.template]: API.deleteTemplate,
+  };
+  const api = apiMap[fileDetail.type];
+  const { id, applicationId, folderId } = params;
+  const res = yield call(api, {
     id,
     applicationId,
     status: true,

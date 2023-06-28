@@ -1,20 +1,19 @@
 import { createAction } from 'typesafe-actions';
 
-import { DndData, PageContent, RenderStructureNode } from '@/types/index';
+import {
+  CopyOptions,
+  DndData,
+  PageContent,
+  PasteOptions,
+  RenderStructureNode,
+  UpdateOptions,
+} from '@/types/index';
 
 export const clearAll = createAction('BUILDER_EVENT__CLEAR_ALL', () => ({}))();
 
 export const updateLoading = createAction('BUILDER_EVENT__UPDATE_LOADING', (loading: boolean) => ({
   loading,
 }))();
-
-export const updateComponent = createAction(
-  'BUILDER_EVENT__UPDATE_COMPONENT',
-  (params: RenderStructureNode, opt?: {}) => ({
-    params,
-    opt,
-  }),
-)();
 
 export const forReRender = createAction(
   'BUILDER_EVENT__FPR_RERENDER',
@@ -24,20 +23,49 @@ export const forReRender = createAction(
   }),
 )();
 
-export const removeComponent = createAction(
-  'BUILDER_EVENT__REMOVE_COMPONENT',
-  (params: RenderStructureNode) => ({
+export const updateComponent = createAction(
+  'BUILDER_EVENT__UPDATE_COMPONENT',
+  (params: RenderStructureNode, opt?: UpdateOptions) => ({
     params,
+    opt,
   }),
 )();
 
-export const copyComponent = createAction('BUILDER_EVENT__COPY_COMPONENT', (params: RenderStructureNode) => ({
-  params,
-}))();
+export const removeComponent = createAction(
+  'BUILDER_EVENT__REMOVE_COMPONENT',
+  (params: RenderStructureNode, opt?: UpdateOptions) => ({
+    params,
+    opt,
+  }),
+)();
+
+export const copyComponent = createAction(
+  'BUILDER_EVENT__COPY_COMPONENT',
+  (params: RenderStructureNode, opt?: UpdateOptions) => ({
+    params,
+    opt,
+  }),
+)();
 
 export const dropComponent = createAction('BUILDER_EVENT__DROP_COMPONENT', (params: DndData) => ({
   params,
 }))();
+
+export const copyToClipboard = createAction(
+  'BUILDER_EVENT__COPY_TO_CLIPBOARD',
+  (node: RenderStructureNode, opt: CopyOptions) => ({
+    node,
+    opt,
+  }),
+)();
+
+export const pasteFromClipboard = createAction(
+  'BUILDER_EVENT__PASTE_FROM_CLIPBOARD',
+  (node: RenderStructureNode, opt: PasteOptions) => ({
+    node,
+    opt,
+  }),
+)();
 
 export const variableBind = createAction(
   'BUILDER_EVENT__VARIABLE_BIND',

@@ -7,7 +7,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { AppFolderTypes, Folder } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
-import { LOG, PRE, TYPE } from '../../../config/constant';
+import { PRE, TYPE } from '../../../config/constant';
 import { FoxCtx, ResData } from '../../types/index-types';
 import { AddProjectDetailReq, ProjectDetailRes } from '../../types/validates/project-validate-types';
 import * as Response from '../../utils/response';
@@ -40,28 +40,30 @@ export class AddProjectDetail extends BaseController {
   })
   @ResponseSchema(ProjectDetailRes)
   async index(@Ctx() ctx: FoxCtx, @Body() params: AddProjectDetailReq): Promise<ResData<Folder>> {
-    if (!checkName(params.name)) {
+    if (!checkName(params.name) || !params.name) {
       return Response.warning(i18n.project.invalidProjectName, 2040201);
     }
 
     try {
-      const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
-      if (!hasAuth) {
-        return Response.accessDeny(i18n.system.accessDeny, 4040203);
-      }
+      // const hasAuth = await this.service.auth.application(params.applicationId, { ctx });
+      // if (!hasAuth) {
+      //   return Response.accessDeny(i18n.system.accessDeny, 4040201);
+      // }
 
+      let tags: Record<string, string>[] = [{ type: TYPE.PROJECT_FOLDER }];
+      params.organizationId && tags.push({ type: TYPE.ORGANIZATION, typeId: params.organizationId });
       const folderDetail: Folder = Object.assign(_.omit(params, 'path'), {
         id: generationId(PRE.FOLDER),
         parentFolderId: '',
         folderPath: params.path ? formatToPath(params.path) : formatToPath(params.name),
-        tags: [{ type: TYPE.PROJECT_FOLDER }],
+        tags: tags,
         creator: ctx.userInfo.id,
       });
 
       const result = await this.service.folder.info.addTypeFolderDetail(folderDetail, {
         ctx,
         type: TYPE.PROJECT as AppFolderTypes,
-        actionType: [LOG.CREATE, TYPE.PROJECT].join('_'),
+        actionDataType: TYPE.PROJECT,
       });
 
       if (result.code === 1) {

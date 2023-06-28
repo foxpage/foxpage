@@ -109,76 +109,85 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = (props) => {
     setSelectedKeys(e.keyPath);
   };
 
+  const handleCollapse = (collapsed) => {
+    setSiderCollapsed(collapsed);
+  };
+
   return (
-    <Layout hasSider style={{ height: '100%' }}>
+    <Layout hasSider style={{ height: '100%', overflow: 'hidden' }}>
       <Sider
         theme="light"
         width={250}
+        collapsible
         collapsedWidth={60}
         breakpoint="xxl"
         onBreakpoint={(broken) => setSiderCollapsed(broken)}
-        style={{ height: '100%', overflow: 'auto' }}>
+        onCollapse={handleCollapse}
+        style={{ height: '100%' }}>
         <AppName style={{ paddingLeft: siderCollapsed ? 8 : 24 }}>{application?.name}</AppName>
-        <Menu
-          onClick={handleClick}
-          mode="inline"
-          selectedKeys={selectedKeys}
-          defaultOpenKeys={['file', 'package', 'settings']}
-          theme="light">
-          <Menu.Item key="overview" icon={<DashboardOutlined />}>
-            {global.overview}
-          </Menu.Item>
-          <Menu.Item key="projects" icon={<ProjectOutlined />}>
-            {global.project}
-          </Menu.Item>
-          <Menu.SubMenu key="file" title={file.name} icon={<FileSearchOutlined />}>
-            <Menu.Item key="pages" icon={<FileTextOutlined />}>
-              {file.page}
+        <div className="h-full overflow-auto">
+          <Menu
+            onClick={handleClick}
+            mode="inline"
+            selectedKeys={selectedKeys}
+            defaultOpenKeys={['file', 'package', 'settings']}
+            theme="light"
+            style={{ paddingBottom: 48 }}>
+            <Menu.Item key="overview" icon={<DashboardOutlined />}>
+              {global.overview}
             </Menu.Item>
-            <Menu.Item key="templates" icon={<FileOutlined />}>
-              {file.template}
+            <Menu.Item key="projects" icon={<ProjectOutlined />}>
+              {global.project}
             </Menu.Item>
-            <Menu.Item key="variables" icon={<SlidersOutlined />}>
-              {global.variables}
-            </Menu.Item>
-            <Menu.Item key="functions" icon={<FunctionOutlined />}>
-              {global.functions}
-            </Menu.Item>
-            <Menu.Item key="conditions" icon={<ControlOutlined />}>
-              {global.conditions}
-            </Menu.Item>
-          </Menu.SubMenu>
-          <Menu.SubMenu key="package" title={global.packages} icon={<BookOutlined />}>
-            <Menu.Item key="components" icon={<LayoutOutlined />}>
-              {packageI18n.component}
-            </Menu.Item>
-            <Menu.Item key="editors" icon={<ControlOutlined />}>
-              {packageI18n.editor}
-            </Menu.Item>
-            <Menu.Item key="resources" icon={<ContainerOutlined />}>
-              {global.resources}
-            </Menu.Item>
-          </Menu.SubMenu>
-          <Menu.Item key="dynamics" icon={<BranchesOutlined />}>
-            {global.dynamics}
-          </Menu.Item>
-          <Menu.SubMenu key="settings" title={global.setting} icon={<SettingOutlined />}>
-            <Menu.SubMenu key="builder" title={global.builder} icon={<BuildOutlined />}>
-              <Menu.Item key="component" icon={<BarsOutlined />}>
-                {setting.componentBar}
+            <Menu.SubMenu key="file" title={file.name} icon={<FileSearchOutlined />}>
+              <Menu.Item key="pages" icon={<FileTextOutlined />}>
+                {file.page}
               </Menu.Item>
-              <Menu.Item key="page" icon={<FileTextOutlined />}>
-                {setting.page}
+              <Menu.Item key="templates" icon={<FileOutlined />}>
+                {file.template}
               </Menu.Item>
-              <Menu.Item key="template" icon={<FileOutlined />}>
-                {setting.template}
+              <Menu.Item key="variables" icon={<SlidersOutlined />}>
+                {global.variables}
+              </Menu.Item>
+              <Menu.Item key="functions" icon={<FunctionOutlined />}>
+                {global.functions}
+              </Menu.Item>
+              <Menu.Item key="conditions" icon={<ControlOutlined />}>
+                {global.conditions}
               </Menu.Item>
             </Menu.SubMenu>
-            <Menu.Item key="application" icon={<AppstoreOutlined />}>
-              {global.application}
+            <Menu.SubMenu key="package" title={global.packages} icon={<BookOutlined />}>
+              <Menu.Item key="components" icon={<LayoutOutlined />}>
+                {packageI18n.component}
+              </Menu.Item>
+              <Menu.Item key="editors" icon={<ControlOutlined />}>
+                {packageI18n.editor}
+              </Menu.Item>
+              <Menu.Item key="resources" icon={<ContainerOutlined />}>
+                {global.resources}
+              </Menu.Item>
+            </Menu.SubMenu>
+            <Menu.Item key="dynamics" icon={<BranchesOutlined />}>
+              {global.dynamics}
             </Menu.Item>
-          </Menu.SubMenu>
-        </Menu>
+            <Menu.SubMenu key="settings" title={global.setting} icon={<SettingOutlined />}>
+              <Menu.SubMenu key="builder" title={global.builder} icon={<BuildOutlined />}>
+                <Menu.Item key="component" icon={<BarsOutlined />}>
+                  {setting.componentBar}
+                </Menu.Item>
+                <Menu.Item key="page" icon={<FileTextOutlined />}>
+                  {setting.page}
+                </Menu.Item>
+                <Menu.Item key="template" icon={<FileOutlined />}>
+                  {setting.template}
+                </Menu.Item>
+              </Menu.SubMenu>
+              <Menu.Item key="application" icon={<AppstoreOutlined />}>
+                {global.application}
+              </Menu.Item>
+            </Menu.SubMenu>
+          </Menu>
+        </div>
       </Sider>
 
       <Switch>

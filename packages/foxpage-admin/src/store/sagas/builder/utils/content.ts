@@ -2,12 +2,11 @@ import { Content, PageContent, StructureNode } from '@/types/index';
 
 export const getSaveContent = <T extends StructureNode>(
   pageContent: PageContent,
-  opt: { pageNode: T | null; clearVersion?: boolean },
+  opt: { pageNode: T | undefined | null; clearVersion?: boolean },
 ) => {
   const { content, ...pageRest } = pageContent;
   const { schemas = [], ...rest } = content;
   const { pageNode, clearVersion = false } = opt;
-  console.log(clearVersion);
   let newSchemas = wrapperSchema(schemas, clearVersion);
 
   // deal with page node
@@ -24,7 +23,7 @@ export const getSaveContent = <T extends StructureNode>(
   return { ...pageRest, content: { ...rest, schemas: newSchemas } as Content } as PageContent;
 };
 
-const wrapperSchema = <T extends StructureNode>(schemas: T[] = [], clearVersion?: boolean) => {
+export const wrapperSchema = <T extends StructureNode>(schemas: T[] = [], clearVersion?: boolean) => {
   const list: T[] = [];
   schemas.forEach((item) => {
     const node = initValidNode(item) as T;

@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Body, Ctx, JsonController, Post } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
-import { AppFolderTypes, StoreOrder } from '@foxpage/foxpage-server-types';
+import { AppFolderTypes, StoreGoods, StoreOrder } from '@foxpage/foxpage-server-types';
 
 import { i18n } from '../../../app.config';
 import { PRE, TAG, TYPE } from '../../../config/constant';
@@ -48,7 +48,7 @@ export class AddStorePageItemToApplication extends BaseController {
         params.appIds.map((appId) => this.service.auth.application(appId, { ctx })),
       );
       if (hasAuth.indexOf(false) !== -1) {
-        return Response.accessDeny(i18n.system.accessDeny);
+        return Response.accessDeny(i18n.system.accessDeny, 4130301);
       }
 
       // Check the status of the goods
@@ -90,7 +90,7 @@ export class AddStorePageItemToApplication extends BaseController {
           // Add goods order
           goodsOrders.push({
             id: generationId(PRE.ORDER),
-            goodsId: goodsFileObject?.[file.id]?.id || '',
+            goodsId: (goodsFileObject?.[file.id] as StoreGoods)?.id || '',
             goodsVersionId: '',
             customer: {
               id: file.id,

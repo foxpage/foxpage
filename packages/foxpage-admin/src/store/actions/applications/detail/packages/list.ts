@@ -5,6 +5,7 @@ import {
   AppComponentAddComponentParams,
   AppComponentDeleteComponentParams,
   AppComponentFetchComponentsParams,
+  AppComponentSetComponentParams,
   CommonDrawerEntity,
   OptionsAction,
 } from '@/types/index';
@@ -48,6 +49,11 @@ export const addComponentAction = createAction(
 export const deleteComponentAction = createAction(
   'APPLICATION_PACKAGES_LIST__DELETE_COMPONENT_API',
   (params: AppComponentDeleteComponentParams, options?: OptionsAction) => ({ params, options }),
+)();
+
+export const setComponentAction = createAction(
+  'APPLICATION_PACKAGES_LIST__SET_COMPONENT_ACTION',
+  (params: AppComponentSetComponentParams, cb?: () => void) => ({ params, cb }),
 )();
 
 // actions

@@ -21,3 +21,10 @@ export const fetchRecordStatus = (params: RecordFetchParams) =>
       resolve(rs);
     });
   });
+
+export const fetchDeleteRecords = (params: RecordFetchParams) =>
+  new Promise((resolve) => {
+    FoxPageApi.get('/contents/delete-logs', params, (rs: RecordFetchEdRes) => {
+      resolve(rs);
+    });
+  });

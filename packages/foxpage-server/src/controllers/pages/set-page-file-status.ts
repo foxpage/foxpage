@@ -39,13 +39,17 @@ export class SetPageFileStatus extends BaseController {
 
     try {
       const apiType = this.getRoutePath(ctx.request.url);
-      let fileDetail = await this.service.file.info.getDetailById(params.id);
+
+      ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: apiType });
+      let [hasAuth, fileDetail] = await Promise.all([
+        this.service.auth.file(params.id, { ctx }),
+        this.service.file.info.getDetailById(params.id),
+      ]);
+
       if (this.notValid(fileDetail)) {
         return Response.warning(i18n.page.invalidPageId, 2051201);
       }
 
-      ctx.logAttr = Object.assign(ctx.logAttr, { method: METHOD.DELETE, type: apiType });
-      const hasAuth = await this.service.auth.file(params.id, { ctx });
       if (!hasAuth) {
         return Response.accessDeny(i18n.system.accessDeny, 4051201);
       }
@@ -53,7 +57,7 @@ export class SetPageFileStatus extends BaseController {
       // check delete status
       const hasLiveContentFileIds = await this.service.file.check.checkFileHasLiveContent([params.id]);
       if (hasLiveContentFileIds.length > 0) {
-        return Response.warning(i18n.page.pageContentHasLiveChildren, 2051203);
+        return Response.warning(i18n.page.pageContentHasLiveChildren, 2051202);
       }
 
       const result = await this.service.file.info.setFileDeleteStatus(params, {
@@ -61,13 +65,15 @@ export class SetPageFileStatus extends BaseController {
         actionType: [LOG.DELETE, apiType].join('_'),
       });
       if (result.code === 1) {
-        return Response.warning(i18n.file.invalidFileId, 2051201);
+        return Response.warning(i18n.file.invalidFileId, 2051203);
       } else if (result.code === 2) {
-        return Response.warning(i18n.page.fileCannotBeDeleted, 2051202);
+        return Response.warning(i18n.page.fileCannotBeDeleted, 2051204);
       }
 
       await this.service.file.info.runTransaction(ctx.transactions);
       fileDetail = await this.service.file.info.getDetailById(params.id);
+
+      this.service.relation.removeVersionRelations({ fileIds: [params.id] });
 
       return Response.success(fileDetail, 4151201);
     } catch (err) {

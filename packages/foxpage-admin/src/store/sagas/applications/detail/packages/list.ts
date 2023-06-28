@@ -12,6 +12,7 @@ import {
   AppComponentAddComponentParams,
   AppComponentDeleteComponentParams,
   AppComponentFetchComponentsParams,
+  AppComponentSetComponentParams,
   OptionsAction,
 } from '@/types/index';
 import { errorToast } from '@/utils/error-toast';
@@ -20,19 +21,20 @@ function* handleFetchComponentList(action: ApplicationPackagesActionType) {
   yield put(ACTIONS.updateLoading(true));
 
   const { params } = action.payload as { params: AppComponentFetchComponentsParams };
-  const { applicationId, page, size, search, type } = params || {};
+  const { applicationId, page, size, search, forceSearch, type } = params || {};
   const {
     applicationId: appId,
     pageInfo,
     search: storeSearch,
     selectPackage,
   } = store.getState().applications.detail.packages.list;
+  const _search = forceSearch ? search || '' : search || storeSearch || '';
   const res = yield call(API.getComponentSearchs, {
     applicationId: applicationId || appId,
     type: !!type ? type : selectPackage,
     page: page || pageInfo.page,
     size: size || pageInfo.size,
-    search: search || storeSearch || '',
+    search: _search,
   });
 
   if (res.code === 200) {
@@ -149,11 +151,34 @@ function* handleDeleteComponent(action: ApplicationPackagesActionType) {
   }
 }
 
+function* handleSetComponent(action: ApplicationPackagesActionType) {
+  const { params, cb } = action.payload as {
+    params: AppComponentSetComponentParams;
+    cb?: () => void;
+  };
+  const res = yield call(API.putComponents, params);
+
+  const {
+    global: { updateSuccess, updateFailed },
+  } = getBusinessI18n();
+
+  if (res.code === 200) {
+    message.success(updateSuccess);
+
+    if (typeof cb === 'function') cb();
+
+    yield put(ACTIONS.fetchComponentsAction({ applicationId: params.applicationId }));
+  } else {
+    errorToast(res, updateFailed);
+  }
+}
+
 function* watch() {
   yield takeLatest(getType(ACTIONS.fetchComponentsAction), handleFetchComponentList);
   yield takeLatest(getType(ACTIONS.fetchBlocksAction), handleFetchBlockList);
   yield takeLatest(getType(ACTIONS.addComponentAction), handleSaveComponent);
   yield takeLatest(getType(ACTIONS.deleteComponentAction), handleDeleteComponent);
+  yield takeLatest(getType(ACTIONS.setComponentAction), handleSetComponent);
 }
 
 export default function* rootSaga() {

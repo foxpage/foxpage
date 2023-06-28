@@ -110,7 +110,10 @@ function* handleDelete(action: ProjectFolderActionType) {
 
 function* handleFetchApp(action: ProjectFolderActionType) {
   const { params } = action.payload as { params: ApplicationListFetchParams };
-  const res = yield call(APPLICATION_API.fetchList, params);
+  const res = yield call(APPLICATION_API.fetchList, {
+    ...params,
+    type: 'project',
+  });
 
   if (res.code === 200) {
     yield put(ACTIONS.pushApps(res.data || []));

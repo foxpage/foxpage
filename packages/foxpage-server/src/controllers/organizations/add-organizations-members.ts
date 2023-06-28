@@ -101,7 +101,7 @@ export class AddOrganizationMembers extends BaseController {
 
         return Response.success('', 1010102);
       } else {
-        return Response.warning(i18n.user.invalidUser);
+        return Response.warning(i18n.user.invalidUser, 2010103);
       }
     } catch (err) {
       return Response.error(err, i18n.org.addOrgMemberFailed, 3010101);

@@ -5,7 +5,7 @@ import { BranchesOutlined, EyeOutlined } from '@ant-design/icons';
 import { Button, Table, Tag } from 'antd';
 
 import { GlobalContext } from '@/pages/system';
-import { ContentVersionData } from '@/types/project';
+import { ContentVersionData } from '@/types/index';
 import { periodFormat } from '@/utils/period-format';
 
 type IProps = {
@@ -56,6 +56,15 @@ export const List = (props: IProps) => {
       key: 'createTime',
       width: 200,
       render: (text: string) => periodFormat(text, 'unknown'),
+    },
+    {
+      title: global.publisher,
+      dataIndex: 'publisher',
+      key: 'publisher',
+      width: 160,
+      render: (_text: string, record: ContentVersionData) => {
+        return record?.publisher ? record.publisher?.email : '--';
+      },
     },
     {
       title: history.publishTime,

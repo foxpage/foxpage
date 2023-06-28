@@ -1,4 +1,4 @@
-import { FoxI18n } from '@/types/common';
+import { FoxI18n } from '@/types/index';
 
 import ZH_CN from './zh-cn.json';
 

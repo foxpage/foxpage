@@ -32,6 +32,7 @@ contentRelationSchema.pre('save', function (next) {
 
 contentRelationSchema.index({ id: 1 });
 contentRelationSchema.index({ applicationId: 1 });
+contentRelationSchema.index({ 'tags.value': 1 });
 contentRelationSchema.index({ type: 1 });
 contentRelationSchema.index({ level: 1 });
 contentRelationSchema.index({ deleted: 1 });

@@ -1,4 +1,4 @@
-import { FoxI18n } from '@/types/common';
+import { FoxI18n } from '@/types/index';
 
 import EN from './en.json';
 

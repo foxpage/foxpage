@@ -1,17 +1,21 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 
-import { InfoCircleOutlined, NotificationOutlined } from '@ant-design/icons';
-import { Badge, Pagination, Popover } from 'antd';
+import { NotificationOutlined } from '@ant-design/icons';
+import { Badge, Empty, Pagination, Popover } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
+import { RecordLog } from '@foxpage/foxpage-client-types';
+
+import { RecordActionType } from '@/constants/record';
 import { IconMsg, StyledIcon } from '@/pages/builder/header/Main';
 import { GlobalContext } from '@/pages/system';
 import * as ACTIONS from '@/store/actions/record';
 import { getCachedLogs } from '@/store/sagas/builder/services';
+import { getGlobalLocale } from '@/utils/index';
 
-import { NoData, TimelineElem } from '../common';
+import { TimelineElem } from '../common';
 
 import '../../index.css';
 
@@ -21,14 +25,16 @@ const Counter = styled.span`
   font-size: 12px;
 `;
 
-const LogContainer = styled.div`
-  width: 400px;
+const LogContainer = styled.div<{
+  width?: string;
+}>`
+  width: ${props => props.width || '400px'};
   padding: 0 0 16px 0;
   .ant-timeline {
     padding-left: 8px;
   }
   .ant-timeline-item {
-    padding-bottom: 4px;
+    padding-bottom: 0px;
   }
   .ant-timeline-item-tail {
     top: 24px;
@@ -45,7 +51,7 @@ const LogContainer = styled.div`
 const LoadMore = styled.div`
   text-align: center;
   width: 250px;
-  margin: 0 auto;
+  margin: 10px auto;
 `;
 
 const RemoteLine = styled.div`
@@ -55,11 +61,23 @@ const RemoteLine = styled.div`
   color: #f90;
 `;
 
+const TextWithDashed: React.FC<{ content: string }> = ({ content }) => {
+  return (
+    <div style={{ display: 'flex', marginTop: '10px' }}>
+      <span style={{ flex: 1, borderTop: 'solid 1px #e5e5e5', transform: 'translateY(56%)' }} />
+      <span style={{ color: '#fa6163', fontSize: 12 }}>{content}</span>
+      <span style={{ flex: 1, borderTop: 'solid 1px #e5e5e5', transform: 'translateY(56%)' }} />
+    </div>
+  );
+};
+
 const mapStateToProps = (store: RootState) => ({
   applicationId: store.builder.header.applicationId,
   contentId: store.builder.header.contentId,
   list: store.record.main.records,
   localList: store.record.main.localRecords,
+  nodeUpdateRecords: store.record.main.nodeUpdateRecords,
+  nodeUpdateIndex: store.record.main.nodeUpdateIndex,
   pageInfo: store.record.main.pageInfo,
   pageNum: store.record.main.pageNum,
 });
@@ -88,10 +106,39 @@ const Record: React.FC<IProps> = (props) => {
     pageNum,
     updatePageNum,
     pushLocalRecords,
+    nodeUpdateRecords,
+    nodeUpdateIndex,
   } = props;
   const { locale } = useContext(GlobalContext);
   const { record } = locale.business;
   const total = localList.length + (pageInfo.total || 0);
+  const nodeUpdateStack = nodeUpdateRecords.slice(0, nodeUpdateIndex + 1);
+
+  const localListWithRecoverFlag = useMemo(() => {
+    try {
+      const latestNodeMap: Record<string, RecordLog> = {};
+      nodeUpdateStack.forEach((item) => {
+        const nodeId = item.content?.[0]?.id;
+        if (nodeId) {
+          latestNodeMap[nodeId] = item;
+        }
+      });
+      return localList.map((item) => {
+        const nodeId = item.content?.[0]?.id;
+        if (nodeId) {
+          return {
+            ...item,
+            reversible:
+              item.action === RecordActionType.STRUCTURE_REMOVE &&
+              item.id === latestNodeMap[nodeId]?.id
+          };
+        }
+        return item;
+      });
+    } catch {
+      return localList;
+    }
+  }, [localList, nodeUpdateStack]);
 
   useEffect(() => {
     return () => {
@@ -128,20 +175,19 @@ const Record: React.FC<IProps> = (props) => {
       overlayClassName="foxpage-builder-header_popover foxpage-builder-header_record_popover"
       trigger={['hover']}
       content={
-        <LogContainer>
+        <LogContainer width={getGlobalLocale() === 'en' ? '430px' : '380px'}>
           <RemoteLine>
-            <InfoCircleOutlined /> {record.localTips}
+            {record.changeLogs}
           </RemoteLine>
-          {localList.length > 0 ? TimelineElem(localList, true) : <NoData>{record.noData}</NoData>}
-          <RemoteLine>
-            <InfoCircleOutlined /> {record.remote}
-          </RemoteLine>
-          {list.length > 0 ? TimelineElem(list) : <NoData>{record.noData}</NoData>}
+          {localList.length > 0 && TimelineElem(localListWithRecoverFlag, true)}
+          {(localList.length > 0 && list.length > 0) && <TextWithDashed content={record.localTips}/>}
+          {list.length > 0 && TimelineElem(list)}
           {
             <LoadMore>
               <Pagination
                 simple
                 pageSize={PAGE_SIZE}
+                size="small"
                 hideOnSinglePage={true}
                 current={pageNum}
                 total={pageInfo.total || 0}
@@ -149,6 +195,7 @@ const Record: React.FC<IProps> = (props) => {
               />
             </LoadMore>
           }
+          {(localList.length === 0 && list.length === 0) && <Empty />}
         </LogContainer>
       }>
       <StyledIcon>

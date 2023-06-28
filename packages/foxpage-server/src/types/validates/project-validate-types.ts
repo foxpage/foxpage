@@ -25,6 +25,12 @@ export class AddProjectDetailReq {
   @Length(0, 100)
   name: string;
 
+  @JSONSchema({ description: 'Organization ID' })
+  @IsString()
+  @IsOptional()
+  @Length(20, 20)
+  organizationId: string;
+
   @JSONSchema({ description: 'Project Introduction' })
   @IsString()
   @IsOptional()
@@ -303,3 +309,19 @@ export class WorkspaceProjectListReq {
   @IsOptional()
   size: number;
 }
+
+export class AddProjectRelationsReq {
+  @JSONSchema({ description: 'Application ID' })
+  @IsString()
+  applicationId: string;
+
+  @JSONSchema({ description: 'Target content ID' })
+  @IsString()
+  contentId: string;
+
+  @JSONSchema({ description: 'Relation and schema in DSL' })
+  @IsObject()
+  relationSchemas: any;
+}
+
+export class AddProjectRelationsRes {}

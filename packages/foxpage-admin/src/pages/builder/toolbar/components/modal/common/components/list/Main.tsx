@@ -282,12 +282,12 @@ const Main: React.FC<Type> = (props) => {
           pagination={
             pageInfo?.total && pageInfo.total > pageInfo.size
               ? {
-                position: ['bottomCenter'],
-                current: pageInfo.page,
-                pageSize: pageInfo.size,
-                total: pageInfo.total,
-                size: 'small',
-              }
+                  position: ['bottomCenter'],
+                  current: pageInfo.page,
+                  pageSize: pageInfo.size,
+                  total: pageInfo.total,
+                  size: 'small',
+                }
               : false
           }
           onChange={(pagination) => {

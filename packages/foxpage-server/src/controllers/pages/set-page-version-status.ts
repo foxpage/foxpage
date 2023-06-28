@@ -60,6 +60,8 @@ export class SetPageVersionStatus extends BaseController {
       await this.service.version.info.runTransaction(ctx.transactions);
       const versionDetail = await this.service.version.info.getDetailById(params.id);
 
+      this.service.relation.removeVersionRelations({ versionIds: [params.id] });
+
       return Response.success(versionDetail, 1051601);
     } catch (err) {
       return Response.error(err, i18n.page.setPageVersionDeletedFailed, 3051601);

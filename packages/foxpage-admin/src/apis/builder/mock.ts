@@ -6,7 +6,7 @@ import {
   MockPublishParams,
   MockUpdateParams,
   MockUpdateRes,
-} from '@/types/builder';
+} from '@/types/index';
 import FoxPageApi from '@/utils/api-agent';
 
 export const fetchMock = (params: MockBuildDetailFetchParams): Promise<MockBuildDetailFetchRes> =>

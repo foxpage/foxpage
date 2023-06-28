@@ -10,15 +10,15 @@ import { ActionRecordItem, RecordLog, StructureNode } from '@/types/index';
 import { getLoginUser } from '@/utils/login-user';
 import shortId from '@/utils/short-id';
 
-import { initValidNode } from '../builder/utils';
+import { wrapperSchema } from '../builder/utils';
 
 export const initPageLog = (value: Record<string, any>) => {
   return { type: 'page', id: value.id, content: JSON.stringify(value) } as ActionRecordItem;
 };
 
 export const initStructureLog = (value: Record<string, any>) => {
-  const snapshot = initValidNode(value as StructureNode);
-  return { type: 'structure', id: value.id, content: JSON.stringify(snapshot) } as ActionRecordItem;
+  const fullSnapshot = wrapperSchema([value as StructureNode], false);
+  return { type: 'structure', id: value.id, content: JSON.stringify(fullSnapshot[0]) } as ActionRecordItem;
 };
 
 export const initVariableLog = (value: Record<string, any>) => {

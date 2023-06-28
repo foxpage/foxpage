@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from 're
 import { connect } from 'react-redux';
 
 import { CheckCircleOutlined } from '@ant-design/icons';
-import { Card, Empty, message, Modal, Radio, Row, Spin, Tabs } from 'antd';
+import { Card, Empty, Input, message, Modal, Radio, Row, Spin, Tabs } from 'antd';
 import styled from 'styled-components';
 import { RootState } from 'typesafe-actions';
 
@@ -22,6 +22,8 @@ export enum TabEnum {
 const PAGE_NUM = 1;
 const CONTENT_ID_LENGTH = 20;
 
+const { Search } = Input;
+
 const StyledModal = styled(Modal)`
   .ant-modal-content {
     height: 100%;
@@ -35,6 +37,12 @@ const StyledModal = styled(Modal)`
 
 const Container = styled.div`
   height: 100%;
+`;
+
+const SearchContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 24px;
 `;
 
 const Header = styled.div``;
@@ -141,6 +149,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>();
   const [tab, setTab] = useState<string>(TabEnum.application);
   const [fileId, setFileId] = useState<string | undefined>();
+  const [search, setSearch] = useState('');
 
   // i18n
   const { locale } = useContext(GlobalContext);
@@ -161,21 +170,49 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
         applicationId,
         type,
         scope: tab,
-        page: pageNum,
+        page: PAGE_NUM,
         size: pageInfo.size,
       });
     } else {
-      setSelectedTemplateId(undefined);
       setFileId(undefined);
-      setTab(TabEnum.application);
       setPageNum(PAGE_NUM);
+      setSearch('');
+      setSelectedTemplateId(undefined);
+      setTab(TabEnum.application);
     }
-  }, [open, tab, pageNum]);
+  }, [open, tab]);
 
   const handleTabsChange = (tab: string) => {
     setPageNum(PAGE_NUM);
+    setSearch('');
 
     setTab(tab);
+  };
+
+  const handleOnPagination = (num: number) => {
+    setPageNum(num);
+
+    fetchPageTemplate({
+      applicationId,
+      page: num,
+      scope: tab,
+      search,
+      size: pageInfo.size,
+      type,
+    });
+  };
+
+  const handleOnSearch = () => {
+    setPageNum(PAGE_NUM);
+
+    fetchPageTemplate({
+      applicationId,
+      page: PAGE_NUM || pageNum,
+      scope: tab,
+      search,
+      size: pageInfo.size,
+      type,
+    });
   };
 
   const handleClose = () => {
@@ -232,6 +269,16 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
             <TabPane tab={global.personal} key={TabEnum.user} />
             <TabPane tab={projectI18n.shared} key={TabEnum.permission} />
           </Tabs>
+          <SearchContainer>
+            <Search
+              size="small"
+              placeholder={global.searchPlaceholder}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onSearch={handleOnSearch}
+              style={{ width: 250 }}
+            />
+          </SearchContainer>
         </Header>
         <Body>
           <Spin spinning={loading}>
@@ -300,7 +347,7 @@ const TemplateSelectModal: React.FC<TemplateSelectModalProps> = (props) => {
                 current={pageInfo.page}
                 pageSize={pageInfo.size}
                 total={pageInfo.total}
-                onChange={(page: number) => setPageNum(page)}
+                onChange={(page: number) => handleOnPagination(page)}
               />
             </Row>
           </Spin>

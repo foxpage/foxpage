@@ -17,8 +17,9 @@ beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
   ctx.request = {
-    url: 'pages/lives',
+    url: 'pages/build-versions',
   };
 
   params = {

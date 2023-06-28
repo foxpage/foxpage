@@ -22,6 +22,13 @@ export const updateLocale = createAction('BUILDER_HEADER__UPDATE_LOCALE', (local
   locale,
 }))();
 
+export const updateEditorConfig = createAction(
+  'BUILDER_HEADER__UPDATE_EDITOR_CONFIG',
+  (params: Record<string, any>) => ({
+    params,
+  }),
+)();
+
 export const fetchCatalog = createAction('BUILDER_HEADER__FETCH_CATALOG', (params: CatalogFetchParams) => ({
   ...params,
 }))();

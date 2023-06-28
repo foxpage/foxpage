@@ -1,45 +1,11 @@
-import { FileType } from '@/constants/index';
 import {
-  AbstractEntity,
-  Application,
   CommonFetchParams,
-  ContentEntity,
   PaginationInfo,
   PaginationReqParams,
   ResponseBody,
-} from '@/types/index';
-
-export interface StoreResource extends Pick<AbstractEntity, 'id' | 'createTime' | 'creator' | 'updateTime'> {
-  application: Pick<Application, 'id' | 'name'>;
-  checked?: boolean;
-  intro: string;
-  name: string;
-}
-
-interface StoreResourceDetail extends Pick<StoreResource, 'id'> {
-  applicationId: string;
-  projectId: string;
-  type: string;
-}
-
-export interface StoreFileResource extends Pick<StoreResource, 'id' | 'name'> {
-  details: StoreResourceDetail;
-  type: FileType;
-  contents?: ContentEntity[];
-  pictures: [{
-    url: string;
-    type: string;
-    sort: number;
-  }]
-}
-
-export interface StoreProjectResource extends StoreResource {
-  files: Array<StoreFileResource>;
-}
-
-export interface StorePackageResource extends StoreResource {
-  details: StoreResourceDetail;
-}
+  StoreProjectResource,
+  StoreResourceDetail,
+} from '@foxpage/foxpage-client-types';
 
 interface StoreCommonParams extends Pick<StoreResourceDetail, 'applicationId' | 'id' | 'type'> {
   appIds?: string[];
@@ -47,12 +13,10 @@ interface StoreCommonParams extends Pick<StoreResourceDetail, 'applicationId' | 
 }
 
 export type StoreResourceSearchParams = Pick<StoreCommonParams, 'appIds' | 'type'> & PaginationReqParams;
-
 export interface StoreResourceSearchResult extends ResponseBody {
   pageInfo: PaginationInfo;
   data: StoreProjectResource[];
 }
-
 export interface GoodsSearchParams extends Omit<CommonFetchParams, 'organizationId'> {
   type: string;
 }

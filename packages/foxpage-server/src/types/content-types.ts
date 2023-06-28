@@ -70,6 +70,7 @@ export interface AppNameVersion {
   applicationId: string;
   contentNameVersion: NameVersion[];
   type?: string | string[];
+  isCanary?: boolean;
 }
 
 export interface AppTypeContent extends AppFileType {
@@ -225,4 +226,11 @@ export interface LockContentDetail {
   status: boolean;
   operationTime: number;
   operator: UserBase;
+}
+
+export interface RelationContentVersion {
+  id: string;
+  fileId: string;
+  content: Content;
+  version: ContentVersion;
 }

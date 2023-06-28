@@ -38,7 +38,7 @@ export class AddAssetDetail extends BaseController {
     params.name = _.trim(params.name);
 
     // Check the validity of the name
-    if (!checkResourceName(params.name)) {
+    if (!params.name || !checkResourceName(params.name)) {
       return Response.warning(i18n.file.invalidName, 2120301);
     }
 
@@ -66,11 +66,11 @@ export class AddAssetDetail extends BaseController {
         ),
       ]);
 
-      if (nameDetail) {
+      if (!this.notValid(nameDetail)) {
         return Response.warning(i18n.resource.nameExist, 2120302);
       }
 
-      if (pathDetail) {
+      if (!this.notValid(pathDetail)) {
         return Response.warning(i18n.resource.pathExist, 2120303);
       }
 

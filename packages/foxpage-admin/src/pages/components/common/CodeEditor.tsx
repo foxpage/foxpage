@@ -46,12 +46,12 @@ const languageParserMap = {
   },
   html: {
     parser: 'html',
-    plugin: htmlParser
+    plugin: htmlParser,
   },
   css: {
     parser: 'css',
-    plugin: postcssParser
-  }
+    plugin: postcssParser,
+  },
 };
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({

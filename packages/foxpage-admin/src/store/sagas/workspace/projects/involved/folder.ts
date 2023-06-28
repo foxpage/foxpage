@@ -23,7 +23,10 @@ import { errorToast } from '@/utils/error-toast';
 
 function* handleFetchApp(action: ProjectInvolvedFolderActionType) {
   const { params } = action.payload as { params: ApplicationListFetchParams };
-  const res = yield call(APPLICATION_API.fetchList, params);
+  const res = yield call(APPLICATION_API.fetchList, {
+    ...params,
+    type: 'involve_project',
+  });
 
   if (res.code === 200) {
     yield put(ACTIONS.pushApps(res.data || []));

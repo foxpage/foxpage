@@ -47,9 +47,27 @@
 
 .foxpage-builder-header_record_popover .ant-popover-inner-content {
   max-height: 350px;
-  max-width: 400px;
+  max-width: 500px;
 }
 
-.foxpage-builder-header_record_popover .ant-popover-inner-content ul{
+.foxpage-builder-header_record_popover .ant-popover-inner-content ul {
   overflow: hidden;
+}
+
+.ant-layout-header.foxpage-builder-header {
+  background: rgb(255, 255, 255);
+  border-bottom: 1px solid rgb(242, 242, 242);
+  display: flex;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  align-items: center;
+  z-index: 100;
+  line-height: 48px;
+  height: 48px;
+  padding: 0;
+}
+
+.foxpage-builder-header_record_popover .ant-pagination {
+  text-align: center;
 }

@@ -21,17 +21,23 @@ let params = {
   applicationId: Data.app.id,
   nameVersions: [{ version: '', name: '@fox-design/react-slot' }],
   type: ['component'],
+  isCanary: false,
 };
 
 beforeEach(() => {
   ctx.logAttr = { transactionId: '' };
   ctx.operations = [];
   ctx.transactions = [];
+  ctx.userLogs = [];
+  ctx.request = {
+    url: '',
+  };
 
   params = {
     applicationId: Data.app.id,
     nameVersions: [{ version: '', name: '@fox-design/react-slot' }],
     type: ['component'],
+    isCanary: false,
   };
 });
 

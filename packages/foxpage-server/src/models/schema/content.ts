@@ -33,7 +33,10 @@ contentSchema.pre('save', function (next) {
 });
 
 contentSchema.index({ id: 1 });
+contentSchema.index({ applicationId: 1 });
 contentSchema.index({ fileId: 1 });
+contentSchema.index({ 'tags.locale': 1 });
+contentSchema.index({ type: 1 });
 contentSchema.index({ creator: 1 });
 contentSchema.index({ deleted: 1 });
 contentSchema.index({ createTime: -1 });

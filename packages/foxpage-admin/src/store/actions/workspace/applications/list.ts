@@ -67,6 +67,10 @@ export const updateValue = createAction(
 
 export const saveApp = createAction('WORKSPACE_APPLICATIONS__SAVE_APP', () => ({}))();
 
+export const deleteApp = createAction('WORKSPACE_APPLICATIONS__DELETE_APP', (applicationId: string) => ({
+  applicationId,
+}))();
+
 // authorize related
 export const fetchAuthList = createAction(
   'WORKSPACE_APPLICATIONS__FETCH_AUTH_LIST',

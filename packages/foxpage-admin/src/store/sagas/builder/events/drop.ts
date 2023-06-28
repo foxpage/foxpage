@@ -17,29 +17,44 @@ type DropComponentOptions = {
  * @param opt options
  * @returns effects
  */
-export const dropComponent = (dnd: DndData, opt: DropComponentOptions) => {
+export const dropComponent = (
+  dnd: DndData,
+  opt: DropComponentOptions,
+): { adds?: StructureNode[]; effects?: StructureNode[] } => {
   const { dragInfo, dropIn, placement } = dnd;
   const { type = 'add', detail } = dragInfo || {};
   if (!detail) {
-    return [];
+    return {};
   }
 
   const { formattedData, file } = opt;
   const { componentMap } = formattedData || {};
-  let node = {} as StructureNode;
+  // add
   if (type === 'add') {
-    node = addComponent(detail as Component, { componentMap });
+    let effects: StructureNode[] = [];
+    const nodes = addComponent(detail as Component | StructureNode[], { componentMap });
+    nodes.forEach((item) => {
+      const _effects = placementNode(item, placement, {
+        dropIn: dropIn as StructureNode,
+        formattedData,
+        file,
+      });
+      effects = effects.concat(_effects);
+    });
+
+    return { adds: nodes, effects };
+  }
+  // move
+  // TODO: style node, need to general
+  let node = {} as StructureNode;
+  const { __styleNode } = detail as RenderStructureNode;
+  if (__styleNode) {
+    node = __styleNode;
   } else {
-    // TODO: style node, need to general
-    const { __styleNode } = detail as RenderStructureNode;
-    if (__styleNode) {
-      node = __styleNode;
-    } else {
-      node = detail as StructureNode;
-    }
+    node = detail as StructureNode;
   }
   const effects = placementNode(node, placement, { dropIn: dropIn as StructureNode, formattedData, file });
-  return effects;
+  return { effects };
 };
 
 /**
@@ -79,7 +94,11 @@ const placementNode = (
 
   // drop in the page node
   const dropInComponent = formattedData.componentMap[dropIn.name];
-  if (dropInComponent && dropInComponent.type === 'systemComponent' && dropInComponent.name === PAGE_COMPONENT_NAME) {
+  if (
+    dropInComponent &&
+    dropInComponent.type === 'systemComponent' &&
+    dropInComponent.name === PAGE_COMPONENT_NAME
+  ) {
     return inPlacement(node, dropIn, formattedData);
   }
 
@@ -159,7 +178,7 @@ export const inPlacement = (node: StructureNode, dropIn: StructureNode, formatte
       node.extension.sort = lastNodeSort + (existExtendNode ? 1 : 100);
     }
   } else {
-    node.extension.sort = ((dropIn.childIds?.length || 0) + 1) * 100;
+    node.extension.sort = ((dropIn.children?.length || 0) + 1) * 100;
   }
 
   return [node];

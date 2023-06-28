@@ -14,7 +14,7 @@ import { AppContentListRes, AppPageBuilderItemReq } from '../../types/validates/
 import * as Response from '../../utils/response';
 import { BaseController } from '../base-controller';
 
-interface ContentWithPic extends ContentInfo{
+interface ContentWithPic extends ContentInfo {
   pictures: PicType[];
 }
 
@@ -93,6 +93,7 @@ export class GetPageBuilderItemList extends BaseController {
           applicationId: params.applicationId,
           type: params.type,
           userId: ctx.userInfo.id,
+          search: _.trim(params.search || '', ' '),
           skip: (pageSize.page - 1) * pageSize.size,
           limit: pageSize.size,
         });
@@ -118,10 +119,10 @@ export class GetPageBuilderItemList extends BaseController {
       let fileContentList: FileContents[] = [];
       fileList.forEach((file) => {
         !fileContentWithPics[file.id] && (fileContentWithPics[file.id] = []);
-        (fileContentObject[file.id] || []).forEach(content => {
-          if(content.liveVersionNumber > 0) {
+        (fileContentObject[file.id] || []).forEach((content) => {
+          if (content.liveVersionNumber > 0) {
             fileContentWithPics[file.id].push(
-              Object.assign({}, content, { pictures: contentVersionObject[content.id]?.pictures || [] })
+              Object.assign({}, content, { pictures: contentVersionObject[content.id]?.pictures || [] }),
             );
           }
         });
